@@ -1,0 +1,16 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/hnuter/px4_ws_ros2/install/px4_ros_com/lib/python3.12/site-packages",
+        "/home/hnuter/px4_ws_ros2/install/px4_msgs/lib/python3.12/site-packages",
+        "/home/hnuter/px4_ros2_ws/install/px4_ros_com/lib/python3.12/site-packages",
+        "/home/hnuter/px4_ros2_ws/install/px4_msgs/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/hnuter/px4_ws_ros2/install/px4_ros_com/lib/python3.12/site-packages",
+        "/home/hnuter/px4_ws_ros2/install/px4_msgs/lib/python3.12/site-packages",
+        "/home/hnuter/px4_ros2_ws/install/px4_ros_com/lib/python3.12/site-packages",
+        "/home/hnuter/px4_ros2_ws/install/px4_msgs/lib/python3.12/site-packages",
+        "/opt/ros/jazzy/lib/python3.12/site-packages"
+    ]
+}

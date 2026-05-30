@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/hnuter/px4_ws_ros2/install/px4_ros_com/include/**",
+        "/home/hnuter/px4_ws_ros2/install/px4_msgs/include/**",
+        "/home/hnuter/px4_ros2_ws/install/px4_ros_com/include/**",
+        "/home/hnuter/px4_ros2_ws/install/px4_ros2_cpp/include/**",
+        "/home/hnuter/px4_ros2_ws/install/px4_msgs/include/**",
+        "/opt/ros/jazzy/include/**",
+        "/home/hnuter/px4_ws_ros2/src/px4_ros_com/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
