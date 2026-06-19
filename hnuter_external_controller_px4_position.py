@@ -41,6 +41,7 @@ from px4_msgs.msg import VehicleCommand
 from px4_msgs.msg import VehicleCommandAck
 from px4_msgs.msg import OffboardControlMode
 from px4_msgs.msg import TrajectorySetpoint
+from px4_msgs.msg import VehicleControlMode
 from px4_msgs.msg import VehicleStatus
 
 try:
@@ -330,6 +331,8 @@ class HnuterController(Node):
             VehicleAngularVelocity, '/fmu/out/vehicle_angular_velocity', self.angular_velocity_callback, qos_profile_out)
         self.vehicle_status_sub = self.create_subscription(
             VehicleStatus, '/fmu/out/vehicle_status', self.status_callback, qos_profile_out)
+        self.vehicle_control_mode_sub = self.create_subscription(
+            VehicleControlMode, '/fmu/out/vehicle_control_mode', self.control_mode_callback, qos_profile_out)
         self.vehicle_command_ack_sub = self.create_subscription(
             VehicleCommandAck, '/fmu/out/vehicle_command_ack', self.vehicle_command_ack_callback, qos_profile_out)
 
@@ -355,6 +358,7 @@ class HnuterController(Node):
         self.angular_velocity = np.zeros(3)  # FLU body angular velocity
         self.R = np.eye(3)                # ENU <- FLU
         self.nav_state = None
+        self.control_offboard_enabled = False
         self.armed = False
         self.data_received = False
         self.local_position_received = False
@@ -365,6 +369,7 @@ class HnuterController(Node):
         self.offboard_setpoint_counter = 0
         self._last_offboard_cmd_time = 0.0
         self._last_arm_cmd_time = 0.0
+        self._last_arm_command_param1 = None
         self._offboard_request_sent = False
         self._arm_request_sent = False
 
@@ -464,7 +469,8 @@ class HnuterController(Node):
         self.max_acc_xy = 20.0
         self.max_acc_z = 20.0
         self.max_climb_rate = 1.0
-        # direct_actuator 只用于地面零油门倾转自检；起飞后交给 PX4 内部位置控制。
+        # px4_position 版本全程使用 PX4 position Offboard，避免起飞前后在
+        # direct_actuator/position 两套 Offboard 控制入口之间切换。
         self.use_px4_position_takeoff = True
         self.safe_hover_enabled = False
         self.safe_hover_tail_fraction = 0.16
@@ -621,6 +627,9 @@ class HnuterController(Node):
         self.armed = (int(msg.arming_state) == self.ARMING_STATE_ARMED)
         self.nav_state = int(getattr(msg, 'nav_state', -1))
 
+    def control_mode_callback(self, msg):
+        self.control_offboard_enabled = bool(getattr(msg, 'flag_control_offboard_enabled', False))
+
     def vehicle_command_ack_callback(self, msg):
         command = int(msg.command)
         if command not in (self.CMD_DO_SET_MODE, self.CMD_COMPONENT_ARM_DISARM):
@@ -633,7 +642,13 @@ class HnuterController(Node):
             f'PX4 command ack: {command_name} -> {result_name} '
             f'(result_param1={int(msg.result_param1)}, result_param2={int(msg.result_param2)})'
         )
-        if result == getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_ACCEPTED', 0):
+        accepted = result == getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_ACCEPTED', 0)
+        if accepted:
+            if command == self.CMD_DO_SET_MODE:
+                self.nav_state = self.NAVIGATION_STATE_OFFBOARD
+                self.control_offboard_enabled = True
+            elif command == self.CMD_COMPONENT_ARM_DISARM and self._last_arm_command_param1 is not None:
+                self.armed = self._last_arm_command_param1 > 0.5
             self.get_logger().info(text)
         else:
             self.get_logger().warn(text)
@@ -642,7 +657,7 @@ class HnuterController(Node):
     # Offboard/Arm startup logic
     # ============================================================
     def is_offboard(self) -> bool:
-        return self.nav_state == self.NAVIGATION_STATE_OFFBOARD
+        return bool(self.control_offboard_enabled) or self.nav_state == self.NAVIGATION_STATE_OFFBOARD
 
     def timestamp_now_us(self) -> int:
         return int(self.px4_timestamp) if self.px4_timestamp > 0 else int(self.get_clock().now().nanoseconds / 1000)
@@ -707,8 +722,10 @@ class HnuterController(Node):
                 self.get_logger().info('请求切换到 Offboard 模式...')
             return
 
-        # 5) 已进入 Offboard 后再 Arm；并且默认只自动 Arm 一次。
+        # 5) 已进入 Offboard 后再 Arm；position Offboard 下等键盘 o 作为起飞/解锁许可。
         if self.is_offboard() and not self.armed:
+            if self.use_px4_position_takeoff and not self.takeoff_requested:
+                return
             if not self.auto_arm_enabled:
                 return
             if self.was_armed_once and not self.rearm_after_auto_disarm:
@@ -730,10 +747,13 @@ class HnuterController(Node):
         if self.is_offboard() and self.armed and not self.takeoff_requested:
             now_s = self.px4_timestamp / 1_000_000.0
             current_time = max(0.0, now_s - self.sim_start_time_s) if self.sim_start_time_s > 0.0 else 0.0
-            self.publish_preflight_tilt_test_setpoint(current_time, 0.05)
+            if self.use_px4_position_takeoff:
+                self.publish_px4_trajectory_setpoint()
+            else:
+                self.publish_preflight_tilt_test_setpoint(current_time, 0.05)
 
     def _use_px4_position_mode(self) -> bool:
-        return bool(self.use_px4_position_takeoff and self.takeoff_requested)
+        return bool(self.use_px4_position_takeoff)
 
     def publish_offboard_control_mode(self):
         position_mode = self._use_px4_position_mode()
@@ -895,9 +915,11 @@ class HnuterController(Node):
         self.vehicle_command_pub.publish(msg)
 
     def arm(self):
+        self._last_arm_command_param1 = 1.0
         self.publish_vehicle_command(self.CMD_COMPONENT_ARM_DISARM, param1=1.0)
 
     def disarm(self):
+        self._last_arm_command_param1 = 0.0
         self.publish_vehicle_command(self.CMD_COMPONENT_ARM_DISARM, param1=0.0)
 
     def set_offboard_mode(self):
@@ -1378,7 +1400,15 @@ class HnuterController(Node):
 
         if not self.takeoff_requested:
             self.control_loop_count += 1
-            if self.armed:
+            self.last_F1 = 0.0
+            self.last_F2 = 0.0
+            self.last_F3 = 0.0
+            self.last_W = np.zeros(6)
+            self.last_motor_cmd = np.zeros(12)
+            self.last_servo_cmd = np.zeros(8)
+            if self.use_px4_position_takeoff:
+                self.publish_px4_trajectory_setpoint()
+            elif self.armed:
                 self.publish_preflight_tilt_test_setpoint(current_time, dt)
             else:
                 self.publish_idle_direct_actuator_setpoint()
@@ -1386,7 +1416,7 @@ class HnuterController(Node):
             if now - self._last_debug_print_time >= self.debug_print_period_s:
                 self.get_logger().info(
                     f'地面自检中：Offboard={self.is_offboard()} | Armed={self.armed} | '
-                    'motors=0，按 o 起飞悬停'
+                    'PX4 position setpoint 贴住当前位置，按 o 后 Arm 并起飞悬停'
                 )
                 self._last_debug_print_time = now
             return
