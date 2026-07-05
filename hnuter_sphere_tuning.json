@@ -1,0 +1,108 @@
+{
+  "alpha_limit_deg": 185.0,
+  "attitude_peak_hold_s": 1.0,
+  "attitude_segment_time_s": 6.0,
+  "attitude_step_angle_deg": 105.0,
+  "attitude_step_pitch_deg": 105.0,
+  "attitude_step_roll_deg": 0.0,
+  "attitude_step_yaw_deg": 0.0,
+  "attitude_test_altitude_m": 3.0,
+  "attitude_test_altitude_only": false,
+  "attitude_test_max_acc_xy": 3.0,
+  "direct_Domega": [
+    2.5,
+    2.5,
+    7.0
+  ],
+  "direct_Domega_yaw": 7.0,
+  "direct_safety_attitude_check_enabled": false,
+  "direct_safety_attitude_limit_deg": 55.0,
+  "direct_KR": [
+    4.0,
+    5.0,
+    14.0
+  ],
+  "direct_KR_yaw": 14.0,
+  "direct_takeoff_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_takeoff_KR": [
+    1.5,
+    1.5,
+    1.5
+  ],
+  "direct_takeoff_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_tau_limit": [
+    2.5,
+    3.0,
+    8.0
+  ],
+  "direct_tau_yaw_limit": 8.0,
+  "direct_xy_lock_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_xy_lock_KR": [
+    1.5,
+    1.5,
+    1.5
+  ],
+  "direct_xy_lock_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_yaw_control_enabled": true,
+  "max_acc_xy": 20.0,
+  "max_acc_z": 20.0,
+  "manual_pitch_limit_deg": 180.0,
+  "single_side_fail_left": true,
+  "single_side_failure_ramp_time_s": 10.0,
+  "single_side_hover_pitch_deg": 20.0,
+  "single_side_hover_roll_deg": 90.0,
+  "single_side_roll_time_s": 10.0,
+  "single_side_settle_time_s": 10.0,
+  "sphere_approach_time_s": 35.0,
+  "sphere_attach_time_s": 5.0,
+  "sphere_center_enu_m": [
+    14.0,
+    0.0,
+    11.5
+  ],
+  "sphere_clearance_m": -0.1,
+  "sphere_circle_center_azimuth_deg": 0.0,
+  "sphere_circle_center_colatitude_deg": 105.0,
+  "sphere_circle_hold_time_s": 5.0,
+  "sphere_circle_orient_time_s": 20.0,
+  "sphere_circle_period_s": 90.0,
+  "sphere_circle_press_time_s": 5.0,
+  "sphere_circle_ramp_time_s": 20.0,
+  "sphere_circle_radius_deg": 10.0,
+  "sphere_circle_theta_limit_deg": 180.0,
+  "sphere_circle_transfer_time_s": 25.0,
+  "sphere_end_angle_deg": -390.0,
+  "sphere_point_hold_time_s": 6.0,
+  "sphere_point_offsets_deg": [
+    0.0,
+    30.0,
+    60.0,
+    90.0,
+    120.0
+  ],
+  "sphere_point_press_time_s": 4.0,
+  "sphere_point_release_time_s": 4.0,
+  "sphere_point_standoff_m": 0.75,
+  "sphere_point_transfer_time_s": 10.0,
+  "sphere_radius_m": 10.0,
+  "sphere_start_angle_deg": -270.0,
+  "sphere_traverse_time_s": 50.0,
+  "theta_limit_deg": 45.0,
+  "xy_lock_max_acc_xy": 3.0
+}

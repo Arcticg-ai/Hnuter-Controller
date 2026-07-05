@@ -12,6 +12,12 @@ import time
 from dataclasses import dataclass
 from typing import List, Optional
 
+# PX4 uses fixed DDS topic names. Keep SITL telemetry local unless remote DDS
+# access is explicitly requested, otherwise another PX4 on the LAN can mix in.
+if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
+    os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
+    os.environ.pop('ROS_STATIC_PEERS', None)
+
 import numpy as np
 import rclpy
 from rclpy.node import Node
@@ -116,7 +122,7 @@ class HnuterNarrowPassageController(Node):
             VehicleLocalPosition, '/fmu/out/vehicle_local_position', self.local_position_cb, qos_in
         )
         self.create_subscription(
-            VehicleStatus, '/fmu/out/vehicle_status', self.status_cb, qos_in
+            VehicleStatus, '/fmu/out/vehicle_status_v1', self.status_cb, qos_in
         )
         self.create_subscription(
             VehicleCommandAck, '/fmu/out/vehicle_command_ack', self.command_ack_cb, qos_in

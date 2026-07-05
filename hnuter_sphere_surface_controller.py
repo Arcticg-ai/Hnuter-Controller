@@ -10,8 +10,8 @@ Hnuter Tiltrotor Direct Actuator Debug Controller
 5. 修复 Offboard/Arm 启动逻辑：先连续发布 OffboardControlMode，再切 Offboard，最后 Arm。
 6. Offboard+Arm 后先零油门做倾转自检，按键盘 o 后才起飞悬停。
 7. 避免 hover_only/xy_lock 永久覆盖手动目标点。
-8. 键盘输入 1 执行一圈矩形轨迹，输入 2 执行一圈李萨如轨迹，
-   输入 3 依次改变 roll/pitch/yaw 小角度后恢复，完成后回到悬停。
+8. 键盘输入 1 执行连续球面滑行，输入 2 循环执行多点贴附验证，
+   输入 3 贴附球面画圆，输入 4 执行原姿态角调试轨迹。
 9. 关闭退出绘图与 /plot_data 发布。
 10. 姿态反馈采用连续等价分支，避免 roll 0/180 表示跳变导致 direct 控制方向突变。
 11. 本文件用于 direct actuator 调试：按 o 后直接控制 actuator_motors/servos，
@@ -32,8 +32,9 @@ import threading
 import tty
 from pathlib import Path
 
-# PX4 uses fixed DDS topic names. Keep SITL telemetry local unless remote DDS
-# access is explicitly requested, otherwise another PX4 on the LAN can mix in.
+# Keep this controller on the local DDS host by default. PX4 reaches DDS
+# through the local Micro XRCE-DDS Agent, so LAN discovery is unnecessary and
+# can mix telemetry from another vehicle using the same PX4 topic names.
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
     os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
     os.environ.pop('ROS_STATIC_PEERS', None)
@@ -250,7 +251,9 @@ class KeyboardCommandReader:
             tty.setcbreak(self._stdin_fd)
             self._thread = threading.Thread(target=self._read_loop, daemon=True)
             self._thread.start()
-            self._log_info('键盘已启用：按 o 起飞悬停；按 1/2/3 分别执行矩形/李萨如/姿态角轨迹。')
+            self._log_info(
+                '键盘已启用：o 起飞；1/2/3 球面轨迹；4 姿态测试；5 单侧执行器失效悬停。'
+            )
         except Exception as exc:
             self._log_warn(f'键盘输入初始化失败: {exc}；悬停/手柄功能不受影响。')
             self._restore_terminal()
@@ -275,7 +278,7 @@ class KeyboardCommandReader:
                     continue
 
                 key = sys.stdin.read(1)
-                if key in ('1', '2', '3', 'o', 'O'):
+                if key in ('1', '2', '3', '4', '5', 'o', 'O'):
                     self.commands.put(key)
             except Exception as exc:
                 if not self._stop_event.is_set():
@@ -307,9 +310,9 @@ class KeyboardCommandReader:
             self._thread.join(timeout=0.2)
 
 
-class HnuterController(Node):
+class HnuterSphereSurfaceController(Node):
     def __init__(self):
-        super().__init__('hnuter_controller_direct_debug')
+        super().__init__('hnuter_sphere_surface_controller')
 
         qos_profile_in = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -413,7 +416,6 @@ class HnuterController(Node):
         self.local_position_received = False
         self.attitude_received = False
         self.px4_timestamp = 0
-
         # Offboard/Arm 启动状态机
         self.offboard_setpoint_counter = 0
         self._last_offboard_cmd_time = 0.0
@@ -511,6 +513,10 @@ class HnuterController(Node):
         self._alpha2_cmd = 0.0
         self._theta1_cmd = 0.0
         self._theta2_cmd = 0.0
+        self._gimbal_branch_transitions = [None, None]
+        self.gimbal_branch_transfer_enabled = os.environ.get(
+            'HNUTER_GIMBAL_BRANCH_TRANSFER', '0'
+        ).strip().lower() in ('1', 'true', 'yes', 'on')
 
         self.integral_pos_error = np.zeros(3)
         self.integral_e_R = np.zeros(3)
@@ -580,7 +586,7 @@ class HnuterController(Node):
         self.target_R_des_ned_frd = None
 
         self.takeoff_height = 1.3
-        self.max_altitude = 5.0
+        self.max_altitude = 30.0
         self.min_altitude = 0.25
         self.manual_enabled = True
         self.takeoff_requested = False
@@ -649,8 +655,53 @@ class HnuterController(Node):
         self.attitude_test_max_acc_xy = env_float('HNUTER_ATTITUDE_TEST_MAX_ACC_XY', 3.0)
         self.attitude_test_altitude_m = env_float('HNUTER_ATTITUDE_TEST_ALTITUDE_M', self.takeoff_height)
 
+        # Must match Tools/simulation/gz/worlds/hnuter_sphere.sdf.
+        self.sphere_center_enu = np.array([14.0, 0.0, 11.5], dtype=float)
+        self.sphere_radius_m = 10.0
+        self.sphere_clearance_m = -0.10
+        self.sphere_start_angle_rad = math.radians(-270.0)
+        self.sphere_end_angle_rad = math.radians(-390.0)
+        self.sphere_approach_time_s = 35.0
+        self.sphere_attach_time_s = 5.0
+        self.sphere_traverse_time_s = 50.0
+        # Trajectory 2 independently approaches and presses against several
+        # locations instead of dragging over the surface between test points.
+        self.sphere_point_offsets_rad = np.radians(
+            np.array([0.0, 30.0, 60.0, 90.0, 120.0], dtype=float)
+        )
+        self.sphere_point_standoff_m = 0.75
+        self.sphere_point_press_time_s = 4.0
+        self.sphere_point_hold_time_s = 6.0
+        self.sphere_point_release_time_s = 4.0
+        self.sphere_point_transfer_time_s = 10.0
+        self.sphere_circle_center_colatitude_rad = math.radians(105.0)
+        self.sphere_circle_center_azimuth_rad = math.radians(0.0)
+        self.sphere_circle_radius_rad = math.radians(10.0)
+        self.sphere_circle_theta_limit_rad = math.radians(180.0)
+        self.sphere_circle_transfer_time_s = 25.0
+        self.sphere_circle_orient_time_s = 20.0
+        self.sphere_circle_press_time_s = 5.0
+        self.sphere_circle_hold_time_s = 5.0
+        self.sphere_circle_period_s = 90.0
+        self.sphere_circle_ramp_time_s = 20.0
+        self.sphere_circle_heading_relief = os.environ.get(
+            'HNUTER_CIRCLE_HEADING_RELIEF', '1'
+        ).strip().lower() in ('1', 'true', 'yes', 'on')
+        self.sphere_circle_heading_offset_rad = math.radians(
+            env_float('HNUTER_CIRCLE_HEADING_OFFSET_DEG', 60.0)
+        )
+        self.single_side_fail_left = True
+        self.single_side_hover_roll_rad = math.radians(90.0)
+        self.single_side_hover_pitch_rad = math.radians(20.0)
+        self.single_side_roll_time_s = 10.0
+        self.single_side_settle_time_s = 10.0
+        self.single_side_failure_ramp_time_s = 10.0
+        self.single_side_failure_blend = 0.0
+        self.single_side_failure_announced = False
+        self.single_side_support_axis_active = False
+
         self.tuning_path = os.path.expanduser(os.environ.get(
-            'HNUTER_TUNING_FILE', '~/px4_ws_ros2/hnuter_direct_tuning.json'
+            'HNUTER_TUNING_FILE', '~/px4_ws_ros2/hnuter_sphere_tuning.json'
         ))
         self._last_tuning_mtime_ns = None
         self._last_tuning_log_time = 0.0
@@ -689,7 +740,7 @@ class HnuterController(Node):
         self.diagnostic_enabled = True
         self.diagnostic_period_s = 0.10
         self._last_diagnostic_log_time = -1.0
-        self.diagnostic_path = f'hnuter_{self.debug_control_mode}_debug_{int(time.time())}.csv'
+        self.diagnostic_path = f'hnuter_sphere_{self.debug_control_mode}_{int(time.time())}.csv'
         self._diagnostic_file = None
         self._diagnostic_writer = None
         if self.diagnostic_enabled:
@@ -698,7 +749,7 @@ class HnuterController(Node):
             self._diagnostic_writer.writerow(self._diagnostic_header())
 
         self.get_logger().info(
-            f'Hnuter actuator debug controller initialized: mode={self.debug_control_mode}'
+            f'Hnuter sphere surface controller initialized: mode={self.debug_control_mode}'
         )
         if self.use_px4_position_takeoff:
             self.get_logger().info(
@@ -723,6 +774,48 @@ class HnuterController(Node):
             "attitude_test_altitude_only": bool(self.attitude_test_altitude_only),
             "attitude_test_altitude_m": float(self.attitude_test_altitude_m),
             "attitude_test_max_acc_xy": float(self.attitude_test_max_acc_xy),
+            "sphere_center_enu_m": self.sphere_center_enu.tolist(),
+            "sphere_radius_m": float(self.sphere_radius_m),
+            "sphere_clearance_m": float(self.sphere_clearance_m),
+            "sphere_start_angle_deg": float(math.degrees(self.sphere_start_angle_rad)),
+            "sphere_end_angle_deg": float(math.degrees(self.sphere_end_angle_rad)),
+            "sphere_approach_time_s": float(self.sphere_approach_time_s),
+            "sphere_attach_time_s": float(self.sphere_attach_time_s),
+            "sphere_traverse_time_s": float(self.sphere_traverse_time_s),
+            "sphere_point_offsets_deg": np.degrees(self.sphere_point_offsets_rad).tolist(),
+            "sphere_point_standoff_m": float(self.sphere_point_standoff_m),
+            "sphere_point_press_time_s": float(self.sphere_point_press_time_s),
+            "sphere_point_hold_time_s": float(self.sphere_point_hold_time_s),
+            "sphere_point_release_time_s": float(self.sphere_point_release_time_s),
+            "sphere_point_transfer_time_s": float(self.sphere_point_transfer_time_s),
+            "sphere_circle_center_colatitude_deg": float(
+                math.degrees(self.sphere_circle_center_colatitude_rad)
+            ),
+            "sphere_circle_center_azimuth_deg": float(
+                math.degrees(self.sphere_circle_center_azimuth_rad)
+            ),
+            "sphere_circle_radius_deg": float(math.degrees(self.sphere_circle_radius_rad)),
+            "sphere_circle_theta_limit_deg": float(
+                math.degrees(self.sphere_circle_theta_limit_rad)
+            ),
+            "sphere_circle_transfer_time_s": float(self.sphere_circle_transfer_time_s),
+            "sphere_circle_orient_time_s": float(self.sphere_circle_orient_time_s),
+            "sphere_circle_press_time_s": float(self.sphere_circle_press_time_s),
+            "sphere_circle_hold_time_s": float(self.sphere_circle_hold_time_s),
+            "sphere_circle_period_s": float(self.sphere_circle_period_s),
+            "sphere_circle_ramp_time_s": float(self.sphere_circle_ramp_time_s),
+            "single_side_fail_left": bool(self.single_side_fail_left),
+            "single_side_hover_roll_deg": float(
+                math.degrees(self.single_side_hover_roll_rad)
+            ),
+            "single_side_hover_pitch_deg": float(
+                math.degrees(self.single_side_hover_pitch_rad)
+            ),
+            "single_side_roll_time_s": float(self.single_side_roll_time_s),
+            "single_side_settle_time_s": float(self.single_side_settle_time_s),
+            "single_side_failure_ramp_time_s": float(
+                self.single_side_failure_ramp_time_s
+            ),
             "alpha_limit_deg": float(math.degrees(self.alpha_limit_rad)),
             "theta_limit_deg": float(math.degrees(self.theta_limit_rad)),
             "manual_pitch_limit_deg": float(math.degrees(self.manual_pitch_limit_rad)),
@@ -809,6 +902,170 @@ class HnuterController(Node):
             data, 'attitude_test_altitude_m', self.attitude_test_altitude_m
         )
         self.attitude_test_max_acc_xy = self._tuning_float(data, 'attitude_test_max_acc_xy', self.attitude_test_max_acc_xy)
+        sphere_center = self._tuning_array(data, 'sphere_center_enu_m', self.sphere_center_enu)
+        if np.all(np.isfinite(sphere_center)):
+            self.sphere_center_enu = sphere_center
+        self.sphere_radius_m = max(
+            1.0,
+            self._tuning_float(data, 'sphere_radius_m', self.sphere_radius_m),
+        )
+        self.sphere_clearance_m = max(
+            -0.50,
+            self._tuning_float(data, 'sphere_clearance_m', self.sphere_clearance_m),
+        )
+        self.sphere_start_angle_rad = math.radians(
+            self._tuning_float(data, 'sphere_start_angle_deg', math.degrees(self.sphere_start_angle_rad))
+        )
+        self.sphere_end_angle_rad = math.radians(
+            self._tuning_float(data, 'sphere_end_angle_deg', math.degrees(self.sphere_end_angle_rad))
+        )
+        self.sphere_approach_time_s = max(
+            5.0,
+            self._tuning_float(data, 'sphere_approach_time_s', self.sphere_approach_time_s),
+        )
+        self.sphere_attach_time_s = max(
+            5.0,
+            self._tuning_float(data, 'sphere_attach_time_s', self.sphere_attach_time_s),
+        )
+        self.sphere_traverse_time_s = max(
+            10.0,
+            self._tuning_float(data, 'sphere_traverse_time_s', self.sphere_traverse_time_s),
+        )
+        point_offsets_deg = self._tuning_array(
+            data, 'sphere_point_offsets_deg', np.degrees(self.sphere_point_offsets_rad)
+        )
+        if np.all(np.isfinite(point_offsets_deg)):
+            self.sphere_point_offsets_rad = np.radians(point_offsets_deg)
+        self.sphere_point_standoff_m = max(
+            0.05,
+            self._tuning_float(data, 'sphere_point_standoff_m', self.sphere_point_standoff_m),
+        )
+        self.sphere_point_press_time_s = max(
+            1.0,
+            self._tuning_float(data, 'sphere_point_press_time_s', self.sphere_point_press_time_s),
+        )
+        self.sphere_point_hold_time_s = max(
+            0.0,
+            self._tuning_float(data, 'sphere_point_hold_time_s', self.sphere_point_hold_time_s),
+        )
+        self.sphere_point_release_time_s = max(
+            1.0,
+            self._tuning_float(data, 'sphere_point_release_time_s', self.sphere_point_release_time_s),
+        )
+        self.sphere_point_transfer_time_s = max(
+            2.0,
+            self._tuning_float(data, 'sphere_point_transfer_time_s', self.sphere_point_transfer_time_s),
+        )
+        legacy_circle_colatitude = data.get('sphere_circle_colatitude_deg')
+        circle_center_colatitude_default = math.degrees(
+            self.sphere_circle_center_colatitude_rad
+        )
+        if (
+            'sphere_circle_center_colatitude_deg' not in data
+            and legacy_circle_colatitude is not None
+        ):
+            circle_center_colatitude_default = 90.0 + abs(float(legacy_circle_colatitude))
+        circle_center_colatitude = math.radians(self._tuning_float(
+            data,
+            'sphere_circle_center_colatitude_deg',
+            circle_center_colatitude_default,
+        ))
+        self.sphere_circle_center_colatitude_rad = float(np.clip(
+            circle_center_colatitude, math.radians(100.0), math.radians(140.0)
+        ))
+        self.sphere_circle_center_azimuth_rad = self._wrap_angle_rad(math.radians(
+            self._tuning_float(
+                data,
+                'sphere_circle_center_azimuth_deg',
+                math.degrees(self.sphere_circle_center_azimuth_rad),
+            )
+        ))
+        requested_circle_radius = math.radians(self._tuning_float(
+            data, 'sphere_circle_radius_deg', math.degrees(self.sphere_circle_radius_rad)
+        ))
+        maximum_circle_radius = min(
+            math.radians(25.0),
+            self.sphere_circle_center_colatitude_rad - math.radians(92.0),
+            math.radians(175.0) - self.sphere_circle_center_colatitude_rad,
+        )
+        self.sphere_circle_radius_rad = float(np.clip(
+            requested_circle_radius, math.radians(5.0), maximum_circle_radius
+        ))
+        self.sphere_circle_theta_limit_rad = math.radians(float(np.clip(
+            self._tuning_float(
+                data,
+                'sphere_circle_theta_limit_deg',
+                math.degrees(self.sphere_circle_theta_limit_rad),
+            ),
+            45.0,
+            180.0,
+        )))
+        self.sphere_circle_transfer_time_s = max(
+            2.0,
+            self._tuning_float(data, 'sphere_circle_transfer_time_s', self.sphere_circle_transfer_time_s),
+        )
+        self.sphere_circle_orient_time_s = max(
+            1.0,
+            self._tuning_float(data, 'sphere_circle_orient_time_s', self.sphere_circle_orient_time_s),
+        )
+        self.sphere_circle_press_time_s = max(
+            1.0,
+            self._tuning_float(data, 'sphere_circle_press_time_s', self.sphere_circle_press_time_s),
+        )
+        self.sphere_circle_hold_time_s = max(
+            0.0,
+            self._tuning_float(data, 'sphere_circle_hold_time_s', self.sphere_circle_hold_time_s),
+        )
+        self.sphere_circle_period_s = max(
+            10.0,
+            self._tuning_float(data, 'sphere_circle_period_s', self.sphere_circle_period_s),
+        )
+        self.sphere_circle_ramp_time_s = float(np.clip(
+            self._tuning_float(data, 'sphere_circle_ramp_time_s', self.sphere_circle_ramp_time_s),
+            1.0,
+            0.5 * self.sphere_circle_period_s,
+        ))
+        self.single_side_fail_left = self._tuning_bool(
+            data, 'single_side_fail_left', self.single_side_fail_left
+        )
+        self.single_side_hover_roll_rad = math.radians(float(np.clip(
+            self._tuning_float(
+                data,
+                'single_side_hover_roll_deg',
+                math.degrees(self.single_side_hover_roll_rad),
+            ),
+            -100.0,
+            100.0,
+        )))
+        self.single_side_hover_pitch_rad = math.radians(float(np.clip(
+            self._tuning_float(
+                data,
+                'single_side_hover_pitch_deg',
+                math.degrees(self.single_side_hover_pitch_rad),
+            ),
+            -60.0,
+            60.0,
+        )))
+        self.single_side_roll_time_s = max(
+            3.0,
+            self._tuning_float(
+                data, 'single_side_roll_time_s', self.single_side_roll_time_s
+            ),
+        )
+        self.single_side_settle_time_s = max(
+            0.0,
+            self._tuning_float(
+                data, 'single_side_settle_time_s', self.single_side_settle_time_s
+            ),
+        )
+        self.single_side_failure_ramp_time_s = max(
+            2.0,
+            self._tuning_float(
+                data,
+                'single_side_failure_ramp_time_s',
+                self.single_side_failure_ramp_time_s,
+            ),
+        )
         self.alpha_limit_rad = math.radians(
             self._tuning_float(data, 'alpha_limit_deg', math.degrees(self.alpha_limit_rad))
         )
@@ -893,6 +1150,15 @@ class HnuterController(Node):
                 f'manual_pitch_lim={math.degrees(self.manual_pitch_limit_rad):.1f}deg, '
                 f'att_safety={self.direct_safety_attitude_check_enabled}, '
                 f'theta_lim={math.degrees(self.theta_limit_rad):.1f}deg, '
+                f'sphere_center={np.round(self.sphere_center_enu, 2).tolist()}m, '
+                f'sphere_shell={self.sphere_radius_m + self.sphere_clearance_m:.2f}m, '
+                f'sphere_points={np.round(np.degrees(self.sphere_point_offsets_rad), 1).tolist()}deg, '
+                f'sphere_circle=center '
+                f'{math.degrees(self.sphere_circle_center_colatitude_rad):.1f}deg, '
+                f'radius {math.degrees(self.sphere_circle_radius_rad):.1f}deg/'
+                f'{self.sphere_circle_period_s:.1f}s, '
+                f'circle_theta_lim='
+                f'{math.degrees(self.sphere_circle_theta_limit_rad):.1f}deg, '
                 f'force_sign=[{self.allocator_force_x_sign:+.0f}, {self.allocator_force_y_sign:+.0f}], '
                 f'KR={np.round(self.direct_KR, 3).tolist()}, '
                 f'D={np.round(self.direct_Domega, 3).tolist()}, '
@@ -1251,6 +1517,7 @@ class HnuterController(Node):
         self._alpha2_cmd = 0.0
         self._theta1_cmd = 0.0
         self._theta2_cmd = 0.0
+        self._gimbal_branch_transitions = [None, None]
         self.publish_direct_actuator_setpoint(
             motor_controls=[0.0, 0.0, 0.0, 0.0, 0.0],
             alpha1=0.0,
@@ -1281,7 +1548,7 @@ class HnuterController(Node):
             servo_msg.timestamp_sample = timestamp
         servo_msg.control = [float('nan')] * 8
         alpha_angle_max = np.radians(185.0)
-        theta_angle_max = np.radians(90.0)
+        theta_angle_max = np.radians(180.0)
         servo_msg.control[0] = float(np.clip(alpha2 / alpha_angle_max, -1.0, 1.0))
         servo_msg.control[1] = float(np.clip(alpha1 / alpha_angle_max, -1.0, 1.0))
         servo_msg.control[2] = float(np.clip(theta2 / theta_angle_max, -1.0, 1.0))
@@ -1406,6 +1673,7 @@ class HnuterController(Node):
                 self._last_offboard_cmd_time = 0.0
                 self._last_arm_cmd_time = 0.0
                 self.takeoff_requested = True
+                self.pending_auto_traj_mode = None
                 self.manual_pos_initialized = False
                 self._takeoff_lock_start_time_s = None
                 self._takeoff_start_z_rel = 0.0
@@ -1416,6 +1684,9 @@ class HnuterController(Node):
                 self._alpha2_cmd = 0.0
                 self._theta1_cmd = 0.0
                 self._theta2_cmd = 0.0
+                self._gimbal_branch_transitions = [None, None]
+                self.single_side_failure_blend = 0.0
+                self.single_side_failure_announced = False
                 self.integral_pos_error[:] = 0.0
                 self.integral_e_R[:] = 0.0
                 self.direct_safety_cutoff = False
@@ -1425,16 +1696,27 @@ class HnuterController(Node):
                 self.initial_yaw = current_yaw
                 self.manual_des_yaw = current_yaw
                 self.target_attitude[2] = current_yaw
-                self.get_logger().info('收到键盘 o：起飞许可已打开，开始爬升到悬停高度。')
+                self.get_logger().info(
+                    '收到键盘 o：开始起飞并悬停；稳定后按 1/2/3 选择球面轨迹。'
+                )
             elif key == '1':
-                self.pending_auto_traj_mode = 'rectangle'
-                self.get_logger().info('收到键盘 1：矩形轨迹已排队，悬停稳定后开始。')
+                self.pending_auto_traj_mode = 'sphere'
+                self.get_logger().info('收到键盘 1：连续球面滑行轨迹已排队，悬停稳定后开始。')
             elif key == '2':
-                self.pending_auto_traj_mode = 'lissajous'
-                self.get_logger().info('收到键盘 2：李萨如轨迹已排队，悬停稳定后开始。')
+                self.pending_auto_traj_mode = 'sphere_points'
+                self.get_logger().info('收到键盘 2：多点贴附轨迹已排队，悬停稳定后开始。')
             elif key == '3':
+                self.pending_auto_traj_mode = 'sphere_circle'
+                self.get_logger().info('收到键盘 3：球面贴附画圆轨迹已排队，悬停稳定后开始。')
+            elif key == '4':
                 self.pending_auto_traj_mode = 'attitude'
-                self.get_logger().info('收到键盘 3：姿态角轨迹已排队，悬停稳定后开始。')
+                self.get_logger().info('收到键盘 4：姿态角轨迹已排队，悬停稳定后开始。')
+            elif key == '5':
+                self.pending_auto_traj_mode = 'single_side_hover'
+                failed_side = '左侧 Motor 3/4' if self.single_side_fail_left else '右侧 Motor 1/2'
+                self.get_logger().warn(
+                    f'收到键盘 5：{failed_side}完全失效悬停已排队。'
+                )
 
     def _trajectory_ready(self, current_time: float) -> bool:
         if not (self.is_offboard() and self.armed and self.manual_pos_initialized):
@@ -1466,6 +1748,24 @@ class HnuterController(Node):
     def _wrap_angle_rad(self, angle: float) -> float:
         return float(math.atan2(math.sin(angle), math.cos(angle)))
 
+    @staticmethod
+    def _rotation_to_euler_enu_flu(rotation: np.ndarray) -> np.ndarray:
+        pitch = math.asin(float(np.clip(-rotation[2, 0], -1.0, 1.0)))
+        roll = math.atan2(float(rotation[2, 1]), float(rotation[2, 2]))
+        yaw = math.atan2(float(rotation[1, 0]), float(rotation[0, 0]))
+        return np.array([roll, pitch, yaw], dtype=float)
+
+    @staticmethod
+    def _body_rate_from_rotation_derivative(
+        rotation: np.ndarray, rotation_derivative: np.ndarray
+    ) -> np.ndarray:
+        body_skew = rotation.T @ rotation_derivative
+        return np.array([
+            body_skew[2, 1],
+            body_skew[0, 2],
+            body_skew[1, 0],
+        ], dtype=float)
+
     def _start_auto_trajectory(self, mode: str, current_time: float):
         self.auto_traj_mode = mode
         self.auto_traj_start_time = current_time
@@ -1489,6 +1789,21 @@ class HnuterController(Node):
         elif mode == 'attitude':
             self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
             mode_text = '姿态角'
+        elif mode == 'sphere':
+            self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
+            mode_text = '连续球面滑行'
+        elif mode == 'sphere_points':
+            self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
+            mode_text = '多点贴附'
+        elif mode == 'sphere_circle':
+            self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
+            mode_text = '球面贴附画圆'
+        elif mode == 'single_side_hover':
+            self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
+            self.single_side_failure_blend = 0.0
+            self.single_side_failure_announced = False
+            self.single_side_support_axis_active = False
+            mode_text = '单侧执行器完全失效悬停'
         else:
             self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
             mode_text = '矩形'
@@ -1497,7 +1812,10 @@ class HnuterController(Node):
         self.manual_des_pitch = 0.0
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
-        finish_text = '完成后回到该点悬停。'
+        if mode in ('sphere', 'sphere_points', 'sphere_circle', 'single_side_hover'):
+            finish_text = '将持续循环执行。'
+        else:
+            finish_text = '完成后回到该点悬停。'
         self.get_logger().info(
             f'开始执行{mode_text}轨迹：起点 [{self.auto_traj_start_pos[0]:.2f}, '
             f'{self.auto_traj_start_pos[1]:.2f}, {self.auto_traj_start_pos[2]:.2f}]，'
@@ -1510,9 +1828,19 @@ class HnuterController(Node):
             mode_text = '李萨如'
         elif finished_mode == 'attitude':
             mode_text = '姿态角'
+        elif finished_mode == 'sphere':
+            mode_text = '球面滑行'
+        elif finished_mode == 'sphere_points':
+            mode_text = '多点贴附'
+        elif finished_mode == 'sphere_circle':
+            mode_text = '球面贴附画圆'
+        elif finished_mode == 'single_side_hover':
+            mode_text = '单侧执行器完全失效悬停'
         else:
             mode_text = '矩形'
         self.auto_traj_mode = 'hover'
+        self.single_side_failure_blend = 0.0
+        self.single_side_support_axis_active = False
         if finished_mode == 'attitude':
             self.manual_des_pos = self.auto_traj_start_pos.copy()
             self.manual_des_pos[2] = self.auto_traj_z
@@ -1653,8 +1981,601 @@ class HnuterController(Node):
 
         return attitude, attitude_rate, self._enu_flu_to_ned_frd_rotation(r_enu_flu), False
 
+    @staticmethod
+    def _quintic_profile(u: float):
+        u = float(np.clip(u, 0.0, 1.0))
+        u2 = u * u
+        u3 = u2 * u
+        h = 10.0 * u3 - 15.0 * u3 * u + 6.0 * u3 * u2
+        dh = 30.0 * u2 * (1.0 - u) * (1.0 - u)
+        ddh = 60.0 * u * (1.0 - u) * (1.0 - 2.0 * u)
+        return h, dh, ddh
+
+    def _sphere_reference(self, elapsed: float):
+        shell_radius = self.sphere_radius_m + self.sphere_clearance_m
+        start_phi = self.sphere_start_angle_rad
+        end_phi = self.sphere_end_angle_rad
+        entry = self.sphere_center_enu + shell_radius * np.array([
+            math.cos(start_phi),
+            0.0,
+            math.sin(start_phi),
+        ])
+        body_pitch_start = self._wrap_angle_rad(math.pi * 0.5 - start_phi)
+
+        if elapsed < self.sphere_approach_time_s:
+            climb_time = 0.65 * self.sphere_approach_time_s
+            overhead = np.array([
+                self.auto_traj_start_pos[0],
+                self.auto_traj_start_pos[1],
+                entry[2],
+            ])
+
+            if elapsed < climb_time:
+                duration = climb_time
+                h, dh, ddh = self._quintic_profile(elapsed / duration)
+                delta = overhead - self.auto_traj_start_pos
+                position = self.auto_traj_start_pos + h * delta
+                yaw = (1.0 - h) * self.auto_traj_yaw
+                yaw_rate = -(dh / duration) * self.auto_traj_yaw
+
+            else:
+                duration = self.sphere_approach_time_s - climb_time
+                translate_elapsed = elapsed - climb_time
+                h, dh, ddh = self._quintic_profile(translate_elapsed / duration)
+                delta = entry - overhead
+                position = overhead + h * delta
+                yaw = 0.0
+                yaw_rate = 0.0
+
+            velocity = (dh / duration) * delta
+            acceleration = (ddh / (duration * duration)) * delta
+            r_enu_flu = self._rotation_z(yaw)
+            attitude = np.array([0.0, 0.0, self._wrap_angle_rad(yaw)])
+            attitude_rate = np.array([0.0, 0.0, yaw_rate])
+            return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+        attach_elapsed = elapsed - self.sphere_approach_time_s
+        if attach_elapsed < self.sphere_attach_time_s:
+            duration = self.sphere_attach_time_s
+            h, dh, _ = self._quintic_profile(attach_elapsed / duration)
+            pitch = h * body_pitch_start
+            pitch_rate = (dh / duration) * body_pitch_start
+            r_enu_flu = self._rotation_y(pitch)
+            attitude = np.array([0.0, self._wrap_angle_rad(pitch), 0.0])
+            attitude_rate = np.array([0.0, pitch_rate, 0.0])
+            return entry.copy(), np.zeros(3), np.zeros(3), attitude, attitude_rate, r_enu_flu
+
+        traverse_time = self.sphere_traverse_time_s
+        surface_elapsed = attach_elapsed - self.sphere_attach_time_s
+        cycle_elapsed = surface_elapsed % (2.0 * traverse_time)
+
+        if cycle_elapsed <= traverse_time:
+            h, dh, ddh = self._quintic_profile(cycle_elapsed / traverse_time)
+            progress = h
+            progress_rate = dh / traverse_time
+            progress_accel = ddh / (traverse_time * traverse_time)
+
+        else:
+            reverse_elapsed = cycle_elapsed - traverse_time
+            h, dh, ddh = self._quintic_profile(reverse_elapsed / traverse_time)
+            progress = 1.0 - h
+            progress_rate = -dh / traverse_time
+            progress_accel = -ddh / (traverse_time * traverse_time)
+
+        phi_delta = end_phi - start_phi
+        phi = start_phi + phi_delta * progress
+        phi_rate = phi_delta * progress_rate
+        phi_accel = phi_delta * progress_accel
+        radial = np.array([math.cos(phi), 0.0, math.sin(phi)])
+        radial_phi = np.array([-math.sin(phi), 0.0, math.cos(phi)])
+        radial_phi2 = -radial
+        position = self.sphere_center_enu + shell_radius * radial
+        velocity = shell_radius * radial_phi * phi_rate
+        acceleration = shell_radius * (radial_phi2 * phi_rate * phi_rate + radial_phi * phi_accel)
+
+        # Body +Z follows the outward sphere normal while body +X follows the
+        # forward great-circle tangent. The continuous pitch stays within
+        # [0, +120] deg for the configured upper/right-surface arc.
+        body_pitch = body_pitch_start - (phi - start_phi)
+        pitch_rate = -phi_rate
+        r_enu_flu = self._rotation_y(body_pitch)
+        attitude = np.array([0.0, self._wrap_angle_rad(body_pitch), 0.0])
+        attitude_rate = np.array([0.0, pitch_rate, 0.0])
+        return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+    def _sphere_point_reference(self, elapsed: float):
+        shell_radius = self.sphere_radius_m + self.sphere_clearance_m
+        outer_radius = self.sphere_radius_m + self.sphere_point_standoff_m
+        start_phi = self.sphere_start_angle_rad
+        point_phis = start_phi - self.sphere_point_offsets_rad
+        first_phi = float(point_phis[0])
+        first_radial = np.array([math.cos(first_phi), 0.0, math.sin(first_phi)])
+        first_outer = self.sphere_center_enu + outer_radius * first_radial
+        body_pitch_start = self._wrap_angle_rad(math.pi * 0.5 - start_phi)
+
+        if elapsed < self.sphere_approach_time_s:
+            climb_time = 0.65 * self.sphere_approach_time_s
+            overhead = np.array([
+                self.auto_traj_start_pos[0],
+                self.auto_traj_start_pos[1],
+                first_outer[2],
+            ])
+
+            if elapsed < climb_time:
+                duration = climb_time
+                h, dh, ddh = self._quintic_profile(elapsed / duration)
+                delta = overhead - self.auto_traj_start_pos
+                position = self.auto_traj_start_pos + h * delta
+                yaw = (1.0 - h) * self.auto_traj_yaw
+                yaw_rate = -(dh / duration) * self.auto_traj_yaw
+                pitch = 0.0
+                pitch_rate = 0.0
+            else:
+                duration = self.sphere_approach_time_s - climb_time
+                translate_elapsed = elapsed - climb_time
+                h, dh, ddh = self._quintic_profile(translate_elapsed / duration)
+                delta = first_outer - overhead
+                position = overhead + h * delta
+                yaw = 0.0
+                yaw_rate = 0.0
+                first_pitch = body_pitch_start - (first_phi - start_phi)
+                pitch = h * first_pitch
+                pitch_rate = (dh / duration) * first_pitch
+
+            velocity = (dh / duration) * delta
+            acceleration = (ddh / (duration * duration)) * delta
+            r_enu_flu = self._rotation_z(yaw) @ self._rotation_y(pitch)
+            attitude = np.array([
+                0.0,
+                self._wrap_angle_rad(pitch),
+                self._wrap_angle_rad(yaw),
+            ])
+            attitude_rate = np.array([0.0, pitch_rate, yaw_rate])
+            return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+        press_time = self.sphere_point_press_time_s
+        hold_time = self.sphere_point_hold_time_s
+        release_time = self.sphere_point_release_time_s
+        transfer_time = self.sphere_point_transfer_time_s
+        point_period = press_time + hold_time + release_time + transfer_time
+        cycle_elapsed = (elapsed - self.sphere_approach_time_s) % (
+            len(point_phis) * point_period
+        )
+        point_index = min(int(cycle_elapsed / point_period), len(point_phis) - 1)
+        phase_elapsed = cycle_elapsed - point_index * point_period
+        phi = float(point_phis[point_index])
+        phi_rate = 0.0
+        phi_accel = 0.0
+        radius = outer_radius
+        radius_rate = 0.0
+        radius_accel = 0.0
+
+        if phase_elapsed < press_time:
+            h, dh, ddh = self._quintic_profile(phase_elapsed / press_time)
+            radius_delta = shell_radius - outer_radius
+            radius = outer_radius + h * radius_delta
+            radius_rate = (dh / press_time) * radius_delta
+            radius_accel = (ddh / (press_time * press_time)) * radius_delta
+        elif phase_elapsed < press_time + hold_time:
+            radius = shell_radius
+        elif phase_elapsed < press_time + hold_time + release_time:
+            release_elapsed = phase_elapsed - press_time - hold_time
+            h, dh, ddh = self._quintic_profile(release_elapsed / release_time)
+            radius_delta = outer_radius - shell_radius
+            radius = shell_radius + h * radius_delta
+            radius_rate = (dh / release_time) * radius_delta
+            radius_accel = (ddh / (release_time * release_time)) * radius_delta
+        else:
+            transfer_elapsed = phase_elapsed - press_time - hold_time - release_time
+            next_index = (point_index + 1) % len(point_phis)
+            next_phi = float(point_phis[next_index])
+            h, dh, ddh = self._quintic_profile(transfer_elapsed / transfer_time)
+            phi_delta = next_phi - phi
+            phi += h * phi_delta
+            phi_rate = (dh / transfer_time) * phi_delta
+            phi_accel = (ddh / (transfer_time * transfer_time)) * phi_delta
+
+        radial = np.array([math.cos(phi), 0.0, math.sin(phi)])
+        radial_phi = np.array([-math.sin(phi), 0.0, math.cos(phi)])
+        radial_phi2 = -radial
+        position = self.sphere_center_enu + radius * radial
+        velocity = radius_rate * radial + radius * radial_phi * phi_rate
+        acceleration = (
+            radius_accel * radial
+            + 2.0 * radius_rate * radial_phi * phi_rate
+            + radius * (radial_phi2 * phi_rate * phi_rate + radial_phi * phi_accel)
+        )
+
+        body_pitch = body_pitch_start - (phi - start_phi)
+        pitch_rate = -phi_rate
+        r_enu_flu = self._rotation_y(body_pitch)
+        attitude = np.array([0.0, self._wrap_angle_rad(body_pitch), 0.0])
+        attitude_rate = np.array([0.0, pitch_rate, 0.0])
+        return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+    def _sphere_circle_reference(self, elapsed: float):
+        shell_radius = self.sphere_radius_m + self.sphere_clearance_m
+        outer_radius = self.sphere_radius_m + self.sphere_point_standoff_m
+        center_colatitude = self.sphere_circle_center_colatitude_rad
+        center_azimuth = self.sphere_circle_center_azimuth_rad
+        circle_radius = self.sphere_circle_radius_rad
+        start_colatitude = center_colatitude - circle_radius
+        sin_center = math.sin(center_colatitude)
+        cos_center = math.cos(center_colatitude)
+        sin_center_azimuth = math.sin(center_azimuth)
+        cos_center_azimuth = math.cos(center_azimuth)
+        circle_center_normal = np.array([
+            sin_center * cos_center_azimuth,
+            sin_center * sin_center_azimuth,
+            cos_center,
+        ])
+        circle_up = np.array([
+            -cos_center * cos_center_azimuth,
+            -cos_center * sin_center_azimuth,
+            sin_center,
+        ])
+        circle_side = np.array([
+            -sin_center_azimuth,
+            cos_center_azimuth,
+            0.0,
+        ])
+        cos_circle_radius = math.cos(circle_radius)
+        sin_circle_radius = math.sin(circle_radius)
+        normal_start = (
+            cos_circle_radius * circle_center_normal
+            + sin_circle_radius * circle_up
+        )
+        circle_tangent_start = circle_side
+        top_outer = self.sphere_center_enu + np.array([0.0, 0.0, outer_radius])
+
+        if elapsed < self.sphere_approach_time_s:
+            climb_time = 0.65 * self.sphere_approach_time_s
+            overhead = np.array([
+                self.auto_traj_start_pos[0],
+                self.auto_traj_start_pos[1],
+                top_outer[2],
+            ])
+
+            if elapsed < climb_time:
+                duration = climb_time
+                h, dh, ddh = self._quintic_profile(elapsed / duration)
+                delta = overhead - self.auto_traj_start_pos
+                position = self.auto_traj_start_pos + h * delta
+                yaw_delta = self._wrap_angle_rad(center_azimuth - self.auto_traj_yaw)
+                yaw = self.auto_traj_yaw + h * yaw_delta
+                yaw_rate = (dh / duration) * yaw_delta
+            else:
+                duration = self.sphere_approach_time_s - climb_time
+                phase_elapsed = elapsed - climb_time
+                h, dh, ddh = self._quintic_profile(phase_elapsed / duration)
+                delta = top_outer - overhead
+                position = overhead + h * delta
+                yaw = center_azimuth
+                yaw_rate = 0.0
+
+            velocity = (dh / duration) * delta
+            acceleration = (ddh / (duration * duration)) * delta
+            r_enu_flu = self._rotation_z(yaw)
+            attitude = np.array([0.0, 0.0, self._wrap_angle_rad(yaw)])
+            attitude_rate = np.array([0.0, 0.0, yaw_rate])
+            return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+        phase_elapsed = elapsed - self.sphere_approach_time_s
+        transfer_time = self.sphere_circle_transfer_time_s
+        if phase_elapsed < transfer_time:
+            h, dh, ddh = self._quintic_profile(phase_elapsed / transfer_time)
+            theta = h * start_colatitude
+            theta_rate = (dh / transfer_time) * start_colatitude
+            theta_accel = (ddh / (transfer_time * transfer_time)) * start_colatitude
+            sin_theta = math.sin(theta)
+            cos_theta = math.cos(theta)
+            normal = np.array([
+                sin_theta * cos_center_azimuth,
+                sin_theta * sin_center_azimuth,
+                cos_theta,
+            ])
+            forward = np.array([
+                cos_theta * cos_center_azimuth,
+                cos_theta * sin_center_azimuth,
+                -sin_theta,
+            ])
+            normal_dot = theta_rate * forward
+            meridian_tangent = forward
+            meridian_tangent_dot = -theta_rate * normal
+
+            heading_blend_time = min(self.sphere_circle_orient_time_s, transfer_time)
+            heading_blend_start = transfer_time - heading_blend_time
+            if phase_elapsed > heading_blend_start:
+                heading_elapsed = phase_elapsed - heading_blend_start
+                heading_h, heading_dh, _ = self._quintic_profile(
+                    heading_elapsed / heading_blend_time
+                )
+                final_heading = 0.5 * math.pi
+                if self.sphere_circle_heading_relief:
+                    final_heading += self.sphere_circle_heading_offset_rad
+                heading = final_heading * heading_h
+                heading_rate = final_heading * heading_dh / heading_blend_time
+            else:
+                heading = 0.0
+                heading_rate = 0.0
+
+            forward = (
+                math.cos(heading) * meridian_tangent
+                + math.sin(heading) * circle_tangent_start
+            )
+            forward_dot = (
+                math.cos(heading) * meridian_tangent_dot
+                + heading_rate * (
+                    -math.sin(heading) * meridian_tangent
+                    + math.cos(heading) * circle_tangent_start
+                )
+            )
+            left = np.cross(normal, forward)
+            left_dot = np.cross(normal_dot, forward) + np.cross(normal, forward_dot)
+            position = self.sphere_center_enu + outer_radius * normal
+            velocity = outer_radius * theta_rate * meridian_tangent
+            acceleration = outer_radius * (
+                theta_accel * meridian_tangent - theta_rate * theta_rate * normal
+            )
+            r_enu_flu = np.column_stack((forward, left, normal))
+            r_dot = np.column_stack((
+                forward_dot,
+                left_dot,
+                normal_dot,
+            ))
+            attitude = self._rotation_to_euler_enu_flu(r_enu_flu)
+            attitude_rate = self._body_rate_from_rotation_derivative(r_enu_flu, r_dot)
+            return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+        phase_elapsed -= transfer_time
+
+        circle_forward_base = circle_tangent_start
+        circle_left_base = np.cross(normal_start, circle_forward_base)
+        start_heading_offset = (
+            self.sphere_circle_heading_offset_rad
+            if self.sphere_circle_heading_relief
+            else 0.0
+        )
+        circle_forward_start = (
+            math.cos(start_heading_offset) * circle_forward_base
+            + math.sin(start_heading_offset) * circle_left_base
+        )
+        circle_left_start = (
+            -math.sin(start_heading_offset) * circle_forward_base
+            + math.cos(start_heading_offset) * circle_left_base
+        )
+        circle_r_start = np.column_stack((
+            circle_forward_start,
+            circle_left_start,
+            normal_start,
+        ))
+        circle_attitude = self._rotation_to_euler_enu_flu(circle_r_start)
+
+        press_time = self.sphere_circle_press_time_s
+        if phase_elapsed < press_time:
+            h, dh, ddh = self._quintic_profile(phase_elapsed / press_time)
+            radius_delta = shell_radius - outer_radius
+            radius = outer_radius + h * radius_delta
+            radius_rate = (dh / press_time) * radius_delta
+            radius_accel = (ddh / (press_time * press_time)) * radius_delta
+            position = self.sphere_center_enu + radius * normal_start
+            velocity = radius_rate * normal_start
+            acceleration = radius_accel * normal_start
+            return (
+                position,
+                velocity,
+                acceleration,
+                circle_attitude,
+                np.zeros(3),
+                circle_r_start,
+            )
+
+        phase_elapsed -= press_time
+        if phase_elapsed < self.sphere_circle_hold_time_s:
+            position = self.sphere_center_enu + shell_radius * normal_start
+            return (
+                position,
+                np.zeros(3),
+                np.zeros(3),
+                circle_attitude,
+                np.zeros(3),
+                circle_r_start,
+            )
+
+        circle_elapsed = phase_elapsed - self.sphere_circle_hold_time_s
+        nominal_rate = 2.0 * math.pi / self.sphere_circle_period_s
+        ramp_time = self.sphere_circle_ramp_time_s
+        if circle_elapsed < ramp_time:
+            q = float(np.clip(circle_elapsed / ramp_time, 0.0, 1.0))
+            h, dh, _ = self._quintic_profile(q)
+            azimuth_rate = nominal_rate * h
+            azimuth_accel = nominal_rate * dh / ramp_time
+            integrated_profile = 2.5 * q ** 4 - 3.0 * q ** 5 + q ** 6
+            azimuth = nominal_rate * ramp_time * integrated_profile
+        else:
+            azimuth_rate = nominal_rate
+            azimuth_accel = 0.0
+            azimuth = nominal_rate * (circle_elapsed - 0.5 * ramp_time)
+
+        sin_azimuth = math.sin(azimuth)
+        cos_azimuth = math.cos(azimuth)
+        radial_offset = (
+            cos_azimuth * circle_up
+            + sin_azimuth * circle_side
+        )
+        radial_offset_azimuth = (
+            -sin_azimuth * circle_up
+            + cos_azimuth * circle_side
+        )
+        radial_offset_azimuth2 = -radial_offset
+        normal = (
+            cos_circle_radius * circle_center_normal
+            + sin_circle_radius * radial_offset
+        )
+        normal_azimuth = sin_circle_radius * radial_offset_azimuth
+        normal_azimuth2 = sin_circle_radius * radial_offset_azimuth2
+        forward_base = radial_offset_azimuth
+        forward_base_azimuth = radial_offset_azimuth2
+        left_base = np.cross(normal, forward_base)
+        left_base_azimuth = np.cross(normal_azimuth, forward_base) + np.cross(
+            normal, forward_base_azimuth
+        )
+        heading_offset = 0.0
+        heading_offset_azimuth = 0.0
+        if self.sphere_circle_heading_relief:
+            heading_offset = self.sphere_circle_heading_offset_rad + azimuth
+            heading_offset_azimuth = 1.0
+        cos_heading = math.cos(heading_offset)
+        sin_heading = math.sin(heading_offset)
+        forward = cos_heading * forward_base + sin_heading * left_base
+        left = -sin_heading * forward_base + cos_heading * left_base
+        forward_azimuth = (
+            cos_heading * forward_base_azimuth
+            + sin_heading * left_base_azimuth
+            + heading_offset_azimuth
+            * (-sin_heading * forward_base + cos_heading * left_base)
+        )
+        left_azimuth = (
+            -sin_heading * forward_base_azimuth
+            + cos_heading * left_base_azimuth
+            + heading_offset_azimuth
+            * (-cos_heading * forward_base - sin_heading * left_base)
+        )
+
+        position = self.sphere_center_enu + shell_radius * normal
+        velocity = shell_radius * normal_azimuth * azimuth_rate
+        acceleration = shell_radius * (
+            normal_azimuth2 * azimuth_rate * azimuth_rate
+            + normal_azimuth * azimuth_accel
+        )
+        r_enu_flu = np.column_stack((forward, left, normal))
+        r_dot = azimuth_rate * np.column_stack((
+            forward_azimuth,
+            left_azimuth,
+            normal_azimuth,
+        ))
+        attitude = self._rotation_to_euler_enu_flu(r_enu_flu)
+        attitude_rate = self._body_rate_from_rotation_derivative(r_enu_flu, r_dot)
+        return position, velocity, acceleration, attitude, attitude_rate, r_enu_flu
+
+    def _single_side_hover_reference(self, elapsed: float):
+        roll_time = self.single_side_roll_time_s
+        if elapsed < roll_time:
+            h, dh, _ = self._quintic_profile(elapsed / roll_time)
+            roll = h * self.single_side_hover_roll_rad
+            pitch = h * self.single_side_hover_pitch_rad
+            roll_rate = (
+                dh * self.single_side_hover_roll_rad / max(roll_time, 1e-3)
+            )
+            pitch_rate = (
+                dh * self.single_side_hover_pitch_rad / max(roll_time, 1e-3)
+            )
+            self.single_side_failure_blend = 0.0
+            self.single_side_support_axis_active = False
+        else:
+            roll = self.single_side_hover_roll_rad
+            pitch = self.single_side_hover_pitch_rad
+            roll_rate = 0.0
+            pitch_rate = 0.0
+            self.single_side_support_axis_active = True
+            failure_elapsed = (
+                elapsed - roll_time - self.single_side_settle_time_s
+            )
+            if failure_elapsed <= 0.0:
+                self.single_side_failure_blend = 0.0
+            elif failure_elapsed < self.single_side_failure_ramp_time_s:
+                h, _, _ = self._quintic_profile(
+                    failure_elapsed / self.single_side_failure_ramp_time_s
+                )
+                self.single_side_failure_blend = float(h)
+            else:
+                self.single_side_failure_blend = 1.0
+                if not self.single_side_failure_announced:
+                    failed_side = (
+                        'left Motor 3/4'
+                        if self.single_side_fail_left
+                        else 'right Motor 1/2'
+                    )
+                    self.get_logger().warn(
+                        f'SINGLE-SIDE FAILURE ACTIVE: {failed_side}=0, '
+                        'single-side collective/cyclic allocation active'
+                    )
+                    self.single_side_failure_announced = True
+
+        r_enu_flu = (
+            self._rotation_z(self.auto_traj_yaw)
+            @ self._rotation_y(pitch)
+            @ self._rotation_x(roll)
+        )
+        attitude = np.array([roll, pitch, self.auto_traj_yaw], dtype=float)
+        attitude_rate = np.array([
+            roll_rate,
+            pitch_rate * math.cos(roll),
+            -pitch_rate * math.sin(roll),
+        ], dtype=float)
+        return (
+            self.auto_traj_start_pos.copy(),
+            np.zeros(3),
+            np.zeros(3),
+            attitude,
+            attitude_rate,
+            r_enu_flu,
+        )
+
     def _update_auto_trajectory(self, current_time: float):
+        branch_transfer_active = (
+            self.auto_traj_mode == 'sphere_circle'
+            and any(
+                transition is not None
+                for transition in self._gimbal_branch_transitions
+            )
+        )
+        if branch_transfer_active:
+            self.auto_traj_start_time += self._last_control_dt_s
+
         elapsed = max(0.0, current_time - self.auto_traj_start_time)
+        if self.auto_traj_mode in ('sphere', 'sphere_points', 'sphere_circle'):
+            if self.auto_traj_mode == 'sphere':
+                reference = self._sphere_reference(elapsed)
+            elif self.auto_traj_mode == 'sphere_points':
+                reference = self._sphere_point_reference(elapsed)
+            else:
+                reference = self._sphere_circle_reference(elapsed)
+            pos, vel, acc, attitude, attitude_rate, r_enu_flu = reference
+            if branch_transfer_active:
+                vel = np.zeros(3)
+                acc = np.zeros(3)
+                attitude_rate = np.zeros(3)
+            self.manual_des_pos = pos.copy()
+            self.manual_des_yaw = attitude[2]
+            self.manual_des_pitch = attitude[1]
+            self._last_manual_cmd = self._zero_manual_cmd()
+            self.target_position = pos
+            self.target_velocity = vel
+            self.target_acceleration = acc
+            self.target_attitude = attitude
+            self.target_attitude_rate = attitude_rate
+            self.target_R_des_ned_frd = self._enu_flu_to_ned_frd_rotation(r_enu_flu)
+            return True
+
+        if self.auto_traj_mode == 'single_side_hover':
+            pos, vel, acc, attitude, attitude_rate, r_enu_flu = (
+                self._single_side_hover_reference(elapsed)
+            )
+            self.manual_des_pos = pos.copy()
+            self.manual_des_yaw = attitude[2]
+            self.manual_des_pitch = attitude[1]
+            self._last_manual_cmd = self._zero_manual_cmd()
+            self.target_position = pos
+            self.target_velocity = vel
+            self.target_acceleration = acc
+            self.target_attitude = attitude
+            self.target_attitude_rate = attitude_rate
+            self.target_R_des_ned_frd = self._enu_flu_to_ned_frd_rotation(
+                r_enu_flu
+            )
+            return True
+
         if self.auto_traj_mode == 'attitude':
             attitude, attitude_rate, r_des_ned_frd, done = self._attitude_reference(elapsed)
             if done:
@@ -1985,6 +2906,203 @@ class HnuterController(Node):
         return float(np.clip(unwrapped, -limit, limit))
 
     @staticmethod
+    def _gimbal_angle_candidates(
+        alpha, theta, previous_alpha, previous_theta, alpha_limit, theta_limit
+    ):
+        candidates = []
+
+        for branch, raw_alpha, candidate_theta in (
+            (0, alpha, theta),
+            (1, alpha + math.pi, math.pi - theta),
+            (2, alpha + math.pi, -math.pi - theta),
+        ):
+            for turn in range(-2, 3):
+                candidate_alpha = raw_alpha + turn * 2.0 * math.pi
+                if (
+                    abs(candidate_alpha) <= alpha_limit + 1e-6
+                    and abs(candidate_theta) <= theta_limit + 1e-6
+                ):
+                    cost = (
+                        (candidate_alpha - previous_alpha) ** 2
+                        + (candidate_theta - previous_theta) ** 2
+                    )
+                    candidates.append(
+                        (cost, candidate_alpha, candidate_theta, branch)
+                    )
+        return candidates
+
+    @classmethod
+    def _continuous_gimbal_angles(
+        cls, alpha, theta, previous_alpha, previous_theta, alpha_limit, theta_limit
+    ):
+        candidates = cls._gimbal_angle_candidates(
+            alpha,
+            theta,
+            previous_alpha,
+            previous_theta,
+            alpha_limit,
+            theta_limit,
+        )
+
+        if not candidates:
+            return (
+                float(np.clip(alpha, -alpha_limit, alpha_limit)),
+                float(np.clip(theta, -theta_limit, theta_limit)),
+            )
+
+        _, selected_alpha, selected_theta, _ = min(
+            candidates, key=lambda candidate: candidate[0]
+        )
+        return float(selected_alpha), float(selected_theta)
+
+    def _gimbal_branch_transition_target(
+        self,
+        index,
+        alpha,
+        theta,
+        previous_alpha,
+        previous_theta,
+        alpha_limit,
+        theta_limit,
+        dt,
+    ):
+        candidates = self._gimbal_angle_candidates(
+            alpha,
+            theta,
+            previous_alpha,
+            previous_theta,
+            alpha_limit,
+            theta_limit,
+        )
+        if not candidates:
+            return (
+                float(np.clip(alpha, -alpha_limit, alpha_limit)),
+                float(np.clip(theta, -theta_limit, theta_limit)),
+            )
+
+        selected = min(candidates, key=lambda candidate: candidate[0])
+        state = self._gimbal_branch_transitions[index]
+
+        # Move to the redundant representation before alpha reaches its hard
+        # stop. At theta=+/-90 deg the thrust direction is independent of
+        # alpha, so the 180 deg alpha branch change can occur without sweeping
+        # the thrust vector through an invalid direction.
+        if (
+            state is None
+            and self.gimbal_branch_transfer_enabled
+            and all(transition is None for transition in self._gimbal_branch_transitions)
+            and abs(selected[1]) >= math.radians(140.0)
+        ):
+            alternatives = [
+                candidate
+                for candidate in candidates
+                if (
+                    candidate[3] != selected[3]
+                    and candidate[2] * selected[2] > 0.0
+                    and abs(candidate[2]) >= math.radians(90.0)
+                    and abs(candidate[1]) <= math.radians(60.0)
+                )
+            ]
+            if alternatives:
+                alternative = min(
+                    alternatives,
+                    key=lambda candidate: (
+                        abs(candidate[2] - selected[2]),
+                        abs(candidate[1]),
+                    ),
+                )
+                singular_theta = math.copysign(math.pi / 2.0, selected[2])
+                state = {
+                    'phase': 'to_singular',
+                    'phase_elapsed': 0.0,
+                    'branch': alternative[3],
+                    'alpha_hold': previous_alpha,
+                    'alpha_target': alternative[1],
+                    'singular_theta': singular_theta,
+                    'rotate_hold_s': max(
+                        0.45,
+                        abs(alternative[1] - previous_alpha) / 8.0 + 0.20,
+                    ),
+                }
+                self._gimbal_branch_transitions[index] = state
+                self.get_logger().info(
+                    f'Gimbal {index + 1}: branch transfer started at '
+                    f'alpha={math.degrees(previous_alpha):+.1f} deg, '
+                    f'theta={math.degrees(previous_theta):+.1f} deg'
+                )
+
+        if state is None:
+            return float(selected[1]), float(selected[2])
+
+        branch_candidates = [
+            candidate for candidate in candidates if candidate[3] == state['branch']
+        ]
+        if branch_candidates:
+            final = min(
+                branch_candidates,
+                key=lambda candidate: abs(candidate[1] - state['alpha_target']),
+            )
+            state['alpha_target'] = final[1]
+        else:
+            final = selected
+
+        state['phase_elapsed'] += max(0.0, dt)
+        singular_theta = state['singular_theta']
+
+        if state['phase'] == 'to_singular':
+            if (
+                abs(previous_theta - singular_theta) <= math.radians(1.0)
+                and state['phase_elapsed'] >= 0.15
+            ):
+                state['phase'] = 'rotate_alpha'
+                state['phase_elapsed'] = 0.0
+                self.get_logger().info(
+                    f'Gimbal {index + 1}: rotating alpha at '
+                    f'theta={math.degrees(singular_theta):+.0f} deg'
+                )
+            theta_target = self._slew_limit(
+                previous_theta,
+                singular_theta,
+                math.radians(10.0),
+                dt,
+            )
+            return float(state['alpha_hold']), float(theta_target)
+
+        if state['phase'] == 'rotate_alpha':
+            if (
+                abs(previous_alpha - state['alpha_target']) <= math.radians(2.0)
+                and state['phase_elapsed'] >= state['rotate_hold_s']
+            ):
+                state['phase'] = 'exit_singular'
+                state['phase_elapsed'] = 0.0
+                self.get_logger().info(
+                    f'Gimbal {index + 1}: alpha branch changed, leaving singular'
+                )
+            alpha_target = self._slew_limit(
+                previous_alpha,
+                state['alpha_target'],
+                4.0,
+                dt,
+            )
+            return float(alpha_target), float(singular_theta)
+
+        if (
+            abs(previous_alpha - final[1]) <= math.radians(2.0)
+            and abs(previous_theta - final[2]) <= math.radians(2.0)
+            and state['phase_elapsed'] >= 0.10
+        ):
+            self._gimbal_branch_transitions[index] = None
+            self.get_logger().info(f'Gimbal {index + 1}: branch transfer complete')
+
+        theta_target = self._slew_limit(
+            previous_theta,
+            final[2],
+            math.radians(10.0),
+            dt,
+        )
+        return float(final[1]), float(theta_target)
+
+    @staticmethod
     def _thrust_to_normalized_motor_control(thrust, motor_constant=8.54858e-05,
                                             min_velocity=10.0, max_velocity=1000.0):
         if thrust <= 0.0:
@@ -2053,7 +3171,10 @@ class HnuterController(Node):
         pos_rel_z = self.position[2] - self._z0 if self._z0_initialized else self.position[2]
         speed_xy = float(np.linalg.norm(self.velocity[:2]))
 
-        if self.direct_safety_attitude_check_enabled and self.auto_traj_mode != 'attitude':
+        if self.direct_safety_attitude_check_enabled and self.auto_traj_mode not in (
+            'attitude', 'sphere', 'sphere_points', 'sphere_circle',
+            'single_side_hover',
+        ):
             roll = float(np.arctan2(self.R[2, 1], self.R[2, 2]))
             pitch = float(np.arcsin(np.clip(-self.R[2, 0], -1.0, 1.0)))
             if pos_rel_z > 0.15 and abs(roll) > self.direct_safety_pitch_limit_rad:
@@ -2123,8 +3244,13 @@ class HnuterController(Node):
             or pos_rel_z < self.direct_takeoff_vertical_only_height_m
         )
 
-        auto_attitude_active = self.auto_traj_mode == 'attitude'
-        attitude_altitude_only_active = auto_attitude_active and self.attitude_test_altitude_only
+        auto_attitude_active = self.auto_traj_mode in (
+            'attitude', 'sphere', 'sphere_points', 'sphere_circle',
+            'single_side_hover',
+        )
+        attitude_altitude_only_active = (
+            self.auto_traj_mode == 'attitude' and self.attitude_test_altitude_only
+        )
 
         if xy_lock_active and self._xy_lock_initialized:
             pos_sp_ned[0] = float(self._xy_lock_position[1])
@@ -2147,10 +3273,15 @@ class HnuterController(Node):
             self.integral_pos_error[0] = 0.0
             self.integral_pos_error[1] = 0.0
 
-        self.integral_pos_error += pos_error * dt
-        self.integral_pos_error[0] = float(np.clip(self.integral_pos_error[0], -1.0, 1.0))
-        self.integral_pos_error[1] = float(np.clip(self.integral_pos_error[1], -1.0, 1.0))
-        self.integral_pos_error[2] = float(np.clip(self.integral_pos_error[2], -2.0, 2.0))
+        if self.auto_traj_mode in ('sphere', 'sphere_points', 'sphere_circle'):
+            # The commanded point is intentionally inside the collision surface.
+            # Integrating that unreachable radial error would saturate the wrench.
+            self.integral_pos_error[:] = 0.0
+        else:
+            self.integral_pos_error += pos_error * dt
+            self.integral_pos_error[0] = float(np.clip(self.integral_pos_error[0], -1.0, 1.0))
+            self.integral_pos_error[1] = float(np.clip(self.integral_pos_error[1], -1.0, 1.0))
+            self.integral_pos_error[2] = float(np.clip(self.integral_pos_error[2], -2.0, 2.0))
 
         Kp = np.diag([2.5, 2.5, 8.0])
         if xy_lock_active:
@@ -2175,6 +3306,11 @@ class HnuterController(Node):
             f_body[0] = 0.0
             f_body[1] = 0.0
 
+        active_theta_limit = (
+            self.sphere_circle_theta_limit_rad
+            if self.auto_traj_mode in ('sphere_circle', 'single_side_hover')
+            else self.theta_limit_rad
+        )
         tilt_limit = (
             self.takeoff_tilt_limit_rad if tilt_suppress_active
             else (self.xy_lock_tilt_limit_rad if xy_lock_active else self.alpha_limit_rad)
@@ -2193,9 +3329,10 @@ class HnuterController(Node):
         else:
             # Full-circle primary tilt has no forward/backward cone boundary.
             # Only the secondary tilt limits the lateral force component.
-            xz_force = float(np.linalg.norm(f_body[[0, 2]]))
-            max_y = xz_force * math.tan(self.theta_limit_rad)
-            f_body[1] = float(np.clip(f_body[1], -max_y, max_y))
+            if active_theta_limit < math.radians(89.5):
+                xz_force = float(np.linalg.norm(f_body[[0, 2]]))
+                max_y = xz_force * math.tan(active_theta_limit)
+                f_body[1] = float(np.clip(f_body[1], -max_y, max_y))
 
         manual_yaw_active = abs(float(self._last_manual_cmd.get('yaw_rate', 0.0))) > 1e-5
 
@@ -2204,8 +3341,50 @@ class HnuterController(Node):
             if self.target_R_des_ned_frd is not None
             else self._direct_desired_attitude_ned_frd(self.target_attitude)
         )
+        single_side_body_y_des = None
+        if (
+            self.auto_traj_mode == 'single_side_hover'
+            and self.single_side_support_axis_active
+        ):
+            # Helicopter-like fault mode: orient the surviving arm's body-Y
+            # collective axis along the requested world force. Position is
+            # then controlled through attitude instead of asking one arm to
+            # independently realize an infeasible six-axis wrench.
+            force_norm = float(np.linalg.norm(f_world))
+            if force_norm > 1e-5:
+                body_y_des = -f_world / force_norm
+                body_x_hint = R_des[:, 0]
+                body_x_des = (
+                    body_x_hint
+                    - body_y_des * float(np.dot(body_y_des, body_x_hint))
+                )
+                body_x_norm = float(np.linalg.norm(body_x_des))
+                if body_x_norm < 1e-5:
+                    body_x_hint = R_des[:, 2]
+                    body_x_des = (
+                        body_x_hint
+                        - body_y_des * float(np.dot(body_y_des, body_x_hint))
+                    )
+                    body_x_norm = float(np.linalg.norm(body_x_des))
+                body_x_des /= max(body_x_norm, 1e-5)
+                body_z_des = np.cross(body_x_des, body_y_des)
+                R_des = np.column_stack((
+                    body_x_des,
+                    body_y_des,
+                    body_z_des,
+                ))
+                single_side_body_y_des = body_y_des
         e_rm = 0.5 * (R_des.T @ self.R_ned_frd - self.R_ned_frd.T @ R_des)
         e_R = np.array([e_rm[2, 1], e_rm[0, 2], e_rm[1, 0]], dtype=float)
+        if single_side_body_y_des is not None:
+            # Rotation about the collective axis is intentionally free. Only
+            # align the surviving arm with the requested force direction.
+            body_y_current = self.R_ned_frd[:, 1]
+            axis_error_world = np.cross(
+                single_side_body_y_des,
+                body_y_current,
+            )
+            e_R = self.R_ned_frd.T @ axis_error_world
         self.integral_e_R += e_R * dt
         self.integral_e_R = np.clip(self.integral_e_R, -1.5, 1.5)
 
@@ -2234,6 +3413,15 @@ class HnuterController(Node):
             tau_limit = self.direct_tau_limit
 
         tau_c = -KR * e_R - Domega * omega_error
+        if (
+            self.auto_traj_mode == 'single_side_hover'
+            and self.single_side_support_axis_active
+        ):
+            # Body-Y heading is underactuated once one arm is gone. Damping
+            # that free spin avoids feeding a permanent heading error into
+            # cyclic force.
+            tau_c[1] = -Domega[1] * self.angular_velocity_frd[1]
+            self.integral_e_R[1] = 0.0
         if not self.direct_yaw_control_enabled:
             tau_c[2] = 0.0
         tau_c = np.clip(tau_c, -tau_limit, tau_limit)
@@ -2300,26 +3488,89 @@ class HnuterController(Node):
         u3 = -W[1] / 2.0
         u6 = -W[1] / 2.0
 
+        if self.auto_traj_mode == 'single_side_hover':
+            failure_blend = float(np.clip(
+                self.single_side_failure_blend, 0.0, 1.0
+            ))
+            if self.single_side_fail_left:
+                single_u4 = W[5] / self.l1
+                single_u6 = -W[1]
+                single_u5 = (r_z * single_u6 - W[3]) / self.l1
+                single_F3 = (
+                    W[4] - r_z * single_u4 + r_x * single_u5
+                ) / self.l2
+                u4 = (1.0 - failure_blend) * u4 + failure_blend * single_u4
+                u5 = (1.0 - failure_blend) * u5 + failure_blend * single_u5
+                u6 = (1.0 - failure_blend) * u6 + failure_blend * single_u6
+                u1 *= 1.0 - failure_blend
+                u2 *= 1.0 - failure_blend
+                u3 *= 1.0 - failure_blend
+                F3 = (
+                    (1.0 - failure_blend) * F3
+                    + failure_blend * single_F3
+                )
+            else:
+                single_u1 = -W[5] / self.l1
+                single_u3 = -W[1]
+                single_u2 = (W[3] - r_z * single_u3) / self.l1
+                single_F3 = (
+                    W[4] - r_z * single_u1 + r_x * single_u2
+                ) / self.l2
+                u1 = (1.0 - failure_blend) * u1 + failure_blend * single_u1
+                u2 = (1.0 - failure_blend) * u2 + failure_blend * single_u2
+                u3 = (1.0 - failure_blend) * u3 + failure_blend * single_u3
+                u4 *= 1.0 - failure_blend
+                u5 *= 1.0 - failure_blend
+                u6 *= 1.0 - failure_blend
+                F3 = (
+                    (1.0 - failure_blend) * F3
+                    + failure_blend * single_F3
+                )
+
         F1 = math.sqrt(u1 * u1 + u2 * u2 + u3 * u3)
         F2 = math.sqrt(u4 * u4 + u5 * u5 + u6 * u6)
         eps = 1e-8
         alpha1 = math.atan2(u1, u2)
         alpha2 = math.atan2(u4, u5)
-        theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -0.99, 0.99)))
-        theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -0.99, 0.99)))
-
+        theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -1.0, 1.0)))
+        theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -1.0, 1.0)))
         F1 = float(np.clip(F1, 0.0, 50.0))
         F2 = float(np.clip(F2, 0.0, 50.0))
         F3 = float(np.clip(F3, -50.0 if self.allow_tail_reverse else 0.0, 50.0))
         alpha_limit = self.alpha_limit_rad
-        theta_limit = self.theta_limit_rad
+        theta_limit = active_theta_limit
         if tilt_suppress_active:
             alpha_limit = self.takeoff_tilt_limit_rad
             theta_limit = self.takeoff_tilt_limit_rad
         elif xy_lock_active:
             alpha_limit = self.xy_lock_tilt_limit_rad
             theta_limit = self.xy_lock_tilt_limit_rad
-        if alpha_limit >= math.radians(179.0):
+        full_gimbal_range = (
+            alpha_limit >= math.radians(179.0)
+            and theta_limit >= math.radians(179.0)
+        )
+        if full_gimbal_range:
+            alpha1, theta1 = self._gimbal_branch_transition_target(
+                0,
+                alpha1,
+                theta1,
+                self._alpha1_cmd,
+                self._theta1_cmd,
+                alpha_limit,
+                theta_limit,
+                dt,
+            )
+            alpha2, theta2 = self._gimbal_branch_transition_target(
+                1,
+                alpha2,
+                theta2,
+                self._alpha2_cmd,
+                self._theta2_cmd,
+                alpha_limit,
+                theta_limit,
+                dt,
+            )
+        elif alpha_limit >= math.radians(179.0):
             alpha1 = self._continuous_bounded_angle(alpha1, self._alpha1_cmd, alpha_limit)
             alpha2 = self._continuous_bounded_angle(alpha2, self._alpha2_cmd, alpha_limit)
         else:
@@ -2375,6 +3626,7 @@ class HnuterController(Node):
             'wrench_tau_x_nm', 'wrench_tau_y_nm', 'wrench_tau_z_nm',
             'allocated_F1_n', 'allocated_F2_n', 'allocated_F3_n',
             'px4_out_motor_age_s', 'px4_out_servo_age_s', 'auto_traj_mode',
+            'single_side_failure_blend', 'single_side_failed_left',
         ]
         columns += [f'cmd_motor_{i}' for i in range(5)]
         columns += [f'cmd_servo_{i}' for i in range(4)]
@@ -2437,6 +3689,8 @@ class HnuterController(Node):
             self._px4_topic_age_s(self.px4_out_motor_timestamp),
             self._px4_topic_age_s(self.px4_out_servo_timestamp),
             self.auto_traj_mode,
+            float(self.single_side_failure_blend),
+            int(self.single_side_fail_left),
         ]
         row += self._diag_values(self.last_motor_cmd, 5)
         row += self._diag_values(self.last_servo_cmd, 4)
@@ -2477,6 +3731,22 @@ class HnuterController(Node):
         target_pitch_deg = float(np.degrees(self.target_attitude[1]))
         target_yaw_deg = float(np.degrees(self.target_attitude[2]))
         continuous_test_pitch_deg = float(np.degrees(self._continuous_attitude_test_pitch_rad()))
+        sphere_status = ''
+        if self.auto_traj_mode in ('sphere', 'sphere_points', 'sphere_circle'):
+            current_rel = np.array([self.position[0], self.position[1], pos_curr_rel_z])
+            actual_radius = float(np.linalg.norm(current_rel - self.sphere_center_enu))
+            target_radius = float(np.linalg.norm(self.target_position - self.sphere_center_enu))
+            sphere_status = (
+                f"Sphere: surface_gap={actual_radius - self.sphere_radius_m:+5.2f}m | "
+                f"shell_error={actual_radius - target_radius:+5.2f}m\n"
+            )
+        failure_status = ''
+        if self.auto_traj_mode == 'single_side_hover':
+            failed_side = 'LEFT M3/4' if self.single_side_fail_left else 'RIGHT M1/2'
+            failure_status = (
+                f"Single-side failure: side={failed_side} | "
+                f"blend={self.single_side_failure_blend:.3f}\n"
+            )
         self.get_logger().info(
             f"\n{'=' * 72}\n"
             f"Mode: Offboard={self.is_offboard()} | Armed={self.armed} | nav_state={self.nav_state} | ctrl≈{control_hz}Hz\n"
@@ -2492,6 +3762,8 @@ class HnuterController(Node):
             f"Tune: step={np.round(np.degrees(self.attitude_step_axis_rad), 1).tolist()}deg | KR={np.round(self.direct_KR, 2).tolist()} | "
             f"D={np.round(self.direct_Domega, 2).tolist()} | tau_lim={np.round(self.direct_tau_limit, 2).tolist()}\n"
             f"Keyboard trajectory: active={self.auto_traj_mode} | pending={self.pending_auto_traj_mode}\n"
+            f"{sphere_status}"
+            f"{failure_status}"
             f"Gamepad: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
             f"vz={self._last_manual_cmd['vz']:+4.2f}, yaw_rate={self._last_manual_cmd['yaw_rate']:+4.2f}, "
             f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}\n"
@@ -2523,7 +3795,7 @@ class HnuterController(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    controller = HnuterController()
+    controller = HnuterSphereSurfaceController()
     try:
         rclpy.spin(controller)
     except KeyboardInterrupt:

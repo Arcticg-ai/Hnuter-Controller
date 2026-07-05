@@ -16,6 +16,7 @@ Hnuter Tiltrotor PX4 External Controller with Gamepad + Keyboard Trajectories
 """
 
 import sys
+import os
 import time
 import math
 import queue
@@ -23,6 +24,12 @@ import select
 import termios
 import threading
 import tty
+
+# PX4 uses fixed DDS topic names. Keep SITL telemetry local unless remote DDS
+# access is explicitly requested, otherwise another PX4 on the LAN can mix in.
+if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
+    os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
+    os.environ.pop('ROS_STATIC_PEERS', None)
 
 import numpy as np
 
@@ -330,7 +337,7 @@ class HnuterController(Node):
         self.angular_velocity_sub = self.create_subscription(
             VehicleAngularVelocity, '/fmu/out/vehicle_angular_velocity', self.angular_velocity_callback, qos_profile_out)
         self.vehicle_status_sub = self.create_subscription(
-            VehicleStatus, '/fmu/out/vehicle_status', self.status_callback, qos_profile_out)
+            VehicleStatus, '/fmu/out/vehicle_status_v1', self.status_callback, qos_profile_out)
         self.vehicle_control_mode_sub = self.create_subscription(
             VehicleControlMode, '/fmu/out/vehicle_control_mode', self.control_mode_callback, qos_profile_out)
         self.vehicle_command_ack_sub = self.create_subscription(
