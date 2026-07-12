@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hnuter Flight Tuning</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Hnuter Flight Tuning</h1>
+      <p id="endpoint">Waiting for flight controller</p>
+    </div>
+    <div class="status-row" aria-label="system status">
+      <span id="dds-status" class="status bad">DDS offline</span>
+      <span id="mav-status" class="status bad">MAVLink offline</span>
+      <span id="mode-status" class="status neutral">Disarmed</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="telemetry" aria-label="live telemetry plots">
+      <div class="toolbar">
+        <label for="history">History</label>
+        <select id="history">
+          <option value="10">10 s</option>
+          <option value="30" selected>30 s</option>
+          <option value="60">60 s</option>
+          <option value="120">120 s</option>
+        </select>
+        <button id="pause" type="button">Pause</button>
+        <button id="clear" type="button">Clear</button>
+        <span id="sample-rate">0 Hz</span>
+      </div>
+
+      <div class="plot-grid">
+        <article class="plot-panel">
+          <div class="plot-title"><span>Attitude tracking</span><span>deg</span></div>
+          <canvas id="attitude-chart"></canvas>
+        </article>
+        <article class="plot-panel">
+          <div class="plot-title"><span>Position tracking (NED)</span><span>m</span></div>
+          <canvas id="position-chart"></canvas>
+        </article>
+        <article class="plot-panel compact">
+          <div class="plot-title"><span>Attitude error</span><span>deg</span></div>
+          <canvas id="error-chart"></canvas>
+        </article>
+        <article class="plot-panel compact">
+          <div class="plot-title"><span>Position error (setpoint - actual)</span><span>m</span></div>
+          <canvas id="position-error-chart"></canvas>
+        </article>
+        <article class="plot-panel compact">
+          <div class="plot-title"><span>Torque setpoint</span><span>normalized</span></div>
+          <canvas id="torque-chart"></canvas>
+        </article>
+        <article class="plot-panel compact">
+          <div class="plot-title"><span>Motor commands</span><span>[-1, 1]</span></div>
+          <canvas id="motor-chart"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <aside class="parameters" aria-label="PX4 parameter tuning">
+      <div class="parameter-header">
+        <div>
+          <h2>Parameters</h2>
+          <p>Applied values are read back from PX4.</p>
+        </div>
+        <button id="reconnect" type="button">Reconnect</button>
+      </div>
+
+      <label class="field-label" for="group-select">Parameter group</label>
+      <select id="group-select"></select>
+      <div id="group-warning" class="warning hidden"></div>
+
+      <div class="parameter-actions">
+        <button id="read-params" type="button">Read group</button>
+        <button id="save-params" type="button" class="danger">Save to PX4</button>
+      </div>
+
+      <div id="parameter-message" class="message" aria-live="polite"></div>
+      <div id="parameter-list" class="parameter-list"></div>
+
+      <section class="snapshot">
+        <h2>Live state</h2>
+        <dl>
+          <dt>Roll</dt><dd id="roll-value">--</dd>
+          <dt>Pitch</dt><dd id="pitch-value">--</dd>
+          <dt>Yaw</dt><dd id="yaw-value">--</dd>
+          <dt>Position</dt><dd id="position-value">--</dd>
+          <dt>Pos. error</dt><dd id="position-error-value">--</dd>
+          <dt>Torque</dt><dd id="torque-value">--</dd>
+          <dt>Motor 5</dt><dd id="motor5-value">--</dd>
+        </dl>
+      </section>
+    </aside>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
