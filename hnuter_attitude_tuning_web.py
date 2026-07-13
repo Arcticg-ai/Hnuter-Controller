@@ -15,6 +15,7 @@ import mimetypes
 import os
 import signal
 import site
+import struct
 import sys
 import threading
 import time
@@ -125,6 +126,8 @@ PARAM_CONFIG = {
     for name, cfg in group.items()
 }
 
+INTEGER_PARAMS = {'HNTR_CTRL_MODE'}
+
 
 def wrap_pi(angle: float) -> float:
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
@@ -218,6 +221,25 @@ class MavlinkParamClient:
             param_id = param_id.decode('utf-8', errors='ignore')
         return str(param_id).strip('\x00')
 
+    @staticmethod
+    def _decode_param_value(msg) -> float:
+        if msg.param_type == mavutil.mavlink.MAV_PARAM_TYPE_INT32:
+            packed = struct.pack('<f', float(msg.param_value))
+            return float(struct.unpack('<i', packed)[0])
+        return float(msg.param_value)
+
+    @staticmethod
+    def _wire_value(name: str, value: float) -> tuple[float, int]:
+        if name in INTEGER_PARAMS:
+            packed = struct.pack('<i', int(round(value)))
+            return struct.unpack('<f', packed)[0], mavutil.mavlink.MAV_PARAM_TYPE_INT32
+        return float(value), mavutil.mavlink.MAV_PARAM_TYPE_REAL32
+
+    def _drain_param_values(self, limit: int = 1024) -> None:
+        for _ in range(limit):
+            if self.master.recv_match(type='PARAM_VALUE', blocking=False) is None:
+                break
+
     def request_param(self, name: str, timeout: float = 1.0) -> Optional[float]:
         if self.master is None:
             return None
@@ -233,33 +255,50 @@ class MavlinkParamClient:
                 while time.monotonic() < deadline:
                     msg = self.master.recv_match(type='PARAM_VALUE', blocking=True, timeout=0.1)
                     if msg is not None and self._param_name(msg) == name:
-                        return float(msg.param_value)
+                        return self._decode_param_value(msg)
             except Exception as exc:  # noqa: BLE001
                 print(f'[PARAM_GET] failed {name}: {exc}')
         return None
 
-    def set_and_confirm(self, name: str, value: float, timeout: float = 1.5) -> Optional[float]:
+    def set_and_confirm(self, name: str, value: float, timeout: float = 1.5) -> tuple[Optional[float], Optional[float]]:
         if self.master is None:
-            return None
+            return None, None
         with self.lock:
             try:
-                self.master.mav.param_set_send(
-                    self.master.target_system,
-                    self.master.target_component,
-                    name.encode('utf-8'),
-                    float(value),
-                    mavutil.mavlink.MAV_PARAM_TYPE_REAL32,
-                )
-                deadline = time.monotonic() + timeout
-                while time.monotonic() < deadline:
-                    msg = self.master.recv_match(type='PARAM_VALUE', blocking=True, timeout=0.1)
-                    if msg is not None and self._param_name(msg) == name:
-                        confirmed = float(msg.param_value)
-                        print(f'[PARAM_SET] {name} requested={value:.6g} confirmed={confirmed:.6g}')
-                        return confirmed
+                wire_value, param_type = self._wire_value(name, value)
+                expected = float(round(value)) if name in INTEGER_PARAMS else float(value)
+                tolerance = 0.0 if name in INTEGER_PARAMS else max(1e-5, abs(expected) * 1e-6)
+                last_observed = None
+
+                for attempt in range(1, 4):
+                    self._drain_param_values()
+                    self.master.mav.param_set_send(
+                        self.master.target_system,
+                        self.master.target_component,
+                        name.encode('utf-8'),
+                        wire_value,
+                        param_type,
+                    )
+                    deadline = time.monotonic() + timeout
+                    while time.monotonic() < deadline:
+                        msg = self.master.recv_match(type='PARAM_VALUE', blocking=True, timeout=0.1)
+                        if msg is None or self._param_name(msg) != name:
+                            continue
+                        last_observed = self._decode_param_value(msg)
+                        if abs(last_observed - expected) <= tolerance:
+                            print(
+                                f'[PARAM_SET] {name} requested={expected:.6g} '
+                                f'confirmed={last_observed:.6g} attempt={attempt}'
+                            )
+                            return last_observed, last_observed
+                        print(
+                            f'[PARAM_SET] stale/mismatched confirmation {name} '
+                            f'requested={expected:.6g} observed={last_observed:.6g} attempt={attempt}'
+                        )
+                return None, last_observed
             except Exception as exc:  # noqa: BLE001
                 print(f'[PARAM_SET] failed {name}: {exc}')
-        return None
+        return None, None
 
     def save(self) -> bool:
         if self.master is None:
@@ -635,9 +674,13 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
         if not math.isfinite(value) or value < cfg['min'] or value > cfg['max']:
             self._error(f"value must be in [{cfg['min']}, {cfg['max']}]")
             return
-        confirmed = self.tuning_server.mavlink.set_and_confirm(name, value)
+        confirmed, observed = self.tuning_server.mavlink.set_and_confirm(name, value)
         if confirmed is None:
-            self._error('PX4 did not confirm the parameter', HTTPStatus.GATEWAY_TIMEOUT)
+            detail = '' if observed is None else f'; PX4 still reports {observed:.6g}'
+            self._error(
+                f'PX4 did not confirm requested value {value:.6g}{detail}',
+                HTTPStatus.GATEWAY_TIMEOUT,
+            )
             return
         self._send_json({'ok': True, 'name': name, 'requested': value, 'confirmed': confirmed})
 

@@ -24,6 +24,7 @@ let latestMode = {armed: false, posctl: false, offboard: false};
 let drawPending = false;
 let receivedSinceRate = 0;
 let rateStarted = performance.now();
+let parameterLoadGeneration = 0;
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -330,8 +331,12 @@ function renderParameterGroup() {
       </div>`;
     const range = row.querySelector('.range');
     const number = row.querySelector('.number');
-    range.addEventListener('input', () => { number.value = range.value; });
-    number.addEventListener('input', () => { range.value = number.value; });
+    const markEdited = () => {
+      row.classList.add('dirty');
+      row.querySelector('.confirmed').textContent = 'edited, not applied';
+    };
+    range.addEventListener('input', () => { number.value = range.value; markEdited(); });
+    number.addEventListener('input', () => { range.value = number.value; markEdited(); });
     row.querySelector('.apply').addEventListener('click', () => applyParameter(row));
     list.appendChild(row);
   }
@@ -340,14 +345,16 @@ function renderParameterGroup() {
 
 async function loadParameters() {
   const group = $('#group-select').value;
+  const generation = ++parameterLoadGeneration;
   const button = $('#read-params');
   button.disabled = true;
   showMessage(`Reading ${group} from PX4...`);
   try {
     const response = await api(`/api/params?group=${encodeURIComponent(group)}`);
+    if (generation !== parameterLoadGeneration || group !== $('#group-select').value) return;
     for (const [name, value] of Object.entries(response.values)) {
       const row = document.querySelector(`.parameter-row[data-name="${name}"]`);
-      if (!row || !finite(value)) continue;
+      if (!row || !finite(value) || row.classList.contains('dirty') || row.classList.contains('applying')) continue;
       row.querySelector('.range').value = value;
       row.querySelector('.number').value = value;
       row.querySelector('.confirmed').textContent = `PX4 ${Number(value).toPrecision(6)}`;
@@ -365,7 +372,12 @@ async function applyParameter(row) {
   const name = row.dataset.name;
   const value = Number(row.querySelector('.number').value);
   const button = row.querySelector('.apply');
+  if (!Number.isFinite(value)) {
+    showMessage(`${name}: invalid value`, 'error');
+    return;
+  }
   button.disabled = true;
+  row.classList.add('applying');
   showMessage(`Applying ${name}...`);
   try {
     const response = await api('/api/params/set', {
@@ -374,10 +386,12 @@ async function applyParameter(row) {
     row.querySelector('.range').value = response.confirmed;
     row.querySelector('.number').value = response.confirmed;
     row.querySelector('.confirmed').textContent = `PX4 ${Number(response.confirmed).toPrecision(6)}`;
+    row.classList.remove('dirty');
     showMessage(`${name} confirmed by PX4`, 'success');
   } catch (error) {
     showMessage(`${name}: ${error.message}`, 'error');
   } finally {
+    row.classList.remove('applying');
     button.disabled = false;
   }
 }

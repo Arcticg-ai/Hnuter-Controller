@@ -157,6 +157,8 @@ canvas { display: block; width: 100%; height: calc(100% - 30px); }
   font-size: 12px;
 }
 .confirmed { color: var(--muted); }
+.parameter-row.dirty .confirmed { color: var(--warning); }
+.parameter-row.applying { background: #f4f8fc; }
 .parameter-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 84px 58px;
