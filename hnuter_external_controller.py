@@ -368,6 +368,7 @@ class HnuterController(Node):
         self.R = np.eye(3)                # ENU <- FLU
         self.nav_state = None
         self.control_offboard_enabled = False
+        self._vehicle_control_mode_received = False
         self.armed = False
         self.data_received = False
         self.local_position_received = False
@@ -635,11 +636,12 @@ class HnuterController(Node):
         self.angular_velocity = np.array([msg.xyz[0], -msg.xyz[1], -msg.xyz[2]], dtype=float)
 
     def status_callback(self, msg):
-        self.armed = (int(msg.arming_state) == self.ARMING_STATE_ARMED)
         self.nav_state = int(getattr(msg, 'nav_state', -1))
 
     def control_mode_callback(self, msg):
         self.control_offboard_enabled = bool(getattr(msg, 'flag_control_offboard_enabled', False))
+        self._vehicle_control_mode_received = True
+        self.armed = bool(getattr(msg, 'flag_armed', False))
 
     def vehicle_command_ack_callback(self, msg):
         command = int(msg.command)
@@ -677,7 +679,7 @@ class HnuterController(Node):
         self.publish_offboard_control_mode()
 
         # 2) 未收到状态数据前不切模式、不解锁。
-        if not self.data_received or self.px4_timestamp <= 0:
+        if not self.data_received or self.px4_timestamp <= 0 or not self._vehicle_control_mode_received:
             return
 
         # Offboard 切换前也要持续发送对应 setpoint，避免 commander 因 setpoint 不完整而拒绝。
