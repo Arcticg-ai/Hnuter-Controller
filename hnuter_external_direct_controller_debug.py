@@ -30,7 +30,6 @@ import select
 import termios
 import threading
 import tty
-from collections import deque
 from pathlib import Path
 
 # PX4 uses fixed DDS topic names. Keep SITL telemetry local unless remote DDS
@@ -518,18 +517,9 @@ class HnuterController(Node):
         self._alpha2_cmd = 0.0
         self._theta1_cmd = 0.0
         self._theta2_cmd = 0.0
-        # Identified command-to-joint dynamics. Channel order follows PX4/GZ:
-        # right primary, left primary, right secondary, left secondary.
-        self._tilt_est_angle = np.zeros(4)
-        self._tilt_delay_history = [deque() for _ in range(4)]
-        self._tilt_gain_positive = np.array([1.404, 1.404, 0.705, 0.705])
-        self._tilt_gain_negative = np.array([1.423, 1.423, 0.695, 0.695])
-        self._tilt_tau_positive = np.array([0.076, 0.076, 0.153, 0.153])
-        self._tilt_tau_negative = np.array([0.065, 0.065, 0.149, 0.149])
-        self._tilt_delay_positive = np.array([0.110, 0.110, 0.156, 0.156])
-        self._tilt_delay_negative = np.array([0.106, 0.106, 0.137, 0.137])
-        self._tilt_rate_positive = np.array([6.082, 6.082, 3.252, 3.252])
-        self._tilt_rate_negative = np.array([5.419, 5.419, 2.886, 2.886])
+        # Static transmission calibration only. Delay, lag and rate limits
+        # belong to the plant and must not be applied again by this controller.
+        self._tilt_static_gain = np.array([1.414, 1.414, 0.700, 0.700])
         self.direct_gain_ramp_time_s = 6.0
 
         self.integral_pos_error = np.zeros(3)
@@ -1356,46 +1346,10 @@ class HnuterController(Node):
         )
 
     def _physical_tilt_to_normalized(self, angle: float, channel: int) -> float:
-        """Invert the identified static transmission gain before actuator output."""
-        gain = (
-            self._tilt_gain_positive[channel]
-            if angle >= 0.0 else self._tilt_gain_negative[channel]
-        )
+        """Invert static transmission gain without predicting plant dynamics."""
+        gain = self._tilt_static_gain[channel]
         nominal_range = math.radians(185.0 if channel < 2 else 180.0)
         return float(np.clip(angle / max(gain * nominal_range, 1e-6), -1.0, 1.0))
-
-    def _update_realized_tilt_estimate(self, now_s: float, target_angles, dt: float) -> np.ndarray:
-        """Estimate joint angles after pure delay, first-order lag and rate limit."""
-        targets = np.asarray(target_angles, dtype=float)
-        dt = float(np.clip(dt, 0.0, 0.05))
-        for channel in range(4):
-            history = self._tilt_delay_history[channel]
-            history.append((now_s, float(targets[channel])))
-            positive = targets[channel] - self._tilt_est_angle[channel] >= 0.0
-            delay = float(
-                self._tilt_delay_positive[channel] if positive
-                else self._tilt_delay_negative[channel]
-            )
-            cutoff = now_s - delay
-            while len(history) > 1 and history[1][0] <= cutoff:
-                history.popleft()
-            delayed_target = self._tilt_est_angle[channel]
-            if history and history[0][0] <= cutoff:
-                delayed_target = history[0][1]
-
-            positive = delayed_target - self._tilt_est_angle[channel] >= 0.0
-            tau = float(
-                self._tilt_tau_positive[channel] if positive
-                else self._tilt_tau_negative[channel]
-            )
-            rate = float(
-                self._tilt_rate_positive[channel] if positive
-                else self._tilt_rate_negative[channel]
-            )
-            alpha = 1.0 - math.exp(-dt / max(tau, 1e-4))
-            delta = alpha * (delayed_target - self._tilt_est_angle[channel])
-            self._tilt_est_angle[channel] += float(np.clip(delta, -rate * dt, rate * dt))
-        return self._tilt_est_angle.copy()
 
     def publish_direct_actuator_setpoint(self, motor_controls, alpha1, alpha2, theta1, theta2):
         timestamp = self.timestamp_now_us()
@@ -2479,8 +2433,8 @@ class HnuterController(Node):
         theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -0.99, 0.99)))
         theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -0.99, 0.99)))
 
-        desired_left = np.array([u1, u2, u3], dtype=float)
-        desired_right = np.array([u4, u5, u6], dtype=float)
+        F1 = float(np.clip(F1, 0.0, 50.0))
+        F2 = float(np.clip(F2, 0.0, 50.0))
         F3 = float(np.clip(F3, -50.0 if self.allow_tail_reverse else 0.0, 50.0))
         alpha_limit = self.alpha_limit_rad
         theta_limit = self.theta_limit_rad
@@ -2505,27 +2459,6 @@ class HnuterController(Node):
         self._theta1_cmd = self._slew_limit(self._theta1_cmd, theta1, self.servo_rate_limit_rad_s, dt_slew)
         self._theta2_cmd = self._slew_limit(self._theta2_cmd, theta2, self.servo_rate_limit_rad_s, dt_slew)
 
-        realized = self._update_realized_tilt_estimate(
-            current_time,
-            [self._alpha2_cmd, self._alpha1_cmd, self._theta2_cmd, self._theta1_cmd],
-            dt_slew,
-        )
-        alpha2_est, alpha1_est, theta2_est, theta1_est = realized
-        direction_left = np.array([
-            math.cos(theta1_est) * math.sin(alpha1_est),
-            math.cos(theta1_est) * math.cos(alpha1_est),
-            math.sin(theta1_est),
-        ])
-        direction_right = np.array([
-            math.cos(theta2_est) * math.sin(alpha2_est),
-            math.cos(theta2_est) * math.cos(alpha2_est),
-            math.sin(theta2_est),
-        ])
-        # Motors follow only the force component achievable at the estimated
-        # joint angles. This prevents immediate motor differential from acting
-        # through the previous tilt direction while a servo is still delayed.
-        F1 = float(np.clip(np.dot(desired_left, direction_left), 0.0, 50.0))
-        F2 = float(np.clip(np.dot(desired_right, direction_right), 0.0, 50.0))
         right_single = 0.5 * F2
         left_single = 0.5 * F1
         motor_controls = [

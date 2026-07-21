@@ -81,6 +81,10 @@ In the debug controller, press `o` to allow takeoff after the ground tilt self-t
 
 By default, direct actuator mode publishes only `actuator_motors` and `actuator_servos` so PX4's internal allocator does not overwrite the external actuator commands.
 
+Direct mode compensates only the static primary/secondary transmission ratio.
+Servo delay, lag, and rate limits are plant properties and are not predicted or
+applied again inside the external controller.
+
 Set `HNUTER_DIRECT_PUBLISH_ALLOCATOR_SETPOINTS=1` only when intentionally comparing against the allocator path.
 
 Generated logs, plots, build products, and Python caches are intentionally ignored.

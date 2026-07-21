@@ -658,8 +658,6 @@ class HnuterController(Node):
             if command == self.CMD_DO_SET_MODE:
                 self.nav_state = self.NAVIGATION_STATE_OFFBOARD
                 self.control_offboard_enabled = True
-            elif command == self.CMD_COMPONENT_ARM_DISARM and self._last_arm_command_param1 is not None:
-                self.armed = self._last_arm_command_param1 > 0.5
             self.get_logger().info(text)
         else:
             self.get_logger().warn(text)
@@ -694,29 +692,21 @@ class HnuterController(Node):
         # 3) 检测 PX4 是否从 armed 变成 disarmed。
         #    如果已经成功 arm 过一次，之后又被 PX4 自动上锁，默认禁止自动二次 arm。
         if self._last_armed_state and not self.armed:
-            takeoff_was_requested = self.takeoff_requested
             self.was_armed_once = True
             self.takeoff_requested = False
             self.manual_pos_initialized = False
             self.integral_pos_error[:] = 0.0
             self.integral_e_R[:] = 0.0
             self.safe_hover_integral_z = 0.0
-            if not takeoff_was_requested:
+            if not self.rearm_after_auto_disarm:
                 self.startup_blocked_after_disarm = True
                 self.preflight_disarm_waiting_for_o = True
                 self.auto_arm_attempts = 0
-                self.was_armed_once = False
                 self.get_logger().warn(
-                    'PX4 在起飞许可前已自动上锁，可能是 COM_DISARM_PRFLT 预起飞超时。'
-                    '已停止自动二次 Arm；按键盘 o 后会重新请求 Offboard/Arm 并起飞悬停。'
-                )
-            elif not self.rearm_after_auto_disarm:
-                self.startup_blocked_after_disarm = True
-                self.preflight_disarm_waiting_for_o = False
-                self.get_logger().warn(
-                    'PX4 已从 armed 变为 disarmed。已阻止自动二次 Arm。'
+                    'PX4 已从 armed 变为 disarmed。无论当前起飞请求或落地状态如何，'
+                    '均已阻止自动二次 Arm。'
                     '请检查是否触发 COM_DISARM_PRFLT、COM_DISARM_LAND、land detector 或 failsafe；'
-                    '确认安全后重启本节点或手动 Arm。'
+                    '确认安全后按 o 明确发起下一次 Offboard/Arm。'
                 )
         self._last_armed_state = self.armed
 
