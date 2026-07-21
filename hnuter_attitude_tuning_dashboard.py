@@ -34,6 +34,7 @@ import math
 import os
 import queue
 import site
+import struct
 import sys
 import threading
 import time
@@ -98,6 +99,15 @@ PARAM_GROUPS = {
         'HNTR_ATT_D_Y': param(0.0, 20.0, 0.1, 1.2),
         'HNTR_TAU_Y': param(0.0, 100.0, 0.1, 1.8),
     },
+    'RC attitude': {
+        'HNTR_RC_ATT_EN': param(0.0, 1.0, 1.0, 1.0),
+        'HNTR_RC_RATE_R': param(0.0, 360.0, 1.0, 20.0),
+        'HNTR_RC_RATE_P': param(0.0, 360.0, 1.0, 20.0),
+        'HNTR_RC_RATE_Y': param(0.0, 360.0, 1.0, 25.0),
+        'HNTR_RC_DB': param(0.0, 0.5, 0.01, 0.08),
+        'HNTR_RC_ANG_MAX': param(0.0, 180.0, 1.0, 45.0),
+        'HNTR_RC_LVL_R': param(1.0, 180.0, 1.0, 15.0),
+    },
     'Position XY': {
         'HNTR_POS_P_XY': param(0.0, 10.0, 0.05, 0.6),
         'HNTR_VEL_P_XY': param(0.0, 30.0, 0.05, 1.5),
@@ -156,6 +166,8 @@ PARAM_CONFIG = {
     for group in PARAM_GROUPS.values()
     for name, cfg in group.items()
 }
+
+INTEGER_PARAMS = {'HNTR_CTRL_MODE', 'HNTR_RC_ATT_EN'}
 
 
 @dataclass
@@ -269,13 +281,21 @@ class MavlinkParamClient:
             return False
 
         try:
+            wire_value = float(value)
+            param_type = mavutil.mavlink.MAV_PARAM_TYPE_REAL32
+
+            if name in INTEGER_PARAMS:
+                packed = struct.pack('<i', int(round(value)))
+                wire_value = struct.unpack('<f', packed)[0]
+                param_type = mavutil.mavlink.MAV_PARAM_TYPE_INT32
+
             with self.lock:
                 self.master.mav.param_set_send(
                     self.master.target_system,
                     self.master.target_component,
                     name.encode('utf-8'),
-                    float(value),
-                    mavutil.mavlink.MAV_PARAM_TYPE_REAL32,
+                    wire_value,
+                    param_type,
                 )
             print(f'[PARAM_SET] {name}={float(value):.6g}')
             return True
@@ -467,7 +487,18 @@ class Dashboard:
         self.stop_requested = False
         self.command_queue: queue.Queue[str] = queue.Queue()
         self.param_values: Dict[str, float] = {k: float(v['default']) for k, v in PARAM_CONFIG.items()}
-        self.group_names = list(PARAM_GROUPS)
+        self.param_pages: list[tuple[str, Dict[str, Dict[str, float]]]] = []
+
+        for group_name, group in PARAM_GROUPS.items():
+            items = list(group.items())
+            page_count = max(1, math.ceil(len(items) / 6))
+
+            for page_index in range(page_count):
+                page_items = items[page_index * 6:(page_index + 1) * 6]
+                page_name = group_name if page_count == 1 else f'{group_name} {page_index + 1}/{page_count}'
+                self.param_pages.append((page_name, dict(page_items)))
+
+        self.group_names = [page[0] for page in self.param_pages]
         self.group_index = 0
         self.slider_names: list[Optional[str]] = []
         self.slider_programmatic = False
@@ -527,7 +558,7 @@ class Dashboard:
 
         self.sliders: list[Slider] = []
         slider_area = self.fig.add_gridspec(6, 1, left=0.15, right=0.92, bottom=0.025, top=0.19, hspace=0.5)
-        initial_group = PARAM_GROUPS[self.group_names[0]]
+        initial_group = self.param_pages[0][1]
         initial_items = list(initial_group.items())
         for idx in range(6):
             name, cfg = initial_items[idx]
@@ -591,8 +622,8 @@ class Dashboard:
 
     def show_group(self, index: int, read_values: bool = True) -> None:
         self.group_index = index % len(self.group_names)
-        group_name = self.group_names[self.group_index]
-        items = list(PARAM_GROUPS[group_name].items())
+        group_name, group = self.param_pages[self.group_index]
+        items = list(group.items())
         self.slider_programmatic = True
         try:
             for slot, slider in enumerate(self.sliders):

@@ -75,6 +75,15 @@ PARAM_GROUPS = {
         'HNTR_ATT_D_Y': param(0.0, 20.0, 0.1, 1.2),
         'HNTR_TAU_Y': param(0.0, 100.0, 0.1, 1.8),
     },
+    'RC attitude': {
+        'HNTR_RC_ATT_EN': param(0.0, 1.0, 1.0, 1.0),
+        'HNTR_RC_RATE_R': param(0.0, 360.0, 1.0, 20.0),
+        'HNTR_RC_RATE_P': param(0.0, 360.0, 1.0, 20.0),
+        'HNTR_RC_RATE_Y': param(0.0, 360.0, 1.0, 25.0),
+        'HNTR_RC_DB': param(0.0, 0.5, 0.01, 0.08),
+        'HNTR_RC_ANG_MAX': param(0.0, 180.0, 1.0, 45.0),
+        'HNTR_RC_LVL_R': param(1.0, 180.0, 1.0, 15.0),
+    },
     'Position XY': {
         'HNTR_POS_P_XY': param(0.0, 10.0, 0.05, 0.6),
         'HNTR_VEL_P_XY': param(0.0, 30.0, 0.05, 1.5),
@@ -134,7 +143,7 @@ PARAM_CONFIG = {
     for name, cfg in group.items()
 }
 
-INTEGER_PARAMS = {'HNTR_CTRL_MODE'}
+INTEGER_PARAMS = {'HNTR_CTRL_MODE', 'HNTR_RC_ATT_EN'}
 
 
 def wrap_pi(angle: float) -> float:

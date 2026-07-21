@@ -56,6 +56,8 @@ try:
 except Exception:  # 允许没有手柄/没有 pygame 时保持悬停
     pygame = None
 
+from hnuter_gamepad import GamepadManager as RobustGamepadManager
+
 
 # ============================================================
 # 手柄管理器：从 hnuter104.py 移植，加入异常保护
@@ -559,7 +561,7 @@ class HnuterController(Node):
         self._last_debug_print_time = 0.0
 
         # Gamepad: 实机建议先用低速度，确认方向后再加大
-        self.gamepad = GamepadManager(
+        self.gamepad = RobustGamepadManager(
             max_vxy=0.6,
             max_vz=0.3,
             max_yaw_rate=0.4,

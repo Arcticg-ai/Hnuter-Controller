@@ -21,27 +21,58 @@ They are tracked as submodules. After cloning:
 git submodule update --init --recursive
 ```
 
-## Typical SITL Run
+## Isolated SITL Run
+
+Use one private ROS domain and localhost-only discovery for PX4, the
+Micro XRCE-DDS Agent, and every controller terminal. This prevents another
+PX4/ROS 2 computer on the LAN from publishing to the same fixed PX4 topics.
+
+Start the agent:
+
+```bash
+ROS_DOMAIN_ID=42 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST \
+  MicroXRCEAgent udp4 -p 8888
+```
 
 Start PX4 SITL:
 
 ```bash
 cd ~/PX4-Hnuter/PX4-Autopilot-Hnuter
-make px4_sitl gz_hnuter
+ROS_DOMAIN_ID=42 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST \
+  make px4_sitl gz_hnuter
 ```
 
 Run the stable PX4 offboard controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_controller.py
+ROS_DOMAIN_ID=42 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST \
+  python3 hnuter_external_controller.py
 ```
 
 Run the direct actuator debug controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_direct_controller_debug.py
+ROS_DOMAIN_ID=42 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST \
+  python3 hnuter_external_direct_controller_debug.py
+```
+
+The three main controllers also force localhost discovery by default. Set
+`HNUTER_ALLOW_REMOTE_DDS=1` only when remote DDS discovery is intentional.
+
+## Gamepad Input
+
+The controllers read `/dev/input/js0` through the Linux joystick API, so they
+continue to work in headless and remote-desktop sessions where SDL may report
+zero joysticks. USB disconnects are detected, commands decay to neutral, and
+the device reconnects automatically.
+
+Override mappings when required, for example:
+
+```bash
+HNUTER_JOYSTICK_DEVICE=/dev/input/js1 HNUTER_AXIS_ROLL=3 \
+  python3 hnuter_external_controller.py
 ```
 
 In the debug controller, press `o` to allow takeoff after the ground tilt self-test.

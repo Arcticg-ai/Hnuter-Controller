@@ -2,66 +2,87 @@
   "alpha_limit_deg": 185.0,
   "attitude_peak_hold_s": 1.0,
   "attitude_segment_time_s": 6.0,
-  "attitude_step_angle_deg": 105.0,
-  "attitude_step_pitch_deg": 105.0,
+  "attitude_step_angle_deg": 30.0,
+  "attitude_step_pitch_deg": 30.0,
   "attitude_step_roll_deg": 0.0,
   "attitude_step_yaw_deg": 0.0,
-  "attitude_test_altitude_m": 3.0,
+  "attitude_test_altitude_m": 1.5,
   "attitude_test_altitude_only": false,
   "attitude_test_max_acc_xy": 3.0,
   "direct_Domega": [
-    2.5,
-    2.5,
-    7.0
+    1.4,
+    1.4,
+    1.2
   ],
-  "direct_Domega_yaw": 7.0,
+  "direct_Domega_yaw": 1.2,
+  "direct_gain_ramp_time_s": 6.0,
+  "direct_integral_limit": [
+    0.5,
+    0.5,
+    1.5
+  ],
+  "direct_KI": [
+    0.02,
+    0.02,
+    0.12
+  ],
   "direct_safety_attitude_check_enabled": false,
   "direct_safety_attitude_limit_deg": 55.0,
   "direct_KR": [
-    4.0,
-    5.0,
-    14.0
-  ],
-  "direct_KR_yaw": 14.0,
-  "direct_takeoff_Domega": [
-    1.2,
-    1.2,
+    2.0,
+    2.0,
     1.2
+  ],
+  "direct_KR_yaw": 1.2,
+  "direct_takeoff_Domega": [
+    0.8,
+    0.8,
+    1.2
+  ],
+  "direct_takeoff_KI": [
+    0.0,
+    0.0,
+    0.12
   ],
   "direct_takeoff_KR": [
-    1.5,
-    1.5,
-    1.5
-  ],
-  "direct_takeoff_tau_limit": [
-    0.9,
-    0.9,
-    0.5
-  ],
-  "direct_tau_limit": [
-    2.5,
-    3.0,
-    8.0
-  ],
-  "direct_tau_yaw_limit": 8.0,
-  "direct_xy_lock_Domega": [
     1.2,
     1.2,
     1.2
   ],
+  "direct_takeoff_tau_limit": [
+    0.6,
+    0.6,
+    0.8
+  ],
+  "direct_tau_limit": [
+    1.2,
+    1.2,
+    1.0
+  ],
+  "direct_tau_yaw_limit": 1.0,
+  "direct_xy_lock_Domega": [
+    0.9,
+    0.9,
+    1.2
+  ],
+  "direct_xy_lock_KI": [
+    0.0,
+    0.0,
+    0.12
+  ],
   "direct_xy_lock_KR": [
-    1.5,
-    1.5,
-    1.5
+    1.4,
+    1.4,
+    1.2
   ],
   "direct_xy_lock_tau_limit": [
-    0.9,
-    0.9,
-    0.5
+    0.8,
+    0.8,
+    0.8
   ],
   "direct_yaw_control_enabled": true,
-  "max_acc_xy": 20.0,
-  "max_acc_z": 20.0,
+  "max_acc_xy": 5.0,
+  "max_acc_z": 8.0,
   "manual_pitch_limit_deg": 180.0,
   "theta_limit_deg": 45.0,
   "xy_lock_max_acc_xy": 3.0
