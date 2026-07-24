@@ -36,23 +36,31 @@
 
       <div class="plot-grid">
         <article class="plot-panel">
-          <div class="plot-title"><span>Attitude tracking</span><span>deg</span></div>
+          <div class="plot-title"><span>Attitude tracking</span><span>deg <select class="axis-filter"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="attitude-chart"></canvas>
         </article>
+        <article class="plot-panel compact">
+          <div class="plot-title"><span>Angular velocity</span><span>deg/s <select class="axis-filter"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
+          <canvas id="angular-rate-chart"></canvas>
+        </article>
         <article class="plot-panel">
-          <div class="plot-title"><span>Position tracking (NED)</span><span>m</span></div>
+          <div class="plot-title"><span>Position tracking (NED)</span><span>m <select class="axis-filter"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
           <canvas id="position-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Attitude error</span><span>deg</span></div>
+          <div class="plot-title"><span>Velocity tracking (NED)</span><span>m/s <select class="axis-filter"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
+          <canvas id="velocity-chart"></canvas>
+        </article>
+        <article class="plot-panel compact">
+          <div class="plot-title"><span>Attitude error</span><span>deg <select class="axis-filter"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Position error (setpoint - actual)</span><span>m</span></div>
+          <div class="plot-title"><span>Position error</span><span>m <select class="axis-filter"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
           <canvas id="position-error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Torque setpoint</span><span>normalized</span></div>
+          <div class="plot-title"><span>Torque setpoint</span><span>normalized <select class="axis-filter"><option value="all">All</option><option value="Tx">Tx</option><option value="Ty">Ty</option><option value="Tz">Tz</option></select></span></div>
           <canvas id="torque-chart"></canvas>
         </article>
         <article class="plot-panel compact">
@@ -66,7 +74,7 @@
       <div class="parameter-header">
         <div>
           <h2>Parameters</h2>
-          <p>Applied values are read back from PX4.</p>
+          <p>Edit locally, then Reset returns to the last PX4-read value.</p>
         </div>
         <button id="reconnect" type="button">Reconnect</button>
       </div>
@@ -90,6 +98,8 @@
           <dt>Pitch</dt><dd id="pitch-value">--</dd>
           <dt>Yaw</dt><dd id="yaw-value">--</dd>
           <dt>Position</dt><dd id="position-value">--</dd>
+          <dt>Velocity</dt><dd id="velocity-value">--</dd>
+          <dt>Ang. rate</dt><dd id="angular-rate-value">--</dd>
           <dt>Pos. error</dt><dd id="position-error-value">--</dd>
           <dt>Torque</dt><dd id="torque-value">--</dd>
           <dt>Motor 5</dt><dd id="motor5-value">--</dd>

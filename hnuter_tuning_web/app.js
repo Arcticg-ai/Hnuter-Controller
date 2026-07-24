@@ -65,6 +65,13 @@ class CanvasChart {
     this.fixedRange = options.fixedRange || null;
     this.minimumSpan = options.minimumSpan || 1;
     this.margin = options.margin ?? 0.08;
+    this.axisFilter = canvas.closest('.plot-panel')?.querySelector('.axis-filter') || null;
+  }
+
+  visibleSeries() {
+    const axis = this.axisFilter ? this.axisFilter.value : 'all';
+    if (axis === 'all') return this.series;
+    return this.series.filter((line) => line.axis === axis || line.always);
   }
 
   resize() {
@@ -84,7 +91,7 @@ class CanvasChart {
     if (this.fixedRange) return this.fixedRange;
     const values = [];
     for (const sample of visible) {
-      for (const line of this.series) {
+      for (const line of this.visibleSeries()) {
         const value = valueAt(sample, line.path);
         if (finite(value)) values.push(value);
       }
@@ -150,7 +157,7 @@ class CanvasChart {
 
     const xOf = (t) => left + ((t - startT) / historySeconds) * plotWidth;
     const yOf = (value) => top + ((yHigh - value) / (yHigh - yLow)) * plotHeight;
-    for (const line of this.series) {
+    for (const line of this.visibleSeries()) {
       ctx.strokeStyle = line.color;
       ctx.lineWidth = line.width || 1.5;
       ctx.setLineDash(line.dash || []);
@@ -173,7 +180,7 @@ class CanvasChart {
 
     let legendX = left;
     ctx.textAlign = 'left';
-    for (const line of this.series) {
+    for (const line of this.visibleSeries()) {
       ctx.strokeStyle = line.color;
       ctx.lineWidth = line.width || 1.5;
       ctx.setLineDash(line.dash || []);
@@ -191,35 +198,48 @@ class CanvasChart {
 
 const charts = [
   new CanvasChart($('#attitude-chart'), [
-    {label: 'roll', path: ['attitude', 0], color: palette.red},
-    {label: 'roll sp', path: ['setpoint', 0], color: palette.red, dash: [5, 4]},
-    {label: 'pitch', path: ['attitude', 1], color: palette.blue},
-    {label: 'pitch sp', path: ['setpoint', 1], color: palette.blue, dash: [5, 4]},
-    {label: 'yaw', path: ['attitude', 2], color: palette.green},
-    {label: 'yaw sp', path: ['setpoint', 2], color: palette.green, dash: [5, 4]},
+    {label: 'roll', axis: 'roll', path: ['attitude', 0], color: palette.red},
+    {label: 'roll sp', axis: 'roll', path: ['setpoint', 0], color: palette.red, dash: [5, 4]},
+    {label: 'pitch', axis: 'pitch', path: ['attitude', 1], color: palette.blue},
+    {label: 'pitch sp', axis: 'pitch', path: ['setpoint', 1], color: palette.blue, dash: [5, 4]},
+    {label: 'yaw', axis: 'yaw', path: ['attitude', 2], color: palette.green},
+    {label: 'yaw sp', axis: 'yaw', path: ['setpoint', 2], color: palette.green, dash: [5, 4]},
+  ], {minimumSpan: 5}),
+  new CanvasChart($('#angular-rate-chart'), [
+    {label: 'roll rate', axis: 'roll', path: ['angular_velocity', 0], color: palette.red},
+    {label: 'pitch rate', axis: 'pitch', path: ['angular_velocity', 1], color: palette.blue},
+    {label: 'yaw rate', axis: 'yaw', path: ['angular_velocity', 2], color: palette.green},
   ], {minimumSpan: 5}),
   new CanvasChart($('#position-chart'), [
-    {label: 'N', path: ['position', 0], color: palette.red},
-    {label: 'N sp', path: ['position_setpoint', 0], color: palette.red, dash: [5, 4]},
-    {label: 'E', path: ['position', 1], color: palette.blue},
-    {label: 'E sp', path: ['position_setpoint', 1], color: palette.blue, dash: [5, 4]},
-    {label: 'D', path: ['position', 2], color: palette.green},
-    {label: 'D sp', path: ['position_setpoint', 2], color: palette.green, dash: [5, 4]},
+    {label: 'N', axis: 'N', path: ['position', 0], color: palette.red},
+    {label: 'N sp', axis: 'N', path: ['position_setpoint', 0], color: palette.red, dash: [5, 4]},
+    {label: 'E', axis: 'E', path: ['position', 1], color: palette.blue},
+    {label: 'E sp', axis: 'E', path: ['position_setpoint', 1], color: palette.blue, dash: [5, 4]},
+    {label: 'D', axis: 'D', path: ['position', 2], color: palette.green},
+    {label: 'D sp', axis: 'D', path: ['position_setpoint', 2], color: palette.green, dash: [5, 4]},
   ], {minimumSpan: 1}),
+  new CanvasChart($('#velocity-chart'), [
+    {label: 'N vel', axis: 'N', path: ['velocity', 0], color: palette.red},
+    {label: 'N vel sp', axis: 'N', path: ['velocity_setpoint', 0], color: palette.red, dash: [5, 4]},
+    {label: 'E vel', axis: 'E', path: ['velocity', 1], color: palette.blue},
+    {label: 'E vel sp', axis: 'E', path: ['velocity_setpoint', 1], color: palette.blue, dash: [5, 4]},
+    {label: 'D vel', axis: 'D', path: ['velocity', 2], color: palette.green},
+    {label: 'D vel sp', axis: 'D', path: ['velocity_setpoint', 2], color: palette.green, dash: [5, 4]},
+  ], {minimumSpan: 0.2}),
   new CanvasChart($('#error-chart'), [
-    {label: 'roll', path: ['error', 0], color: palette.red},
-    {label: 'pitch', path: ['error', 1], color: palette.blue},
-    {label: 'yaw', path: ['error', 2], color: palette.green},
+    {label: 'roll', axis: 'roll', path: ['error', 0], color: palette.red},
+    {label: 'pitch', axis: 'pitch', path: ['error', 1], color: palette.blue},
+    {label: 'yaw', axis: 'yaw', path: ['error', 2], color: palette.green},
   ], {minimumSpan: 2}),
   new CanvasChart($('#position-error-chart'), [
-    {label: 'N', path: ['position_error', 0], color: palette.red},
-    {label: 'E', path: ['position_error', 1], color: palette.blue},
-    {label: 'D', path: ['position_error', 2], color: palette.green},
+    {label: 'N', axis: 'N', path: ['position_error', 0], color: palette.red},
+    {label: 'E', axis: 'E', path: ['position_error', 1], color: palette.blue},
+    {label: 'D', axis: 'D', path: ['position_error', 2], color: palette.green},
   ], {minimumSpan: 0.2}),
   new CanvasChart($('#torque-chart'), [
-    {label: 'Tx', path: ['torque', 0], color: palette.red},
-    {label: 'Ty', path: ['torque', 1], color: palette.blue},
-    {label: 'Tz', path: ['torque', 2], color: palette.green},
+    {label: 'Tx', axis: 'Tx', path: ['torque', 0], color: palette.red},
+    {label: 'Ty', axis: 'Ty', path: ['torque', 1], color: palette.blue},
+    {label: 'Tz', axis: 'Tz', path: ['torque', 2], color: palette.green},
   ], {minimumSpan: 0.02}),
   new CanvasChart($('#motor-chart'), [
     {label: 'M1', path: ['motors', 0], color: palette.gray1},
@@ -229,6 +249,28 @@ const charts = [
     {label: 'M5', path: ['motors', 4], color: palette.purple, width: 2.2},
   ], {fixedRange: [-1.05, 1.05]}),
 ];
+function axisFamily(select) {
+  const values = Array.from(select.options).map((option) => option.value).join('|');
+  if (values.includes('roll') && values.includes('pitch')) return 'attitude';
+  if (values.includes('N') && values.includes('E')) return 'position';
+  if (values.includes('Tx') && values.includes('Ty')) return 'torque';
+  return '';
+}
+
+function syncAxisFilters(source) {
+  const family = axisFamily(source);
+  if (!family) return;
+  for (const select of document.querySelectorAll('.axis-filter')) {
+    if (select !== source && axisFamily(select) === family) select.value = source.value;
+  }
+}
+
+document.querySelectorAll('.axis-filter').forEach((select) => {
+  select.addEventListener('change', () => {
+    syncAxisFilters(select);
+    scheduleDraw();
+  });
+});
 
 function scheduleDraw() {
   if (drawPending) return;
@@ -266,6 +308,8 @@ function updateLiveState(payload) {
   $('#pitch-value').textContent = `${format(data.attitude[1])} / ${format(data.setpoint[1])} deg`;
   $('#yaw-value').textContent = `${format(data.attitude[2])} / ${format(data.setpoint[2])} deg`;
   $('#position-value').textContent = data.position.map((value) => format(value, 2)).join(' ');
+  $('#velocity-value').textContent = data.velocity.map((value) => format(value, 2)).join(' ');
+  $('#angular-rate-value').textContent = data.angular_velocity.map((value) => format(value, 1)).join(' ');
   $('#position-error-value').textContent = data.position_error.map((value) => format(value, 2)).join(' ');
   $('#torque-value').textContent = data.torque.map((value) => format(value, 3)).join(' ');
   $('#motor5-value').textContent = format(data.motors[4], 3);
@@ -310,8 +354,16 @@ function renderParameterGroup() {
   const list = $('#parameter-list');
   list.replaceChildren();
   const warning = $('#group-warning');
-  if (groupName === 'Vehicle model' || groupName === 'Allocator') {
-    warning.textContent = 'These values change the vehicle model or allocation. Verify the airframe before applying.';
+  if (!groupName || !group) {
+    warning.textContent = config.mavlink
+      ? 'No matching parameters were discovered. Check the parameter prefix filter or refresh after PX4 is ready.'
+      : 'MAVLink is offline; connect to PX4 and refresh the parameter list.';
+    warning.classList.remove('hidden');
+    showMessage('No parameter group available', 'error');
+    return;
+  }
+  if (groupName.includes('MASS') || groupName.includes('MAX') || groupName.includes('ALLOC')) {
+    warning.textContent = 'These values may change the vehicle model or allocation. Reset only changes the browser field, not PX4.';
     warning.classList.remove('hidden');
   } else {
     warning.classList.add('hidden');
@@ -327,17 +379,17 @@ function renderParameterGroup() {
       <div class="parameter-controls">
         <input class="range" type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${cfg.default}" aria-label="${name}">
         <input class="number" type="number" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${cfg.default}" aria-label="${name} value">
-        <button class="apply" type="button">Apply</button>
+        <button class="reset" type="button">Reset</button>
       </div>`;
     const range = row.querySelector('.range');
     const number = row.querySelector('.number');
     const markEdited = () => {
       row.classList.add('dirty');
-      row.querySelector('.confirmed').textContent = 'edited, not applied';
+      row.querySelector('.confirmed').textContent = 'edited, reset available';
     };
     range.addEventListener('input', () => { number.value = range.value; markEdited(); });
     number.addEventListener('input', () => { range.value = number.value; markEdited(); });
-    row.querySelector('.apply').addEventListener('click', () => applyParameter(row));
+    row.querySelector('.reset').addEventListener('click', () => resetParameter(row));
     list.appendChild(row);
   }
   loadParameters();
@@ -354,7 +406,8 @@ async function loadParameters() {
     if (generation !== parameterLoadGeneration || group !== $('#group-select').value) return;
     for (const [name, value] of Object.entries(response.values)) {
       const row = document.querySelector(`.parameter-row[data-name="${name}"]`);
-      if (!row || !finite(value) || row.classList.contains('dirty') || row.classList.contains('applying')) continue;
+      if (!row || !finite(value) || row.classList.contains('dirty')) continue;
+      row.dataset.confirmedValue = value;
       row.querySelector('.range').value = value;
       row.querySelector('.number').value = value;
       row.querySelector('.confirmed').textContent = `PX4 ${Number(value).toPrecision(6)}`;
@@ -368,46 +421,48 @@ async function loadParameters() {
   }
 }
 
-async function applyParameter(row) {
+function resetParameter(row) {
   const name = row.dataset.name;
-  const value = Number(row.querySelector('.number').value);
-  const button = row.querySelector('.apply');
+  const value = Number(row.dataset.confirmedValue);
   if (!Number.isFinite(value)) {
-    showMessage(`${name}: invalid value`, 'error');
+    showMessage(`${name}: no previously read PX4 value to reset to`, 'error');
     return;
   }
-  button.disabled = true;
-  row.classList.add('applying');
-  showMessage(`Applying ${name}...`);
-  try {
-    const response = await api('/api/params/set', {
-      method: 'POST', body: JSON.stringify({name, value}),
-    });
-    row.querySelector('.range').value = response.confirmed;
-    row.querySelector('.number').value = response.confirmed;
-    row.querySelector('.confirmed').textContent = `PX4 ${Number(response.confirmed).toPrecision(6)}`;
-    row.classList.remove('dirty');
-    showMessage(`${name} confirmed by PX4`, 'success');
-  } catch (error) {
-    showMessage(`${name}: ${error.message}`, 'error');
-  } finally {
-    row.classList.remove('applying');
-    button.disabled = false;
+  row.querySelector('.range').value = value;
+  row.querySelector('.number').value = value;
+  row.querySelector('.confirmed').textContent = `PX4 ${Number(value).toPrecision(6)}`;
+  row.classList.remove('dirty');
+  showMessage(`${name} reset to previous PX4 value`, 'success');
+}
+
+async function loadConfig(refresh = false) {
+  const select = $('#group-select');
+  const previous = select.value;
+  config = await api(`/api/config${refresh ? '?refresh=1' : ''}`);
+  select.replaceChildren();
+  const names = Object.keys(config.groups || {});
+  for (const name of names) {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    select.appendChild(option);
   }
+  if (previous && names.includes(previous)) select.value = previous;
+  const prefixText = (config.param_prefixes && config.param_prefixes.length)
+    ? config.param_prefixes.join(', ')
+    : 'all parameters';
+  const source = config.dynamic_params ? `dynamic ${prefixText}` : 'static';
+  if (names.length) {
+    showMessage(`${names.length} parameter groups loaded from ${source}; ${config.param_count || 0} PX4 params in catalog`, 'success');
+  }
+  renderParameterGroup();
 }
 
 async function initialize() {
   try {
-    config = await api('/api/config');
     const select = $('#group-select');
-    for (const name of Object.keys(config.groups)) {
-      const option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      select.appendChild(option);
-    }
     select.addEventListener('change', renderParameterGroup);
-    renderParameterGroup();
+    await loadConfig(false);
     connectEvents();
   } catch (error) {
     showMessage(error.message, 'error');
@@ -434,11 +489,11 @@ $('#save-params').addEventListener('click', async () => {
   } catch (error) { showMessage(error.message, 'error'); }
 });
 $('#reconnect').addEventListener('click', async () => {
-  showMessage('Reconnecting MAVLink...');
+  showMessage('Reconnecting MAVLink and refreshing parameter catalog...');
   try {
     const response = await api('/api/mavlink/reconnect', {method: 'POST', body: '{}'});
     showMessage(`Connected via ${response.endpoint}`, 'success');
-    loadParameters();
+    await loadConfig(true);
   } catch (error) { showMessage(error.message, 'error'); }
 });
 window.addEventListener('resize', scheduleDraw);

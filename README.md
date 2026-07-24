@@ -7,6 +7,7 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 - `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
+- `hnuter_external_setpoint_gamepad.py`: setpoint-only gamepad controller. It publishes position, velocity, attitude, and optional body-rate references while leaving the controller and allocator inside PX4.
 
 ## Dependencies
 
@@ -46,6 +47,16 @@ python3 hnuter_external_direct_controller_debug.py
 
 In the debug controller, press `o` to allow takeoff after the ground tilt self-test.
 
+Run the firmware-controller setpoint gamepad controller:
+
+```bash
+cd ~/px4_ws_ros2
+python3 hnuter_external_setpoint_gamepad.py
+```
+
+Press `o` to request Offboard, Arm, and takeoff. The default gamepad mapping is:
+left stick X for yaw rate, left stick Y for vertical speed, `A/B` for negative/positive roll steps, and `X/Y` for negative/positive pitch steps. By default DDS discovery is restricted to localhost to avoid another PX4/ROS 2 instance on the LAN writing into the same topics; set `HNUTER_ALLOW_REMOTE_DDS=1` only when remote DDS discovery is intentional.
+
 ## Direct Debug Notes
 
 By default, direct actuator mode publishes only `actuator_motors` and `actuator_servos` so PX4's internal allocator does not overwrite the external actuator commands.
@@ -78,8 +89,13 @@ Open `http://COMPANION_IP:8765` from a browser on the same trusted LAN. To
 require a token, set `HNUTER_WEB_TOKEN` before starting the service and append
 the printed `?token=...` value to the browser URL.
 
-The browser receives attitude, local NED position, tracking-error, torque, and
-motor-command plots at 15 Hz by default, while CSV data is recorded at 25 Hz
-under `hnuter_saved_plots/`. Parameter changes are sent only by each
-row's Apply button and are read back from PX4 before the UI reports success.
-`Save to PX4` remains a separate confirmed operation.
+The browser receives attitude, angular-rate, local NED position, NED velocity,
+tracking-error, torque, and motor-command plots at 15 Hz by default. Each
+three-axis plot can be filtered to a single axis from its title-bar selector,
+while CSV data is recorded at 25 Hz under `hnuter_saved_plots/`. The parameter panel discovers the PX4 parameter
+catalog over MAVLink and, by default, shows every parameter whose name starts
+with `HNTR_`; use `--param-prefix HNTR_,CA_` to include more prefixes or
+`--param-prefix all` to show every PX4 parameter. Each row's Reset button
+returns the browser controls to the last value read back from PX4; it does not
+write a parameter. `Save to PX4` remains a separate confirmed operation for
+parameters changed by other tools.

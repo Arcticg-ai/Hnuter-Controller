@@ -117,7 +117,8 @@ h2 { font-size: 15px; font-weight: 650; }
   font-size: 12px;
   font-weight: 600;
 }
-.plot-title span:last-child { color: var(--muted); font-weight: 400; }
+.plot-title span:last-child { color: var(--muted); font-weight: 400; display: inline-flex; align-items: center; gap: 6px; }
+.axis-filter { min-height: 24px; height: 24px; padding: 0 5px; font-size: 12px; }
 canvas { display: block; width: 100%; height: calc(100% - 30px); }
 
 .parameters {

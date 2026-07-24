@@ -35,6 +35,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 from px4_msgs.msg import ActuatorMotors
+from px4_msgs.msg import VehicleAngularVelocity
 from px4_msgs.msg import VehicleAttitude
 from px4_msgs.msg import VehicleAttitudeSetpoint
 from px4_msgs.msg import VehicleControlMode
@@ -54,88 +55,80 @@ except Exception:  # noqa: BLE001
         mavutil = None
 
 
-def param(minimum: float, maximum: float, step: float, default: float) -> dict:
-    return {'min': minimum, 'max': maximum, 'step': step, 'default': default}
+
+def split_prefixes(raw: str) -> list[str]:
+    prefixes = []
+    for item in raw.split(','):
+        item = item.strip()
+        if not item:
+            continue
+        if item.lower() in ('*', 'all'):
+            return []
+        prefixes.append(item)
+    return prefixes or ['HNTR_']
 
 
-PARAM_GROUPS = {
-    'Pitch attitude': {
-        'HNTR_PITCH_BIAS': param(-1.0, 1.0, 0.001, 0.0),
-        'HNTR_ATT_KR_P': param(0.0, 20.0, 0.1, 1.5),
-        'HNTR_ATT_D_P': param(0.0, 20.0, 0.1, 1.2),
-        'HNTR_ATT_I_P': param(0.0, 20.0, 0.01, 0.0),
-        'HNTR_ATT_ILIM_P': param(0.0, 50.0, 0.1, 3.0),
-        'HNTR_TAU_P': param(0.0, 100.0, 0.1, 0.9),
-    },
-    'Roll and yaw': {
-        'HNTR_ATT_KR_R': param(0.0, 20.0, 0.1, 1.5),
-        'HNTR_ATT_D_R': param(0.0, 20.0, 0.1, 1.2),
-        'HNTR_TAU_R': param(0.0, 100.0, 0.1, 0.9),
-        'HNTR_ATT_KR_Y': param(0.0, 20.0, 0.1, 1.5),
-        'HNTR_ATT_D_Y': param(0.0, 20.0, 0.1, 1.2),
-        'HNTR_TAU_Y': param(0.0, 100.0, 0.1, 1.8),
-    },
-    'Position XY': {
-        'HNTR_POS_P_XY': param(0.0, 10.0, 0.05, 0.6),
-        'HNTR_VEL_P_XY': param(0.0, 30.0, 0.05, 1.5),
-        'HNTR_VEL_I_XY': param(0.0, 10.0, 0.01, 0.10),
-        'HNTR_VEL_D_XY': param(0.0, 10.0, 0.01, 0.10),
-        'HNTR_VEL_ILIM_XY': param(0.0, 30.0, 0.1, 1.5),
-        'HNTR_VEL_XY': param(0.0, 30.0, 0.1, 3.0),
-        'HNTR_ACC_XY': param(0.1, 100.0, 0.5, 5.0),
-        'HNTR_TILT_MAX': param(0.0, 185.0, 1.0, 185.0),
-    },
-    'Position Z': {
-        'HNTR_MOT_HOV': param(0.05, 0.95, 0.005, 0.40),
-        'HNTR_MOT_EXPO': param(0.2, 1.5, 0.01, 0.50),
-        'HNTR_POS_P_Z': param(0.0, 10.0, 0.05, 1.0),
-        'HNTR_VEL_P_Z': param(0.0, 30.0, 0.05, 2.5),
-        'HNTR_VEL_I_Z': param(0.0, 10.0, 0.01, 0.40),
-        'HNTR_VEL_D_Z': param(0.0, 10.0, 0.01, 0.20),
-        'HNTR_VEL_ILIM_Z': param(0.0, 30.0, 0.1, 2.5),
-        'HNTR_VEL_UP': param(0.0, 20.0, 0.1, 1.5),
-        'HNTR_VEL_DN': param(0.0, 20.0, 0.1, 1.0),
-        'HNTR_ACC_Z': param(0.1, 100.0, 0.5, 8.0),
-    },
-    'Stabilized Z': {
-        'HNTR_STAB_Z_P': param(0.0, 30.0, 0.1, 3.0),
-        'HNTR_STAB_Z_D': param(0.0, 30.0, 0.1, 2.0),
-        'HNTR_STAB_Z_I': param(0.0, 10.0, 0.01, 0.5),
-        'HNTR_STAB_ACC_Z': param(0.1, 100.0, 0.5, 8.0),
-        'HNTR_STAB_Z_VEL': param(0.0, 10.0, 0.1, 0.8),
-        'HNTR_STAB_THR_DB': param(0.0, 0.8, 0.01, 0.15),
-    },
-    'Takeoff lock': {
-        'HNTR_TO_SUP_T': param(0.0, 10.0, 0.1, 1.0),
-        'HNTR_TO_LOCK_T': param(0.0, 20.0, 0.1, 3.0),
-        'HNTR_TO_TILT': param(0.0, 185.0, 1.0, 20.0),
-        'HNTR_LOCK_TILT': param(0.0, 185.0, 1.0, 30.0),
-        'HNTR_LOCK_ACC': param(0.1, 100.0, 0.5, 3.0),
-        'HNTR_LOCK_KP': param(0.0, 1.0, 0.01, 0.8),
-    },
-    'Allocator': {
-        'HNTR_CTRL_MODE': param(0.0, 1.0, 1.0, 0.0),
-        'HNTR_ROLL_SIGN': param(-1.0, 1.0, 2.0, 1.0),
-        'HNTR_TAIL_SIGN': param(-1.0, 1.0, 2.0, 1.0),
-        'HNTR_TAIL_COMP': param(0.0, 1.0, 0.01, 0.0),
-    },
-    'Vehicle model': {
-        'HNTR_MASS': param(0.1, 50.0, 0.1, 4.5),
-        'HNTR_MAX_ARM_T': param(1.0, 500.0, 1.0, 170.96),
-        'HNTR_MAX_TAIL_T': param(1.0, 500.0, 1.0, 85.48),
-        'HNTR_L1': param(0.01, 5.0, 0.01, 0.33),
-        'HNTR_L2': param(0.01, 5.0, 0.01, 0.664),
-    },
-}
+def param_group_name(name: str, prefixes: list[str]) -> str:
+    upper = name.upper()
+    if upper.startswith('HNTR_'):
+        if ('ATT_' in upper or upper.startswith('HNTR_TAU_') or upper.startswith('HNTR_RC_')):
+            if upper.endswith('_R') or '_ROLL' in upper:
+                return 'Attitude Roll'
+            if upper.endswith('_P') or 'PITCH' in upper or 'TAIL' in upper:
+                return 'Attitude Pitch'
+            if upper.endswith('_Y') or 'YAW' in upper:
+                return 'Attitude Yaw'
+            return 'Attitude General'
+        if upper.startswith(('HNTR_POS_', 'HNTR_VEL_', 'HNTR_ACC_')):
+            if upper.endswith('_Z') or upper.endswith('_UP') or upper.endswith('_DN'):
+                return 'Position Z'
+            if upper.endswith('_XY') or upper.endswith('_X') or upper.endswith('_Y'):
+                return 'Position XY'
+            return 'Position General'
+        if upper.startswith('HNTR_STAB_'):
+            return 'Stabilized Height'
+        if upper.startswith(('HNTR_TO_', 'HNTR_LOCK_', 'HNTR_LND_')):
+            return 'Takeoff And Landing'
+        if upper.startswith(('HNTR_T1_', 'HNTR_T2_', 'HNTR_SYNC_', 'HNTR_TILT')):
+            return 'Tilt Dynamics'
+        if upper.startswith(('HNTR_MASS', 'HNTR_MAX_', 'HNTR_L1', 'HNTR_L2', 'HNTR_MOT_')):
+            return 'Vehicle Model'
+        if upper.startswith('HNTR_CTRL_') or 'SIGN' in upper or 'COMP' in upper:
+            return 'Allocator'
 
-PARAM_CONFIG = {
-    name: cfg
-    for group in PARAM_GROUPS.values()
-    for name, cfg in group.items()
-}
+    for prefix in prefixes:
+        if name.startswith(prefix):
+            suffix = name[len(prefix):].strip('_')
+            token = suffix.split('_', 1)[0] if suffix else prefix.rstrip('_')
+            return f'{prefix}{token}' if token else prefix.rstrip('_')
+    return name.split('_', 1)[0] if '_' in name else 'Other'
 
-INTEGER_PARAMS = {'HNTR_CTRL_MODE'}
 
+def build_dynamic_param_config(name: str, value: float, param_type: int, is_integer: bool) -> dict:
+    default = 0.0 if value is None or not math.isfinite(float(value)) else float(value)
+    if is_integer:
+        return {
+            'min': -100000.0,
+            'max': 100000.0,
+            'step': 1.0,
+            'default': default,
+            'type': 'integer',
+            'dynamic': True,
+            'param_type': int(param_type),
+        }
+
+    magnitude = max(abs(default), 1.0)
+    limit = max(10.0, magnitude * 5.0)
+    limit = min(max(limit, 1.0), 100000.0)
+    return {
+        'min': -limit,
+        'max': limit,
+        'step': 0.001,
+        'default': default,
+        'type': 'float',
+        'dynamic': True,
+        'param_type': int(param_type),
+    }
 
 def wrap_pi(angle: float) -> float:
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
@@ -165,6 +158,9 @@ class MavlinkParamClient:
         self.lock = threading.Lock()
         self.enabled = mavutil is not None and endpoint.lower() != 'none'
         self.connected_endpoint = None
+        self.catalog = {}
+        self.catalog_time = 0.0
+        self.catalog_param_count = 0
 
     @staticmethod
     def _expand_endpoints(endpoint: str) -> list[str]:
@@ -221,6 +217,9 @@ class MavlinkParamClient:
                 pass
         self.master = None
         self.connected_endpoint = None
+        self.catalog = {}
+        self.catalog_time = 0.0
+        self.catalog_param_count = 0
 
     @staticmethod
     def _param_name(msg) -> str:
@@ -230,15 +229,32 @@ class MavlinkParamClient:
         return str(param_id).strip('\x00')
 
     @staticmethod
-    def _decode_param_value(msg) -> float:
-        if msg.param_type == mavutil.mavlink.MAV_PARAM_TYPE_INT32:
+    def _integer_param_types() -> set[int]:
+        if mavutil is None:
+            return set()
+        names = (
+            'MAV_PARAM_TYPE_UINT8', 'MAV_PARAM_TYPE_INT8',
+            'MAV_PARAM_TYPE_UINT16', 'MAV_PARAM_TYPE_INT16',
+            'MAV_PARAM_TYPE_UINT32', 'MAV_PARAM_TYPE_INT32',
+            'MAV_PARAM_TYPE_UINT64', 'MAV_PARAM_TYPE_INT64',
+        )
+        return {int(getattr(mavutil.mavlink, name)) for name in names if hasattr(mavutil.mavlink, name)}
+
+    @classmethod
+    def _is_integer_type(cls, param_type: int) -> bool:
+        return int(param_type) in cls._integer_param_types()
+
+    @classmethod
+    def _decode_param_value(cls, msg) -> float:
+        if cls._is_integer_type(int(msg.param_type)):
             packed = struct.pack('<f', float(msg.param_value))
             return float(struct.unpack('<i', packed)[0])
         return float(msg.param_value)
 
-    @staticmethod
-    def _wire_value(name: str, value: float) -> tuple[float, int]:
-        if name in INTEGER_PARAMS:
+    def _wire_value(self, name: str, value: float) -> tuple[float, int]:
+        meta = self.catalog.get(name, {})
+        param_type = int(meta.get('param_type', mavutil.mavlink.MAV_PARAM_TYPE_REAL32))
+        if self._is_integer_type(param_type):
             packed = struct.pack('<i', int(round(value)))
             return struct.unpack('<f', packed)[0], mavutil.mavlink.MAV_PARAM_TYPE_INT32
         return float(value), mavutil.mavlink.MAV_PARAM_TYPE_REAL32
@@ -247,6 +263,77 @@ class MavlinkParamClient:
         for _ in range(limit):
             if self.master.recv_match(type='PARAM_VALUE', blocking=False) is None:
                 break
+
+    def request_all_params(self, timeout: float = 12.0, idle_timeout: float = 1.2) -> dict:
+        if self.master is None:
+            return {}
+        with self.lock:
+            try:
+                self._drain_param_values(limit=4096)
+                self.master.mav.param_request_list_send(
+                    self.master.target_system,
+                    self.master.target_component,
+                )
+                params = {}
+                expected_count = None
+                deadline = time.monotonic() + max(timeout, 1.0)
+                idle_deadline = time.monotonic() + max(idle_timeout, 0.2)
+                while time.monotonic() < deadline and time.monotonic() < idle_deadline:
+                    msg = self.master.recv_match(type='PARAM_VALUE', blocking=True, timeout=0.2)
+                    if msg is None:
+                        continue
+                    name = self._param_name(msg)
+                    if not name:
+                        continue
+                    value = self._decode_param_value(msg)
+                    param_type = int(msg.param_type)
+                    index = int(getattr(msg, 'param_index', -1))
+                    count = int(getattr(msg, 'param_count', 0))
+                    if count > 0:
+                        expected_count = max(expected_count or 0, count)
+                    params[name] = {
+                        'value': value,
+                        'param_type': param_type,
+                        'index': index,
+                        'count': count,
+                        'is_integer': self._is_integer_type(param_type),
+                    }
+                    idle_deadline = time.monotonic() + max(idle_timeout, 0.2)
+                    if expected_count is not None and len(params) >= expected_count:
+                        break
+                self.catalog = params
+                self.catalog_time = time.monotonic()
+                self.catalog_param_count = expected_count or len(params)
+                print(f'[PARAM_LIST] discovered {len(params)}/{self.catalog_param_count or "?"} parameters')
+                return dict(self.catalog)
+            except Exception as exc:  # noqa: BLE001
+                print(f'[PARAM_LIST] failed: {exc}')
+                return dict(self.catalog)
+
+    def dynamic_groups(self, prefixes: list[str], force: bool = False) -> dict:
+        if self.master is None:
+            return {}
+        if force or not self.catalog or time.monotonic() - self.catalog_time > 30.0:
+            self.request_all_params()
+        groups = {}
+        for name, meta in sorted(self.catalog.items()):
+            if prefixes and not any(name.startswith(prefix) for prefix in prefixes):
+                continue
+            cfg = build_dynamic_param_config(
+                name,
+                float(meta.get('value', 0.0)),
+                int(meta.get('param_type', 0)),
+                bool(meta.get('is_integer', False)),
+            )
+            group_name = param_group_name(name, prefixes)
+            groups.setdefault(group_name, {})[name] = cfg
+        if groups:
+            all_group = {}
+            for group in groups.values():
+                all_group.update(group)
+            title = 'All discovered' if not prefixes else 'All ' + ','.join(prefixes)
+            return {title: dict(sorted(all_group.items())), **dict(sorted(groups.items()))}
+        return {}
 
     def request_param(self, name: str, timeout: float = 1.0) -> Optional[float]:
         if self.master is None:
@@ -274,8 +361,8 @@ class MavlinkParamClient:
         with self.lock:
             try:
                 wire_value, param_type = self._wire_value(name, value)
-                expected = float(round(value)) if name in INTEGER_PARAMS else float(value)
-                tolerance = 0.0 if name in INTEGER_PARAMS else max(1e-5, abs(expected) * 1e-6)
+                expected = float(round(value)) if self._is_integer_type(param_type) else float(value)
+                tolerance = 0.0 if self._is_integer_type(param_type) else max(1e-5, abs(expected) * 1e-6)
                 last_observed = None
 
                 for attempt in range(1, 4):
@@ -298,6 +385,8 @@ class MavlinkParamClient:
                                 f'[PARAM_SET] {name} requested={expected:.6g} '
                                 f'confirmed={last_observed:.6g} attempt={attempt}'
                             )
+                            if name in self.catalog:
+                                self.catalog[name]['value'] = last_observed
                             return last_observed, last_observed
                         print(
                             f'[PARAM_SET] stale/mismatched confirmation {name} '
@@ -328,7 +417,11 @@ class MavlinkParamClient:
 
 
 class HnuterTelemetry(Node):
-    TOPICS = ('attitude', 'setpoint', 'position', 'position_setpoint', 'torque', 'motors', 'mode')
+    TOPICS = (
+        'attitude', 'setpoint', 'angular_velocity',
+        'position', 'position_setpoint', 'velocity', 'velocity_setpoint',
+        'torque', 'motors', 'mode',
+    )
 
     def __init__(self):
         super().__init__('hnuter_attitude_tuning_web')
@@ -344,6 +437,9 @@ class HnuterTelemetry(Node):
         self.setpoint = (math.nan, math.nan, math.nan)
         self.position = (math.nan, math.nan, math.nan)
         self.position_setpoint = (math.nan, math.nan, math.nan)
+        self.velocity = (math.nan, math.nan, math.nan)
+        self.velocity_setpoint = (math.nan, math.nan, math.nan)
+        self.angular_velocity = (math.nan, math.nan, math.nan)
         self.torque = (math.nan, math.nan, math.nan)
         self.motors = [math.nan] * 12
         self.mode = {'armed': False, 'posctl': False, 'offboard': False}
@@ -354,6 +450,12 @@ class HnuterTelemetry(Node):
             VehicleAttitudeSetpoint,
             '/fmu/out/vehicle_attitude_setpoint_v1',
             self.on_setpoint,
+            qos,
+        )
+        self.create_subscription(
+            VehicleAngularVelocity,
+            '/fmu/out/vehicle_angular_velocity',
+            self.on_angular_velocity,
             qos,
         )
         self.create_subscription(
@@ -387,6 +489,11 @@ class HnuterTelemetry(Node):
             self.setpoint = quat_to_euler(msg.q_d)
             self.topic_time['setpoint'] = time.monotonic()
 
+    def on_angular_velocity(self, msg: VehicleAngularVelocity) -> None:
+        with self.lock:
+            self.angular_velocity = tuple(float(value) for value in msg.xyz)
+            self.topic_time['angular_velocity'] = time.monotonic()
+
     def on_torque(self, msg: VehicleTorqueSetpoint) -> None:
         with self.lock:
             self.torque = tuple(float(value) for value in msg.xyz)
@@ -395,12 +502,16 @@ class HnuterTelemetry(Node):
     def on_position(self, msg: VehicleLocalPosition) -> None:
         with self.lock:
             self.position = (float(msg.x), float(msg.y), float(msg.z))
+            self.velocity = (float(msg.vx), float(msg.vy), float(msg.vz))
             self.topic_time['position'] = time.monotonic()
+            self.topic_time['velocity'] = time.monotonic()
 
     def on_position_setpoint(self, msg: VehicleLocalPositionSetpoint) -> None:
         with self.lock:
             self.position_setpoint = (float(msg.x), float(msg.y), float(msg.z))
+            self.velocity_setpoint = (float(msg.vx), float(msg.vy), float(msg.vz))
             self.topic_time['position_setpoint'] = time.monotonic()
+            self.topic_time['velocity_setpoint'] = time.monotonic()
 
     def on_motors(self, msg: ActuatorMotors) -> None:
         with self.lock:
@@ -423,6 +534,9 @@ class HnuterTelemetry(Node):
             setpoint = tuple(self.setpoint)
             position = tuple(self.position)
             position_setpoint = tuple(self.position_setpoint)
+            velocity = tuple(self.velocity)
+            velocity_setpoint = tuple(self.velocity_setpoint)
+            angular_velocity = tuple(self.angular_velocity)
             torque = tuple(self.torque)
             motors = tuple(self.motors[:5])
             mode = dict(self.mode)
@@ -435,8 +549,11 @@ class HnuterTelemetry(Node):
             if math.isfinite(sp) and math.isfinite(actual) else None
             for actual, sp in zip(attitude, setpoint)
         ]
+        angular_velocity_deg = [finite(value * scale) for value in angular_velocity]
         position_values = [finite(value) for value in position]
         position_setpoint_values = [finite(value) for value in position_setpoint]
+        velocity_values = [finite(value) for value in velocity]
+        velocity_setpoint_values = [finite(value) for value in velocity_setpoint]
         position_errors = [
             finite(sp - actual)
             if math.isfinite(sp) and math.isfinite(actual) else None
@@ -451,8 +568,11 @@ class HnuterTelemetry(Node):
             'attitude': attitude_deg,
             'setpoint': setpoint_deg,
             'error': errors,
+            'angular_velocity': angular_velocity_deg,
             'position': position_values,
             'position_setpoint': position_setpoint_values,
+            'velocity': velocity_values,
+            'velocity_setpoint': velocity_setpoint_values,
             'position_error': position_errors,
             'torque': [finite(value) for value in torque],
             'motors': [finite(value) for value in motors],
@@ -466,8 +586,11 @@ class CsvRecorder:
         't', 'roll_deg', 'pitch_deg', 'yaw_deg',
         'roll_sp_deg', 'pitch_sp_deg', 'yaw_sp_deg',
         'roll_err_deg', 'pitch_err_deg', 'yaw_err_deg',
+        'roll_rate_deg_s', 'pitch_rate_deg_s', 'yaw_rate_deg_s',
         'north_m', 'east_m', 'down_m',
         'north_sp_m', 'east_sp_m', 'down_sp_m',
+        'north_vel_m_s', 'east_vel_m_s', 'down_vel_m_s',
+        'north_vel_sp_m_s', 'east_vel_sp_m_s', 'down_vel_sp_m_s',
         'north_err_m', 'east_err_m', 'down_err_m',
         'tx', 'ty', 'tz', 'motor1', 'motor2', 'motor3', 'motor4', 'motor5',
         'armed', 'posctl', 'offboard',
@@ -502,12 +625,21 @@ class CsvRecorder:
                     'roll_err_deg': sample['error'][0],
                     'pitch_err_deg': sample['error'][1],
                     'yaw_err_deg': sample['error'][2],
+                    'roll_rate_deg_s': sample['angular_velocity'][0],
+                    'pitch_rate_deg_s': sample['angular_velocity'][1],
+                    'yaw_rate_deg_s': sample['angular_velocity'][2],
                     'north_m': sample['position'][0],
                     'east_m': sample['position'][1],
                     'down_m': sample['position'][2],
                     'north_sp_m': sample['position_setpoint'][0],
                     'east_sp_m': sample['position_setpoint'][1],
                     'down_sp_m': sample['position_setpoint'][2],
+                    'north_vel_m_s': sample['velocity'][0],
+                    'east_vel_m_s': sample['velocity'][1],
+                    'down_vel_m_s': sample['velocity'][2],
+                    'north_vel_sp_m_s': sample['velocity_setpoint'][0],
+                    'east_vel_sp_m_s': sample['velocity_setpoint'][1],
+                    'down_vel_sp_m_s': sample['velocity_setpoint'][2],
                     'north_err_m': sample['position_error'][0],
                     'east_err_m': sample['position_error'][1],
                     'down_err_m': sample['position_error'][2],
@@ -545,6 +677,7 @@ class TuningHttpServer(ThreadingHTTPServer):
         stream_hz: float,
         token: str,
         stop_event: threading.Event,
+        param_prefixes: list[str],
     ):
         super().__init__(address, handler)
         self.telemetry = telemetry
@@ -553,11 +686,12 @@ class TuningHttpServer(ThreadingHTTPServer):
         self.stream_period = 1.0 / max(stream_hz, 1.0)
         self.token = token
         self.stop_event = stop_event
+        self.param_prefixes = param_prefixes
 
 
 class TuningRequestHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
-    server_version = 'HnuterTuning/1.0'
+    server_version = 'HnuterTuning/1.1-dynamic-params'
 
     @property
     def tuning_server(self) -> TuningHttpServer:
@@ -603,9 +737,14 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
             self._error('unauthorized', HTTPStatus.UNAUTHORIZED)
             return
         if parsed.path == '/api/config':
+            force = parse_qs(parsed.query).get('refresh', ['0'])[0] in ('1', 'true', 'yes')
+            groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes, force=force)
             self._send_json({
                 'ok': True,
-                'groups': PARAM_GROUPS,
+                'groups': groups,
+                'dynamic_params': True,
+                'param_prefixes': self.tuning_server.param_prefixes,
+                'param_count': len(self.tuning_server.mavlink.catalog),
                 'stream_hz': round(1.0 / self.tuning_server.stream_period, 2),
                 'mavlink': self.tuning_server.mavlink.connected,
                 'endpoint': self.tuning_server.mavlink.connected_endpoint,
@@ -652,7 +791,8 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
 
     def _get_params(self, parsed) -> None:
         group_name = parse_qs(parsed.query).get('group', [''])[0]
-        group = PARAM_GROUPS.get(group_name)
+        groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes)
+        group = groups.get(group_name)
         if group is None:
             self._error('unknown parameter group')
             return
@@ -670,7 +810,12 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
 
     def _set_param(self, body: dict) -> None:
         name = str(body.get('name', ''))
-        cfg = PARAM_CONFIG.get(name)
+        groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes)
+        cfg = None
+        for group in groups.values():
+            if name in group:
+                cfg = group[name]
+                break
         if cfg is None:
             self._error('unknown parameter')
             return
@@ -762,6 +907,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--csv-rate-hz', type=float, default=25.0, help='CSV logging rate')
     parser.add_argument('--csv', type=Path, default=None, help='CSV output path')
     parser.add_argument('--mavlink', default=os.environ.get('HNUTER_MAVLINK', 'auto'))
+    parser.add_argument(
+        '--param-prefix',
+        default=os.environ.get('HNUTER_PARAM_PREFIX', 'HNTR_'),
+        help="comma-separated parameter prefixes to discover; use 'all' for every PX4 parameter",
+    )
     parser.add_argument('--token', default=os.environ.get('HNUTER_WEB_TOKEN', ''),
                         help='optional LAN access token')
     return parser.parse_args()
@@ -798,6 +948,7 @@ def main() -> int:
         args.stream_hz,
         args.token,
         stop_event,
+        split_prefixes(args.param_prefix),
     )
 
     def request_shutdown(_signum=None, _frame=None) -> None:
