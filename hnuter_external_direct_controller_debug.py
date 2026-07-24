@@ -5,7 +5,7 @@ Hnuter Tiltrotor Direct Actuator Debug Controller
 核心修改：
 1. 将 hnuter104.py 中的 GamepadManager 移植到 ROS2/PX4 外部控制节点。
 2. 手柄输出为机体系速度 vx_b/vy_b、世界系垂直速度 vz、偏航角速度 yaw_rate。
-3. LT/RT 触发器输出期望俯仰角速度，积分为目标 pitch 姿态。
+3. LT/RT 触发器输出期望横滚角速度，积分为目标 roll 姿态。
 4. 速度指令通过欧拉积分生成期望位置与期望偏航，送入 px4_equiv direct 控制器与 Hnuter 分配逆解。
 5. 修复 Offboard/Arm 启动逻辑：先连续发布 OffboardControlMode，再切 Offboard，最后 Arm。
 6. Offboard+Arm 后先零油门做倾转自检，按键盘 o 后才起飞悬停。
@@ -86,7 +86,7 @@ class GamepadManager:
                  max_vxy: float = 1.0,
                  max_vz: float = 0.5,
                  max_yaw_rate: float = 0.6,
-                 max_pitch_rate: float = math.radians(20.0),
+                 max_roll_rate: float = math.radians(20.0),
                  deadzone: float = 0.10,
                  expo: float = 0.40,
                  filter_tau: float = 0.20,
@@ -99,7 +99,7 @@ class GamepadManager:
         self.max_vxy = float(max_vxy)
         self.max_vz = float(max_vz)
         self.max_yaw_rate = float(max_yaw_rate)
-        self.max_pitch_rate = float(max_pitch_rate)
+        self.max_roll_rate = float(max_roll_rate)
         self.deadzone = float(deadzone)
         self.expo = float(expo)
         self.filter_tau = float(filter_tau)
@@ -114,7 +114,7 @@ class GamepadManager:
             'vy_b': 0.0,
             'vz': 0.0,
             'yaw_rate': 0.0,
-            'pitch_rate': 0.0,
+            'roll_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
         }
@@ -209,9 +209,9 @@ class GamepadManager:
             target_vz_w = -thr_expo * self.max_vz
             target_yaw_rate = -yaw_expo * self.max_yaw_rate
 
-            # LT 增大期望 pitch，RT 减小期望 pitch。
-            # 输出是 pitch 角速度，后面在 update_trajectory() 中积分为目标俯仰角。
-            target_pitch_rate = (lt_expo - rt_expo) * self.max_pitch_rate
+            # LT 增大期望 roll，RT 减小期望 roll。
+            # 输出是 roll 角速度，后面在 update_trajectory() 中积分为目标横滚角。
+            target_roll_rate = (lt_expo - rt_expo) * self.max_roll_rate
 
             alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-3 else 1.0
             alpha = float(np.clip(alpha, 0.0, 1.0))
@@ -220,7 +220,7 @@ class GamepadManager:
             self.filtered_cmds['vy_b'] += alpha * (target_vy_b - self.filtered_cmds['vy_b'])
             self.filtered_cmds['vz'] += alpha * (target_vz_w - self.filtered_cmds['vz'])
             self.filtered_cmds['yaw_rate'] += alpha * (target_yaw_rate - self.filtered_cmds['yaw_rate'])
-            self.filtered_cmds['pitch_rate'] += alpha * (target_pitch_rate - self.filtered_cmds['pitch_rate'])
+            self.filtered_cmds['roll_rate'] += alpha * (target_roll_rate - self.filtered_cmds['roll_rate'])
             self.filtered_cmds['lt'] = lt_expo
             self.filtered_cmds['rt'] = rt_expo
             return self.filtered_cmds.copy()
@@ -466,7 +466,7 @@ class HnuterController(Node):
             'vy_b': 0.0,
             'vz': 0.0,
             'yaw_rate': 0.0,
-            'pitch_rate': 0.0,
+            'roll_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
         }
@@ -587,9 +587,11 @@ class HnuterController(Node):
         self.manual_pos_initialized = False
         self.manual_des_pos = np.zeros(3)   # [x_enu, y_enu, z_relative]
         self.manual_des_yaw = 0.0
-        # LT/RT 积分得到的俯仰姿态期望。
-        # 正号沿当前 ENU pitch 约定；若实机观察方向相反，
-        # 只需要在 GamepadManager 中把 target_pitch_rate 改成 (rt_expo - lt_expo)。
+        # LT/RT 积分得到的横滚姿态期望。
+        # 正号沿当前 ENU roll 约定；若实机观察方向相反，
+        # 只需要在 GamepadManager 中把 target_roll_rate 改成 (rt_expo - lt_expo)。
+        self.manual_des_roll = 0.0
+        self.manual_roll_limit_rad = np.radians(90.0)
         self.manual_des_pitch = 0.0
         # The primary tilt has +/-185 deg travel, leaving margin at a +/-180 deg attitude command.
         self.manual_pitch_limit_rad = np.radians(180.0)
@@ -626,15 +628,13 @@ class HnuterController(Node):
         self.lissajous_a = 2
         self.lissajous_b = 3
         self.lissajous_period_s = 24.0
-        # Trajectory 3 is intended to validate attitude-frame signs first. Large
-        # forced attitude steps fight the position hold loop and can saturate the
-        # direct controller, so keep the default conservative and override from
-        # the shell when doing stress tests.
-        self.attitude_step_angle_rad = math.radians(env_float('HNUTER_ATTITUDE_STEP_DEG', 35.0))
+        # Trajectory 3 validates large-attitude holding: roll +/-90 deg, pitch +/-180 deg, no yaw step.
+        # Per-axis environment variables and the live tuning JSON can still override these defaults.
+        self.attitude_step_angle_rad = math.radians(env_float('HNUTER_ATTITUDE_STEP_DEG', 180.0))
         self.attitude_step_axis_rad = np.array([
-            math.radians(env_float('HNUTER_ATTITUDE_STEP_ROLL_DEG', math.degrees(self.attitude_step_angle_rad))),
-            math.radians(env_float('HNUTER_ATTITUDE_STEP_PITCH_DEG', math.degrees(self.attitude_step_angle_rad))),
-            math.radians(env_float('HNUTER_ATTITUDE_STEP_YAW_DEG', math.degrees(self.attitude_step_angle_rad))),
+            math.radians(env_float('HNUTER_ATTITUDE_STEP_ROLL_DEG', 90.0)),
+            math.radians(env_float('HNUTER_ATTITUDE_STEP_PITCH_DEG', 180.0)),
+            math.radians(env_float('HNUTER_ATTITUDE_STEP_YAW_DEG', 0.0)),
         ], dtype=float)
         self.attitude_step_axis_rad[1] = float(np.clip(
             self.attitude_step_axis_rad[1],
@@ -672,7 +672,7 @@ class HnuterController(Node):
             max_vxy=0.6,
             max_vz=0.3,
             max_yaw_rate=0.4,
-            max_pitch_rate=math.radians(20.0),
+            max_roll_rate=math.radians(20.0),
             deadzone=0.10,
             expo=0.40,
             filter_tau=0.35,
@@ -725,6 +725,7 @@ class HnuterController(Node):
             "attitude_test_max_acc_xy": float(self.attitude_test_max_acc_xy),
             "alpha_limit_deg": float(math.degrees(self.alpha_limit_rad)),
             "theta_limit_deg": float(math.degrees(self.theta_limit_rad)),
+            "manual_roll_limit_deg": float(math.degrees(self.manual_roll_limit_rad)),
             "manual_pitch_limit_deg": float(math.degrees(self.manual_pitch_limit_rad)),
             "direct_safety_attitude_check_enabled": bool(self.direct_safety_attitude_check_enabled),
             "direct_safety_attitude_limit_deg": float(math.degrees(self.direct_safety_pitch_limit_rad)),
@@ -815,6 +816,10 @@ class HnuterController(Node):
         self.theta_limit_rad = math.radians(
             self._tuning_float(data, 'theta_limit_deg', math.degrees(self.theta_limit_rad))
         )
+        requested_manual_roll_limit = abs(math.radians(
+            self._tuning_float(data, 'manual_roll_limit_deg', math.degrees(self.manual_roll_limit_rad))
+        ))
+        self.manual_roll_limit_rad = min(requested_manual_roll_limit, math.radians(90.0))
         requested_manual_pitch_limit = abs(math.radians(
             self._tuning_float(data, 'manual_pitch_limit_deg', math.degrees(self.manual_pitch_limit_rad))
         ))
@@ -890,6 +895,7 @@ class HnuterController(Node):
                 f'peak_hold={self.attitude_peak_hold_s:.1f}s, '
                 f'att_z={self.attitude_test_altitude_m:.1f}m, '
                 f'alpha_lim={math.degrees(self.alpha_limit_rad):.1f}deg, '
+                f'manual_roll_lim={math.degrees(self.manual_roll_limit_rad):.1f}deg, '
                 f'manual_pitch_lim={math.degrees(self.manual_pitch_limit_rad):.1f}deg, '
                 f'att_safety={self.direct_safety_attitude_check_enabled}, '
                 f'theta_lim={math.degrees(self.theta_limit_rad):.1f}deg, '
@@ -1040,12 +1046,16 @@ class HnuterController(Node):
 
     def status_callback(self, msg):
         self.nav_state = int(getattr(msg, 'nav_state', -1))
-        # In the current Hnuter SITL bridge, vehicle_status.arming_state does
-        # not match px4_msgs' ARMING_STATE_* constants. Use our own arm/disarm
-        # command ACKs as the direct-controller armed latch instead.
+        if int(getattr(msg, 'arming_state', -1)) == self.ARMING_STATE_ARMED:
+            self.armed = True
 
     def control_mode_callback(self, msg):
         self.control_offboard_enabled = bool(getattr(msg, 'flag_control_offboard_enabled', False))
+        self._armed_from_control_mode = bool(getattr(msg, 'flag_armed', False))
+        if self._armed_from_control_mode:
+            self.armed = True
+        elif time.time() > self._optimistic_armed_until:
+            self.armed = False
 
     def land_detected_callback(self, msg):
         self.land_detected = {
@@ -1134,19 +1144,13 @@ class HnuterController(Node):
                     'PX4 在起飞许可前已自动上锁，可能是 COM_DISARM_PRFLT 预起飞超时。'
                     '已停止自动二次 Arm；按键盘 o 后会重新请求 Offboard/Arm 并起飞悬停。'
                 )
-            elif self.land_detected.get('landed', False) or self.land_detected.get('ground_contact', False):
-                self.takeoff_requested = True
-                self.startup_blocked_after_disarm = False
-                self.preflight_disarm_waiting_for_o = False
-                self.auto_arm_attempts = 0
-                self.was_armed_once = False
             elif not self.rearm_after_auto_disarm:
                 self.startup_blocked_after_disarm = True
-                self.preflight_disarm_waiting_for_o = False
+                self.preflight_disarm_waiting_for_o = True
                 self.get_logger().warn(
                     'PX4 已从 armed 变为 disarmed。已阻止自动二次 Arm。'
                     '请检查是否触发 COM_DISARM_PRFLT、COM_DISARM_LAND、land detector 或 failsafe；'
-                    '确认安全后重启本节点或手动 Arm。'
+                    '确认安全后按键盘 o 重新请求 Offboard/Arm。'
                 )
         self._last_armed_state = self.armed
 
@@ -1386,7 +1390,7 @@ class HnuterController(Node):
             'vy_b': 0.0,
             'vz': 0.0,
             'yaw_rate': 0.0,
-            'pitch_rate': 0.0,
+            'roll_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
         }
@@ -1494,6 +1498,7 @@ class HnuterController(Node):
             mode_text = '矩形'
 
         self.manual_des_pos = self.auto_traj_start_pos.copy()
+        self.manual_des_roll = 0.0
         self.manual_des_pitch = 0.0
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
@@ -1519,6 +1524,7 @@ class HnuterController(Node):
         else:
             self.manual_des_pos = self.auto_traj_start_pos.copy()
         self.manual_des_yaw = self.auto_traj_yaw
+        self.manual_des_roll = 0.0
         self.manual_des_pitch = 0.0
         self.target_position = self.manual_des_pos.copy()
         self.target_velocity = np.zeros(3)
@@ -1611,14 +1617,29 @@ class HnuterController(Node):
         if active_axes.size == 0:
             return self.auto_traj_start_attitude.copy(), np.zeros(3), None, True
 
-        total_time = float(active_axes.size) * cycle_time
+        axis_amplitudes = []
+        for axis in active_axes:
+            amplitude = abs(float(self.attitude_step_axis_rad[int(axis)]))
+            if amplitude > math.radians(0.01):
+                axis_amplitudes.append((int(axis), amplitude))
+
+        # Run one axis at a time and always return to level before switching axes:
+        # roll +, pitch +, yaw +, then roll -, pitch -, yaw - for whichever axes are enabled.
+        signed_sequence = (
+            [(axis, amplitude) for axis, amplitude in axis_amplitudes]
+            + [(axis, -amplitude) for axis, amplitude in axis_amplitudes]
+        )
+
+        if not signed_sequence:
+            return self.auto_traj_start_attitude.copy(), np.zeros(3), None, True
+
+        total_time = float(len(signed_sequence)) * cycle_time
         if elapsed >= total_time:
             return self.auto_traj_start_attitude.copy(), np.zeros(3), None, True
 
-        sequence_index = min(int(elapsed / cycle_time), active_axes.size - 1)
-        axis_idx = int(active_axes[sequence_index])
+        sequence_index = min(int(elapsed / cycle_time), len(signed_sequence) - 1)
+        axis_idx, step_rad = signed_sequence[sequence_index]
         cycle_elapsed = elapsed - sequence_index * cycle_time
-        step_rad = float(self.attitude_step_axis_rad[axis_idx])
 
         if cycle_elapsed < segment_time:
             u = float(np.clip(cycle_elapsed / segment_time, 0.0, 1.0))
@@ -1663,6 +1684,7 @@ class HnuterController(Node):
 
             self.manual_des_pos = self.auto_traj_start_pos.copy()
             self.manual_des_yaw = attitude[2]
+            self.manual_des_roll = attitude[0]
             self.manual_des_pitch = attitude[1]
             self._last_manual_cmd = self._zero_manual_cmd()
             self.target_position = self.auto_traj_start_pos.copy()
@@ -1686,6 +1708,7 @@ class HnuterController(Node):
 
         self.manual_des_pos = pos.copy()
         self.manual_des_yaw = self.auto_traj_yaw
+        self.manual_des_roll = 0.0
         self.manual_des_pitch = 0.0
         self._last_manual_cmd = self._zero_manual_cmd()
         self.target_position = pos
@@ -1740,6 +1763,7 @@ class HnuterController(Node):
             self.preflight_tilt_test_started = False
             self.preflight_tilt_test_finished = False
             self.preflight_tilt_start_time_s = None
+            self.manual_des_roll = 0.0
             self.manual_des_pitch = 0.0
             self.target_position = np.array([self.position[0], self.position[1], 0.0])
             self.target_velocity = np.zeros(3)
@@ -1760,6 +1784,7 @@ class HnuterController(Node):
             self._takeoff_lock_start_time_s = None
             self._takeoff_start_z_rel = 0.0
             self._xy_lock_active = False
+            self.manual_des_roll = 0.0
             self.manual_des_pitch = 0.0
             self._last_manual_cmd = self._zero_manual_cmd()
             self.target_position = np.array([self.position[0], self.position[1], 0.0])
@@ -1774,6 +1799,7 @@ class HnuterController(Node):
             self.manual_des_pos = np.array([self.position[0], self.position[1], max(0.0, self.position[2] - self._z0)])
             self.initial_yaw = self._current_yaw_enu()
             self.manual_des_yaw = self.initial_yaw
+            self.manual_des_roll = 0.0
             self.manual_des_pitch = 0.0
             self._z_sp = float(self.manual_des_pos[2])
             self._takeoff_start_z_rel = float(self.manual_des_pos[2])
@@ -1800,7 +1826,7 @@ class HnuterController(Node):
         yaw_ref = self.manual_des_yaw
         vx_w = cmds['vx_b'] * math.cos(yaw_ref) - cmds['vy_b'] * math.sin(yaw_ref)
         vy_w = cmds['vx_b'] * math.sin(yaw_ref) + cmds['vy_b'] * math.cos(yaw_ref)
-        pitch_rate = cmds.get('pitch_rate', 0.0)
+        roll_rate = cmds.get('roll_rate', 0.0)
         prev_xy = self.manual_des_pos[:2].copy()
         manual_xy_active = abs(cmds['vx_b']) > 1e-5 or abs(cmds['vy_b']) > 1e-5
 
@@ -1841,13 +1867,13 @@ class HnuterController(Node):
             if abs(yaw_error) > self.manual_max_yaw_lead_rad:
                 yaw_error = float(np.clip(yaw_error, -self.manual_max_yaw_lead_rad, self.manual_max_yaw_lead_rad))
                 self.manual_des_yaw = self._wrap_angle_rad(current_yaw_enu + yaw_error)
-        previous_pitch = self.manual_des_pitch
-        self.manual_des_pitch = float(np.clip(
-            previous_pitch + pitch_rate * dt,
-            -self.manual_pitch_limit_rad,
-            self.manual_pitch_limit_rad
+        previous_roll = self.manual_des_roll
+        self.manual_des_roll = float(np.clip(
+            previous_roll + roll_rate * dt,
+            -self.manual_roll_limit_rad,
+            self.manual_roll_limit_rad
         ))
-        realized_pitch_rate = (self.manual_des_pitch - previous_pitch) / max(dt, 1e-3)
+        realized_roll_rate = (self.manual_des_roll - previous_roll) / max(dt, 1e-3)
         self._limit_manual_position_lead(
             clamp_xy=manual_xy_active,
             clamp_z=(abs(manual_vz) > 1e-5 or auto_climb_active),
@@ -1857,8 +1883,8 @@ class HnuterController(Node):
         self.target_position = self.manual_des_pos.copy()
         self.target_velocity = np.array([realized_vxy[0], realized_vxy[1], vz_w], dtype=float)
         self.target_acceleration = np.zeros(3)
-        self.target_attitude = np.array([0.0, self.manual_des_pitch, self.manual_des_yaw], dtype=float)
-        self.target_attitude_rate = np.array([0.0, realized_pitch_rate, yaw_rate], dtype=float)
+        self.target_attitude = np.array([self.manual_des_roll, 0.0, self.manual_des_yaw], dtype=float)
+        self.target_attitude_rate = np.array([realized_roll_rate, 0.0, yaw_rate], dtype=float)
         self.target_R_des_ned_frd = None
 
     def control_loop(self):
@@ -2495,8 +2521,8 @@ class HnuterController(Node):
             f"Gamepad: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
             f"vz={self._last_manual_cmd['vz']:+4.2f}, yaw_rate={self._last_manual_cmd['yaw_rate']:+4.2f}, "
             f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}\n"
-            f"Manual pitch: des={np.degrees(self.manual_des_pitch):+5.1f}° | "
-            f"pitch_rate={np.degrees(self._last_manual_cmd.get('pitch_rate', 0.0)):+5.1f}°/s\n"
+            f"Manual roll: des={np.degrees(self.manual_des_roll):+5.1f}° | "
+            f"roll_rate={np.degrees(self._last_manual_cmd.get('roll_rate', 0.0)):+5.1f}°/s\n"
             f"Wrench: Fx={self.last_W[0]:+5.2f}N, Fy={self.last_W[1]:+5.2f}N, Fz={self.last_W[2]:+5.2f}N\n"
             f"Thrust: F1={self.last_F1:5.2f}N | F2={self.last_F2:5.2f}N | F3={self.last_F3:5.2f}N\n"
             f"Tilt: A1={np.degrees(self._alpha1_cmd):+5.1f}° | A2={np.degrees(self._alpha2_cmd):+5.1f}° | "

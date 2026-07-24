@@ -631,11 +631,14 @@ class HnuterController(Node):
         self.angular_velocity = np.array([msg.xyz[0], -msg.xyz[1], -msg.xyz[2]], dtype=float)
 
     def status_callback(self, msg):
-        self.armed = (int(msg.arming_state) == self.ARMING_STATE_ARMED)
+        if int(getattr(msg, 'arming_state', -1)) == self.ARMING_STATE_ARMED:
+            self.armed = True
         self.nav_state = int(getattr(msg, 'nav_state', -1))
 
     def control_mode_callback(self, msg):
         self.control_offboard_enabled = bool(getattr(msg, 'flag_control_offboard_enabled', False))
+        if hasattr(msg, 'flag_armed'):
+            self.armed = bool(msg.flag_armed)
 
     def vehicle_command_ack_callback(self, msg):
         command = int(msg.command)

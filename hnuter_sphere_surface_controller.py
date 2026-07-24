@@ -1306,12 +1306,16 @@ class HnuterSphereSurfaceController(Node):
 
     def status_callback(self, msg):
         self.nav_state = int(getattr(msg, 'nav_state', -1))
-        # In the current Hnuter SITL bridge, vehicle_status.arming_state does
-        # not match px4_msgs' ARMING_STATE_* constants. Use our own arm/disarm
-        # command ACKs as the direct-controller armed latch instead.
+        if int(getattr(msg, 'arming_state', -1)) == self.ARMING_STATE_ARMED:
+            self.armed = True
 
     def control_mode_callback(self, msg):
         self.control_offboard_enabled = bool(getattr(msg, 'flag_control_offboard_enabled', False))
+        self._armed_from_control_mode = bool(getattr(msg, 'flag_armed', False))
+        if self._armed_from_control_mode:
+            self.armed = True
+        elif time.time() > self._optimistic_armed_until:
+            self.armed = False
 
     def land_detected_callback(self, msg):
         self.land_detected = {
@@ -1400,19 +1404,13 @@ class HnuterSphereSurfaceController(Node):
                     'PX4 在起飞许可前已自动上锁，可能是 COM_DISARM_PRFLT 预起飞超时。'
                     '已停止自动二次 Arm；按键盘 o 后会重新请求 Offboard/Arm 并起飞悬停。'
                 )
-            elif self.land_detected.get('landed', False) or self.land_detected.get('ground_contact', False):
-                self.takeoff_requested = True
-                self.startup_blocked_after_disarm = False
-                self.preflight_disarm_waiting_for_o = False
-                self.auto_arm_attempts = 0
-                self.was_armed_once = False
             elif not self.rearm_after_auto_disarm:
                 self.startup_blocked_after_disarm = True
-                self.preflight_disarm_waiting_for_o = False
+                self.preflight_disarm_waiting_for_o = True
                 self.get_logger().warn(
                     'PX4 已从 armed 变为 disarmed。已阻止自动二次 Arm。'
                     '请检查是否触发 COM_DISARM_PRFLT、COM_DISARM_LAND、land detector 或 failsafe；'
-                    '确认安全后重启本节点或手动 Arm。'
+                    '确认安全后按键盘 o 重新请求 Offboard/Arm。'
                 )
         self._last_armed_state = self.armed
 
