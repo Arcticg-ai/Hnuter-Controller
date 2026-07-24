@@ -25,6 +25,8 @@ let drawPending = false;
 let receivedSinceRate = 0;
 let rateStarted = performance.now();
 let parameterLoadGeneration = 0;
+let parameterApplyGeneration = 0;
+const parameterApplyTimers = new Map();
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -40,12 +42,32 @@ async function api(path, options = {}) {
   const separator = path.includes('?') ? '&' : '?';
   const url = token ? `${path}${separator}token=${encodeURIComponent(token)}` : path;
   const headers = {'Content-Type': 'application/json', ...(options.headers || {})};
+  const timeoutMs = options.timeoutMs || 0;
+  let timeout = null;
+  let signal = options.signal;
+  const requestOptions = {...options};
+  delete requestOptions.timeoutMs;
+
+  if (timeoutMs > 0 && !signal) {
+    const controller = new AbortController();
+    signal = controller.signal;
+    timeout = setTimeout(() => controller.abort(), timeoutMs);
+  }
+
   if (token) headers['X-Hnuter-Token'] = token;
-  const response = await fetch(url, {...options, headers, cache: 'no-store'});
-  let body = {};
-  try { body = await response.json(); } catch (_) { body = {error: response.statusText}; }
-  if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
-  return body;
+
+  try {
+    const response = await fetch(url, {...requestOptions, headers, signal, cache: 'no-store'});
+    let body = {};
+    try { body = await response.json(); } catch (_) { body = {error: response.statusText}; }
+    if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+    return body;
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error(`request timeout after ${(timeoutMs / 1000).toFixed(1)}s`);
+    throw error;
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
 }
 
 function valueAt(sample, path) {
@@ -304,9 +326,10 @@ function updateLiveState(payload) {
     : 'Disarmed';
   setStatus($('#mode-status'), modeText, data.mode.armed ? 'armed' : 'neutral');
   $('#endpoint').textContent = payload.endpoint || 'MAVLink endpoint not connected';
-  $('#roll-value').textContent = `${format(data.attitude[0])} / ${format(data.setpoint[0])} deg`;
-  $('#pitch-value').textContent = `${format(data.attitude[1])} / ${format(data.setpoint[1])} deg`;
-  $('#yaw-value').textContent = `${format(data.attitude[2])} / ${format(data.setpoint[2])} deg`;
+  const spSource = data.setpoint_source === 'hnuter' ? 'HNTR' : 'PX4';
+  $('#roll-value').textContent = `${format(data.attitude[0])} / ${format(data.setpoint[0])} deg ${spSource}`;
+  $('#pitch-value').textContent = `${format(data.attitude[1])} / ${format(data.setpoint[1])} deg ${spSource}`;
+  $('#yaw-value').textContent = `${format(data.attitude[2])} / ${format(data.setpoint[2])} deg ${spSource}`;
   $('#position-value').textContent = data.position.map((value) => format(value, 2)).join(' ');
   $('#velocity-value').textContent = data.velocity.map((value) => format(value, 2)).join(' ');
   $('#angular-rate-value').textContent = data.angular_velocity.map((value) => format(value, 1)).join(' ');
@@ -348,6 +371,69 @@ function showMessage(text, kind = '') {
   element.className = `message ${kind}`;
 }
 
+function rowNumber(row) {
+  return Number(row.querySelector('.number').value);
+}
+
+function updateRowDirty(row) {
+  const resetValue = Number(row.dataset.resetValue);
+  const confirmedValue = Number(row.dataset.confirmedValue);
+  if (Number.isFinite(resetValue) && Number.isFinite(confirmedValue) && Math.abs(confirmedValue - resetValue) <= 1e-7) {
+    row.classList.remove('dirty');
+  } else {
+    row.classList.add('dirty');
+  }
+}
+
+async function applyParameter(row, value, options = {}) {
+  const name = row.dataset.name;
+  if (!Number.isFinite(value)) {
+    showMessage(`${name}: invalid number`, 'error');
+    return;
+  }
+  const range = row.querySelector('.range');
+  const min = Number(range.min);
+  const max = Number(range.max);
+  if (value < min || value > max) {
+    showMessage(`${name}: value must be in [${min}, ${max}]`, 'error');
+    return;
+  }
+  const generation = ++parameterApplyGeneration;
+  row.dataset.applyGeneration = String(generation);
+  row.classList.add('applying');
+  row.querySelector('.confirmed').textContent = `applying ${Number(value).toPrecision(6)}`;
+  try {
+    const response = await api('/api/params/set', {
+      method: 'POST',
+      body: JSON.stringify({name, value}),
+    });
+    if (row.dataset.applyGeneration !== String(generation)) return;
+    const confirmed = Number(response.confirmed);
+    row.dataset.confirmedValue = confirmed;
+    row.querySelector('.range').value = confirmed;
+    row.querySelector('.number').value = confirmed;
+    row.querySelector('.confirmed').textContent = `PX4 ${Number(confirmed).toPrecision(6)}`;
+    if (options.resetBaseline) row.dataset.resetValue = confirmed;
+    updateRowDirty(row);
+    showMessage(`${name} applied: ${Number(confirmed).toPrecision(6)}`, 'success');
+  } catch (error) {
+    if (row.dataset.applyGeneration !== String(generation)) return;
+    row.querySelector('.confirmed').textContent = `apply failed`;
+    showMessage(`${name}: ${error.message}`, 'error');
+  } finally {
+    if (row.dataset.applyGeneration === String(generation)) row.classList.remove('applying');
+  }
+}
+
+function queueApplyParameter(row, delayMs = 180) {
+  const name = row.dataset.name;
+  if (parameterApplyTimers.has(name)) clearTimeout(parameterApplyTimers.get(name));
+  parameterApplyTimers.set(name, setTimeout(() => {
+    parameterApplyTimers.delete(name);
+    applyParameter(row, rowNumber(row));
+  }, delayMs));
+}
+
 function renderParameterGroup() {
   const groupName = $('#group-select').value;
   const group = config.groups[groupName];
@@ -363,32 +449,44 @@ function renderParameterGroup() {
     return;
   }
   if (groupName.includes('MASS') || groupName.includes('MAX') || groupName.includes('ALLOC')) {
-    warning.textContent = 'These values may change the vehicle model or allocation. Reset only changes the browser field, not PX4.';
+    warning.textContent = 'These values may change the vehicle model or allocation. Reset writes the pre-edit value back to PX4 RAM.';
     warning.classList.remove('hidden');
   } else {
     warning.classList.add('hidden');
   }
   for (const [name, cfg] of Object.entries(group)) {
+    const initialValue = finite(Number(cfg.default)) ? Number(cfg.default) : 0;
     const row = document.createElement('div');
     row.className = 'parameter-row';
     row.dataset.name = name;
+    row.dataset.confirmedValue = initialValue;
+    row.dataset.resetValue = initialValue;
     row.innerHTML = `
       <div class="parameter-name">
-        <span>${name}</span><span class="confirmed">not read</span>
+        <span>${name}</span><span class="confirmed">catalog ${Number(initialValue).toPrecision(6)}</span>
       </div>
       <div class="parameter-controls">
-        <input class="range" type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${cfg.default}" aria-label="${name}">
-        <input class="number" type="number" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${cfg.default}" aria-label="${name} value">
+        <input class="range" type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${initialValue}" aria-label="${name}">
+        <input class="number" type="number" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${initialValue}" aria-label="${name} value">
         <button class="reset" type="button">Reset</button>
       </div>`;
     const range = row.querySelector('.range');
     const number = row.querySelector('.number');
-    const markEdited = () => {
+    const markPending = () => {
       row.classList.add('dirty');
-      row.querySelector('.confirmed').textContent = 'edited, reset available';
+      row.querySelector('.confirmed').textContent = 'pending auto apply';
     };
-    range.addEventListener('input', () => { number.value = range.value; markEdited(); });
-    number.addEventListener('input', () => { range.value = number.value; markEdited(); });
+    range.addEventListener('input', () => {
+      number.value = range.value;
+      markPending();
+      queueApplyParameter(row, 120);
+    });
+    number.addEventListener('input', () => {
+      if (number.value !== '') range.value = number.value;
+      markPending();
+      queueApplyParameter(row, 450);
+    });
+    number.addEventListener('change', () => queueApplyParameter(row, 0));
     row.querySelector('.reset').addEventListener('click', () => resetParameter(row));
     list.appendChild(row);
   }
@@ -402,15 +500,17 @@ async function loadParameters() {
   button.disabled = true;
   showMessage(`Reading ${group} from PX4...`);
   try {
-    const response = await api(`/api/params?group=${encodeURIComponent(group)}`);
+    const response = await api(`/api/params?group=${encodeURIComponent(group)}`, {timeoutMs: 5000});
     if (generation !== parameterLoadGeneration || group !== $('#group-select').value) return;
     for (const [name, value] of Object.entries(response.values)) {
       const row = document.querySelector(`.parameter-row[data-name="${name}"]`);
       if (!row || !finite(value) || row.classList.contains('dirty')) continue;
       row.dataset.confirmedValue = value;
+      row.dataset.resetValue = value;
       row.querySelector('.range').value = value;
       row.querySelector('.number').value = value;
       row.querySelector('.confirmed').textContent = `PX4 ${Number(value).toPrecision(6)}`;
+      updateRowDirty(row);
     }
     if (response.missing.length) showMessage(`Missing: ${response.missing.join(', ')}`, 'error');
     else showMessage(`${Object.keys(response.values).length} parameters read`, 'success');
@@ -423,16 +523,18 @@ async function loadParameters() {
 
 function resetParameter(row) {
   const name = row.dataset.name;
-  const value = Number(row.dataset.confirmedValue);
+  const value = Number(row.dataset.resetValue);
   if (!Number.isFinite(value)) {
-    showMessage(`${name}: no previously read PX4 value to reset to`, 'error');
+    showMessage(`${name}: no baseline value to reset to`, 'error');
     return;
+  }
+  if (parameterApplyTimers.has(name)) {
+    clearTimeout(parameterApplyTimers.get(name));
+    parameterApplyTimers.delete(name);
   }
   row.querySelector('.range').value = value;
   row.querySelector('.number').value = value;
-  row.querySelector('.confirmed').textContent = `PX4 ${Number(value).toPrecision(6)}`;
-  row.classList.remove('dirty');
-  showMessage(`${name} reset to previous PX4 value`, 'success');
+  applyParameter(row, value);
 }
 
 async function loadConfig(refresh = false) {
@@ -482,7 +584,7 @@ $('#clear').addEventListener('click', () => { samples.length = 0; scheduleDraw()
 $('#read-params').addEventListener('click', loadParameters);
 $('#save-params').addEventListener('click', async () => {
   const warning = latestMode.armed ? 'The vehicle is ARMED. ' : '';
-  if (!window.confirm(`${warning}Permanently save current PX4 parameters?`)) return;
+  if (!window.confirm(`${warning}Permanently save current PX4 RAM parameters to flash?`)) return;
   try {
     await api('/api/params/save', {method: 'POST', body: '{}'});
     showMessage('PX4 parameter save requested', 'success');

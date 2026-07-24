@@ -36,7 +36,7 @@
 
       <div class="plot-grid">
         <article class="plot-panel">
-          <div class="plot-title"><span>Attitude tracking</span><span>deg <select class="axis-filter"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
+          <div class="plot-title"><span>Attitude tracking: solid actual, dashed Hnuter/PX4 setpoint</span><span>deg <select class="axis-filter"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="attitude-chart"></canvas>
         </article>
         <article class="plot-panel compact">
@@ -74,7 +74,7 @@
       <div class="parameter-header">
         <div>
           <h2>Parameters</h2>
-          <p>Edit locally, then Reset returns to the last PX4-read value.</p>
+          <p>Changes auto-apply to PX4 RAM; Reset writes the pre-edit value back.</p>
         </div>
         <button id="reconnect" type="button">Reconnect</button>
       </div>
@@ -85,7 +85,7 @@
 
       <div class="parameter-actions">
         <button id="read-params" type="button">Read group</button>
-        <button id="save-params" type="button" class="danger">Save to PX4</button>
+        <button id="save-params" type="button" class="danger">Save to Flash</button>
       </div>
 
       <div id="parameter-message" class="message" aria-live="polite"></div>

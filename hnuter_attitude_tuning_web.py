@@ -35,6 +35,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 
 from px4_msgs.msg import ActuatorMotors
+from px4_msgs.msg import DebugVect
 from px4_msgs.msg import VehicleAngularVelocity
 from px4_msgs.msg import VehicleAttitude
 from px4_msgs.msg import VehicleAttitudeSetpoint
@@ -104,28 +105,42 @@ def param_group_name(name: str, prefixes: list[str]) -> str:
     return name.split('_', 1)[0] if '_' in name else 'Other'
 
 
+def _dynamic_param_limits(name: str, default: float, is_integer: bool) -> tuple[float, float, float]:
+    upper = name.upper()
+    abs_default = abs(default) if math.isfinite(default) else 0.0
+
+    if is_integer:
+        if 'SIGN' in upper or upper.endswith('_REV') or '_REV_' in upper:
+            return -1.0, 1.0, 1.0
+        if upper.endswith('_EN') or upper.endswith('_ENABLE') or upper.endswith('_MODE'):
+            return 0.0, 10.0, 1.0
+        return 0.0, max(100.0, abs_default * 5.0), 1.0
+
+    signed_tokens = ('BIAS', 'TRIM', 'OFFSET', '_OFF', 'ERR', 'SIGN', 'CENTER')
+    signed = any(token in upper for token in signed_tokens)
+
+    if any(token in upper for token in ('ANGLE', 'MAXA', 'MINA', 'TILT')):
+        return (-185.0 if signed else 0.0), 185.0, 0.1
+    if any(token in upper for token in ('PITCH_BIAS', 'TAIL_BIAS')):
+        return -1.0, 1.0, 0.001
+    if any(token in upper for token in ('TAU', 'TC', 'TIME', 'DELAY')):
+        return 0.0, max(5.0, abs_default * 5.0), 0.001
+    if any(token in upper for token in ('LIM', 'LIMIT', 'MAX', 'MIN', 'MASS', 'GAIN', '_P_', '_I_', '_D_', 'THR', 'VEL', 'ACC', 'RATE')):
+        return 0.0, max(10.0, abs_default * 5.0), 0.001
+
+    limit = min(max(10.0, max(abs_default, 1.0) * 5.0), 100000.0)
+    return (-limit if signed else 0.0), limit, 0.001
+
+
 def build_dynamic_param_config(name: str, value: float, param_type: int, is_integer: bool) -> dict:
     default = 0.0 if value is None or not math.isfinite(float(value)) else float(value)
-    if is_integer:
-        return {
-            'min': -100000.0,
-            'max': 100000.0,
-            'step': 1.0,
-            'default': default,
-            'type': 'integer',
-            'dynamic': True,
-            'param_type': int(param_type),
-        }
-
-    magnitude = max(abs(default), 1.0)
-    limit = max(10.0, magnitude * 5.0)
-    limit = min(max(limit, 1.0), 100000.0)
+    low, high, step = _dynamic_param_limits(name, default, is_integer)
     return {
-        'min': -limit,
-        'max': limit,
-        'step': 0.001,
+        'min': low,
+        'max': high,
+        'step': step,
         'default': default,
-        'type': 'float',
+        'type': 'integer' if is_integer else 'float',
         'dynamic': True,
         'param_type': int(param_type),
     }
@@ -301,10 +316,16 @@ class MavlinkParamClient:
                     idle_deadline = time.monotonic() + max(idle_timeout, 0.2)
                     if expected_count is not None and len(params) >= expected_count:
                         break
-                self.catalog = params
+                if params:
+                    merged = dict(self.catalog)
+                    merged.update(params)
+                    self.catalog = merged
                 self.catalog_time = time.monotonic()
-                self.catalog_param_count = expected_count or len(params)
-                print(f'[PARAM_LIST] discovered {len(params)}/{self.catalog_param_count or "?"} parameters')
+                self.catalog_param_count = expected_count or max(len(self.catalog), len(params))
+                print(
+                    f'[PARAM_LIST] discovered {len(params)}/{self.catalog_param_count or "?"} parameters; '
+                    f'catalog has {len(self.catalog)}'
+                )
                 return dict(self.catalog)
             except Exception as exc:  # noqa: BLE001
                 print(f'[PARAM_LIST] failed: {exc}')
@@ -434,7 +455,9 @@ class HnuterTelemetry(Node):
         self.started = time.monotonic()
         self.lock = threading.Lock()
         self.attitude = (math.nan, math.nan, math.nan)
-        self.setpoint = (math.nan, math.nan, math.nan)
+        self.standard_setpoint = (math.nan, math.nan, math.nan)
+        self.hnuter_setpoint = (math.nan, math.nan, math.nan)
+        self.hnuter_setpoint_time = None
         self.position = (math.nan, math.nan, math.nan)
         self.position_setpoint = (math.nan, math.nan, math.nan)
         self.velocity = (math.nan, math.nan, math.nan)
@@ -452,6 +475,7 @@ class HnuterTelemetry(Node):
             self.on_setpoint,
             qos,
         )
+        self.create_subscription(DebugVect, '/fmu/out/debug_vect', self.on_debug_vect, qos)
         self.create_subscription(
             VehicleAngularVelocity,
             '/fmu/out/vehicle_angular_velocity',
@@ -484,10 +508,27 @@ class HnuterTelemetry(Node):
             self.attitude = quat_to_euler(msg.q)
             self.topic_time['attitude'] = time.monotonic()
 
+    @staticmethod
+    def _debug_name(raw) -> str:
+        if isinstance(raw, str):
+            return raw.strip('\x00')
+        try:
+            return ''.join(chr(int(value)) for value in raw if int(value) != 0)
+        except Exception:  # noqa: BLE001
+            return str(raw).strip('\x00')
+
     def on_setpoint(self, msg: VehicleAttitudeSetpoint) -> None:
         with self.lock:
-            self.setpoint = quat_to_euler(msg.q_d)
+            self.standard_setpoint = quat_to_euler(msg.q_d)
             self.topic_time['setpoint'] = time.monotonic()
+
+    def on_debug_vect(self, msg: DebugVect) -> None:
+        if self._debug_name(msg.name) != 'hntr_att':
+            return
+        with self.lock:
+            self.hnuter_setpoint = (math.radians(float(msg.x)), math.radians(float(msg.y)), math.radians(float(msg.z)))
+            self.hnuter_setpoint_time = time.monotonic()
+            self.topic_time['setpoint'] = self.hnuter_setpoint_time
 
     def on_angular_velocity(self, msg: VehicleAngularVelocity) -> None:
         with self.lock:
@@ -531,7 +572,10 @@ class HnuterTelemetry(Node):
         now = time.monotonic()
         with self.lock:
             attitude = tuple(self.attitude)
-            setpoint = tuple(self.setpoint)
+            now_locked = time.monotonic()
+            hnuter_setpoint_fresh = self.hnuter_setpoint_time is not None and (now_locked - self.hnuter_setpoint_time) < 0.5
+            setpoint = tuple(self.hnuter_setpoint if hnuter_setpoint_fresh else self.standard_setpoint)
+            setpoint_source = 'hnuter' if hnuter_setpoint_fresh else 'px4'
             position = tuple(self.position)
             position_setpoint = tuple(self.position_setpoint)
             velocity = tuple(self.velocity)
@@ -567,6 +611,7 @@ class HnuterTelemetry(Node):
             't': round(now - self.started, 4),
             'attitude': attitude_deg,
             'setpoint': setpoint_deg,
+            'setpoint_source': setpoint_source,
             'error': errors,
             'angular_velocity': angular_velocity_deg,
             'position': position_values,
@@ -687,6 +732,7 @@ class TuningHttpServer(ThreadingHTTPServer):
         self.token = token
         self.stop_event = stop_event
         self.param_prefixes = param_prefixes
+        self.param_groups_cache = {}
 
 
 class TuningRequestHandler(BaseHTTPRequestHandler):
@@ -739,6 +785,8 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
         if parsed.path == '/api/config':
             force = parse_qs(parsed.query).get('refresh', ['0'])[0] in ('1', 'true', 'yes')
             groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes, force=force)
+            if groups:
+                self.tuning_server.param_groups_cache = groups
             self._send_json({
                 'ok': True,
                 'groups': groups,
@@ -791,31 +839,81 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
 
     def _get_params(self, parsed) -> None:
         group_name = parse_qs(parsed.query).get('group', [''])[0]
-        groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes)
-        group = groups.get(group_name)
-        if group is None:
-            self._error('unknown parameter group')
-            return
         if not self.tuning_server.mavlink.connected:
             self._error('MAVLink is not connected', HTTPStatus.SERVICE_UNAVAILABLE)
             return
+        groups = self.tuning_server.param_groups_cache or self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes)
+        group = groups.get(group_name)
+        if group is None:
+            groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes, force=True)
+            if groups:
+                self.tuning_server.param_groups_cache = groups
+            group = groups.get(group_name) or self.tuning_server.param_groups_cache.get(group_name)
+        if group is None:
+            available = ', '.join(sorted(groups.keys() or self.tuning_server.param_groups_cache.keys()))
+            suffix = f'; available: {available}' if available else ''
+            self._error(f'unknown parameter group: {group_name}{suffix}')
+            return
+        query = parse_qs(parsed.query)
+        force_refresh = query.get('refresh', ['0'])[0] in ('1', 'true', 'yes')
         values = {}
-        for name in group:
-            value = self.tuning_server.mavlink.request_param(name, timeout=0.8)
+        missing = []
+
+        # The dynamic parameter catalog already comes from PX4 PARAM_VALUE replies.
+        # Use it as the fast path; per-parameter reads are slow and can make the
+        # browser look stuck on large groups if one reply is missed.
+        if force_refresh:
+            self.tuning_server.mavlink.request_all_params(timeout=8.0, idle_timeout=0.8)
+
+        for name, cfg in group.items():
+            meta = self.tuning_server.mavlink.catalog.get(name)
+            value = meta.get('value') if meta is not None else None
+
             if value is None:
-                value = self.tuning_server.mavlink.request_param(name, timeout=1.0)
+                value = self.tuning_server.mavlink.request_param(name, timeout=0.25)
+
+            if value is None and isinstance(cfg, dict):
+                # Last-resort fallback to the value discovered when the group was
+                # built. This prevents a single partial MAVLink catalog refresh
+                # from making already-known parameters disappear from the UI.
+                value = cfg.get('default')
+
+            if value is None:
+                missing.append(name)
+
             values[name] = value
-        missing = [name for name, value in values.items() if value is None]
-        self._send_json({'ok': not missing, 'values': values, 'missing': missing})
+
+        self._send_json({
+            'ok': not missing,
+            'values': values,
+            'missing': missing,
+            'source': 'catalog-refresh' if force_refresh else 'catalog',
+        })
 
     def _set_param(self, body: dict) -> None:
         name = str(body.get('name', ''))
+        if not self.tuning_server.mavlink.connected:
+            self._error('MAVLink is not connected', HTTPStatus.SERVICE_UNAVAILABLE)
+            return
         groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes)
         cfg = None
         for group in groups.values():
             if name in group:
                 cfg = group[name]
                 break
+        if cfg is None:
+            groups = self.tuning_server.mavlink.dynamic_groups(self.tuning_server.param_prefixes, force=True)
+            if groups:
+                self.tuning_server.param_groups_cache = groups
+            for group in groups.values():
+                if name in group:
+                    cfg = group[name]
+                    break
+        if cfg is None:
+            for group in self.tuning_server.param_groups_cache.values():
+                if name in group:
+                    cfg = group[name]
+                    break
         if cfg is None:
             self._error('unknown parameter')
             return
@@ -965,6 +1063,8 @@ def main() -> int:
     for address in local_addresses(args.port):
         suffix = f'?token={args.token}' if args.token else ''
         print(f'  {address}{suffix}')
+    print(f"[DDS] discovery range: {os.environ.get('ROS_AUTOMATIC_DISCOVERY_RANGE', 'SYSTEM_DEFAULT')}")
+    print('[DDS] If the page shows DDS 0/10 with a remote Agent, restart with HNUTER_ALLOW_REMOTE_DDS=1.')
     if not args.token:
         print('[WEB] No access token configured; use only on a trusted LAN.')
 

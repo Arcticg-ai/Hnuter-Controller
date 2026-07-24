@@ -14,6 +14,7 @@ Offboard setpoints:
 Gamepad mapping:
 - Left stick X: yaw rate.
 - Left stick Y: vertical speed.
+- Right stick X/Y: horizontal velocity in body frame.
 - A/B: roll setpoint negative/positive step.
 - X/Y: pitch setpoint negative/positive step.
 - Keyboard o: allow Offboard + Arm + takeoff hover.
@@ -149,6 +150,7 @@ class GamepadManager:
         self.deadzone = env_float('HNUTER_PAD_DEADZONE', 0.10)
         self.expo = env_float('HNUTER_PAD_EXPO', 0.35)
         self.filter_tau = env_float('HNUTER_PAD_FILTER_TAU', 0.12)
+        self.max_vxy = env_float('HNUTER_PAD_MAX_VXY', 0.8)
         self.max_vz = env_float('HNUTER_PAD_MAX_VZ', 0.45)
         self.max_yaw_rate = math.radians(env_float('HNUTER_PAD_MAX_YAW_RATE_DEG', 45.0))
         self.step_deg = env_float('HNUTER_PAD_ATT_STEP_DEG', 5.0)
@@ -157,13 +159,21 @@ class GamepadManager:
         self.pitch_limit = math.radians(env_float('HNUTER_PAD_PITCH_LIMIT_DEG', 180.0))
         self.axis_yaw = int(env_float('HNUTER_PAD_AXIS_YAW', 0))
         self.axis_z = int(env_float('HNUTER_PAD_AXIS_Z', 1))
+        self.axis_xy_y = int(env_float('HNUTER_PAD_AXIS_XY_Y', 3))
+        self.axis_xy_x = int(env_float('HNUTER_PAD_AXIS_XY_X', 4))
+        self.debug_axes = env_bool('HNUTER_PAD_DEBUG', False)
         self.button_roll_minus = int(env_float('HNUTER_PAD_BTN_ROLL_MINUS', 0))   # A
         self.button_roll_plus = int(env_float('HNUTER_PAD_BTN_ROLL_PLUS', 1))     # B
         self.button_pitch_minus = int(env_float('HNUTER_PAD_BTN_PITCH_MINUS', 2)) # X
         self.button_pitch_plus = int(env_float('HNUTER_PAD_BTN_PITCH_PLUS', 3))   # Y
+        self.filtered_vx_b = 0.0
+        self.filtered_vy_b = 0.0
         self.filtered_z = 0.0
         self.filtered_yaw_rate = 0.0
         self._last_button_step = {}
+        self.last_event = ''
+        self.last_raw_axes = {}
+        self._last_debug_print_t = 0.0
 
         if pygame is None:
             self._warn('pygame is unavailable, gamepad commands stay zero.')
@@ -175,7 +185,12 @@ class GamepadManager:
             if pygame.joystick.get_count() > 0:
                 self.joystick = pygame.joystick.Joystick(0)
                 self.joystick.init()
-                self._info(f'gamepad connected: {self.joystick.get_name()}')
+                self._info(
+                    f'gamepad connected: {self.joystick.get_name()}, '
+                    f'axes={self.joystick.get_numaxes()}, buttons={self.joystick.get_numbuttons()}, '
+                    f'mapping yaw={self.axis_yaw}, z={self.axis_z}, '
+                    f'xy_x={self.axis_xy_x}, xy_y={self.axis_xy_y}'
+                )
             else:
                 self._warn('no gamepad detected, commands stay zero.')
         except Exception as exc:
@@ -211,13 +226,17 @@ class GamepadManager:
     def read(self, dt: float):
         delta_roll = 0.0
         delta_pitch = 0.0
+        event = ''
 
         if pygame is None or self.joystick is None:
             return {
+                'vx_b': self.filtered_vx_b,
+                'vy_b': self.filtered_vy_b,
                 'vz_enu': self.filtered_z,
                 'yaw_rate_enu': self.filtered_yaw_rate,
                 'delta_roll': delta_roll,
                 'delta_pitch': delta_pitch,
+                'event': event,
             }
 
         try:
@@ -225,25 +244,37 @@ class GamepadManager:
             num_axes = self.joystick.get_numaxes()
             raw_yaw = self.joystick.get_axis(self.axis_yaw) if num_axes > self.axis_yaw else 0.0
             raw_z = self.joystick.get_axis(self.axis_z) if num_axes > self.axis_z else 0.0
+            raw_xy_y = self.joystick.get_axis(self.axis_xy_y) if num_axes > self.axis_xy_y else 0.0
+            raw_xy_x = self.joystick.get_axis(self.axis_xy_x) if num_axes > self.axis_xy_x else 0.0
+            self.last_raw_axes = {
+                'yaw': raw_yaw,
+                'z': raw_z,
+                'xy_x': raw_xy_x,
+                'xy_y': raw_xy_y,
+            }
 
             target_yaw_rate = -self._shape(raw_yaw) * self.max_yaw_rate
             target_vz = -self._shape(raw_z) * self.max_vz
+            target_vx_b = -self._shape(raw_xy_x) * self.max_vxy
+            target_vy_b = -self._shape(raw_xy_y) * self.max_vxy
 
             alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-4 else 1.0
             alpha = float(np.clip(alpha, 0.0, 1.0))
+            self.filtered_vx_b += alpha * (target_vx_b - self.filtered_vx_b)
+            self.filtered_vy_b += alpha * (target_vy_b - self.filtered_vy_b)
             self.filtered_yaw_rate += alpha * (target_yaw_rate - self.filtered_yaw_rate)
             self.filtered_z += alpha * (target_vz - self.filtered_z)
 
             now = time.monotonic()
             step = math.radians(self.step_deg)
             button_actions = (
-                (self.button_roll_minus, -step, 0.0),
-                (self.button_roll_plus, step, 0.0),
-                (self.button_pitch_minus, 0.0, -step),
-                (self.button_pitch_plus, 0.0, step),
+                (self.button_roll_minus, -step, 0.0, 'A roll-'),
+                (self.button_roll_plus, step, 0.0, 'B roll+'),
+                (self.button_pitch_minus, 0.0, -step, 'X pitch-'),
+                (self.button_pitch_plus, 0.0, step, 'Y pitch+'),
             )
 
-            for button, d_roll, d_pitch in button_actions:
+            for button, d_roll, d_pitch, event_text in button_actions:
                 if button < 0 or button >= self.joystick.get_numbuttons():
                     continue
                 if self.joystick.get_button(button):
@@ -251,18 +282,32 @@ class GamepadManager:
                     if now - last_t >= self.repeat_s:
                         delta_roll += d_roll
                         delta_pitch += d_pitch
+                        event = event_text
+                        self.last_event = event_text
                         self._last_button_step[button] = now
                 else:
                     self._last_button_step.pop(button, None)
+
+            if self.debug_axes and now - self._last_debug_print_t > 1.0:
+                self._last_debug_print_t = now
+                self._info(
+                    'raw axes '
+                    f'yaw={raw_yaw:+.2f}, z={raw_z:+.2f}, '
+                    f'xy_x={raw_xy_x:+.2f}, xy_y={raw_xy_y:+.2f}; '
+                    f'cmd body vx={self.filtered_vx_b:+.2f}, vy={self.filtered_vy_b:+.2f}'
+                )
 
         except Exception as exc:
             self._warn(f'gamepad read failed: {exc}')
 
         return {
+            'vx_b': self.filtered_vx_b,
+            'vy_b': self.filtered_vy_b,
             'vz_enu': self.filtered_z,
             'yaw_rate_enu': self.filtered_yaw_rate,
             'delta_roll': delta_roll,
             'delta_pitch': delta_pitch,
+            'event': event,
         }
 
 
@@ -379,6 +424,16 @@ class HnuterSetpointGamepad(Node):
         self.velocity_target = np.zeros(3)
         self.attitude_target = np.zeros(3)
         self.attitude_rate_target = np.zeros(3)
+        self.last_manual = {
+            'vx_b': 0.0,
+            'vy_b': 0.0,
+            'vz_enu': 0.0,
+            'yaw_rate_enu': 0.0,
+            'delta_roll': 0.0,
+            'delta_pitch': 0.0,
+            'event': '',
+        }
+        self._last_gamepad_event = ''
         self.takeoff_requested = False
         self.target_initialized = False
 
@@ -489,6 +544,7 @@ class HnuterSetpointGamepad(Node):
         self.init_targets()
 
         manual = self.gamepad.read(dt)
+        self.last_manual = manual
         self.attitude_target[0] = float(np.clip(
             self.attitude_target[0] + manual['delta_roll'],
             -self.gamepad.roll_limit,
@@ -501,9 +557,22 @@ class HnuterSetpointGamepad(Node):
         ))
         self.attitude_target[2] = wrap_pi(self.attitude_target[2] + manual['yaw_rate_enu'] * dt)
         self.attitude_rate_target[:] = [0.0, 0.0, manual['yaw_rate_enu']]
+        if manual.get('event'):
+            self._last_gamepad_event = manual['event']
+            self.get_logger().info(
+                f'gamepad button event: {manual["event"]}, '
+                f'attitude target roll={math.degrees(self.attitude_target[0]):.1f}deg '
+                f'pitch={math.degrees(self.attitude_target[1]):.1f}deg'
+            )
 
         if self.takeoff_requested:
-            self.position_target[0:2] = self.position_hold[0:2]
+            cos_yaw = math.cos(self.attitude_target[2])
+            sin_yaw = math.sin(self.attitude_target[2])
+            vx_enu = cos_yaw * manual['vx_b'] - sin_yaw * manual['vy_b']
+            vy_enu = sin_yaw * manual['vx_b'] + cos_yaw * manual['vy_b']
+            self.velocity_target[0:2] = [vx_enu, vy_enu]
+            self.position_target[0] += vx_enu * dt
+            self.position_target[1] += vy_enu * dt
             target_z = self.position_hold[2] + self.takeoff_height
             self.position_target[2] = float(np.clip(
                 self.position_target[2] + manual['vz_enu'] * dt,
@@ -512,7 +581,7 @@ class HnuterSetpointGamepad(Node):
             ))
             if self.position_target[2] < target_z:
                 self.position_target[2] = min(target_z, self.position_target[2] + 0.35 * dt)
-            self.velocity_target[:] = [0.0, 0.0, manual['vz_enu']]
+            self.velocity_target[2] = manual['vz_enu']
         else:
             self.position_target = self.position_enu.copy()
             self.velocity_target[:] = 0.0
@@ -562,7 +631,13 @@ class HnuterSetpointGamepad(Node):
             float(-self.velocity_target[2]),
         ]
         traj.acceleration = [float('nan'), float('nan'), float('nan')]
-        traj.jerk = [float('nan'), float('nan'), float('nan')]
+        # Hnuter firmware extension: jerk[0]/jerk[1] carry roll/pitch attitude
+        # setpoints in radians while position/velocity fields keep translation.
+        traj.jerk = [
+            float(self.attitude_target[0]),
+            float(self.attitude_target[1]),
+            float('nan'),
+        ]
         traj.yaw = float(-self.attitude_target[2])
         traj.yawspeed = float(-self.attitude_rate_target[2])
         self.traj_pub.publish(traj)
@@ -623,6 +698,9 @@ class HnuterSetpointGamepad(Node):
             'sp pos ENU='
             f'{np.round(self.position_target, 2).tolist()} vel={np.round(self.velocity_target, 2).tolist()} '
             f'att_deg={np.round(np.degrees(self.attitude_target), 1).tolist()} '
+            f'pad_body_vxy={[round(self.last_manual.get("vx_b", 0.0), 2), round(self.last_manual.get("vy_b", 0.0), 2)]} '
+            f'pad_vz={self.last_manual.get("vz_enu", 0.0):.2f} '
+            f'pad_yaw_rate={math.degrees(self.last_manual.get("yaw_rate_enu", 0.0)):.1f}deg/s '
             f'offboard={self.is_offboard()} armed={self.armed}'
         )
 

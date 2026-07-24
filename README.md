@@ -55,7 +55,16 @@ python3 hnuter_external_setpoint_gamepad.py
 ```
 
 Press `o` to request Offboard, Arm, and takeoff. The default gamepad mapping is:
-left stick X for yaw rate, left stick Y for vertical speed, `A/B` for negative/positive roll steps, and `X/Y` for negative/positive pitch steps. By default DDS discovery is restricted to localhost to avoid another PX4/ROS 2 instance on the LAN writing into the same topics; set `HNUTER_ALLOW_REMOTE_DDS=1` only when remote DDS discovery is intentional.
+left stick X for yaw rate, left stick Y for vertical speed, right stick X/Y
+for horizontal velocity, `A/B` for negative/positive roll steps, and `X/Y`
+for negative/positive pitch steps. The terminal prints every ABXY attitude-step
+event and the resulting roll/pitch target, which makes it clear whether the
+gamepad was read correctly. By default DDS discovery is restricted to localhost
+to avoid another PX4/ROS 2 instance on the LAN writing into the same topics;
+set `HNUTER_ALLOW_REMOTE_DDS=1` only when remote DDS discovery is intentional.
+If the horizontal stick direction looks wrong, run with `HNUTER_PAD_DEBUG=1` to
+print raw joystick axes, then adjust `HNUTER_PAD_AXIS_XY_X` and
+`HNUTER_PAD_AXIS_XY_Y`.
 
 ## Direct Debug Notes
 
