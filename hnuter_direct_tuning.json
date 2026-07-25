@@ -64,6 +64,6 @@
   "max_acc_z": 20.0,
   "manual_roll_limit_deg": 90.0,
   "manual_pitch_limit_deg": 180.0,
-  "theta_limit_deg": 45.0,
+  "theta_limit_deg": 180.0,
   "xy_lock_max_acc_xy": 3.0
 }

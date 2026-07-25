@@ -486,7 +486,7 @@ class HnuterController(Node):
         # Actuator limits
         self.pitch_command_limit_rad = np.radians(180.0)
         self.alpha_limit_rad = np.radians(env_float('HNUTER_ALPHA_LIMIT_DEG', 185.0))
-        self.theta_limit_rad = np.radians(env_float('HNUTER_THETA_LIMIT_DEG', 45.0))
+        self.theta_limit_rad = np.radians(env_float('HNUTER_THETA_LIMIT_DEG', 180.0))
         self.servo_rate_limit_rad_s = 50.0
         self.takeoff_tilt_suppress_time_s = 1.0
         self.takeoff_tilt_limit_rad = np.radians(20.0)
@@ -1285,7 +1285,10 @@ class HnuterController(Node):
             servo_msg.timestamp_sample = timestamp
         servo_msg.control = [float('nan')] * 8
         alpha_angle_max = np.radians(185.0)
-        theta_angle_max = np.radians(90.0)
+        # GZ maps normalized servo output through SIM_GZ_SV_MIN/MAXA3/4
+        # (currently +/-180 deg). Dividing by 90 deg here doubled the physical
+        # secondary-tilt angle.
+        theta_angle_max = np.radians(180.0)
         servo_msg.control[0] = float(np.clip(alpha2 / alpha_angle_max, -1.0, 1.0))
         servo_msg.control[1] = float(np.clip(alpha1 / alpha_angle_max, -1.0, 1.0))
         servo_msg.control[2] = float(np.clip(theta2 / theta_angle_max, -1.0, 1.0))
@@ -2216,12 +2219,9 @@ class HnuterController(Node):
             else:
                 f_body[0] = 0.0
                 f_body[1] = 0.0
-        else:
-            # Full-circle primary tilt has no forward/backward cone boundary.
-            # Only the secondary tilt limits the lateral force component.
-            xz_force = float(np.linalg.norm(f_body[[0, 2]]))
-            max_y = xz_force * math.tan(self.theta_limit_rad)
-            f_body[1] = float(np.clip(f_body[1], -max_y, max_y))
+        # Outside takeoff protection, do not pre-clip body-Y force. The
+        # secondary tilt realizes this force and must retain enough authority
+        # to hold position while the vehicle is rolled.
 
         manual_yaw_active = abs(float(self._last_manual_cmd.get('yaw_rate', 0.0))) > 1e-5
 
