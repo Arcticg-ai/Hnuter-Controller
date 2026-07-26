@@ -1225,6 +1225,20 @@ class HnuterController(Node):
         yaw_ned = 0.5 * math.pi - float(yaw_enu)
         return float(math.atan2(math.sin(yaw_ned), math.cos(yaw_ned)))
 
+    @staticmethod
+    def _euler_from_rotation_matrix(R: np.ndarray) -> tuple:
+        roll = math.atan2(float(R[2, 1]), float(R[2, 2]))
+        pitch = math.asin(float(np.clip(-R[2, 0], -1.0, 1.0)))
+        yaw = math.atan2(float(R[1, 0]), float(R[0, 0]))
+        return roll, pitch, yaw
+
+    def _attitude_enu_flu_to_ned_frd(self, attitude_enu_flu: np.ndarray) -> tuple:
+        R_enu_flu = self.euler_to_rotation_matrix(attitude_enu_flu)
+        R_enu_ned = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]], dtype=float)
+        R_frd_flu = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]], dtype=float)
+        R_ned_frd = R_enu_ned.T @ R_enu_flu @ R_frd_flu.T
+        return self._euler_from_rotation_matrix(R_ned_frd)
+
     def publish_px4_trajectory_setpoint(self):
         timestamp = self.timestamp_now_us()
         target_abs_z_enu = float(self._z0 + self.target_position[2]) if self._z0_initialized else float(self.position[2])
@@ -1245,8 +1259,10 @@ class HnuterController(Node):
             float(self.target_acceleration[0]),
             float(-self.target_acceleration[2]),
         ]
-        msg.jerk = [float('nan'), float('nan'), float('nan')]
-        msg.yaw = self._yaw_enu_to_ned(self.manual_des_yaw)
+        roll_ned, pitch_ned, yaw_ned = self._attitude_enu_flu_to_ned_frd(self.target_attitude)
+        # Hnuter PX4 extension: jerk[0]/jerk[1] carry roll/pitch attitude setpoints.
+        msg.jerk = [float(roll_ned), float(pitch_ned), float('nan')]
+        msg.yaw = float(yaw_ned)
         msg.yawspeed = float(-self.target_attitude_rate[2])
         self.trajectory_setpoint_pub.publish(msg)
 

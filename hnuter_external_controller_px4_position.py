@@ -65,7 +65,7 @@ class GamepadManager:
                  max_vxy: float = 1.0,
                  max_vz: float = 0.5,
                  max_yaw_rate: float = 0.6,
-                 max_pitch_rate: float = math.radians(20.0),
+                 max_roll_rate: float = math.radians(20.0),
                  deadzone: float = 0.10,
                  expo: float = 0.40,
                  filter_tau: float = 0.20,
@@ -78,7 +78,7 @@ class GamepadManager:
         self.max_vxy = float(max_vxy)
         self.max_vz = float(max_vz)
         self.max_yaw_rate = float(max_yaw_rate)
-        self.max_pitch_rate = float(max_pitch_rate)
+        self.max_roll_rate = float(max_roll_rate)
         self.deadzone = float(deadzone)
         self.expo = float(expo)
         self.filter_tau = float(filter_tau)
@@ -93,7 +93,7 @@ class GamepadManager:
             'vy_b': 0.0,
             'vz': 0.0,
             'yaw_rate': 0.0,
-            'pitch_rate': 0.0,
+            'roll_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
         }
@@ -188,9 +188,9 @@ class GamepadManager:
             target_vz_w = -thr_expo * self.max_vz
             target_yaw_rate = -yaw_expo * self.max_yaw_rate
 
-            # LT 增大期望 pitch，RT 减小期望 pitch。
-            # 输出是 pitch 角速度，后面在 update_trajectory() 中积分为目标俯仰角。
-            target_pitch_rate = (lt_expo - rt_expo) * self.max_pitch_rate
+            # LT 增大期望 roll，RT 减小期望 roll。
+            # 输出是 roll 角速度，后面在 update_trajectory() 中积分为目标横滚角。
+            target_roll_rate = (lt_expo - rt_expo) * self.max_roll_rate
 
             alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-3 else 1.0
             alpha = float(np.clip(alpha, 0.0, 1.0))
@@ -199,7 +199,7 @@ class GamepadManager:
             self.filtered_cmds['vy_b'] += alpha * (target_vy_b - self.filtered_cmds['vy_b'])
             self.filtered_cmds['vz'] += alpha * (target_vz_w - self.filtered_cmds['vz'])
             self.filtered_cmds['yaw_rate'] += alpha * (target_yaw_rate - self.filtered_cmds['yaw_rate'])
-            self.filtered_cmds['pitch_rate'] += alpha * (target_pitch_rate - self.filtered_cmds['pitch_rate'])
+            self.filtered_cmds['roll_rate'] += alpha * (target_roll_rate - self.filtered_cmds['roll_rate'])
             self.filtered_cmds['lt'] = lt_expo
             self.filtered_cmds['rt'] = rt_expo
             return self.filtered_cmds.copy()
@@ -419,7 +419,7 @@ class HnuterController(Node):
             'vy_b': 0.0,
             'vz': 0.0,
             'yaw_rate': 0.0,
-            'pitch_rate': 0.0,
+            'roll_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
         }
@@ -507,11 +507,9 @@ class HnuterController(Node):
         self.manual_pos_initialized = False
         self.manual_des_pos = np.zeros(3)   # [x_enu, y_enu, z_relative]
         self.manual_des_yaw = 0.0
-        # LT/RT 积分得到的俯仰姿态期望。
-        # 正号严格按 euler_to_rotation_matrix() 的 pitch 正方向；若实机观察方向相反，
-        # 只需要在 GamepadManager 中把 target_pitch_rate 改成 (rt_expo - lt_expo)。
-        self.manual_des_pitch = 0.0
-        self.manual_pitch_limit_rad = np.radians(90.0)
+        # LT/RT 积分得到的横滚姿态期望，保持与 direct debug 控制器一致。
+        self.manual_des_roll = 0.0
+        self.manual_roll_limit_rad = np.radians(90.0)
         self._z0_initialized = False
         self._z0 = 0.0
         self._z_sp = 0.0
@@ -561,7 +559,7 @@ class HnuterController(Node):
             max_vxy=1.0,
             max_vz=0.5,
             max_yaw_rate=0.6,
-            max_pitch_rate=math.radians(20.0),
+            max_roll_rate=math.radians(20.0),
             deadzone=0.10,
             expo=0.40,
             filter_tau=0.20,
@@ -785,6 +783,20 @@ class HnuterController(Node):
         yaw_ned = 0.5 * math.pi - float(yaw_enu)
         return float(math.atan2(math.sin(yaw_ned), math.cos(yaw_ned)))
 
+    @staticmethod
+    def _euler_from_rotation_matrix(R: np.ndarray) -> tuple:
+        roll = math.atan2(float(R[2, 1]), float(R[2, 2]))
+        pitch = math.asin(float(np.clip(-R[2, 0], -1.0, 1.0)))
+        yaw = math.atan2(float(R[1, 0]), float(R[0, 0]))
+        return roll, pitch, yaw
+
+    def _attitude_enu_flu_to_ned_frd(self, attitude_enu_flu: np.ndarray) -> tuple:
+        R_enu_flu = self.euler_to_rotation_matrix(attitude_enu_flu)
+        R_enu_ned = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]], dtype=float)
+        R_frd_flu = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]], dtype=float)
+        R_ned_frd = R_enu_ned.T @ R_enu_flu @ R_frd_flu.T
+        return self._euler_from_rotation_matrix(R_ned_frd)
+
     def publish_px4_trajectory_setpoint(self):
         timestamp = self.timestamp_now_us()
         target_abs_z_enu = float(self._z0 + self.target_position[2]) if self._z0_initialized else float(self.position[2])
@@ -805,8 +817,10 @@ class HnuterController(Node):
             float(self.target_acceleration[0]),
             float(-self.target_acceleration[2]),
         ]
-        msg.jerk = [float('nan'), float('nan'), float('nan')]
-        msg.yaw = self._yaw_enu_to_ned(self.manual_des_yaw)
+        roll_ned, pitch_ned, yaw_ned = self._attitude_enu_flu_to_ned_frd(self.target_attitude)
+        # Hnuter PX4 extension: jerk[0]/jerk[1] carry roll/pitch attitude setpoints.
+        msg.jerk = [float(roll_ned), float(pitch_ned), float('nan')]
+        msg.yaw = float(yaw_ned)
         msg.yawspeed = float(-self.target_attitude_rate[2])
         self.trajectory_setpoint_pub.publish(msg)
 
@@ -945,7 +959,7 @@ class HnuterController(Node):
             'vy_b': 0.0,
             'vz': 0.0,
             'yaw_rate': 0.0,
-            'pitch_rate': 0.0,
+            'roll_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
         }
@@ -1021,7 +1035,7 @@ class HnuterController(Node):
             mode_text = '矩形'
 
         self.manual_des_pos = self.auto_traj_start_pos.copy()
-        self.manual_des_pitch = 0.0
+        self.manual_des_roll = 0.0
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
         self.get_logger().info(
@@ -1041,7 +1055,7 @@ class HnuterController(Node):
         self.auto_traj_mode = 'hover'
         self.manual_des_pos = self.auto_traj_start_pos.copy()
         self.manual_des_yaw = self.auto_traj_yaw
-        self.manual_des_pitch = 0.0
+        self.manual_des_roll = 0.0
         self.target_position = self.manual_des_pos.copy()
         self.target_velocity = np.zeros(3)
         self.target_acceleration = np.zeros(3)
@@ -1179,7 +1193,7 @@ class HnuterController(Node):
 
         self.manual_des_pos = pos.copy()
         self.manual_des_yaw = self.auto_traj_yaw
-        self.manual_des_pitch = 0.0
+        self.manual_des_roll = 0.0
         self._last_manual_cmd = self._zero_manual_cmd()
         self.target_position = pos
         self.target_velocity = vel
@@ -1209,7 +1223,7 @@ class HnuterController(Node):
             self.preflight_tilt_test_started = False
             self.preflight_tilt_test_finished = False
             self.preflight_tilt_start_time_s = None
-            self.manual_des_pitch = 0.0
+            self.manual_des_roll = 0.0
             self.target_position = np.array([self.position[0], self.position[1], 0.0])
             self.target_velocity = np.zeros(3)
             self.target_acceleration = np.zeros(3)
@@ -1228,7 +1242,7 @@ class HnuterController(Node):
             self._z_sp = 0.0
             self._takeoff_lock_start_time_s = None
             self._xy_lock_active = False
-            self.manual_des_pitch = 0.0
+            self.manual_des_roll = 0.0
             self._last_manual_cmd = self._zero_manual_cmd()
             self.target_position = np.array([self.position[0], self.position[1], 0.0])
             self.target_velocity = np.zeros(3)
@@ -1240,7 +1254,7 @@ class HnuterController(Node):
         if not self.manual_pos_initialized:
             self.manual_des_pos = np.array([self.position[0], self.position[1], max(0.0, self.position[2] - self._z0)])
             self.manual_des_yaw = self.initial_yaw if self._yaw_initialized else 0.0
-            self.manual_des_pitch = 0.0
+            self.manual_des_roll = 0.0
             self._z_sp = float(self.manual_des_pos[2])
             self._xy_lock_position = self.position[:2].copy()
             self._xy_lock_initialized = True
@@ -1270,7 +1284,7 @@ class HnuterController(Node):
         vy_w = cmds['vx_b'] * math.sin(yaw_ref) + cmds['vy_b'] * math.cos(yaw_ref)
         vz_w = cmds['vz'] + z_auto_vel
         yaw_rate = cmds['yaw_rate']
-        pitch_rate = cmds.get('pitch_rate', 0.0)
+        roll_rate = cmds.get('roll_rate', 0.0)
 
         takeoff_elapsed_s = (
             current_time - self._takeoff_lock_start_time_s
@@ -1287,17 +1301,17 @@ class HnuterController(Node):
         self.manual_des_pos[2] += vz_w * dt
         self.manual_des_pos[2] = float(np.clip(self.manual_des_pos[2], self.min_altitude, self.max_altitude))
         self.manual_des_yaw = float(np.arctan2(math.sin(self.manual_des_yaw + yaw_rate * dt), math.cos(self.manual_des_yaw + yaw_rate * dt)))
-        self.manual_des_pitch = float(np.clip(
-            self.manual_des_pitch + pitch_rate * dt,
-            -self.manual_pitch_limit_rad,
-            self.manual_pitch_limit_rad
+        self.manual_des_roll = float(np.clip(
+            self.manual_des_roll + roll_rate * dt,
+            -self.manual_roll_limit_rad,
+            self.manual_roll_limit_rad
         ))
 
         self.target_position = self.manual_des_pos.copy()
         self.target_velocity = np.array([vx_w, vy_w, vz_w], dtype=float)
         self.target_acceleration = np.zeros(3)
-        self.target_attitude = np.array([0.0, self.manual_des_pitch, self.manual_des_yaw], dtype=float)
-        self.target_attitude_rate = np.array([0.0, pitch_rate, yaw_rate], dtype=float)
+        self.target_attitude = np.array([self.manual_des_roll, 0.0, self.manual_des_yaw], dtype=float)
+        self.target_attitude_rate = np.array([roll_rate, 0.0, yaw_rate], dtype=float)
 
     # ============================================================
     # Geometry controller and allocation
@@ -1687,8 +1701,8 @@ class HnuterController(Node):
             f"Gamepad: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
             f"vz={self._last_manual_cmd['vz']:+4.2f}, yaw_rate={self._last_manual_cmd['yaw_rate']:+4.2f}, "
             f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}\n"
-            f"Pitch: des={np.degrees(self.manual_des_pitch):+5.1f}° | current={current_pitch_deg:+5.1f}° | "
-            f"pitch_rate={np.degrees(self._last_manual_cmd.get('pitch_rate', 0.0)):+5.1f}°/s\n"
+            f"RollCmd: des={np.degrees(self.manual_des_roll):+5.1f}° | Pitch: current={current_pitch_deg:+5.1f}° | "
+            f"roll_rate={np.degrees(self._last_manual_cmd.get('roll_rate', 0.0)):+5.1f}°/s\n"
             f"Wrench: Fx={self.last_W[0]:+5.2f}N, Fy={self.last_W[1]:+5.2f}N, Fz={self.last_W[2]:+5.2f}N\n"
             f"Thrust: F1={self.last_F1:5.2f}N | F2={self.last_F2:5.2f}N | F3={self.last_F3:5.2f}N\n"
             f"Tilt: A1={np.degrees(self._alpha1_cmd):+5.1f}° | A2={np.degrees(self._alpha2_cmd):+5.1f}° | "
