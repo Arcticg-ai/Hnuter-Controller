@@ -10,7 +10,7 @@ Hnuter Tiltrotor Direct Actuator Debug Controller
 5. 修复 Offboard/Arm 启动逻辑：先连续发布 OffboardControlMode，再切 Offboard，最后 Arm。
 6. Offboard+Arm 后先零油门做倾转自检，按键盘 o 后才起飞悬停。
 7. 避免 hover_only/xy_lock 永久覆盖手动目标点。
-8. 键盘输入 1 执行一圈矩形轨迹，输入 2 执行一圈李萨如轨迹，
+8. 键盘输入 1 执行一圈矩形轨迹，输入 2 执行一圈三维李萨如轨迹，
    输入 3 依次改变 roll/pitch/yaw 小角度后恢复，完成后回到悬停。
 9. 关闭退出绘图与 /plot_data 发布。
 10. 姿态反馈采用连续等价分支，避免 roll 0/180 表示跳变导致 direct 控制方向突变。
@@ -312,7 +312,7 @@ class KeyboardCommandReader:
 
 class HnuterController(Node):
     def __init__(self):
-        super().__init__('hnuter_controller_direct_debug')
+        super().__init__(self._node_name())
 
         qos_profile_in = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -626,11 +626,15 @@ class HnuterController(Node):
         self.rectangle_size_x = 2.0
         self.rectangle_size_y = 1.5
         self.rectangle_segment_time_s = 5.0
-        self.lissajous_amp_x = 1.0
-        self.lissajous_amp_y = 0.75
-        self.lissajous_a = 2
-        self.lissajous_b = 3
-        self.lissajous_period_s = 24.0
+        self.lissajous_amp_x = env_float('HNUTER_LISSAJOUS_AMP_X_M', 1.0)
+        self.lissajous_amp_y = env_float('HNUTER_LISSAJOUS_AMP_Y_M', 0.75)
+        self.lissajous_amp_z = env_float('HNUTER_LISSAJOUS_AMP_Z_M', 0.35)
+        self.lissajous_a = max(1, int(env_float('HNUTER_LISSAJOUS_FREQ_X', 2)))
+        self.lissajous_b = max(1, int(env_float('HNUTER_LISSAJOUS_FREQ_Y', 3)))
+        self.lissajous_c = max(1, int(env_float('HNUTER_LISSAJOUS_FREQ_Z', 1)))
+        self.lissajous_period_s = max(
+            8.0, env_float('HNUTER_LISSAJOUS_PERIOD_S', 24.0)
+        )
         # Trajectory 3 validates large-attitude holding: roll +/-90 deg, pitch +/-180 deg, no yaw step.
         # Per-axis environment variables and the live tuning JSON can still override these defaults.
         self.attitude_step_angle_rad = math.radians(env_float('HNUTER_ATTITUDE_STEP_DEG', 180.0))
@@ -692,7 +696,7 @@ class HnuterController(Node):
         self.diagnostic_enabled = True
         self.diagnostic_period_s = 0.10
         self._last_diagnostic_log_time = -1.0
-        self.diagnostic_path = diagnostic_csv_path(f'hnuter_{self.debug_control_mode}_debug')
+        self.diagnostic_path = diagnostic_csv_path(self._diagnostic_file_prefix())
         self._diagnostic_file = None
         self._diagnostic_writer = None
         if self.diagnostic_enabled:
@@ -711,6 +715,9 @@ class HnuterController(Node):
             self.get_logger().warn(
                 f'DIRECT DEBUG 模式：px4_equiv actuator direct；诊断日志写入 {self.diagnostic_path}'
             )
+
+    def _node_name(self):
+        return 'hnuter_controller_direct_debug'
 
     # ============================================================
     # Live tuning
@@ -1457,7 +1464,7 @@ class HnuterController(Node):
                 self.get_logger().info('收到键盘 1：矩形轨迹已排队，悬停稳定后开始。')
             elif key == '2':
                 self.pending_auto_traj_mode = 'lissajous'
-                self.get_logger().info('收到键盘 2：李萨如轨迹已排队，悬停稳定后开始。')
+                self.get_logger().info('收到键盘 2：三维李萨如轨迹已排队，悬停稳定后开始。')
             elif key == '3':
                 self.pending_auto_traj_mode = 'attitude'
                 self.get_logger().info('收到键盘 3：姿态角轨迹已排队，悬停稳定后开始。')
@@ -1511,7 +1518,7 @@ class HnuterController(Node):
         if mode == 'lissajous':
             first_rel_xy = np.array([self.lissajous_amp_x, self.lissajous_amp_y], dtype=float)
             self.auto_traj_origin_xy = self.auto_traj_start_pos[:2] - R_yaw @ first_rel_xy
-            mode_text = '李萨如'
+            mode_text = '三维李萨如'
         elif mode == 'attitude':
             self.auto_traj_origin_xy = self.auto_traj_start_pos[:2].copy()
             mode_text = '姿态角'
@@ -1534,7 +1541,7 @@ class HnuterController(Node):
     def _finish_auto_trajectory(self):
         finished_mode = self.auto_traj_mode
         if finished_mode == 'lissajous':
-            mode_text = '李萨如'
+            mode_text = '三维李萨如'
         elif finished_mode == 'attitude':
             mode_text = '姿态角'
         else:
@@ -1608,6 +1615,7 @@ class HnuterController(Node):
         theta_dot = 2.0 * math.pi / period
         ax = float(self.lissajous_a)
         by = float(self.lissajous_b)
+        cz = float(self.lissajous_c)
 
         local_xy = np.array([
             self.lissajous_amp_x * math.cos(ax * theta),
@@ -1621,14 +1629,25 @@ class HnuterController(Node):
             -self.lissajous_amp_x * (ax * theta_dot) ** 2 * math.cos(ax * theta),
             -self.lissajous_amp_y * (by * theta_dot) ** 2 * math.cos(by * theta),
         ], dtype=float)
+        local_z = self.lissajous_amp_z * (1.0 - math.cos(cz * theta))
+        local_vel_z = self.lissajous_amp_z * cz * theta_dot * math.sin(cz * theta)
+        local_acc_z = (
+            self.lissajous_amp_z
+            * (cz * theta_dot) ** 2
+            * math.cos(cz * theta)
+        )
 
         R_yaw = self._yaw_rotation_2d(self.auto_traj_yaw)
         pos = np.array([
             *(self.auto_traj_origin_xy + R_yaw @ local_xy),
-            self.auto_traj_z
+            float(np.clip(
+                self.auto_traj_z + local_z,
+                self.min_altitude,
+                self.max_altitude,
+            )),
         ], dtype=float)
-        vel = np.array([*(R_yaw @ local_vel_xy), 0.0], dtype=float)
-        acc = np.array([*(R_yaw @ local_acc_xy), 0.0], dtype=float)
+        vel = np.array([*(R_yaw @ local_vel_xy), local_vel_z], dtype=float)
+        acc = np.array([*(R_yaw @ local_acc_xy), local_acc_z], dtype=float)
         return pos, vel, acc, False
 
     def _attitude_reference(self, elapsed: float):
@@ -2405,6 +2424,15 @@ class HnuterController(Node):
             theta2=self._theta2_cmd,
         )
 
+    def _diagnostic_file_prefix(self):
+        return f'hnuter_{self.debug_control_mode}_debug'
+
+    def _diagnostic_extra_header(self):
+        return []
+
+    def _diagnostic_extra_values(self):
+        return []
+
     def _diagnostic_header(self):
         columns = [
             'time_s', 'mode', 'offboard', 'armed', 'nav_state',
@@ -2431,6 +2459,7 @@ class HnuterController(Node):
             'angular_p_frd_rps', 'angular_q_frd_rps', 'angular_r_frd_rps',
             'direct_safety_reason',
         ]
+        columns += self._diagnostic_extra_header()
         return columns
 
     @staticmethod
@@ -2502,6 +2531,7 @@ class HnuterController(Node):
             float(self.angular_velocity_frd[2]),
             self.direct_safety_cutoff_reason,
         ]
+        row += self._diagnostic_extra_values()
         self._diagnostic_writer.writerow(row)
 
     # ============================================================

@@ -7,6 +7,8 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 - `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
+- `hnuter_external_direct_drcda.py`: delay-aware, reachability-constrained differential allocator for direct actuator control.
+- `hnuter_drcda.py`: ROS-independent DRCDA wrench model, actuator predictor, and short-horizon solver.
 - `hnuter_external_setpoint_gamepad.py`: setpoint-only gamepad controller. It publishes position, velocity, attitude, and optional body-rate references while leaving the controller and allocator inside PX4.
 
 ## Dependencies
@@ -46,6 +48,46 @@ python3 hnuter_external_direct_controller_debug.py
 ```
 
 In the debug controller, press `o` to allow takeoff after the ground tilt self-test.
+Press `2` after takeoff to fly the closed 3D Lissajous trajectory. Its default
+frequency ratio is `2:3:1`, with `1.0 m`, `0.75 m`, and `0.35 m` axis
+amplitudes over 24 seconds. The altitude profile starts and finishes with zero
+vertical speed. Override it with `HNUTER_LISSAJOUS_AMP_X_M`,
+`HNUTER_LISSAJOUS_AMP_Y_M`, `HNUTER_LISSAJOUS_AMP_Z_M`, and
+`HNUTER_LISSAJOUS_PERIOD_S`.
+
+Run the experimental DRCDA direct controller:
+
+```bash
+cd ~/px4_ws_ros2
+python3 hnuter_external_direct_drcda.py
+```
+
+DRCDA defaults to the identified primary/secondary servo gain, pure delay,
+first-order lag, and directional rate limits. The current `gz_hnuter` model must
+contain the corresponding plant-side servo dynamics for a meaningful comparison.
+When intentionally testing against an ideal instantaneous-servo SITL model, use:
+
+```bash
+HNUTER_DRCDA_SERVO_MODEL=ideal python3 hnuter_external_direct_drcda.py
+```
+
+The solver uses a 180 ms move-blocked prediction horizon at 100 Hz by default.
+Its diagnostics, including predicted actuator state, wrench residual, and solve
+time, are written under `hnuter_logs/external_control/`. Run the ROS-independent
+model and allocation checks with:
+
+```bash
+python3 -m unittest -v test_hnuter_drcda.py
+```
+
+Compare an original-direct log with a DRCDA log and generate 3D and
+time-series plots under `hnuter_logs/comparison/`:
+
+```bash
+python3 plot_lissajous_comparison.py \
+  --baseline hnuter_logs/external_control/hnuter_direct_debug_RUN.csv \
+  --drcda hnuter_logs/external_control/hnuter_drcda_debug_RUN.csv
+```
 
 Run the firmware-controller setpoint gamepad controller:
 
