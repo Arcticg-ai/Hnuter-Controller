@@ -32,12 +32,15 @@ import threading
 import tty
 from pathlib import Path
 
+from hnuter_log_paths import configure_ros_log_dir, diagnostic_csv_path
+
 # Keep this controller on the local DDS host by default. PX4 reaches DDS
 # through the local Micro XRCE-DDS Agent, so LAN discovery is unnecessary and
 # can mix telemetry from another vehicle using the same PX4 topic names.
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
     os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
     os.environ.pop('ROS_STATIC_PEERS', None)
+configure_ros_log_dir()
 
 import numpy as np
 
@@ -740,11 +743,11 @@ class HnuterSphereSurfaceController(Node):
         self.diagnostic_enabled = True
         self.diagnostic_period_s = 0.10
         self._last_diagnostic_log_time = -1.0
-        self.diagnostic_path = f'hnuter_sphere_{self.debug_control_mode}_{int(time.time())}.csv'
+        self.diagnostic_path = diagnostic_csv_path(f'hnuter_sphere_{self.debug_control_mode}')
         self._diagnostic_file = None
         self._diagnostic_writer = None
         if self.diagnostic_enabled:
-            self._diagnostic_file = open(self.diagnostic_path, 'w', newline='', buffering=1)
+            self._diagnostic_file = self.diagnostic_path.open('w', newline='', buffering=1)
             self._diagnostic_writer = csv.writer(self._diagnostic_file)
             self._diagnostic_writer.writerow(self._diagnostic_header())
 

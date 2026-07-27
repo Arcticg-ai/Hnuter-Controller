@@ -25,11 +25,14 @@ import termios
 import threading
 import tty
 
+from hnuter_log_paths import configure_ros_log_dir
+
 # PX4 uses fixed DDS topic names. Keep SITL telemetry local unless remote DDS
 # access is explicitly requested, otherwise another PX4 on the LAN can mix in.
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
     os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
     os.environ.pop('ROS_STATIC_PEERS', None)
+configure_ros_log_dir()
 
 import numpy as np
 

@@ -42,10 +42,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple
 
+from hnuter_log_paths import configure_ros_log_dir, tuning_csv_path
+
 # Keep ROS2 discovery local by default so a real PX4 on LAN does not leak in.
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
     os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
     os.environ.pop('ROS_STATIC_PEERS', None)
+configure_ros_log_dir()
 
 import numpy as np
 
@@ -807,8 +810,7 @@ def main() -> int:
     args = parse_args()
     csv_path = args.csv
     if csv_path is None:
-        stamp = time.strftime('%Y%m%d_%H%M%S')
-        csv_path = Path.home() / 'px4_ws_ros2' / 'hnuter_saved_plots' / f'hnuter_attitude_tuning_{stamp}.csv'
+        csv_path = tuning_csv_path('hnuter_attitude_tuning')
 
     rclpy.init()
     node = HnuterAttitudeMonitor(history_s=args.history, csv_path=csv_path, csv_rate_hz=args.csv_rate_hz)

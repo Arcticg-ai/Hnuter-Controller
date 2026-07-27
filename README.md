@@ -73,6 +73,8 @@ By default, direct actuator mode publishes only `actuator_motors` and `actuator_
 Set `HNUTER_DIRECT_PUBLISH_ALLOCATOR_SETPOINTS=1` only when intentionally comparing against the allocator path.
 
 Generated logs, plots, build products, and Python caches are intentionally ignored.
+Hnuter controller logs are written under `hnuter_logs/` by default. Set
+`HNUTER_LOG_DIR=/path/to/logs` before starting a script to store them elsewhere.
 
 ## Attitude Tuning Dashboards
 
@@ -101,7 +103,7 @@ the printed `?token=...` value to the browser URL.
 The browser receives attitude, angular-rate, local NED position, NED velocity,
 tracking-error, torque, and motor-command plots at 15 Hz by default. Each
 three-axis plot can be filtered to a single axis from its title-bar selector,
-while CSV data is recorded at 25 Hz under `hnuter_saved_plots/`. The parameter panel discovers the PX4 parameter
+while CSV data is recorded at 25 Hz under `hnuter_logs/tuning/`. The parameter panel discovers the PX4 parameter
 catalog over MAVLink and, by default, shows every parameter whose name starts
 with `HNTR_`; use `--param-prefix HNTR_,CA_` to include more prefixes or
 `--param-prefix all` to show every PX4 parameter. Each row's Reset button

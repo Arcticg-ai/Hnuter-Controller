@@ -25,10 +25,13 @@ from pathlib import Path
 from typing import Iterable, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
+from hnuter_log_paths import configure_ros_log_dir, tuning_csv_path
+
 # Keep DDS discovery on the companion computer unless explicitly overridden.
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
     os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
     os.environ.pop('ROS_STATIC_PEERS', None)
+configure_ros_log_dir()
 
 import rclpy
 from rclpy.node import Node
@@ -1024,8 +1027,7 @@ def main() -> int:
 
     csv_path = args.csv
     if csv_path is None:
-        stamp = time.strftime('%Y%m%d_%H%M%S')
-        csv_path = Path.home() / 'px4_ws_ros2' / 'hnuter_saved_plots' / f'hnuter_web_tuning_{stamp}.csv'
+        csv_path = tuning_csv_path('hnuter_web_tuning')
 
     stop_event = threading.Event()
     rclpy.init()

@@ -30,9 +30,12 @@ import threading
 import time
 import tty
 
+from hnuter_log_paths import configure_ros_log_dir
+
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':
     os.environ['ROS_AUTOMATIC_DISCOVERY_RANGE'] = 'LOCALHOST'
     os.environ.pop('ROS_STATIC_PEERS', None)
+configure_ros_log_dir()
 
 import numpy as np
 
