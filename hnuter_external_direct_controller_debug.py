@@ -32,6 +32,12 @@ import threading
 import tty
 from pathlib import Path
 
+from hnuter_attitude_control import (
+    large_tilt_yaw_scale,
+    quaternion_attitude_error,
+    reduced_tilt_attitude_error,
+    update_attitude_axis_toggle,
+)
 from hnuter_log_paths import configure_ros_log_dir, diagnostic_csv_path
 
 # PX4 uses fixed DDS topic names. Keep SITL telemetry local unless remote DDS
@@ -90,11 +96,14 @@ class GamepadManager:
                  max_vz: float = 0.5,
                  max_yaw_rate: float = 0.6,
                  max_roll_rate: float = math.radians(20.0),
+                 max_pitch_rate: float = math.radians(20.0),
                  deadzone: float = 0.10,
                  expo: float = 0.40,
                  filter_tau: float = 0.20,
                  lt_axis: int = 2,
                  rt_axis: int = 5,
+                 rb_button: int = 5,
+                 attitude_axis_toggle_enabled: bool = False,
                  trigger_mode: str = 'minus_one_to_one',
                  logger=None):
         self.logger = logger
@@ -103,11 +112,16 @@ class GamepadManager:
         self.max_vz = float(max_vz)
         self.max_yaw_rate = float(max_yaw_rate)
         self.max_roll_rate = float(max_roll_rate)
+        self.max_pitch_rate = float(max_pitch_rate)
         self.deadzone = float(deadzone)
         self.expo = float(expo)
         self.filter_tau = float(filter_tau)
         self.lt_axis = int(lt_axis)
         self.rt_axis = int(rt_axis)
+        self.rb_button = int(rb_button)
+        self.attitude_axis_toggle_enabled = bool(attitude_axis_toggle_enabled)
+        self.attitude_control_axis = 'roll'
+        self._rb_was_pressed = False
         # 常见 Xbox/XInput 手柄 LT/RT: 未按=-1，按满=+1。
         # 若你的手柄是未按=0，按满=1，把 trigger_mode 改为 'zero_to_one'。
         # 若你的手柄是未按=+1，按满=-1，把 trigger_mode 改为 'one_to_minus_one'。
@@ -118,8 +132,11 @@ class GamepadManager:
             'vz': 0.0,
             'yaw_rate': 0.0,
             'roll_rate': 0.0,
+            'pitch_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
+            'rb_pressed': False,
+            'attitude_axis': self.attitude_control_axis,
         }
 
         if pygame is None:
@@ -198,6 +215,27 @@ class GamepadManager:
             raw_pitch = self.joystick.get_axis(4) if num_axes > 4 else 0.0
             raw_lt = self.joystick.get_axis(self.lt_axis) if num_axes > self.lt_axis else -1.0
             raw_rt = self.joystick.get_axis(self.rt_axis) if num_axes > self.rt_axis else -1.0
+            rb_pressed = False
+            if self.attitude_axis_toggle_enabled:
+                num_buttons = self.joystick.get_numbuttons()
+                rb_pressed = bool(
+                    self.joystick.get_button(self.rb_button)
+                    if 0 <= self.rb_button < num_buttons else False
+                )
+                (
+                    self.attitude_control_axis,
+                    self._rb_was_pressed,
+                    attitude_axis_toggled,
+                ) = update_attitude_axis_toggle(
+                    self.attitude_control_axis,
+                    rb_pressed,
+                    self._rb_was_pressed,
+                )
+                if attitude_axis_toggled:
+                    self.filtered_cmds['roll_rate'] = 0.0
+                    self.filtered_cmds['pitch_rate'] = 0.0
+                    axis_text = '俯仰' if self.attitude_control_axis == 'pitch' else '横滚'
+                    self._log_info(f'RB 姿态控制轴切换为：{axis_text}')
 
             yaw_expo = self._apply_expo(self._apply_deadzone(raw_yaw))
             thr_expo = self._apply_expo(self._apply_deadzone(raw_throttle))
@@ -212,9 +250,16 @@ class GamepadManager:
             target_vz_w = -thr_expo * self.max_vz
             target_yaw_rate = -yaw_expo * self.max_yaw_rate
 
-            # LT 增大期望 roll，RT 减小期望 roll。
-            # 输出是 roll 角速度，后面在 update_trajectory() 中积分为目标横滚角。
-            target_roll_rate = (lt_expo - rt_expo) * self.max_roll_rate
+            # LT/RT 控制 RB 当前选中的姿态轴。
+            trigger_direction = lt_expo - rt_expo
+            target_roll_rate = (
+                trigger_direction * self.max_roll_rate
+                if self.attitude_control_axis == 'roll' else 0.0
+            )
+            target_pitch_rate = (
+                trigger_direction * self.max_pitch_rate
+                if self.attitude_control_axis == 'pitch' else 0.0
+            )
 
             alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-3 else 1.0
             alpha = float(np.clip(alpha, 0.0, 1.0))
@@ -224,8 +269,13 @@ class GamepadManager:
             self.filtered_cmds['vz'] += alpha * (target_vz_w - self.filtered_cmds['vz'])
             self.filtered_cmds['yaw_rate'] += alpha * (target_yaw_rate - self.filtered_cmds['yaw_rate'])
             self.filtered_cmds['roll_rate'] += alpha * (target_roll_rate - self.filtered_cmds['roll_rate'])
+            self.filtered_cmds['pitch_rate'] += alpha * (
+                target_pitch_rate - self.filtered_cmds['pitch_rate']
+            )
             self.filtered_cmds['lt'] = lt_expo
             self.filtered_cmds['rt'] = rt_expo
+            self.filtered_cmds['rb_pressed'] = rb_pressed
+            self.filtered_cmds['attitude_axis'] = self.attitude_control_axis
             return self.filtered_cmds.copy()
         except Exception as exc:
             self._log_warn(f'读取手柄失败: {exc}，本周期保持上一指令。')
@@ -470,8 +520,11 @@ class HnuterController(Node):
             'vz': 0.0,
             'yaw_rate': 0.0,
             'roll_rate': 0.0,
+            'pitch_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
+            'rb_pressed': False,
+            'attitude_axis': 'roll',
         }
 
         # Physical parameters
@@ -517,6 +570,14 @@ class HnuterController(Node):
 
         self.integral_pos_error = np.zeros(3)
         self.integral_e_R = np.zeros(3)
+        self._attitude_error_quaternion = None
+        self.last_attitude_error = np.zeros(3)
+        self.last_attitude_error_angle_rad = 0.0
+        self.last_omega_error = np.zeros(3)
+        self.last_tau_c = np.zeros(3)
+        self.last_yaw_authority_scale = 1.0
+        self.last_thrust_axis_alignment = 1.0
+        self.last_full_error_blend = 0.0
 
         # Direct-actuator mode cannot rely on PX4's inner-loop guards. Keep
         # takeoff torque gentle so a small pitch error cannot saturate tail
@@ -527,6 +588,16 @@ class HnuterController(Node):
         self.direct_xy_lock_Domega = np.array([1.2, 1.2, 1.2])
         self.direct_KR = np.array([1.5, 1.5, env_float('HNUTER_DIRECT_KR_YAW', 3.2)])
         self.direct_Domega = np.array([1.2, 1.2, env_float('HNUTER_DIRECT_DOMEGA_YAW', 2.2)])
+        self.direct_attitude_Ki = np.zeros(3)
+        self.direct_attitude_integral_limit = np.array([0.6, 0.6, 0.4])
+        self.direct_attitude_integral_activation_error_rad = math.radians(35.0)
+        self.direct_quaternion_error_enabled = True
+        self.direct_attitude_gyro_compensation_enabled = True
+        self.direct_reduced_tilt_error_enabled = True
+        self.direct_large_tilt_yaw_scheduling_enabled = True
+        self.direct_large_tilt_yaw_start_rad = math.radians(45.0)
+        self.direct_large_tilt_yaw_full_rad = math.radians(80.0)
+        self.direct_large_tilt_yaw_min_scale = 0.10
         self.direct_takeoff_tau_limit = np.array([0.90, 0.90, 0.50])
         self.direct_xy_lock_tau_limit = np.array([0.90, 0.90, 0.50])
         self.direct_tau_limit = np.array([0.90, 0.90, env_float('HNUTER_DIRECT_TAU_YAW_LIMIT', 1.80)])
@@ -538,6 +609,11 @@ class HnuterController(Node):
 
         self.max_acc_xy = 20.0
         self.max_acc_z = 20.0
+        # Position-loop arrays use NED axis order: north, east, down.
+        self.direct_pos_Kp_ned = np.array([2.5, 2.5, 8.0])
+        self.direct_pos_Kd_ned = np.array([1.8, 1.8, 4.0])
+        self.direct_pos_Ki_ned = np.array([0.0, 0.0, 3.0])
+        self.direct_pos_integral_limit_ned = np.array([1.0, 1.0, 2.0])
         self.max_climb_rate = 0.35
         self.manual_max_position_lead_xy = 0.6
         self.manual_max_position_lead_z = 0.45
@@ -590,9 +666,9 @@ class HnuterController(Node):
         self.manual_pos_initialized = False
         self.manual_des_pos = np.zeros(3)   # [x_enu, y_enu, z_relative]
         self.manual_des_yaw = 0.0
-        # LT/RT 积分得到的横滚姿态期望。
-        # 正号沿当前 ENU roll 约定；若实机观察方向相反，
-        # 只需要在 GamepadManager 中把 target_roll_rate 改成 (rt_expo - lt_expo)。
+        # LT/RT 积分得到当前 RB 所选轴的姿态期望，初始控制横滚。
+        # 正号沿当前 ENU 姿态约定；若实机观察方向相反，
+        # 只需要在 GamepadManager 中反转 trigger_direction。
         self.manual_des_roll = 0.0
         self.manual_roll_limit_rad = np.radians(90.0)
         self.manual_des_pitch = 0.0
@@ -650,6 +726,7 @@ class HnuterController(Node):
         ))
         self.attitude_segment_time_s = env_float('HNUTER_ATTITUDE_SEGMENT_S', 5.0)
         self.attitude_peak_hold_s = env_float('HNUTER_ATTITUDE_PEAK_HOLD_S', 1.0)
+        self.attitude_test_bidirectional = True
         self.attitude_test_altitude_only = os.environ.get(
             'HNUTER_ATTITUDE_TEST_ALTITUDE_ONLY', '0'
         ).strip().lower() in ('1', 'true', 'yes', 'on')
@@ -680,11 +757,14 @@ class HnuterController(Node):
             max_vz=0.3,
             max_yaw_rate=0.4,
             max_roll_rate=math.radians(20.0),
+            max_pitch_rate=math.radians(20.0),
             deadzone=0.10,
             expo=0.40,
             filter_tau=0.35,
             lt_axis=2,
             rt_axis=5,
+            rb_button=int(env_float('HNUTER_PAD_RB_BUTTON', 5)),
+            attitude_axis_toggle_enabled=self._gamepad_attitude_axis_toggle_enabled(),
             trigger_mode='minus_one_to_one',
             logger=self.get_logger()
         )
@@ -719,6 +799,9 @@ class HnuterController(Node):
     def _node_name(self):
         return 'hnuter_controller_direct_debug'
 
+    def _gamepad_attitude_axis_toggle_enabled(self):
+        return False
+
     # ============================================================
     # Live tuning
     # ============================================================
@@ -730,6 +813,7 @@ class HnuterController(Node):
             "attitude_step_yaw_deg": float(math.degrees(self.attitude_step_axis_rad[2])),
             "attitude_segment_time_s": float(self.attitude_segment_time_s),
             "attitude_peak_hold_s": float(self.attitude_peak_hold_s),
+            "attitude_test_bidirectional": bool(self.attitude_test_bidirectional),
             "attitude_test_altitude_only": bool(self.attitude_test_altitude_only),
             "attitude_test_altitude_m": float(self.attitude_test_altitude_m),
             "attitude_test_max_acc_xy": float(self.attitude_test_max_acc_xy),
@@ -743,6 +827,30 @@ class HnuterController(Node):
             "allocator_force_y_sign": float(self.allocator_force_y_sign),
             "direct_KR": self.direct_KR.tolist(),
             "direct_Domega": self.direct_Domega.tolist(),
+            "direct_attitude_Ki": self.direct_attitude_Ki.tolist(),
+            "direct_attitude_integral_limit": self.direct_attitude_integral_limit.tolist(),
+            "direct_attitude_integral_activation_error_deg": float(
+                math.degrees(self.direct_attitude_integral_activation_error_rad)
+            ),
+            "direct_quaternion_error_enabled": bool(self.direct_quaternion_error_enabled),
+            "direct_attitude_gyro_compensation_enabled": bool(
+                self.direct_attitude_gyro_compensation_enabled
+            ),
+            "direct_reduced_tilt_error_enabled": bool(
+                self.direct_reduced_tilt_error_enabled
+            ),
+            "direct_large_tilt_yaw_scheduling_enabled": bool(
+                self.direct_large_tilt_yaw_scheduling_enabled
+            ),
+            "direct_large_tilt_yaw_start_deg": float(
+                math.degrees(self.direct_large_tilt_yaw_start_rad)
+            ),
+            "direct_large_tilt_yaw_full_deg": float(
+                math.degrees(self.direct_large_tilt_yaw_full_rad)
+            ),
+            "direct_large_tilt_yaw_min_scale": float(
+                self.direct_large_tilt_yaw_min_scale
+            ),
             "direct_tau_limit": self.direct_tau_limit.tolist(),
             "direct_takeoff_KR": self.direct_takeoff_KR.tolist(),
             "direct_takeoff_Domega": self.direct_takeoff_Domega.tolist(),
@@ -750,6 +858,10 @@ class HnuterController(Node):
             "direct_xy_lock_KR": self.direct_xy_lock_KR.tolist(),
             "direct_xy_lock_Domega": self.direct_xy_lock_Domega.tolist(),
             "direct_xy_lock_tau_limit": self.direct_xy_lock_tau_limit.tolist(),
+            "direct_pos_Kp_ned": self.direct_pos_Kp_ned.tolist(),
+            "direct_pos_Kd_ned": self.direct_pos_Kd_ned.tolist(),
+            "direct_pos_Ki_ned": self.direct_pos_Ki_ned.tolist(),
+            "direct_pos_integral_limit_ned": self.direct_pos_integral_limit_ned.tolist(),
             "max_acc_xy": float(self.max_acc_xy),
             "max_acc_z": float(self.max_acc_z),
             "xy_lock_max_acc_xy": float(self.xy_lock_max_acc_xy),
@@ -813,6 +925,11 @@ class HnuterController(Node):
             0.0,
             self._tuning_float(data, 'attitude_peak_hold_s', self.attitude_peak_hold_s),
         )
+        self.attitude_test_bidirectional = self._tuning_bool(
+            data,
+            'attitude_test_bidirectional',
+            self.attitude_test_bidirectional,
+        )
         self.attitude_test_altitude_only = self._tuning_bool(
             data, 'attitude_test_altitude_only', self.attitude_test_altitude_only
         )
@@ -853,6 +970,71 @@ class HnuterController(Node):
 
         self.direct_KR = self._tuning_array(data, 'direct_KR', self.direct_KR)
         self.direct_Domega = self._tuning_array(data, 'direct_Domega', self.direct_Domega)
+        self.direct_attitude_Ki = np.maximum(
+            self._tuning_array(data, 'direct_attitude_Ki', self.direct_attitude_Ki),
+            0.0,
+        )
+        self.direct_attitude_integral_limit = np.maximum(
+            self._tuning_array(
+                data,
+                'direct_attitude_integral_limit',
+                self.direct_attitude_integral_limit,
+            ),
+            0.0,
+        )
+        self.direct_attitude_integral_activation_error_rad = math.radians(max(
+            0.0,
+            self._tuning_float(
+                data,
+                'direct_attitude_integral_activation_error_deg',
+                math.degrees(self.direct_attitude_integral_activation_error_rad),
+            ),
+        ))
+        self.direct_quaternion_error_enabled = self._tuning_bool(
+            data,
+            'direct_quaternion_error_enabled',
+            self.direct_quaternion_error_enabled,
+        )
+        self.direct_attitude_gyro_compensation_enabled = self._tuning_bool(
+            data,
+            'direct_attitude_gyro_compensation_enabled',
+            self.direct_attitude_gyro_compensation_enabled,
+        )
+        self.direct_reduced_tilt_error_enabled = self._tuning_bool(
+            data,
+            'direct_reduced_tilt_error_enabled',
+            self.direct_reduced_tilt_error_enabled,
+        )
+        self.direct_large_tilt_yaw_scheduling_enabled = self._tuning_bool(
+            data,
+            'direct_large_tilt_yaw_scheduling_enabled',
+            self.direct_large_tilt_yaw_scheduling_enabled,
+        )
+        self.direct_large_tilt_yaw_start_rad = math.radians(max(
+            0.0,
+            self._tuning_float(
+                data,
+                'direct_large_tilt_yaw_start_deg',
+                math.degrees(self.direct_large_tilt_yaw_start_rad),
+            ),
+        ))
+        self.direct_large_tilt_yaw_full_rad = math.radians(max(
+            math.degrees(self.direct_large_tilt_yaw_start_rad) + 0.1,
+            self._tuning_float(
+                data,
+                'direct_large_tilt_yaw_full_deg',
+                math.degrees(self.direct_large_tilt_yaw_full_rad),
+            ),
+        ))
+        self.direct_large_tilt_yaw_min_scale = float(np.clip(
+            self._tuning_float(
+                data,
+                'direct_large_tilt_yaw_min_scale',
+                self.direct_large_tilt_yaw_min_scale,
+            ),
+            0.0,
+            1.0,
+        ))
         self.direct_tau_limit = self._tuning_array(data, 'direct_tau_limit', self.direct_tau_limit)
         self.direct_takeoff_KR = self._tuning_array(data, 'direct_takeoff_KR', self.direct_takeoff_KR)
         self.direct_takeoff_Domega = self._tuning_array(data, 'direct_takeoff_Domega', self.direct_takeoff_Domega)
@@ -860,6 +1042,26 @@ class HnuterController(Node):
         self.direct_xy_lock_KR = self._tuning_array(data, 'direct_xy_lock_KR', self.direct_xy_lock_KR)
         self.direct_xy_lock_Domega = self._tuning_array(data, 'direct_xy_lock_Domega', self.direct_xy_lock_Domega)
         self.direct_xy_lock_tau_limit = self._tuning_array(data, 'direct_xy_lock_tau_limit', self.direct_xy_lock_tau_limit)
+        self.direct_pos_Kp_ned = np.maximum(
+            self._tuning_array(data, 'direct_pos_Kp_ned', self.direct_pos_Kp_ned),
+            0.0,
+        )
+        self.direct_pos_Kd_ned = np.maximum(
+            self._tuning_array(data, 'direct_pos_Kd_ned', self.direct_pos_Kd_ned),
+            0.0,
+        )
+        self.direct_pos_Ki_ned = np.maximum(
+            self._tuning_array(data, 'direct_pos_Ki_ned', self.direct_pos_Ki_ned),
+            0.0,
+        )
+        self.direct_pos_integral_limit_ned = np.maximum(
+            self._tuning_array(
+                data,
+                'direct_pos_integral_limit_ned',
+                self.direct_pos_integral_limit_ned,
+            ),
+            0.0,
+        )
 
         self.max_acc_xy = self._tuning_float(data, 'max_acc_xy', self.max_acc_xy)
         self.max_acc_z = self._tuning_float(data, 'max_acc_z', self.max_acc_z)
@@ -912,7 +1114,11 @@ class HnuterController(Node):
                 f'force_sign=[{self.allocator_force_x_sign:+.0f}, {self.allocator_force_y_sign:+.0f}], '
                 f'KR={np.round(self.direct_KR, 3).tolist()}, '
                 f'D={np.round(self.direct_Domega, 3).tolist()}, '
-                f'tau_lim={np.round(self.direct_tau_limit, 3).tolist()}'
+                f'att_Ki={np.round(self.direct_attitude_Ki, 3).tolist()}, '
+                f'tau_lim={np.round(self.direct_tau_limit, 3).tolist()}, '
+                f'pos_Kp_ned={np.round(self.direct_pos_Kp_ned, 3).tolist()}, '
+                f'pos_Kd_ned={np.round(self.direct_pos_Kd_ned, 3).tolist()}, '
+                f'pos_Ki_ned={np.round(self.direct_pos_Ki_ned, 3).tolist()}'
             )
             self._last_tuning_log_time = now
 
@@ -1420,8 +1626,11 @@ class HnuterController(Node):
             'vz': 0.0,
             'yaw_rate': 0.0,
             'roll_rate': 0.0,
+            'pitch_rate': 0.0,
             'lt': 0.0,
             'rt': 0.0,
+            'rb_pressed': False,
+            'attitude_axis': self.gamepad.attitude_control_axis,
         }
 
     def poll_keyboard_commands(self):
@@ -1531,6 +1740,7 @@ class HnuterController(Node):
         self.manual_des_pitch = 0.0
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
+        self._attitude_error_quaternion = None
         finish_text = '完成后回到该点悬停。'
         self.get_logger().info(
             f'开始执行{mode_text}轨迹：起点 [{self.auto_traj_start_pos[0]:.2f}, '
@@ -1563,6 +1773,7 @@ class HnuterController(Node):
         self.target_R_des_ned_frd = None
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
+        self._attitude_error_quaternion = None
         if finished_mode == 'attitude':
             self.get_logger().info(
                 f'{mode_text}轨迹完成，已回到并保持原悬停点 '
@@ -1658,18 +1869,21 @@ class HnuterController(Node):
         if active_axes.size == 0:
             return self.auto_traj_start_attitude.copy(), np.zeros(3), None, True
 
-        axis_amplitudes = []
+        axis_steps = []
         for axis in active_axes:
-            amplitude = abs(float(self.attitude_step_axis_rad[int(axis)]))
-            if amplitude > math.radians(0.01):
-                axis_amplitudes.append((int(axis), amplitude))
+            step = float(self.attitude_step_axis_rad[int(axis)])
+            if abs(step) > math.radians(0.01):
+                axis_steps.append((int(axis), step))
 
         # Run one axis at a time and always return to level before switching axes:
         # roll +, pitch +, yaw +, then roll -, pitch -, yaw - for whichever axes are enabled.
-        signed_sequence = (
-            [(axis, amplitude) for axis, amplitude in axis_amplitudes]
-            + [(axis, -amplitude) for axis, amplitude in axis_amplitudes]
-        )
+        if self.attitude_test_bidirectional:
+            signed_sequence = (
+                [(axis, abs(step)) for axis, step in axis_steps]
+                + [(axis, -abs(step)) for axis, step in axis_steps]
+            )
+        else:
+            signed_sequence = axis_steps
 
         if not signed_sequence:
             return self.auto_traj_start_attitude.copy(), np.zeros(3), None, True
@@ -1868,6 +2082,7 @@ class HnuterController(Node):
         vx_w = cmds['vx_b'] * math.cos(yaw_ref) - cmds['vy_b'] * math.sin(yaw_ref)
         vy_w = cmds['vx_b'] * math.sin(yaw_ref) + cmds['vy_b'] * math.cos(yaw_ref)
         roll_rate = cmds.get('roll_rate', 0.0)
+        pitch_rate = cmds.get('pitch_rate', 0.0)
         prev_xy = self.manual_des_pos[:2].copy()
         manual_xy_active = abs(cmds['vx_b']) > 1e-5 or abs(cmds['vy_b']) > 1e-5
 
@@ -1915,6 +2130,15 @@ class HnuterController(Node):
             self.manual_roll_limit_rad
         ))
         realized_roll_rate = (self.manual_des_roll - previous_roll) / max(dt, 1e-3)
+        previous_pitch = self.manual_des_pitch
+        self.manual_des_pitch = float(np.clip(
+            previous_pitch + pitch_rate * dt,
+            -self.manual_pitch_limit_rad,
+            self.manual_pitch_limit_rad,
+        ))
+        realized_pitch_rate = (
+            self.manual_des_pitch - previous_pitch
+        ) / max(dt, 1e-3)
         self._limit_manual_position_lead(
             clamp_xy=manual_xy_active,
             clamp_z=(abs(manual_vz) > 1e-5 or auto_climb_active),
@@ -1924,8 +2148,16 @@ class HnuterController(Node):
         self.target_position = self.manual_des_pos.copy()
         self.target_velocity = np.array([realized_vxy[0], realized_vxy[1], vz_w], dtype=float)
         self.target_acceleration = np.zeros(3)
-        self.target_attitude = np.array([self.manual_des_roll, 0.0, self.manual_des_yaw], dtype=float)
-        self.target_attitude_rate = np.array([realized_roll_rate, 0.0, yaw_rate], dtype=float)
+        self.target_attitude = np.array([
+            self.manual_des_roll,
+            self.manual_des_pitch,
+            self.manual_des_yaw,
+        ], dtype=float)
+        self.target_attitude_rate = np.array([
+            realized_roll_rate,
+            realized_pitch_rate,
+            yaw_rate,
+        ], dtype=float)
         self.target_R_des_ned_frd = None
 
     def control_loop(self):
@@ -2215,16 +2447,18 @@ class HnuterController(Node):
             self.integral_pos_error[1] = 0.0
 
         self.integral_pos_error += pos_error * dt
-        self.integral_pos_error[0] = float(np.clip(self.integral_pos_error[0], -1.0, 1.0))
-        self.integral_pos_error[1] = float(np.clip(self.integral_pos_error[1], -1.0, 1.0))
-        self.integral_pos_error[2] = float(np.clip(self.integral_pos_error[2], -2.0, 2.0))
+        self.integral_pos_error = np.clip(
+            self.integral_pos_error,
+            -self.direct_pos_integral_limit_ned,
+            self.direct_pos_integral_limit_ned,
+        )
 
-        Kp = np.diag([2.5, 2.5, 8.0])
+        Kp = np.diag(self.direct_pos_Kp_ned)
         if xy_lock_active:
             Kp[0, 0] *= 0.8
             Kp[1, 1] *= 0.8
-        Dp = np.diag([1.8, 1.8, 4.0])
-        Ki = np.array([0.0, 0.0, 3.0], dtype=float)
+        Dp = np.diag(self.direct_pos_Kd_ned)
+        Ki = self.direct_pos_Ki_ned
         acc_des = acc_ff_ned + Kp @ pos_error + Dp @ vel_error + Ki * self.integral_pos_error
         if xy_lock_active:
             max_acc_xy = self.xy_lock_max_acc_xy
@@ -2268,10 +2502,35 @@ class HnuterController(Node):
             if self.target_R_des_ned_frd is not None
             else self._direct_desired_attitude_ned_frd(self.target_attitude)
         )
-        e_rm = 0.5 * (R_des.T @ self.R_ned_frd - self.R_ned_frd.T @ R_des)
-        e_R = np.array([e_rm[2, 1], e_rm[0, 2], e_rm[1, 0]], dtype=float)
-        self.integral_e_R += e_R * dt
-        self.integral_e_R = np.clip(self.integral_e_R, -1.5, 1.5)
+        relative_rotation = R_des.T @ self.R_ned_frd
+        if self.direct_quaternion_error_enabled:
+            e_R, error_quaternion, attitude_error_angle = quaternion_attitude_error(
+                R_des,
+                self.R_ned_frd,
+                self._attitude_error_quaternion,
+            )
+            self._attitude_error_quaternion = error_quaternion
+        else:
+            e_rm = 0.5 * (relative_rotation - relative_rotation.T)
+            e_R = np.array(
+                [e_rm[2, 1], e_rm[0, 2], e_rm[1, 0]],
+                dtype=float,
+            )
+            attitude_error_angle = math.acos(float(np.clip(
+                0.5 * (np.trace(relative_rotation) - 1.0),
+                -1.0,
+                1.0,
+            )))
+            self._attitude_error_quaternion = None
+
+        self.last_thrust_axis_alignment = float(np.clip(
+            np.dot(R_des[:, 2], self.R_ned_frd[:, 2]), -1.0, 1.0
+        ))
+        self.last_full_error_blend = 0.0
+        if auto_attitude_active and self.direct_reduced_tilt_error_enabled:
+            e_R, self.last_thrust_axis_alignment, self.last_full_error_blend = (
+                reduced_tilt_attitude_error(R_des, self.R_ned_frd, e_R)
+            )
 
         if auto_attitude_active:
             target_rate = np.array([
@@ -2287,20 +2546,66 @@ class HnuterController(Node):
         if tilt_suppress_active:
             KR = self.direct_takeoff_KR
             Domega = self.direct_takeoff_Domega
+            attitude_Ki = np.zeros(3)
             tau_limit = self.direct_takeoff_tau_limit
         elif xy_lock_active:
             KR = self.direct_xy_lock_KR
             Domega = self.direct_xy_lock_Domega
+            attitude_Ki = np.zeros(3)
             tau_limit = self.direct_xy_lock_tau_limit
         else:
-            KR = self.direct_KR
-            Domega = self.direct_Domega
-            tau_limit = self.direct_tau_limit
+            KR = self.direct_KR.copy()
+            Domega = self.direct_Domega.copy()
+            attitude_Ki = self.direct_attitude_Ki.copy()
+            tau_limit = self.direct_tau_limit.copy()
 
-        tau_c = -KR * e_R - Domega * omega_error
+        yaw_authority_scale = 1.0
+        if (
+            auto_attitude_active
+            and self.direct_large_tilt_yaw_scheduling_enabled
+            and not (tilt_suppress_active or xy_lock_active)
+        ):
+            desired_tilt = math.acos(float(np.clip(R_des[2, 2], -1.0, 1.0)))
+            current_tilt = math.acos(float(np.clip(self.R_ned_frd[2, 2], -1.0, 1.0)))
+            yaw_authority_scale = large_tilt_yaw_scale(
+                max(desired_tilt, current_tilt),
+                self.direct_large_tilt_yaw_start_rad,
+                self.direct_large_tilt_yaw_full_rad,
+                self.direct_large_tilt_yaw_min_scale,
+            )
+            KR[2] *= yaw_authority_scale
+            Domega[2] *= math.sqrt(yaw_authority_scale)
+            attitude_Ki[2] *= yaw_authority_scale
+            tau_limit[2] *= yaw_authority_scale
+            self.integral_e_R[2] *= math.exp(-dt * (1.0 - yaw_authority_scale) / 0.3)
+        self.last_yaw_authority_scale = yaw_authority_scale
+
+        if attitude_error_angle <= self.direct_attitude_integral_activation_error_rad:
+            self.integral_e_R += e_R * dt
+        else:
+            # Keep the integrator out of large-error recovery and unwind any
+            # bias accumulated before a half-turn transition.
+            decay = math.exp(-dt / 0.5)
+            self.integral_e_R *= decay
+        self.integral_e_R = np.clip(
+            self.integral_e_R,
+            -self.direct_attitude_integral_limit,
+            self.direct_attitude_integral_limit,
+        )
+
+        tau_c = -KR * e_R - Domega * omega_error - attitude_Ki * self.integral_e_R
+        if self.direct_attitude_gyro_compensation_enabled:
+            tau_c += np.cross(
+                self.angular_velocity_frd,
+                self.J @ self.angular_velocity_frd,
+            )
         if not self.direct_yaw_control_enabled:
             tau_c[2] = 0.0
         tau_c = np.clip(tau_c, -tau_limit, tau_limit)
+        self.last_attitude_error = e_R.copy()
+        self.last_attitude_error_angle_rad = float(attitude_error_angle)
+        self.last_omega_error = omega_error.copy()
+        self.last_tau_c = tau_c.copy()
 
         max_thrust_per_arm = 85.48 * 2.0
         max_tail_thrust = 85.48
@@ -2458,6 +2763,17 @@ class HnuterController(Node):
             'xy_lock_active', 'direct_safety_cutoff',
             'angular_p_frd_rps', 'angular_q_frd_rps', 'angular_r_frd_rps',
             'direct_safety_reason',
+            'direct_pos_kp_n', 'direct_pos_kp_e', 'direct_pos_kp_d',
+            'direct_pos_kd_n', 'direct_pos_kd_e', 'direct_pos_kd_d',
+            'direct_pos_ki_n', 'direct_pos_ki_e', 'direct_pos_ki_d',
+            'attitude_error_angle_deg',
+            'attitude_error_x', 'attitude_error_y', 'attitude_error_z',
+            'omega_error_p_rps', 'omega_error_q_rps', 'omega_error_r_rps',
+            'attitude_integral_x', 'attitude_integral_y', 'attitude_integral_z',
+            'commanded_tau_x_nm', 'commanded_tau_y_nm', 'commanded_tau_z_nm',
+            'yaw_authority_scale', 'thrust_axis_alignment', 'full_error_blend',
+            'manual_attitude_axis', 'manual_des_roll_deg', 'manual_des_pitch_deg',
+            'manual_roll_rate_dps', 'manual_pitch_rate_dps', 'gamepad_rb_pressed',
         ]
         columns += self._diagnostic_extra_header()
         return columns
@@ -2530,6 +2846,23 @@ class HnuterController(Node):
             float(self.angular_velocity_frd[1]),
             float(self.angular_velocity_frd[2]),
             self.direct_safety_cutoff_reason,
+            *self._diag_values(self.direct_pos_Kp_ned, 3),
+            *self._diag_values(self.direct_pos_Kd_ned, 3),
+            *self._diag_values(self.direct_pos_Ki_ned, 3),
+            float(math.degrees(self.last_attitude_error_angle_rad)),
+            *self._diag_values(self.last_attitude_error, 3),
+            *self._diag_values(self.last_omega_error, 3),
+            *self._diag_values(self.integral_e_R, 3),
+            *self._diag_values(self.last_tau_c, 3),
+            float(self.last_yaw_authority_scale),
+            float(self.last_thrust_axis_alignment),
+            float(self.last_full_error_blend),
+            str(self._last_manual_cmd.get('attitude_axis', 'roll')),
+            float(math.degrees(self.manual_des_roll)),
+            float(math.degrees(self.manual_des_pitch)),
+            float(math.degrees(self._last_manual_cmd.get('roll_rate', 0.0))),
+            float(math.degrees(self._last_manual_cmd.get('pitch_rate', 0.0))),
+            int(bool(self._last_manual_cmd.get('rb_pressed', False))),
         ]
         row += self._diagnostic_extra_values()
         self._diagnostic_writer.writerow(row)
@@ -2564,14 +2897,24 @@ class HnuterController(Node):
             f"Attitude ENU/FLU deg: target R/P/Y=[{target_roll_deg:+5.1f}, {target_pitch_deg:+5.1f}, {target_yaw_deg:+5.1f}] | "
             f"current R/P/Y=[{current_roll_deg:+5.1f}, {current_pitch_deg:+5.1f}, {current_yaw_deg:+5.1f}]\n"
             f"Continuous test pitch: target={target_pitch_deg:+6.1f}° | current={continuous_test_pitch_deg:+6.1f}°\n"
+            f"SO(3) error={math.degrees(self.last_attitude_error_angle_rad):5.1f}° | "
+            f"eR={np.round(self.last_attitude_error, 3).tolist()} | "
+            f"omega_err={np.round(self.last_omega_error, 3).tolist()} | "
+            f"thrust_align={self.last_thrust_axis_alignment:.3f}\n"
             f"Tune: step={np.round(np.degrees(self.attitude_step_axis_rad), 1).tolist()}deg | KR={np.round(self.direct_KR, 2).tolist()} | "
-            f"D={np.round(self.direct_Domega, 2).tolist()} | tau_lim={np.round(self.direct_tau_limit, 2).tolist()}\n"
+            f"D={np.round(self.direct_Domega, 2).tolist()} | "
+            f"Ki={np.round(self.direct_attitude_Ki, 2).tolist()} | "
+            f"tau_lim={np.round(self.direct_tau_limit, 2).tolist()} | "
+            f"yaw_scale={self.last_yaw_authority_scale:.2f}\n"
             f"Keyboard trajectory: active={self.auto_traj_mode} | pending={self.pending_auto_traj_mode}\n"
             f"Gamepad: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
             f"vz={self._last_manual_cmd['vz']:+4.2f}, yaw_rate={self._last_manual_cmd['yaw_rate']:+4.2f}, "
-            f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}\n"
-            f"Manual roll: des={np.degrees(self.manual_des_roll):+5.1f}° | "
-            f"roll_rate={np.degrees(self._last_manual_cmd.get('roll_rate', 0.0)):+5.1f}°/s\n"
+            f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}, "
+            f"RB={int(bool(self._last_manual_cmd.get('rb_pressed', False)))}\n"
+            f"Manual attitude: axis={self._last_manual_cmd.get('attitude_axis', 'roll')} | "
+            f"R/P=[{np.degrees(self.manual_des_roll):+5.1f}, {np.degrees(self.manual_des_pitch):+5.1f}]° | "
+            f"rates=[{np.degrees(self._last_manual_cmd.get('roll_rate', 0.0)):+5.1f}, "
+            f"{np.degrees(self._last_manual_cmd.get('pitch_rate', 0.0)):+5.1f}]°/s\n"
             f"Wrench: Fx={self.last_W[0]:+5.2f}N, Fy={self.last_W[1]:+5.2f}N, Fz={self.last_W[2]:+5.2f}N\n"
             f"Thrust: F1={self.last_F1:5.2f}N | F2={self.last_F2:5.2f}N | F3={self.last_F3:5.2f}N\n"
             f"Tilt: A1={np.degrees(self._alpha1_cmd):+5.1f}° | A2={np.degrees(self._alpha2_cmd):+5.1f}° | "

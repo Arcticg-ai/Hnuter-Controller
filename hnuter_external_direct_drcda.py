@@ -16,9 +16,12 @@ import numpy as np
 from hnuter_drcda import (
     ACTUATOR_COUNT,
     ANGLE_COUNT,
+    ALLOCATOR_VARIANTS,
+    BasicDifferentialAllocator,
     DRCDAAllocator,
     DRCDAConfig,
     HnuterWrenchModel,
+    configure_allocator_variant,
 )
 from hnuter_external_direct_controller_debug import (
     HnuterController as DirectController,
@@ -30,9 +33,22 @@ import rclpy
 
 class HnuterDRCDAController(DirectController):
     def _node_name(self):
-        return 'hnuter_controller_direct_drcda'
+        variant = getattr(self, '_drcda_variant', 'full')
+        return f'hnuter_controller_direct_{variant}'
+
+    def _gamepad_attitude_axis_toggle_enabled(self):
+        return True
 
     def __init__(self) -> None:
+        self._drcda_variant = os.environ.get(
+            'HNUTER_DRCDA_VARIANT', 'full'
+        ).strip().lower()
+        if self._drcda_variant not in ALLOCATOR_VARIANTS:
+            choices = ', '.join(ALLOCATOR_VARIANTS)
+            raise ValueError(
+                f'unknown HNUTER_DRCDA_VARIANT={self._drcda_variant!r}; '
+                f'choose from {choices}'
+            )
         self._drcda_ready = False
         self._drcda_active_call = False
         self._drcda_current_time_s = 0.0
@@ -53,6 +69,7 @@ class HnuterDRCDAController(DirectController):
             config = DRCDAConfig.ideal_servos(**config_kwargs)
         else:
             config = DRCDAConfig(**config_kwargs)
+        configure_allocator_variant(config, self._drcda_variant)
 
         front_thrust_max = env_float('HNUTER_DRCDA_FRONT_MOTOR_MAX_N', 25.0)
         tail_thrust_max = env_float('HNUTER_DRCDA_TAIL_MOTOR_MAX_N', 50.0)
@@ -68,7 +85,12 @@ class HnuterDRCDAController(DirectController):
             tail_x_m=-self.l2,
             reaction_torque_ratio_m=env_float('HNUTER_DRCDA_REACTION_RATIO_M', 0.016),
         )
-        self.drcda = DRCDAAllocator(wrench_model, config)
+        allocator_type = (
+            BasicDifferentialAllocator
+            if self._drcda_variant == 'basic_da'
+            else DRCDAAllocator
+        )
+        self.drcda = allocator_type(wrench_model, config)
         self._drcda_update_period_s = env_float('HNUTER_DRCDA_UPDATE_PERIOD_S', 0.01)
         self._drcda_update_period_s = float(np.clip(
             self._drcda_update_period_s, 0.002, 0.05
@@ -77,14 +99,18 @@ class HnuterDRCDAController(DirectController):
         self._drcda_ready = True
         self.get_logger().info(
             'DRCDA initialized: '
-            f'servo_model={model_name}, horizon={config.horizon_s * 1000.0:.0f}ms, '
+            f'variant={self._drcda_variant}, servo_model={model_name}, '
+            f'horizon={config.horizon_s * 1000.0:.0f}ms, '
             f'prediction_dt={config.prediction_dt_s * 1000.0:.1f}ms, '
             f'update_period={self._drcda_update_period_s * 1000.0:.1f}ms, '
             f'log={self.diagnostic_path}'
         )
 
     def _diagnostic_file_prefix(self):
-        return 'hnuter_drcda_debug'
+        return (
+            f'ablation/{self._drcda_variant}/'
+            f'hnuter_{self._drcda_variant}_debug'
+        )
 
     def _diagnostic_extra_header(self):
         columns = ['drcda_status', 'drcda_solve_ms', 'drcda_iterations']
@@ -187,7 +213,7 @@ class HnuterDRCDAController(DirectController):
             -wrench_residual[2],
         ])
         delta_acceleration_ned = self.R_ned_frd @ delta_force_body / self.mass
-        position_integral_gain = np.array([0.0, 0.0, 3.0])
+        position_integral_gain = self.direct_pos_Ki_ned
         active = position_integral_gain > 1e-6
         correction = np.zeros(3)
         correction[active] = (
@@ -197,8 +223,11 @@ class HnuterDRCDAController(DirectController):
             * dt
         )
         self.integral_pos_error += correction
-        self.integral_pos_error[0:2] = np.clip(self.integral_pos_error[0:2], -1.0, 1.0)
-        self.integral_pos_error[2] = float(np.clip(self.integral_pos_error[2], -2.0, 2.0))
+        self.integral_pos_error = np.clip(
+            self.integral_pos_error,
+            -self.direct_pos_integral_limit_ned,
+            self.direct_pos_integral_limit_ned,
+        )
 
     def publish_px4_equivalent_direct_commands(self, current_time: float, dt: float):
         self._drcda_active_call = True

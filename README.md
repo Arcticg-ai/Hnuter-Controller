@@ -62,6 +62,26 @@ cd ~/px4_ws_ros2
 python3 hnuter_external_direct_drcda.py
 ```
 
+In this DRCDA controller, LT/RT adjust the currently selected manual attitude
+axis. The initial axis is roll; each rising-edge press of `RB` toggles between
+pitch and roll without resetting the angle already commanded on the other axis.
+Override the default Xbox/XInput RB button index `5` with
+`HNUTER_PAD_RB_BUTTON`.
+
+For the identified-delay SITL plant, load the damped lateral-position tuning
+that was validated with hover and the 3D Lissajous trajectory:
+
+```bash
+HNUTER_TUNING_FILE=$PWD/config/identified_delay_damped_xy.json \
+HNUTER_DRCDA_VARIANT=full \
+python3 hnuter_external_direct_drcda.py
+```
+
+The position gains use NED axis order. The slower North actuator path therefore
+uses `Kp=1.6`, `Kd=3.2`, and `Ki=0.35`; the East path uses `Kp=2.0`,
+`Kd=2.8`, and `Ki=0.2`. The small horizontal integral gains remove static
+offset, while the increased derivative gains damp the identified actuator lag.
+
 DRCDA defaults to the identified primary/secondary servo gain, pure delay,
 first-order lag, and directional rate limits. The current `gz_hnuter` model must
 contain the corresponding plant-side servo dynamics for a meaningful comparison.
@@ -72,9 +92,12 @@ HNUTER_DRCDA_SERVO_MODEL=ideal python3 hnuter_external_direct_drcda.py
 ```
 
 The solver uses a 180 ms move-blocked prediction horizon at 100 Hz by default.
-Its diagnostics, including predicted actuator state, wrench residual, and solve
-time, are written under `hnuter_logs/external_control/`. Run the ROS-independent
-model and allocation checks with:
+Select the basic differential-allocation baseline or one DRCDA ablation with
+`HNUTER_DRCDA_VARIANT=basic_da`, `no_delay`, `no_horizon`, or
+`no_rate_limits`; the default is `full`. Each variant writes diagnostics under
+its own `hnuter_logs/external_control/ablation/VARIANT/` directory, including
+predicted actuator state, wrench residual, and solve time. Run the
+ROS-independent model and allocation checks with:
 
 ```bash
 python3 -m unittest -v test_hnuter_drcda.py
@@ -87,6 +110,26 @@ time-series plots under `hnuter_logs/comparison/`:
 python3 plot_lissajous_comparison.py \
   --baseline hnuter_logs/external_control/hnuter_direct_debug_RUN.csv \
   --drcda hnuter_logs/external_control/hnuter_drcda_debug_RUN.csv
+```
+
+Compare lateral oscillation before and after tuning, including the trajectory
+and the final 30 seconds of post-trajectory hover:
+
+```bash
+python3 plot_xy_tuning_comparison.py \
+  --baseline hnuter_logs/external_control/ablation/full/BEFORE.csv \
+  --tuned hnuter_logs/external_control/ablation/full/TUNED.csv
+```
+
+Generate the multi-run ablation plots and report with:
+
+```bash
+python3 plot_drcda_ablation.py \
+  --run basic_da=hnuter_logs/external_control/ablation/basic_da/RUN.csv \
+  --run full=hnuter_logs/external_control/ablation/full/RUN.csv \
+  --run no_delay=hnuter_logs/external_control/ablation/no_delay/RUN.csv \
+  --run no_horizon=hnuter_logs/external_control/ablation/no_horizon/RUN.csv \
+  --run no_rate_limits=hnuter_logs/external_control/ablation/no_rate_limits/RUN.csv
 ```
 
 Run the firmware-controller setpoint gamepad controller:

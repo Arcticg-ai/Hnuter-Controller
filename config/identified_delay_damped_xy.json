@@ -1,0 +1,76 @@
+{
+  "direct_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_Domega_yaw": 1.2,
+  "direct_KR": [
+    1.5,
+    1.5,
+    1.2
+  ],
+  "direct_KR_yaw": 1.2,
+  "direct_pos_Kd_ned": [
+    3.2,
+    2.8,
+    4.0
+  ],
+  "direct_pos_Ki_ned": [
+    0.35,
+    0.2,
+    3.0
+  ],
+  "direct_pos_Kp_ned": [
+    1.6,
+    2.0,
+    8.0
+  ],
+  "direct_pos_integral_limit_ned": [
+    0.8,
+    0.6,
+    2.0
+  ],
+  "direct_safety_attitude_check_enabled": true,
+  "direct_safety_attitude_limit_deg": 55.0,
+  "direct_takeoff_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_takeoff_KR": [
+    1.5,
+    1.5,
+    1.2
+  ],
+  "direct_takeoff_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_tau_yaw_limit": 0.5,
+  "direct_xy_lock_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_xy_lock_KR": [
+    1.5,
+    1.5,
+    1.2
+  ],
+  "direct_xy_lock_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_yaw_control_enabled": true,
+  "max_acc_xy": 3.0,
+  "max_acc_z": 4.0,
+  "xy_lock_max_acc_xy": 2.0
+}

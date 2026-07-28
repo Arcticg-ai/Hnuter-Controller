@@ -1,0 +1,2 @@
+PX4_GZ_WORLD=hnuter_sphere make px4_sitl gz_hnuter
+python3 ~/px4_ws_ros2/hnuter_sphere_surface_controller.py

@@ -20,6 +20,13 @@ import numpy as np
 ANGLE_COUNT = 4
 THRUST_COUNT = 5
 ACTUATOR_COUNT = ANGLE_COUNT + THRUST_COUNT
+ALLOCATOR_VARIANTS = (
+    'full',
+    'basic_da',
+    'no_delay',
+    'no_horizon',
+    'no_rate_limits',
+)
 
 
 def _array(values: Iterable[float], count: int, name: str) -> np.ndarray:
@@ -147,6 +154,28 @@ class DRCDAConfig:
         config.servo_rate_positive_rad_s[:] = 50.0
         config.servo_rate_negative_rad_s[:] = 50.0
         return config
+
+
+def configure_allocator_variant(config: DRCDAConfig, variant: str) -> DRCDAConfig:
+    """Apply one isolated allocator ablation to an existing configuration."""
+    variant = variant.strip().lower()
+    if variant not in ALLOCATOR_VARIANTS:
+        choices = ', '.join(ALLOCATOR_VARIANTS)
+        raise ValueError(f'unknown allocator variant {variant!r}; choose from {choices}')
+
+    if variant == 'no_delay':
+        config.servo_delay_positive_s[:] = 0.0
+        config.servo_delay_negative_s[:] = 0.0
+    elif variant == 'no_horizon':
+        config.horizon_s = config.prediction_dt_s
+    elif variant == 'no_rate_limits':
+        config.servo_rate_positive_rad_s[:] = 1.0e6
+        config.servo_rate_negative_rad_s[:] = 1.0e6
+        config.servo_command_rate_rad_s[:] = 1.0e6
+        config.thrust_command_rate_n_s[:] = 1.0e6
+        config.motor_force_rate_floor_n_s = 1.0e6
+        config.motor_force_rate_cap_n_s = 1.0e6
+    return config
 
 
 class HnuterWrenchModel:
@@ -674,6 +703,110 @@ class DRCDAAllocator:
             wrench_residual=wrench_residual,
             solve_time_ms=solve_time_ms,
             iterations=completed_iterations,
+            status=status,
+        )
+        self.last_result = result
+        return result
+
+
+class BasicDifferentialAllocator(DRCDAAllocator):
+    """One-step differential allocator with fixed actuator-rate bounds.
+
+    This baseline uses the current nominal command as actuator state. It has no
+    actuator delay queue, lag model, or reachable-set prediction.
+    """
+
+    def allocate(
+        self,
+        desired_wrench: Iterable[float],
+        dt: float,
+        preferred_command: Iterable[float] | None = None,
+        active_angle_limits: Iterable[float] | None = None,
+    ) -> DRCDAResult:
+        start_time = time.perf_counter()
+        cfg = self.config
+        desired = _array(desired_wrench, 6, 'desired_wrench')
+        dt = float(np.clip(dt, 0.0005, 0.05))
+        limits = (
+            cfg.servo_state_limit_rad.copy()
+            if active_angle_limits is None
+            else _array(active_angle_limits, ANGLE_COUNT, 'active_angle_limits')
+        )
+        limits = np.minimum(limits, cfg.servo_state_limit_rad)
+        preferred = (
+            self.command.copy()
+            if preferred_command is None
+            else _array(preferred_command, ACTUATOR_COUNT, 'preferred_command')
+        )
+
+        self.state = self.command.copy()
+        estimated_wrench = self.model.wrench(self.state)
+        raw_ff = (desired - self._previous_desired_wrench) / dt
+        ff_alpha = dt / (max(cfg.wrench_ff_tau_s, 0.0) + dt)
+        self._filtered_wrench_ff += ff_alpha * (raw_ff - self._filtered_wrench_ff)
+        jerk_reference = (
+            self._filtered_wrench_ff
+            + cfg.wrench_error_gain * (desired - estimated_wrench)
+        )
+        self._previous_desired_wrench = desired.copy()
+
+        rate_scale = np.concatenate((
+            cfg.servo_command_rate_rad_s,
+            cfg.thrust_command_rate_n_s,
+        ))
+        sqrt_weight = np.sqrt(cfg.wrench_weight) / cfg.wrench_scale
+        weighted_jacobian = (
+            sqrt_weight[:, None]
+            * self.model.jacobian(self.state)
+            * rate_scale[None, :]
+        )
+        weighted_target = sqrt_weight * jerk_reference
+        preferred_rate = np.clip(
+            (preferred - self.command) / (dt * rate_scale),
+            -1.0,
+            1.0,
+        )
+        regularization = (
+            cfg.command_move_weight + cfg.command_preference_weight + 1e-4
+        )
+        hessian = weighted_jacobian.T @ weighted_jacobian + np.diag(regularization)
+        gradient = (
+            weighted_jacobian.T @ weighted_target
+            + cfg.command_preference_weight * preferred_rate
+        )
+        status = 'basic_da'
+        try:
+            normalized_rate = np.linalg.solve(hessian, gradient)
+            if not np.all(np.isfinite(normalized_rate)):
+                raise np.linalg.LinAlgError('non-finite basic DA step')
+            normalized_rate = np.clip(normalized_rate, -1.0, 1.0)
+            command = self._project_command(
+                self.command + dt * rate_scale * normalized_rate,
+                self.command,
+                dt,
+                limits,
+            )
+        except (np.linalg.LinAlgError, FloatingPointError, ValueError):
+            status = 'basic_da_motor_only_fallback'
+            command = self._motor_only_fallback(
+                desired, self.command, dt, limits
+            )
+
+        self.command = command
+        self.state = command.copy()
+        predicted_wrench = self.model.wrench(self.state)
+        predicted_rate = (predicted_wrench - estimated_wrench) / dt
+        result = DRCDAResult(
+            command=command.copy(),
+            predicted_state=self.state.copy(),
+            estimated_wrench=estimated_wrench,
+            predicted_wrench=predicted_wrench,
+            desired_wrench=desired,
+            jerk_reference=jerk_reference,
+            wrench_rate_residual=jerk_reference - predicted_rate,
+            wrench_residual=predicted_wrench - desired,
+            solve_time_ms=(time.perf_counter() - start_time) * 1000.0,
+            iterations=1,
             status=status,
         )
         self.last_result = result
