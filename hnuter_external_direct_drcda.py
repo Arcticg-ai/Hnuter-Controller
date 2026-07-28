@@ -61,15 +61,40 @@ class HnuterDRCDAController(DirectController):
         ).strip().lower()
         config_kwargs = {
             'prediction_dt_s': env_float('HNUTER_DRCDA_PREDICTION_DT_S', 0.01),
+            'prediction_far_dt_s': env_float(
+                'HNUTER_DRCDA_PREDICTION_FAR_DT_S', 0.02
+            ),
             'horizon_s': env_float('HNUTER_DRCDA_HORIZON_S', 0.18),
+            'motor_block_switch_s': env_float(
+                'HNUTER_DRCDA_MOTOR_BLOCK_SWITCH_S', 0.10
+            ),
             'gauss_newton_iterations': int(env_float('HNUTER_DRCDA_ITERATIONS', 2)),
             'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 8.0),
+            'lm_damping': env_float('HNUTER_DRCDA_LM_DAMPING', 1.0e-3),
         }
         if model_name in ('ideal', 'instant', 'sitl_ideal'):
             config = DRCDAConfig.ideal_servos(**config_kwargs)
         else:
             config = DRCDAConfig(**config_kwargs)
         configure_allocator_variant(config, self._drcda_variant)
+
+        servo_move_scale = env_float(
+            'HNUTER_DRCDA_SERVO_MOVE_WEIGHT_SCALE', 10.0
+        )
+        motor_move_scale = env_float(
+            'HNUTER_DRCDA_MOTOR_MOVE_WEIGHT_SCALE', 1.0
+        )
+        config.command_move_weight[:ANGLE_COUNT] *= servo_move_scale
+        config.command_move_weight[ANGLE_COUNT:] *= motor_move_scale
+        config.servo_command_rate_rad_s *= env_float(
+            'HNUTER_DRCDA_SERVO_COMMAND_SLEW_SCALE', 0.5
+        )
+        config.late_transition_weight *= env_float(
+            'HNUTER_DRCDA_LATE_TRANSITION_WEIGHT_SCALE', 100.0
+        )
+        config.late_trim_weight *= env_float(
+            'HNUTER_DRCDA_LATE_TRIM_WEIGHT_SCALE', 25.0
+        )
 
         front_thrust_max = env_float('HNUTER_DRCDA_FRONT_MOTOR_MAX_N', 25.0)
         tail_thrust_max = env_float('HNUTER_DRCDA_TAIL_MOTOR_MAX_N', 50.0)
@@ -128,11 +153,17 @@ class HnuterDRCDAController(DirectController):
             'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
         )]
         columns += ['drcda_wrench_rate_residual_norm']
+        columns += [f'drcda_servo_authority_{index}' for index in range(4)]
+        columns += [f'drcda_servo_gated_{index}' for index in range(4)]
+        columns += [f'drcda_servo_rate_active_fraction_{index}' for index in range(4)]
+        columns += [f'drcda_servo_angle_active_fraction_{index}' for index in range(4)]
+        columns += ['drcda_objective', 'drcda_lm_damping']
+        columns += [f'drcda_late_thrust_{index}_n' for index in range(5)]
         return columns
 
     def _diagnostic_extra_values(self):
         if not self._drcda_ready or self.drcda.last_result is None:
-            return ['', float('nan'), 0] + [float('nan')] * 22
+            return ['', float('nan'), 0] + [float('nan')] * 45
         result = self.drcda.last_result
         return [
             result.status,
@@ -142,6 +173,13 @@ class HnuterDRCDAController(DirectController):
             *[float(value) for value in result.predicted_wrench],
             *[float(value) for value in result.wrench_residual],
             float(np.linalg.norm(result.wrench_rate_residual)),
+            *[float(value) for value in result.servo_authority],
+            *[int(value) for value in result.servo_gated],
+            *[float(value) for value in result.servo_rate_active_fraction],
+            *[float(value) for value in result.servo_angle_active_fraction],
+            float(result.objective),
+            float(result.lm_damping),
+            *[float(value) for value in result.late_thrust_command],
         ]
 
     @staticmethod
@@ -304,10 +342,12 @@ class HnuterDRCDAController(DirectController):
             ),
         ]
 
-        self._alpha1_cmd = float(command[0])
-        self._theta1_cmd = float(command[1])
-        self._alpha2_cmd = float(command[2])
-        self._theta2_cmd = float(command[3])
+        # DRCDA optimizes calibrated physical target angles. Convert them back
+        # through g^-1 before publishing in the simulator command space.
+        self._alpha1_cmd = self.drcda.servo_target_to_command(0, float(command[0]))
+        self._theta1_cmd = self.drcda.servo_target_to_command(1, float(command[1]))
+        self._alpha2_cmd = self.drcda.servo_target_to_command(2, float(command[2]))
+        self._theta2_cmd = self.drcda.servo_target_to_command(3, float(command[3]))
         self.last_F1 = float(logical_thrust[0] + logical_thrust[1])
         self.last_F2 = float(logical_thrust[2] + logical_thrust[3])
         self.last_F3 = float(logical_thrust[4])

@@ -7,9 +7,11 @@ import numpy as np
 from hnuter_drcda import (
     ACTUATOR_COUNT,
     BasicDifferentialAllocator,
+    DECISION_COUNT,
     DRCDAAllocator,
     DRCDAConfig,
     HnuterWrenchModel,
+    ServoPredictor,
     configure_allocator_variant,
 )
 
@@ -25,6 +27,68 @@ class HnuterWrenchModelTest(unittest.TestCase):
                 rng.uniform(-8.0, 8.0, 1),
             ))
             self.assertLess(model.jacobian_error(q), 1e-6)
+
+
+class ServoPredictorTest(unittest.TestCase):
+    def test_static_calibration_round_trip(self):
+        config = DRCDAConfig()
+        for index in range(4):
+            predictor = ServoPredictor(index, config)
+            for command in (-0.7, -0.2, 0.0, 0.3, 0.8):
+                target = predictor.command_to_target(command)
+                self.assertAlmostEqual(
+                    predictor.target_to_command(target),
+                    command,
+                    places=12,
+                )
+
+    def test_motion_direction_selects_negative_dynamics_for_positive_target(self):
+        config = DRCDAConfig()
+        config.servo_gain_positive[:] = 1.0
+        config.servo_gain_negative[:] = 1.0
+        config.servo_delay_positive_s[:] = 0.0
+        config.servo_delay_negative_s[:] = 0.0
+        config.servo_tau_positive_s[:] = 0.20
+        config.servo_tau_negative_s[:] = 0.02
+        config.servo_rate_positive_rad_s[:] = 1.0e6
+        config.servo_rate_negative_rad_s[:] = 1.0e6
+        predictor = ServoPredictor(0, config)
+        predictor.reset(theta=1.0, target_angle_rad=1.0)
+        predictor.enqueue(0.3)
+        predictor.advance(0.01)
+        expected = 1.0 + (1.0 - np.exp(-0.01 / 0.02)) * (0.3 - 1.0)
+        self.assertAlmostEqual(predictor.theta, expected, places=12)
+
+    def test_delay_direction_uses_command_change_not_absolute_sign(self):
+        config = DRCDAConfig()
+        config.servo_gain_positive[:] = 1.0
+        config.servo_gain_negative[:] = 1.0
+        config.servo_delay_positive_s[:] = 0.20
+        config.servo_delay_negative_s[:] = 0.05
+        predictor = ServoPredictor(0, config)
+        predictor.reset(theta=1.0, target_angle_rad=1.0)
+        predictor.enqueue(0.3)
+        predictor.advance(0.049)
+        self.assertAlmostEqual(predictor.active_target_angle_rad, 1.0)
+        predictor.advance(0.002)
+        self.assertAlmostEqual(predictor.active_target_angle_rad, 0.3)
+
+    def test_midstep_activation_is_propagated_without_grid_delay(self):
+        config = DRCDAConfig()
+        config.servo_gain_positive[:] = 1.0
+        config.servo_gain_negative[:] = 1.0
+        config.servo_delay_positive_s[:] = 0.007
+        config.servo_delay_negative_s[:] = 0.007
+        config.servo_tau_positive_s[:] = 0.10
+        config.servo_tau_negative_s[:] = 0.10
+        config.servo_rate_positive_rad_s[:] = 1.0e6
+        config.servo_rate_negative_rad_s[:] = 1.0e6
+        predictor = ServoPredictor(0, config)
+        predictor.reset()
+        predictor.enqueue(1.0)
+        predictor.advance(0.02)
+        expected = 1.0 - np.exp(-0.013 / 0.10)
+        self.assertAlmostEqual(predictor.theta, expected, places=12)
 
 
 class DRCDAAllocatorTest(unittest.TestCase):
@@ -83,10 +147,106 @@ class DRCDAAllocatorTest(unittest.TestCase):
         self.assertEqual(no_horizon.horizon_s, no_horizon.prediction_dt_s)
         self.assertTrue(np.all(no_horizon.servo_delay_positive_s > 0.0))
 
-        no_rates = configure_allocator_variant(DRCDAConfig(), 'no_rate_limits')
-        self.assertTrue(np.all(no_rates.servo_rate_positive_rad_s == 1.0e6))
-        self.assertTrue(np.all(no_rates.servo_command_rate_rad_s == 1.0e6))
-        self.assertEqual(no_rates.motor_force_rate_cap_n_s, 1.0e6)
+        no_physical_rate = configure_allocator_variant(
+            DRCDAConfig(), 'no_physical_rate'
+        )
+        self.assertTrue(
+            np.all(no_physical_rate.servo_rate_positive_rad_s == 1.0e6)
+        )
+        self.assertTrue(
+            np.all(no_physical_rate.servo_command_rate_rad_s < 1.0e6)
+        )
+        self.assertEqual(no_physical_rate.motor_force_rate_cap_n_s, 1.0e6)
+
+        no_command_slew = configure_allocator_variant(
+            DRCDAConfig(), 'no_command_slew'
+        )
+        self.assertTrue(
+            np.all(no_command_slew.servo_command_rate_rad_s == 1.0e6)
+        )
+        self.assertTrue(
+            np.all(no_command_slew.servo_rate_positive_rad_s < 1.0e6)
+        )
+
+        no_gate = configure_allocator_variant(
+            DRCDAConfig(), 'no_reachability_gate'
+        )
+        self.assertEqual(no_gate.reachability_gate_threshold, 0.0)
+
+        no_multirate = configure_allocator_variant(
+            DRCDAConfig(), 'no_multirate'
+        )
+        self.assertFalse(no_multirate.multirate_enabled)
+
+    def test_reachability_gate_freezes_servo_inside_pure_delay(self):
+        config = configure_allocator_variant(DRCDAConfig(), 'no_horizon')
+        allocator = DRCDAAllocator(HnuterWrenchModel(), config)
+        desired = np.array([10.0, -5.0, 44.0, 0.4, -0.3, 0.5])
+        preferred = np.array([
+            0.5, 0.4, -0.5, -0.4,
+            10.0, 10.0, 10.0, 10.0, 4.0,
+        ])
+        result = allocator.allocate(desired, 0.01, preferred)
+        np.testing.assert_allclose(result.command[:4], 0.0, atol=1e-12)
+        np.testing.assert_array_equal(result.servo_gated, True)
+
+    def test_default_nonuniform_grid_uses_sixteen_steps(self):
+        allocator = DRCDAAllocator(HnuterWrenchModel(), DRCDAConfig())
+        steps = allocator._build_prediction_steps()
+        self.assertEqual(steps.size, 16)
+        self.assertAlmostEqual(float(np.sum(steps)), allocator.config.horizon_s)
+        self.assertTrue(np.all(steps[:4] <= 0.01 + 1e-12))
+        self.assertTrue(np.all(steps[4:] <= 0.02 + 1e-12))
+
+    def test_multirate_trajectory_sensitivity_matches_finite_difference(self):
+        config = DRCDAConfig.ideal_servos(
+            horizon_s=0.12,
+            motor_block_switch_s=0.06,
+        )
+        allocator = DRCDAAllocator(HnuterWrenchModel(), config)
+        decision = np.array([
+            0.10, -0.08, 0.06, -0.04,
+            8.0, 9.0, 10.0, 11.0, 2.0,
+            9.0, 10.0, 11.0, 12.0, 3.0,
+        ])
+        self.assertEqual(decision.size, DECISION_COUNT)
+        limits = config.servo_state_limit_rad
+        trajectory = allocator._predict_trajectory(decision, limits)
+        analytical = trajectory.state_sensitivities[-1]
+        numerical = np.zeros_like(analytical)
+        epsilon = 1e-6
+        for index in range(DECISION_COUNT):
+            offset = np.zeros(DECISION_COUNT)
+            offset[index] = epsilon
+            plus = allocator._predict_trajectory(
+                decision + offset, limits
+            ).states[-1]
+            minus = allocator._predict_trajectory(
+                decision - offset, limits
+            ).states[-1]
+            numerical[:, index] = (plus - minus) / (2.0 * epsilon)
+        np.testing.assert_allclose(
+            analytical, numerical, atol=2e-5, rtol=2e-4
+        )
+
+        early_index = allocator._trajectory_index(trajectory, 0.04)
+        early_sensitivity = trajectory.state_sensitivities[early_index]
+        np.testing.assert_allclose(
+            early_sensitivity[4:, 9:], 0.0, atol=1e-12
+        )
+        self.assertTrue(np.all(np.diag(early_sensitivity[4:, 4:9]) > 0.9))
+
+    def test_no_multirate_keeps_late_motor_block_equal_to_fast_block(self):
+        config = configure_allocator_variant(DRCDAConfig(), 'no_multirate')
+        allocator = DRCDAAllocator(HnuterWrenchModel(), config)
+        desired = np.array([3.0, -2.0, 44.0, 0.4, -0.3, 0.2])
+        result = allocator.allocate(desired, 0.01)
+        np.testing.assert_allclose(
+            result.late_thrust_command,
+            result.command[4:],
+            atol=1e-12,
+        )
+        self.assertTrue(np.isfinite(result.objective))
 
     def test_basic_differential_allocator_tracks_hover(self):
         config = DRCDAConfig()
