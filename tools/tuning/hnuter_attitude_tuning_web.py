@@ -25,6 +25,10 @@ from pathlib import Path
 from typing import Iterable, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from hnuter_log_paths import configure_ros_log_dir, tuning_csv_path
 
 # Keep DDS discovery on the companion computer unless explicitly overridden.

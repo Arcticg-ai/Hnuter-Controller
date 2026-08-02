@@ -16,7 +16,7 @@ Run inside the px4 venv/workspace, for example:
 
     source ~/PX4-Autopilot-Hnuter/px4-venv/bin/activate
     cd ~/px4_ws_ros2
-    python3 hnuter_attitude_tuning_dashboard.py --mavlink udp:127.0.0.1:14550
+    python3 tools/tuning/hnuter_attitude_tuning_dashboard.py --mavlink udp:127.0.0.1:14550
 
 Keyboard/terminal commands while running:
     set HNTR_PITCH_BIAS 0.084
@@ -41,6 +41,10 @@ from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from hnuter_log_paths import configure_ros_log_dir, tuning_csv_path
 

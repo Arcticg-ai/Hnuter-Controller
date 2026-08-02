@@ -7,6 +7,7 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 - `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
+- `hnuter_external_direct_controller_hardware.py`: standalone RC-driven hardware direct controller. It does not import another local controller module and leaves Arm/Offboard authority with PX4 and the transmitter.
 - `hnuter_external_direct_drcda.py`: delay-aware, reachability-constrained differential allocator for direct actuator control.
 - `hnuter_drcda.py`: ROS-independent DRCDA wrench model, actuator predictor, and short-horizon solver.
 - `hnuter_external_setpoint_gamepad.py`: setpoint-only gamepad controller. It publishes position, velocity, attitude, and optional body-rate references while leaving the controller and allocator inside PX4.
@@ -55,6 +56,37 @@ vertical speed. Override it with `HNUTER_LISSAJOUS_AMP_X_M`,
 `HNUTER_LISSAJOUS_AMP_Y_M`, `HNUTER_LISSAJOUS_AMP_Z_M`, and
 `HNUTER_LISSAJOUS_PERIOD_S`.
 
+## Hardware Direct Controller
+
+Run the standalone real-aircraft entry point with:
+
+```bash
+cd ~/px4_ws_ros2
+python3 hnuter_external_direct_controller_hardware.py
+```
+
+The file contains its own controller helpers, RC parser, logging paths, and
+Offboard task-restart state machine. Its only Python runtime dependencies are
+the ROS 2/PX4 environment, `px4_msgs`, `std_msgs`, and NumPy.
+
+The node continuously publishes the Offboard proof-of-life but never sends
+Arm, Disarm, or mode-change commands. Use the transmitter to Arm and enable
+Offboard. Control starts only after PX4 reports both states active, and the
+measured position becomes the initial target without an automatic climb.
+
+Pitch commands body-forward speed, Roll commands body-lateral speed, centered
+Throttle commands vertical speed, and Yaw commands yaw rate. Only RC-sourced
+`manual_control_setpoint` data is accepted, with `rc_channels` as a fallback.
+If RC input times out, manual rates return to zero and the current target is
+held. Keys `1`, `2`, and `3` queue the rectangle, 3D Lissajous, and attitude
+tasks. Switching Offboard off and back on while a task is active restarts that
+task from the current position. Keyboard `o` is disabled.
+
+Before the first powered test, verify stick signs and the Offboard exit switch
+without propellers. Direction signs can be adjusted with
+`HNUTER_RC_PITCH_SIGN`, `HNUTER_RC_ROLL_SIGN`,
+`HNUTER_RC_THROTTLE_SIGN`, and `HNUTER_RC_YAW_SIGN`.
+
 Run the experimental DRCDA direct controller:
 
 ```bash
@@ -100,14 +132,14 @@ predicted actuator state, wrench residual, and solve time. Run the
 ROS-independent model and allocation checks with:
 
 ```bash
-python3 -m unittest -v test_hnuter_drcda.py
+python3 -m unittest -v tests.test_hnuter_drcda
 ```
 
 Compare an original-direct log with a DRCDA log and generate 3D and
 time-series plots under `hnuter_logs/comparison/`:
 
 ```bash
-python3 plot_lissajous_comparison.py \
+python3 tools/plotting/plot_lissajous_comparison.py \
   --baseline hnuter_logs/external_control/hnuter_direct_debug_RUN.csv \
   --drcda hnuter_logs/external_control/hnuter_drcda_debug_RUN.csv
 ```
@@ -116,7 +148,7 @@ Compare lateral oscillation before and after tuning, including the trajectory
 and the final 30 seconds of post-trajectory hover:
 
 ```bash
-python3 plot_xy_tuning_comparison.py \
+python3 tools/plotting/plot_xy_tuning_comparison.py \
   --baseline hnuter_logs/external_control/ablation/full/BEFORE.csv \
   --tuned hnuter_logs/external_control/ablation/full/TUNED.csv
 ```
@@ -124,7 +156,7 @@ python3 plot_xy_tuning_comparison.py \
 Generate the multi-run ablation plots and report with:
 
 ```bash
-python3 plot_drcda_ablation.py \
+python3 tools/plotting/plot_drcda_ablation.py \
   --run basic_da=hnuter_logs/external_control/ablation/basic_da/RUN.csv \
   --run full=hnuter_logs/external_control/ablation/full/RUN.csv \
   --run no_delay=hnuter_logs/external_control/ablation/no_delay/RUN.csv \
@@ -168,7 +200,7 @@ The Matplotlib dashboard is intended for local SITL tuning:
 ```bash
 source ~/PX4-Autopilot-Hnuter/px4-venv/bin/activate
 cd ~/px4_ws_ros2
-python3 hnuter_attitude_tuning_dashboard.py
+python3 tools/tuning/hnuter_attitude_tuning_dashboard.py
 ```
 
 For real-aircraft tuning on a companion computer, use the lightweight LAN web
@@ -178,7 +210,7 @@ ROS 2, `px4_msgs`, and `pymavlink` environment:
 ```bash
 source ~/PX4-Autopilot-Hnuter/px4-venv/bin/activate
 cd ~/px4_ws_ros2
-python3 hnuter_attitude_tuning_web.py --host 0.0.0.0 --port 8765
+python3 tools/tuning/hnuter_attitude_tuning_web.py --host 0.0.0.0 --port 8765
 ```
 
 Open `http://COMPANION_IP:8765` from a browser on the same trusted LAN. To

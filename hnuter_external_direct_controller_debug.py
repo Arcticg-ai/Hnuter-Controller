@@ -734,7 +734,7 @@ class HnuterController(Node):
         self.attitude_test_altitude_m = env_float('HNUTER_ATTITUDE_TEST_ALTITUDE_M', self.takeoff_height)
 
         self.tuning_path = os.path.expanduser(os.environ.get(
-            'HNUTER_TUNING_FILE', '~/px4_ws_ros2/hnuter_direct_tuning.json'
+            'HNUTER_TUNING_FILE', '~/px4_ws_ros2/config/hnuter_direct_tuning.json'
         ))
         self._last_tuning_mtime_ns = None
         self._last_tuning_log_time = 0.0
