@@ -7,7 +7,6 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 - `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
-- `hnuter_external_direct_controller_hardware.py`: RC-driven hardware version of the direct actuator controller. PX4 and the transmitter retain Arm and Offboard authority.
 - `hnuter_external_direct_drcda.py`: dynamic-reachability-constrained differential allocator for direct actuator control.
 - `hnuter_drcda.py`: ROS-independent DRCDA wrench model, actuator predictor, and short-horizon solver.
 - `hnuter_external_setpoint_gamepad.py`: setpoint-only gamepad controller. It publishes position, velocity, attitude, and optional body-rate references while leaving the controller and allocator inside PX4.
@@ -55,37 +54,6 @@ amplitudes over 24 seconds. The altitude profile starts and finishes with zero
 vertical speed. Override it with `HNUTER_LISSAJOUS_AMP_X_M`,
 `HNUTER_LISSAJOUS_AMP_Y_M`, `HNUTER_LISSAJOUS_AMP_Z_M`, and
 `HNUTER_LISSAJOUS_PERIOD_S`.
-
-## Hardware Direct Controller
-
-Run the RC-driven hardware entry point with:
-
-```bash
-cd ~/px4_ws_ros2
-python3 hnuter_external_direct_controller_hardware.py
-```
-
-This entry point continuously reads PX4 Arm/Offboard state and RC input. It
-publishes the Offboard proof-of-life, but never sends Arm, Disarm, or mode
-change commands. Arm the aircraft and enable Offboard with the transmitter;
-the controller then takes over at the measured position without commanding an
-automatic climb. Keep an immediate mode-exit and disarm path available during
-all direct-actuator tests.
-
-The standard RC mapping matches the debug controller's gamepad path: Pitch
-commands body-forward speed, Roll commands body-lateral speed, centered
-Throttle commands vertical speed, and Yaw commands yaw rate. PX4
-`manual_control_setpoint` is preferred, with `rc_channels` as a fallback. If RC
-data times out, the manual rates return to zero and the current target is held.
-Direction signs can be changed with `HNUTER_RC_PITCH_SIGN`,
-`HNUTER_RC_ROLL_SIGN`, `HNUTER_RC_THROTTLE_SIGN`, and `HNUTER_RC_YAW_SIGN`.
-Use `HNUTER_RC_MAX_VZ_MPS`, `HNUTER_RC_MAX_YAW_RATE_RPS`, and
-`HNUTER_RC_TIMEOUT_S` for the remaining hardware input limits.
-
-Keys `1`, `2`, and `3` still queue the rectangle, 3D Lissajous, and attitude
-tasks. If Offboard is switched off while a task is running, switching it back
-on restarts that task from the aircraft's current position. Keyboard `o` is
-disabled in this entry point.
 
 Run the experimental DRCDA direct controller:
 
