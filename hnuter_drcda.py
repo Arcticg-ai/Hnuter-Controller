@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Delay-aware reachability-constrained differential allocation for Hnuter.
+"""Dynamic-reachability-constrained differential allocation for Hnuter.
 
 The allocator keeps the paper's differential-allocation structure, but replaces
 fixed actuator-rate bounds with a command-history predictor.  A short horizon
@@ -23,6 +23,10 @@ ACTUATOR_COUNT = ANGLE_COUNT + THRUST_COUNT
 DECISION_COUNT = ANGLE_COUNT + 2 * THRUST_COUNT
 ALLOCATOR_VARIANTS = (
     'full',
+    'ada',
+    'nda',
+    'pda',
+    'ftr_drcda',
     'basic_da',
     'no_delay',
     'no_horizon',
@@ -57,11 +61,11 @@ class DRCDAConfig:
     prediction_dt_s: float = 0.01
     prediction_far_dt_s: float = 0.02
     prediction_near_duration_s: float = 0.04
-    horizon_s: float = 0.0
+    horizon_s: float = 0.18
     horizon_tau_factor: float = 0.8
     motor_block_switch_s: float = 0.10
     gauss_newton_iterations: int = 2
-    wrench_error_gain: float = 8.0
+    wrench_error_gain: float = 12.0
     wrench_ff_tau_s: float = 0.04
     wrench_rate_weight: float = 0.15
     wrench_scale: np.ndarray = field(default_factory=lambda: np.array(
@@ -88,18 +92,22 @@ class DRCDAConfig:
     servo_gain_negative: np.ndarray = field(default_factory=lambda: np.array(
         [1.423, 0.695, 1.423, 0.695], dtype=float
     ))
-    servo_tau_positive_s: np.ndarray = field(default_factory=lambda: np.array(
-        [0.076, 0.153, 0.076, 0.153], dtype=float
-    ))
-    servo_tau_negative_s: np.ndarray = field(default_factory=lambda: np.array(
-        [0.065, 0.149, 0.065, 0.149], dtype=float
-    ))
-    servo_delay_positive_s: np.ndarray = field(default_factory=lambda: np.array(
-        [0.110, 0.156, 0.110, 0.156], dtype=float
-    ))
-    servo_delay_negative_s: np.ndarray = field(default_factory=lambda: np.array(
-        [0.106, 0.137, 0.106, 0.137], dtype=float
-    ))
+    # Joint physics and its near-critically-damped PID represent the response.
+    # Do not add another first-order lag in the command prefilter.
+    servo_tau_positive_s: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=float)
+    )
+    servo_tau_negative_s: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=float)
+    )
+    # No pure dead time is assumed without synchronized hardware angle data.
+    # The queue implementation remains available for future measured values.
+    servo_delay_positive_s: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=float)
+    )
+    servo_delay_negative_s: np.ndarray = field(
+        default_factory=lambda: np.zeros(4, dtype=float)
+    )
     servo_rate_positive_rad_s: np.ndarray = field(default_factory=lambda: np.array(
         [6.082, 3.252, 6.082, 3.252], dtype=float
     ))
@@ -128,6 +136,12 @@ class DRCDAConfig:
     ))
     motor_tau_up_s: np.ndarray = field(default_factory=lambda: np.full(5, 0.001))
     motor_tau_down_s: np.ndarray = field(default_factory=lambda: np.full(5, 0.002))
+    motor_accel_positive_rad_s2: np.ndarray = field(
+        default_factory=lambda: np.full(5, 1400.0)
+    )
+    motor_accel_negative_rad_s2: np.ndarray = field(
+        default_factory=lambda: np.full(5, 1500.0)
+    )
     motor_force_rate_floor_n_s: float = 50.0
     motor_force_rate_cap_n_s: float = 6000.0
     antiwindup_gain: float = 0.35
@@ -152,6 +166,10 @@ class DRCDAConfig:
     ))
     lm_damping: float = 1.0e-3
     multirate_enabled: bool = True
+    paper_pseudoinverse_damping: float = 1.0e-5
+    paper_nullspace_gain: float = 2.0
+    paper_delay_compensation_enabled: bool = True
+    paper_delay_aware_motor_residual_enabled: bool = False
 
     def __post_init__(self) -> None:
         for name in (
@@ -175,6 +193,8 @@ class DRCDAConfig:
         for name in (
             'thrust_min_n', 'thrust_max_n', 'thrust_command_rate_n_s',
             'motor_tau_up_s', 'motor_tau_down_s',
+            'motor_accel_positive_rad_s2',
+            'motor_accel_negative_rad_s2',
             'late_transition_weight', 'late_trim_weight', 'motor_trim_n',
         ):
             setattr(self, name, _array(getattr(self, name), THRUST_COUNT, name))
@@ -222,6 +242,12 @@ class DRCDAConfig:
             float(self.reachability_gate_threshold), 0.0
         )
         self.lm_damping = max(float(self.lm_damping), 1e-9)
+        self.paper_pseudoinverse_damping = max(
+            float(self.paper_pseudoinverse_damping), 1e-12
+        )
+        self.paper_nullspace_gain = max(
+            float(self.paper_nullspace_gain), 0.0
+        )
         if np.any(self.wrench_scale <= 0.0) or np.any(self.command_scale <= 0.0):
             raise ValueError('normalization scales must be positive')
 
@@ -460,6 +486,8 @@ def configure_allocator_variant(config: DRCDAConfig, variant: str) -> DRCDAConfi
         config.servo_rate_negative_rad_s[:] = 1.0e6
         config.motor_force_rate_floor_n_s = 1.0e6
         config.motor_force_rate_cap_n_s = 1.0e6
+        config.motor_accel_positive_rad_s2[:] = 1.0e6
+        config.motor_accel_negative_rad_s2[:] = 1.0e6
     elif variant == 'no_command_slew':
         config.servo_command_rate_rad_s[:] = 1.0e6
         config.thrust_command_rate_n_s[:] = 1.0e6
@@ -1350,6 +1378,497 @@ class DRCDAAllocator:
             solve_time_ms=solve_time_ms,
             iterations=completed_iterations,
             status=status,
+        )
+        self.last_result = result
+        return result
+
+
+class PaperDifferentialAllocator(DRCDAAllocator):
+    """ADA/NDA/PDA allocator following Cuniato et al. (2026).
+
+    The delayed servo predictor reconstructs the actuator state used by the
+    paper's wrench augmentation. Allocation itself remains rate-level: ADA
+    uses a weighted pseudoinverse, NDA normalizes asymmetric actuator limits,
+    and PDA replaces fixed rotor limits with state-dependent power curves.
+    """
+
+    METHODS = ('ada', 'nda', 'pda')
+    MOTOR_CONSTANT_N_PER_RAD_S2 = 8.54858e-05
+
+    def __init__(
+        self,
+        model: HnuterWrenchModel,
+        config: DRCDAConfig | None = None,
+        method: str = 'pda',
+    ) -> None:
+        super().__init__(model, config)
+        method = method.strip().lower()
+        if method not in self.METHODS:
+            raise ValueError(
+                f'unknown paper differential allocation method {method!r}'
+            )
+        self.method = method
+
+    def _damped_pseudoinverse(self, matrix: np.ndarray) -> np.ndarray:
+        damping = self.config.paper_pseudoinverse_damping
+        gram = matrix @ matrix.T
+        return matrix.T @ np.linalg.solve(
+            gram + damping * np.eye(gram.shape[0]),
+            np.eye(gram.shape[0]),
+        )
+
+    def _limit_rate_bounds(
+        self,
+        lower: np.ndarray,
+        upper: np.ndarray,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        lower = lower.copy()
+        upper = upper.copy()
+        state_lower = np.concatenate((
+            -active_angle_limits,
+            self.config.thrust_min_n,
+        ))
+        state_upper = np.concatenate((
+            active_angle_limits,
+            self.config.thrust_max_n,
+        ))
+        lower = np.maximum(lower, (state_lower - self.state) / dt)
+        upper = np.minimum(upper, (state_upper - self.state) / dt)
+        invalid = lower > upper
+        lower[invalid] = 0.0
+        upper[invalid] = 0.0
+        return lower, upper
+
+    def _constant_rate_bounds(
+        self,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        cfg = self.config
+        lower = np.concatenate((
+            -cfg.servo_rate_negative_rad_s,
+            np.zeros(THRUST_COUNT),
+        ))
+        upper = np.concatenate((
+            cfg.servo_rate_positive_rad_s,
+            np.zeros(THRUST_COUNT),
+        ))
+        k_f = self.MOTOR_CONSTANT_N_PER_RAD_S2
+        for index in range(THRUST_COUNT):
+            thrust = abs(float(self.state[ANGLE_COUNT + index]))
+            omega = math.sqrt(thrust / k_f)
+            force_per_speed = 2.0 * k_f * max(omega, 10.0)
+            lower[ANGLE_COUNT + index] = (
+                -force_per_speed
+                * cfg.motor_accel_negative_rad_s2[index]
+            )
+            upper[ANGLE_COUNT + index] = (
+                force_per_speed
+                * cfg.motor_accel_positive_rad_s2[index]
+            )
+        return self._limit_rate_bounds(
+            lower, upper, dt, active_angle_limits
+        )
+
+    def _power_rate_bounds(
+        self,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        lower, upper = self._constant_rate_bounds(
+            dt, active_angle_limits
+        )
+        cfg = self.config
+        k_f = self.MOTOR_CONSTANT_N_PER_RAD_S2
+        for index in range(4):
+            state = float(np.clip(
+                self.state[ANGLE_COUNT + index],
+                cfg.thrust_min_n[index],
+                cfg.thrust_max_n[index],
+            ))
+            minimum = max(float(cfg.thrust_min_n[index]), 0.0)
+            maximum = max(float(cfg.thrust_max_n[index]), minimum + 1e-6)
+            equilibrium = float(np.clip(
+                cfg.motor_trim_n[index], minimum + 1e-6, maximum - 1e-6
+            ))
+            omega = math.sqrt(max(state, 0.0) / k_f)
+            omega_min = math.sqrt(max(minimum, 0.0) / k_f)
+            omega_max = math.sqrt(max(maximum, 0.0) / k_f)
+            omega_eq = math.sqrt(max(equilibrium, 0.0) / k_f)
+            omega_rate_up = float(
+                cfg.motor_accel_positive_rad_s2[index]
+            )
+            omega_rate_down = float(
+                cfg.motor_accel_negative_rad_s2[index]
+            )
+
+            if omega <= omega_eq:
+                fraction = float(np.clip(
+                    (omega - omega_min)
+                    / max(omega_eq - omega_min, 1e-6),
+                    0.0,
+                    1.0,
+                ))
+                omega_rate_lower = -omega_rate_down * fraction ** 2
+                omega_rate_upper = omega_rate_up
+            else:
+                fraction = float(np.clip(
+                    (omega_max - omega)
+                    / max(omega_max - omega_eq, 1e-6),
+                    0.0,
+                    1.0,
+                ))
+                omega_rate_lower = -omega_rate_down
+                omega_rate_upper = omega_rate_up * fraction ** 2
+
+            conversion = 2.0 * k_f * max(omega, 10.0)
+            lower[ANGLE_COUNT + index] = max(
+                lower[ANGLE_COUNT + index],
+                conversion * omega_rate_lower,
+            )
+            upper[ANGLE_COUNT + index] = min(
+                upper[ANGLE_COUNT + index],
+                conversion * omega_rate_upper,
+            )
+
+        return self._limit_rate_bounds(
+            lower, upper, dt, active_angle_limits
+        )
+
+    def _nullspace_rate_target(
+        self,
+        lower: np.ndarray,
+        upper: np.ndarray,
+    ) -> np.ndarray:
+        target = np.zeros(ACTUATOR_COUNT)
+        motor_error = (
+            self.config.motor_trim_n - self.state[ANGLE_COUNT:]
+        )
+        target[ANGLE_COUNT:] = (
+            self.config.paper_nullspace_gain * motor_error
+        )
+        return np.clip(target, lower, upper)
+
+    def _ada_rate(
+        self,
+        jacobian: np.ndarray,
+        jerk_reference: np.ndarray,
+        lower: np.ndarray,
+        upper: np.ndarray,
+    ) -> np.ndarray:
+        rate_scale = np.maximum(np.maximum(np.abs(lower), np.abs(upper)), 1e-6)
+        scaled_jacobian = jacobian * rate_scale[None, :]
+        pseudoinverse = self._damped_pseudoinverse(scaled_jacobian)
+        normalized_rate = pseudoinverse @ jerk_reference
+        target_rate = self._nullspace_rate_target(lower, upper)
+        target_normalized = target_rate / rate_scale
+        normalized_rate += (
+            np.eye(ACTUATOR_COUNT) - pseudoinverse @ scaled_jacobian
+        ) @ target_normalized
+        normalized_rate = np.clip(normalized_rate, -1.0, 1.0)
+        return np.clip(rate_scale * normalized_rate, lower, upper)
+
+    def _normalized_rate(
+        self,
+        jacobian: np.ndarray,
+        jerk_reference: np.ndarray,
+        lower: np.ndarray,
+        upper: np.ndarray,
+    ) -> np.ndarray:
+        half_span = np.maximum(0.5 * (upper - lower), 1e-8)
+        midpoint = 0.5 * (upper + lower)
+        normalized_jacobian = jacobian * half_span[None, :]
+        normalized_jerk = jerk_reference - jacobian @ midpoint
+        pseudoinverse = self._damped_pseudoinverse(normalized_jacobian)
+        normalized_rate = pseudoinverse @ normalized_jerk
+
+        if self.method == 'nda':
+            target_rate = self._nullspace_rate_target(lower, upper)
+            target_normalized = (target_rate - midpoint) / half_span
+            normalized_rate += (
+                np.eye(ACTUATOR_COUNT)
+                - pseudoinverse @ normalized_jacobian
+            ) @ target_normalized
+
+        largest = float(np.max(np.abs(normalized_rate)))
+        if largest > 1.0:
+            # Equation (13): preserve jerk direction by scaling every joint
+            # rate together, rather than independently clipping actuators.
+            normalized_rate /= largest
+        return np.clip(
+            midpoint + half_span * normalized_rate,
+            lower,
+            upper,
+        )
+
+    def _servo_target_for_rate(
+        self,
+        index: int,
+        rate_rad_s: float,
+        dt: float,
+        active_limit_rad: float,
+    ) -> float:
+        cfg = self.config
+        moving_positive = rate_rad_s >= 0.0
+        tau_s = float(
+            cfg.servo_tau_positive_s[index]
+            if moving_positive
+            else cfg.servo_tau_negative_s[index]
+        )
+        activation_state = float(self.state[index])
+        if cfg.paper_delay_compensation_enabled:
+            delay_s = float(
+                cfg.servo_delay_positive_s[index]
+                if moving_positive
+                else cfg.servo_delay_negative_s[index]
+            )
+            predictor = self._servo_predictors[index].copy_for_prediction(0)
+            predictor.advance(delay_s, active_limit_rad)
+            activation_state = predictor.theta
+
+        alpha = (
+            1.0
+            if tau_s <= 1e-9
+            else 1.0 - math.exp(-dt / tau_s)
+        )
+        target = activation_state + dt * rate_rad_s / max(alpha, 1e-9)
+        return self._servo_predictors[index].clip_target(
+            target, active_limit_rad
+        )
+
+    def _current_servo_rate(self, index: int) -> float:
+        predictor = self._servo_predictors[index]
+        error = predictor.active_target_angle_rad - predictor.theta
+        if error >= 0.0:
+            tau_s = self.config.servo_tau_positive_s[index]
+            rate_limit = self.config.servo_rate_positive_rad_s[index]
+        else:
+            tau_s = self.config.servo_tau_negative_s[index]
+            rate_limit = self.config.servo_rate_negative_rad_s[index]
+        unconstrained_rate = (
+            error / max(float(tau_s), 1e-9)
+        )
+        return float(np.clip(
+            unconstrained_rate, -rate_limit, rate_limit
+        ))
+
+    def _delay_aware_motor_rate(
+        self,
+        jacobian: np.ndarray,
+        jerk_reference: np.ndarray,
+        lower: np.ndarray,
+        upper: np.ndarray,
+        planned_rate: np.ndarray,
+    ) -> np.ndarray:
+        servo_rate = np.array([
+            self._current_servo_rate(index)
+            for index in range(ANGLE_COUNT)
+        ])
+        motor_lower = lower[ANGLE_COUNT:]
+        motor_upper = upper[ANGLE_COUNT:]
+        motor_jacobian = jacobian[:, ANGLE_COUNT:]
+        planned_motor_rate = planned_rate[ANGLE_COUNT:]
+        achieved_rate = (
+            jacobian[:, :ANGLE_COUNT] @ servo_rate
+            + motor_jacobian @ planned_motor_rate
+        )
+        torque_residual = jerk_reference[3:] - achieved_rate[3:]
+
+        task_scale = np.sqrt(self.config.wrench_weight) / (
+            self.config.wrench_scale
+        )
+        correction_matrix = np.vstack((
+            task_scale[3:, None] * motor_jacobian[3:],
+            task_scale[:3, None] * motor_jacobian[:3],
+        ))
+        correction_target = np.concatenate((
+            task_scale[3:] * torque_residual,
+            np.zeros(3),
+        ))
+        correction = (
+            self._damped_pseudoinverse(correction_matrix)
+            @ correction_target
+        )
+        positive = correction > 0.0
+        scale = 1.0
+        if np.any(positive):
+            scale = min(scale, float(np.min(
+                (motor_upper[positive] - planned_motor_rate[positive])
+                / np.maximum(correction[positive], 1e-12)
+            )))
+        negative = correction < 0.0
+        if np.any(negative):
+            scale = min(scale, float(np.min(
+                (motor_lower[negative] - planned_motor_rate[negative])
+                / np.minimum(correction[negative], -1e-12)
+            )))
+        correction *= float(np.clip(scale, 0.0, 1.0))
+        return np.clip(
+            planned_motor_rate + correction,
+            motor_lower,
+            motor_upper,
+        )
+
+    def _command_from_rate(
+        self,
+        actuator_rate: np.ndarray,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> np.ndarray:
+        cfg = self.config
+        command = self.command.copy()
+        for index in range(ANGLE_COUNT):
+            command[index] = self._servo_target_for_rate(
+                index,
+                float(actuator_rate[index]),
+                dt,
+                float(active_angle_limits[index]),
+            )
+        for index in range(THRUST_COUNT):
+            state_index = ANGLE_COUNT + index
+            rate = float(actuator_rate[state_index])
+            tau_s = float(
+                cfg.motor_tau_up_s[index]
+                if rate >= 0.0 else cfg.motor_tau_down_s[index]
+            )
+            alpha = (
+                1.0
+                if tau_s <= 1e-9
+                else 1.0 - math.exp(-dt / tau_s)
+            )
+            command[state_index] = np.clip(
+                self.state[state_index] + dt * rate / max(alpha, 1e-9),
+                cfg.thrust_min_n[index],
+                cfg.thrust_max_n[index],
+            )
+        return command
+
+    def _predict_next_state(
+        self,
+        command: np.ndarray,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> np.ndarray:
+        predicted = self.state.copy()
+        for index in range(ANGLE_COUNT):
+            predictor = self._servo_predictors[index].copy_for_prediction(0)
+            predictor.enqueue(
+                float(command[index]),
+                active_state_limit_rad=float(active_angle_limits[index]),
+            )
+            predictor.advance(dt, float(active_angle_limits[index]))
+            predicted[index] = predictor.theta
+        for index in range(THRUST_COUNT):
+            state_index = ANGLE_COUNT + index
+            predicted[state_index], _, _ = self._motor_step(
+                index,
+                float(self.state[state_index]),
+                float(command[state_index]),
+                dt,
+            )
+        return predicted
+
+    def allocate(
+        self,
+        desired_wrench: Iterable[float],
+        dt: float,
+        preferred_command: Iterable[float] | None = None,
+        active_angle_limits: Iterable[float] | None = None,
+    ) -> DRCDAResult:
+        del preferred_command
+        start_time = time.perf_counter()
+        cfg = self.config
+        desired = _array(desired_wrench, 6, 'desired_wrench')
+        dt = float(np.clip(dt, 0.0005, 0.05))
+        limits = (
+            cfg.servo_state_limit_rad.copy()
+            if active_angle_limits is None
+            else _array(active_angle_limits, ANGLE_COUNT, 'active_angle_limits')
+        )
+        limits = np.minimum(limits, cfg.servo_state_limit_rad)
+
+        self._advance_state(dt)
+        estimated_wrench = self.model.wrench(self.state)
+        # Cuniato et al., Eq. (7): wrench augmentation without IMU
+        # acceleration feedback or desired-wrench differentiation.
+        jerk_reference = cfg.wrench_error_gain * (
+            desired - estimated_wrench
+        )
+        jacobian = self.model.jacobian(self.state)
+        if self.method == 'pda':
+            lower, upper = self._power_rate_bounds(dt, limits)
+        else:
+            lower, upper = self._constant_rate_bounds(dt, limits)
+
+        if self.method == 'ada':
+            actuator_rate = self._ada_rate(
+                jacobian, jerk_reference, lower, upper
+            )
+        else:
+            actuator_rate = self._normalized_rate(
+                jacobian, jerk_reference, lower, upper
+            )
+
+        command_rate = actuator_rate.copy()
+        if (
+            self.method == 'pda'
+            and cfg.paper_delay_aware_motor_residual_enabled
+            and np.any(
+                np.maximum(
+                    cfg.servo_delay_positive_s,
+                    cfg.servo_delay_negative_s,
+                ) > dt
+            )
+        ):
+            command_rate[ANGLE_COUNT:] = self._delay_aware_motor_rate(
+                jacobian,
+                jerk_reference,
+                lower,
+                upper,
+                actuator_rate,
+            )
+
+        command = self._command_from_rate(command_rate, dt, limits)
+        predicted_state = self._predict_next_state(command, dt, limits)
+        predicted_wrench = self.model.wrench(predicted_state)
+        predicted_rate = (
+            predicted_wrench - estimated_wrench
+        ) / dt
+        wrench_rate_residual = jerk_reference - predicted_rate
+        wrench_residual = predicted_wrench - desired
+
+        self.command = command
+        self.late_thrust_command = command[ANGLE_COUNT:].copy()
+        for index, predictor in enumerate(self._servo_predictors):
+            predictor.enqueue(
+                float(command[index]),
+                active_state_limit_rad=float(limits[index]),
+            )
+        self._previous_desired_wrench = desired.copy()
+
+        result = DRCDAResult(
+            command=command.copy(),
+            late_thrust_command=self.late_thrust_command.copy(),
+            predicted_state=predicted_state,
+            estimated_wrench=estimated_wrench,
+            predicted_wrench=predicted_wrench,
+            desired_wrench=desired,
+            jerk_reference=jerk_reference,
+            wrench_rate_residual=wrench_rate_residual,
+            wrench_residual=wrench_residual,
+            servo_authority=np.ones(ANGLE_COUNT),
+            servo_gated=np.zeros(ANGLE_COUNT, dtype=bool),
+            servo_rate_active_fraction=np.zeros(ANGLE_COUNT),
+            servo_angle_active_fraction=np.zeros(ANGLE_COUNT),
+            objective=0.5 * float(
+                np.linalg.norm(wrench_rate_residual / cfg.wrench_scale) ** 2
+            ),
+            lm_damping=cfg.paper_pseudoinverse_damping,
+            solve_time_ms=(time.perf_counter() - start_time) * 1000.0,
+            iterations=1,
+            status=f'paper_{self.method}',
         )
         self.last_result = result
         return result

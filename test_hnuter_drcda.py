@@ -6,11 +6,13 @@ import numpy as np
 
 from hnuter_drcda import (
     ACTUATOR_COUNT,
+    ANGLE_COUNT,
     BasicDifferentialAllocator,
     DECISION_COUNT,
     DRCDAAllocator,
     DRCDAConfig,
     HnuterWrenchModel,
+    PaperDifferentialAllocator,
     ServoPredictor,
     configure_allocator_variant,
 )
@@ -92,8 +94,18 @@ class ServoPredictorTest(unittest.TestCase):
 
 
 class DRCDAAllocatorTest(unittest.TestCase):
+    def test_default_servo_model_has_no_dead_time_or_first_order_lag(self):
+        config = DRCDAConfig()
+        np.testing.assert_array_equal(config.servo_delay_positive_s, 0.0)
+        np.testing.assert_array_equal(config.servo_delay_negative_s, 0.0)
+        np.testing.assert_array_equal(config.servo_tau_positive_s, 0.0)
+        np.testing.assert_array_equal(config.servo_tau_negative_s, 0.0)
+        self.assertAlmostEqual(config.horizon_s, 0.18)
+
     def test_servo_is_unreachable_inside_pure_delay(self):
         config = DRCDAConfig(horizon_s=0.08)
+        config.servo_delay_positive_s[:] = 0.20
+        config.servo_delay_negative_s[:] = 0.20
         allocator = DRCDAAllocator(HnuterWrenchModel(), config)
         command = np.array([0.3, 0.3, -0.3, -0.3, 8.0, 8.0, 8.0, 8.0, 0.0])
         state, sensitivity = allocator.predict_terminal(command)
@@ -145,7 +157,12 @@ class DRCDAAllocatorTest(unittest.TestCase):
 
         no_horizon = configure_allocator_variant(DRCDAConfig(), 'no_horizon')
         self.assertEqual(no_horizon.horizon_s, no_horizon.prediction_dt_s)
-        self.assertTrue(np.all(no_horizon.servo_delay_positive_s > 0.0))
+        np.testing.assert_array_equal(
+            no_horizon.servo_delay_positive_s, 0.0
+        )
+        np.testing.assert_array_equal(
+            no_horizon.servo_delay_negative_s, 0.0
+        )
 
         no_physical_rate = configure_allocator_variant(
             DRCDAConfig(), 'no_physical_rate'
@@ -180,6 +197,8 @@ class DRCDAAllocatorTest(unittest.TestCase):
 
     def test_reachability_gate_freezes_servo_inside_pure_delay(self):
         config = configure_allocator_variant(DRCDAConfig(), 'no_horizon')
+        config.servo_delay_positive_s[:] = 0.20
+        config.servo_delay_negative_s[:] = 0.20
         allocator = DRCDAAllocator(HnuterWrenchModel(), config)
         desired = np.array([10.0, -5.0, 44.0, 0.4, -0.3, 0.5])
         preferred = np.array([
@@ -190,10 +209,10 @@ class DRCDAAllocatorTest(unittest.TestCase):
         np.testing.assert_allclose(result.command[:4], 0.0, atol=1e-12)
         np.testing.assert_array_equal(result.servo_gated, True)
 
-    def test_default_nonuniform_grid_uses_sixteen_steps(self):
+    def test_default_nonuniform_grid_covers_dynamic_horizon(self):
         allocator = DRCDAAllocator(HnuterWrenchModel(), DRCDAConfig())
         steps = allocator._build_prediction_steps()
-        self.assertEqual(steps.size, 16)
+        self.assertGreater(steps.size, 4)
         self.assertAlmostEqual(float(np.sum(steps)), allocator.config.horizon_s)
         self.assertTrue(np.all(steps[:4] <= 0.01 + 1e-12))
         self.assertTrue(np.all(steps[4:] <= 0.02 + 1e-12))
@@ -261,6 +280,75 @@ class DRCDAAllocatorTest(unittest.TestCase):
             np.linalg.norm(result.wrench_residual / config.wrench_scale),
             0.01,
         )
+
+
+class PaperDifferentialAllocatorTest(unittest.TestCase):
+    def test_all_three_paper_stages_converge_to_hover(self):
+        hover = np.array([0.0, 0.0, 44.145, 0.0, 0.0, 0.0])
+        for method in PaperDifferentialAllocator.METHODS:
+            config = DRCDAConfig()
+            allocator = PaperDifferentialAllocator(
+                HnuterWrenchModel(), config, method
+            )
+            for _ in range(600):
+                result = allocator.allocate(hover, 0.01)
+            self.assertEqual(result.status, f'paper_{method}')
+            self.assertLess(
+                np.linalg.norm(
+                    (result.estimated_wrench - hover)
+                    / config.wrench_scale
+                ),
+                0.005,
+            )
+
+    def test_wrench_augmentation_matches_paper_equation_7(self):
+        config = DRCDAConfig(wrench_error_gain=7.0)
+        allocator = PaperDifferentialAllocator(
+            HnuterWrenchModel(), config, 'pda'
+        )
+        desired = np.array([2.0, -1.0, 44.145, 0.2, -0.1, 0.3])
+        result = allocator.allocate(desired, 0.01)
+        np.testing.assert_allclose(
+            result.jerk_reference,
+            config.wrench_error_gain
+            * (desired - result.estimated_wrench),
+            atol=1e-12,
+        )
+
+    def test_pda_rate_midpoint_drives_front_rotors_to_equilibrium(self):
+        config = DRCDAConfig()
+        allocator = PaperDifferentialAllocator(
+            HnuterWrenchModel(), config, 'pda'
+        )
+        allocator.state[ANGLE_COUNT:ANGLE_COUNT + 4] = (
+            0.5 * config.motor_trim_n[:4]
+        )
+        lower, upper = allocator._power_rate_bounds(
+            0.01, config.servo_state_limit_rad
+        )
+        self.assertTrue(np.all(
+            0.5 * (
+                lower[ANGLE_COUNT:ANGLE_COUNT + 4]
+                + upper[ANGLE_COUNT:ANGLE_COUNT + 4]
+            ) > 0.0
+        ))
+
+        allocator.state[ANGLE_COUNT:ANGLE_COUNT + 4] = (
+            0.5
+            * (
+                config.motor_trim_n[:4]
+                + config.thrust_max_n[:4]
+            )
+        )
+        lower, upper = allocator._power_rate_bounds(
+            0.01, config.servo_state_limit_rad
+        )
+        self.assertTrue(np.all(
+            0.5 * (
+                lower[ANGLE_COUNT:ANGLE_COUNT + 4]
+                + upper[ANGLE_COUNT:ANGLE_COUNT + 4]
+            ) < 0.0
+        ))
 
 
 if __name__ == '__main__':

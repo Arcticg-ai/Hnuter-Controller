@@ -100,6 +100,9 @@ class GamepadManager:
                  deadzone: float = 0.10,
                  expo: float = 0.40,
                  filter_tau: float = 0.20,
+                 max_vxy_body_mps=None,
+                 filter_tau_body_xy_s=None,
+                 max_acc_body_xy_mps2=None,
                  lt_axis: int = 2,
                  rt_axis: int = 5,
                  rb_button: int = 5,
@@ -116,6 +119,15 @@ class GamepadManager:
         self.deadzone = float(deadzone)
         self.expo = float(expo)
         self.filter_tau = float(filter_tau)
+        self.max_vxy_body_mps = self._axis_pair(
+            max_vxy_body_mps, self.max_vxy
+        )
+        self.filter_tau_body_xy_s = self._axis_pair(
+            filter_tau_body_xy_s, self.filter_tau
+        )
+        self.max_acc_body_xy_mps2 = self._axis_pair(
+            max_acc_body_xy_mps2, float('inf')
+        )
         self.lt_axis = int(lt_axis)
         self.rt_axis = int(rt_axis)
         self.rb_button = int(rb_button)
@@ -127,6 +139,8 @@ class GamepadManager:
         # 若你的手柄是未按=+1，按满=-1，把 trigger_mode 改为 'one_to_minus_one'。
         self.trigger_mode = str(trigger_mode)
         self.filtered_cmds = {
+            'raw_vx_b': 0.0,
+            'raw_vy_b': 0.0,
             'vx_b': 0.0,
             'vy_b': 0.0,
             'vz': 0.0,
@@ -155,6 +169,34 @@ class GamepadManager:
         except Exception as exc:
             self._log_warn(f'⚠️ 手柄初始化失败: {exc}，控制器将保持悬停。')
             self.joystick = None
+
+    @staticmethod
+    def _axis_pair(value, fallback: float) -> np.ndarray:
+        if value is None:
+            return np.full(2, float(fallback), dtype=float)
+        array = np.asarray(value, dtype=float).reshape(-1)
+        if array.size != 2:
+            return np.full(2, float(fallback), dtype=float)
+        return array.copy()
+
+    @staticmethod
+    def _filter_command(
+        current: float,
+        target: float,
+        dt: float,
+        filter_tau_s: float,
+        max_rate: float = float('inf'),
+    ) -> float:
+        dt = max(float(dt), 0.0)
+        tau = max(float(filter_tau_s), 0.0)
+        alpha = dt / (tau + dt) if tau > 1e-3 else 1.0
+        delta = float(np.clip(alpha, 0.0, 1.0)) * (
+            float(target) - float(current)
+        )
+        if np.isfinite(max_rate):
+            max_delta = max(float(max_rate), 0.0) * dt
+            delta = float(np.clip(delta, -max_delta, max_delta))
+        return float(current) + delta
 
     def _log_info(self, text: str):
         if self.logger:
@@ -245,8 +287,8 @@ class GamepadManager:
             rt_expo = self._trigger_to_unit(raw_rt)
 
             # FLU 机体系：x 前，y 左，z 上；上推为正向前/上升
-            target_vx_b = -pitch_expo * self.max_vxy
-            target_vy_b = -roll_expo * self.max_vxy
+            target_vx_b = -pitch_expo * self.max_vxy_body_mps[0]
+            target_vy_b = -roll_expo * self.max_vxy_body_mps[1]
             target_vz_w = -thr_expo * self.max_vz
             target_yaw_rate = -yaw_expo * self.max_yaw_rate
 
@@ -261,16 +303,42 @@ class GamepadManager:
                 if self.attitude_control_axis == 'pitch' else 0.0
             )
 
-            alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-3 else 1.0
-            alpha = float(np.clip(alpha, 0.0, 1.0))
-
-            self.filtered_cmds['vx_b'] += alpha * (target_vx_b - self.filtered_cmds['vx_b'])
-            self.filtered_cmds['vy_b'] += alpha * (target_vy_b - self.filtered_cmds['vy_b'])
-            self.filtered_cmds['vz'] += alpha * (target_vz_w - self.filtered_cmds['vz'])
-            self.filtered_cmds['yaw_rate'] += alpha * (target_yaw_rate - self.filtered_cmds['yaw_rate'])
-            self.filtered_cmds['roll_rate'] += alpha * (target_roll_rate - self.filtered_cmds['roll_rate'])
-            self.filtered_cmds['pitch_rate'] += alpha * (
-                target_pitch_rate - self.filtered_cmds['pitch_rate']
+            self.filtered_cmds['raw_vx_b'] = float(target_vx_b)
+            self.filtered_cmds['raw_vy_b'] = float(target_vy_b)
+            self.filtered_cmds['vx_b'] = self._filter_command(
+                self.filtered_cmds['vx_b'],
+                target_vx_b,
+                dt,
+                self.filter_tau_body_xy_s[0],
+                self.max_acc_body_xy_mps2[0],
+            )
+            self.filtered_cmds['vy_b'] = self._filter_command(
+                self.filtered_cmds['vy_b'],
+                target_vy_b,
+                dt,
+                self.filter_tau_body_xy_s[1],
+                self.max_acc_body_xy_mps2[1],
+            )
+            self.filtered_cmds['vz'] = self._filter_command(
+                self.filtered_cmds['vz'], target_vz_w, dt, self.filter_tau
+            )
+            self.filtered_cmds['yaw_rate'] = self._filter_command(
+                self.filtered_cmds['yaw_rate'],
+                target_yaw_rate,
+                dt,
+                self.filter_tau,
+            )
+            self.filtered_cmds['roll_rate'] = self._filter_command(
+                self.filtered_cmds['roll_rate'],
+                target_roll_rate,
+                dt,
+                self.filter_tau,
+            )
+            self.filtered_cmds['pitch_rate'] = self._filter_command(
+                self.filtered_cmds['pitch_rate'],
+                target_pitch_rate,
+                dt,
+                self.filter_tau,
             )
             self.filtered_cmds['lt'] = lt_expo
             self.filtered_cmds['rt'] = rt_expo
@@ -515,6 +583,8 @@ class HnuterController(Node):
         self.control_loop_count = 0
         self.last_W = np.zeros(6)
         self._last_manual_cmd = {
+            'raw_vx_b': 0.0,
+            'raw_vy_b': 0.0,
             'vx_b': 0.0,
             'vy_b': 0.0,
             'vz': 0.0,
@@ -618,6 +688,23 @@ class HnuterController(Node):
         self.manual_max_position_lead_xy = 0.6
         self.manual_max_position_lead_z = 0.45
         self.manual_max_yaw_lead_rad = np.radians(25.0)
+        self.gamepad_max_vxy_mps = env_float(
+            'HNUTER_PAD_MAX_VXY_MPS', 0.6
+        )
+        self.gamepad_deadzone = env_float(
+            'HNUTER_PAD_DEADZONE', 0.10
+        )
+        self.gamepad_expo = env_float('HNUTER_PAD_EXPO', 0.40)
+        self.gamepad_filter_tau_s = env_float(
+            'HNUTER_PAD_FILTER_TAU_S', 0.35
+        )
+        self.gamepad_max_vxy_body_mps = np.full(
+            2, self.gamepad_max_vxy_mps, dtype=float
+        )
+        self.gamepad_filter_tau_body_xy_s = np.full(
+            2, self.gamepad_filter_tau_s, dtype=float
+        )
+        self.gamepad_max_acc_body_xy_mps2 = np.array([1.0, 0.55])
         # Direct debug: 按 o 后不交给 PX4 位置控制器，而是直接发布 actuator_motors/servos。
         # 若要用同一份日志结构记录 PX4 position baseline，启动前设置 HNUTER_CONTROL_MODE=px4。
         control_mode_env = os.environ.get('HNUTER_CONTROL_MODE', 'direct').strip().lower()
@@ -753,14 +840,17 @@ class HnuterController(Node):
 
         # Gamepad: 实机建议先用低速度，确认方向后再加大
         self.gamepad = GamepadManager(
-            max_vxy=0.6,
+            max_vxy=self.gamepad_max_vxy_mps,
             max_vz=0.3,
             max_yaw_rate=0.4,
             max_roll_rate=math.radians(20.0),
             max_pitch_rate=math.radians(20.0),
-            deadzone=0.10,
-            expo=0.40,
-            filter_tau=0.35,
+            deadzone=self.gamepad_deadzone,
+            expo=self.gamepad_expo,
+            filter_tau=self.gamepad_filter_tau_s,
+            max_vxy_body_mps=self.gamepad_max_vxy_body_mps,
+            filter_tau_body_xy_s=self.gamepad_filter_tau_body_xy_s,
+            max_acc_body_xy_mps2=self.gamepad_max_acc_body_xy_mps2,
             lt_axis=2,
             rt_axis=5,
             rb_button=int(env_float('HNUTER_PAD_RB_BUTTON', 5)),
@@ -801,6 +891,33 @@ class HnuterController(Node):
 
     def _gamepad_attitude_axis_toggle_enabled(self):
         return False
+
+    def _direct_position_acceleration_ned(
+        self,
+        acc_ff_ned: np.ndarray,
+        pos_error_ned: np.ndarray,
+        vel_error_ned: np.ndarray,
+        xy_lock_active: bool,
+    ) -> np.ndarray:
+        kp = self.direct_pos_Kp_ned.copy()
+        if xy_lock_active:
+            kp[:2] *= 0.8
+        return (
+            acc_ff_ned
+            + kp * pos_error_ned
+            + self.direct_pos_Kd_ned * vel_error_ned
+            + self.direct_pos_Ki_ned * self.integral_pos_error
+        )
+
+    def _limit_direct_horizontal_acceleration_ned(
+        self,
+        acceleration_xy_ned: np.ndarray,
+        max_acc_xy: float,
+    ) -> np.ndarray:
+        return np.clip(acceleration_xy_ned, -max_acc_xy, max_acc_xy)
+
+    def _apply_direct_body_force_trim(self, force_body: np.ndarray) -> np.ndarray:
+        return force_body
 
     # ============================================================
     # Live tuning
@@ -862,6 +979,18 @@ class HnuterController(Node):
             "direct_pos_Kd_ned": self.direct_pos_Kd_ned.tolist(),
             "direct_pos_Ki_ned": self.direct_pos_Ki_ned.tolist(),
             "direct_pos_integral_limit_ned": self.direct_pos_integral_limit_ned.tolist(),
+            "manual_max_position_lead_xy": float(
+                self.manual_max_position_lead_xy
+            ),
+            "gamepad_max_vxy_mps": float(self.gamepad_max_vxy_mps),
+            "gamepad_max_vxy_body_mps": self.gamepad_max_vxy_body_mps.tolist(),
+            "gamepad_deadzone": float(self.gamepad_deadzone),
+            "gamepad_expo": float(self.gamepad_expo),
+            "gamepad_filter_tau_s": float(self.gamepad_filter_tau_s),
+            "gamepad_filter_tau_body_xy_s":
+                self.gamepad_filter_tau_body_xy_s.tolist(),
+            "gamepad_max_acc_body_xy_mps2":
+                self.gamepad_max_acc_body_xy_mps2.tolist(),
             "max_acc_xy": float(self.max_acc_xy),
             "max_acc_z": float(self.max_acc_z),
             "xy_lock_max_acc_xy": float(self.xy_lock_max_acc_xy),
@@ -1062,6 +1191,82 @@ class HnuterController(Node):
             ),
             0.0,
         )
+        self.manual_max_position_lead_xy = float(np.clip(
+            self._tuning_float(
+                data,
+                'manual_max_position_lead_xy',
+                self.manual_max_position_lead_xy,
+            ),
+            0.05,
+            2.0,
+        ))
+        self.gamepad_max_vxy_mps = float(np.clip(
+            self._tuning_float(
+                data, 'gamepad_max_vxy_mps', self.gamepad_max_vxy_mps
+            ),
+            0.05,
+            3.0,
+        ))
+        self.gamepad_deadzone = float(np.clip(
+            self._tuning_float(
+                data, 'gamepad_deadzone', self.gamepad_deadzone
+            ),
+            0.0,
+            0.4,
+        ))
+        self.gamepad_expo = float(np.clip(
+            self._tuning_float(data, 'gamepad_expo', self.gamepad_expo),
+            0.0,
+            1.0,
+        ))
+        self.gamepad_filter_tau_s = float(np.clip(
+            self._tuning_float(
+                data, 'gamepad_filter_tau_s', self.gamepad_filter_tau_s
+            ),
+            0.0,
+            2.0,
+        ))
+        self.gamepad_max_vxy_body_mps = np.clip(
+            self._tuning_array(
+                data,
+                'gamepad_max_vxy_body_mps',
+                self.gamepad_max_vxy_body_mps,
+            ),
+            0.05,
+            3.0,
+        )
+        self.gamepad_filter_tau_body_xy_s = np.clip(
+            self._tuning_array(
+                data,
+                'gamepad_filter_tau_body_xy_s',
+                self.gamepad_filter_tau_body_xy_s,
+            ),
+            0.0,
+            2.0,
+        )
+        self.gamepad_max_acc_body_xy_mps2 = np.clip(
+            self._tuning_array(
+                data,
+                'gamepad_max_acc_body_xy_mps2',
+                self.gamepad_max_acc_body_xy_mps2,
+            ),
+            0.05,
+            5.0,
+        )
+        if hasattr(self, 'gamepad'):
+            self.gamepad.max_vxy = self.gamepad_max_vxy_mps
+            self.gamepad.deadzone = self.gamepad_deadzone
+            self.gamepad.expo = self.gamepad_expo
+            self.gamepad.filter_tau = self.gamepad_filter_tau_s
+            self.gamepad.max_vxy_body_mps = (
+                self.gamepad_max_vxy_body_mps.copy()
+            )
+            self.gamepad.filter_tau_body_xy_s = (
+                self.gamepad_filter_tau_body_xy_s.copy()
+            )
+            self.gamepad.max_acc_body_xy_mps2 = (
+                self.gamepad_max_acc_body_xy_mps2.copy()
+            )
 
         self.max_acc_xy = self._tuning_float(data, 'max_acc_xy', self.max_acc_xy)
         self.max_acc_z = self._tuning_float(data, 'max_acc_z', self.max_acc_z)
@@ -1621,6 +1826,8 @@ class HnuterController(Node):
     # ============================================================
     def _zero_manual_cmd(self) -> dict:
         return {
+            'raw_vx_b': 0.0,
+            'raw_vy_b': 0.0,
             'vx_b': 0.0,
             'vy_b': 0.0,
             'vz': 0.0,
@@ -2453,25 +2660,26 @@ class HnuterController(Node):
             self.direct_pos_integral_limit_ned,
         )
 
-        Kp = np.diag(self.direct_pos_Kp_ned)
-        if xy_lock_active:
-            Kp[0, 0] *= 0.8
-            Kp[1, 1] *= 0.8
-        Dp = np.diag(self.direct_pos_Kd_ned)
-        Ki = self.direct_pos_Ki_ned
-        acc_des = acc_ff_ned + Kp @ pos_error + Dp @ vel_error + Ki * self.integral_pos_error
+        acc_des = self._direct_position_acceleration_ned(
+            acc_ff_ned,
+            pos_error,
+            vel_error,
+            xy_lock_active,
+        )
         if xy_lock_active:
             max_acc_xy = self.xy_lock_max_acc_xy
         elif auto_attitude_active:
             max_acc_xy = self.attitude_test_max_acc_xy
         else:
             max_acc_xy = self.max_acc_xy
-        acc_des[0] = float(np.clip(acc_des[0], -max_acc_xy, max_acc_xy))
-        acc_des[1] = float(np.clip(acc_des[1], -max_acc_xy, max_acc_xy))
+        acc_des[:2] = self._limit_direct_horizontal_acceleration_ned(
+            acc_des[:2],
+            max_acc_xy,
+        )
         acc_des[2] = float(np.clip(acc_des[2], -self.max_acc_z, self.max_acc_z))
 
         f_world = self.mass * (acc_des - np.array([0.0, 0.0, self.gravity], dtype=float))
-        f_body = self.R_ned_frd.T @ f_world
+        f_body = self._apply_direct_body_force_trim(self.R_ned_frd.T @ f_world)
         if tilt_suppress_active or vertical_only_active:
             f_body[0] = 0.0
             f_body[1] = 0.0
@@ -2774,6 +2982,8 @@ class HnuterController(Node):
             'yaw_authority_scale', 'thrust_axis_alignment', 'full_error_blend',
             'manual_attitude_axis', 'manual_des_roll_deg', 'manual_des_pitch_deg',
             'manual_roll_rate_dps', 'manual_pitch_rate_dps', 'gamepad_rb_pressed',
+            'gamepad_raw_vx_body_mps', 'gamepad_raw_vy_body_mps',
+            'gamepad_vx_body_mps', 'gamepad_vy_body_mps',
         ]
         columns += self._diagnostic_extra_header()
         return columns
@@ -2863,6 +3073,10 @@ class HnuterController(Node):
             float(math.degrees(self._last_manual_cmd.get('roll_rate', 0.0))),
             float(math.degrees(self._last_manual_cmd.get('pitch_rate', 0.0))),
             int(bool(self._last_manual_cmd.get('rb_pressed', False))),
+            float(self._last_manual_cmd.get('raw_vx_b', 0.0)),
+            float(self._last_manual_cmd.get('raw_vy_b', 0.0)),
+            float(self._last_manual_cmd.get('vx_b', 0.0)),
+            float(self._last_manual_cmd.get('vy_b', 0.0)),
         ]
         row += self._diagnostic_extra_values()
         self._diagnostic_writer.writerow(row)
@@ -2907,7 +3121,10 @@ class HnuterController(Node):
             f"tau_lim={np.round(self.direct_tau_limit, 2).tolist()} | "
             f"yaw_scale={self.last_yaw_authority_scale:.2f}\n"
             f"Keyboard trajectory: active={self.auto_traj_mode} | pending={self.pending_auto_traj_mode}\n"
-            f"Gamepad: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
+            f"Gamepad XY raw=[{self._last_manual_cmd.get('raw_vx_b', 0.0):+4.2f}, "
+            f"{self._last_manual_cmd.get('raw_vy_b', 0.0):+4.2f}] -> "
+            f"filtered=[{self._last_manual_cmd['vx_b']:+4.2f}, "
+            f"{self._last_manual_cmd['vy_b']:+4.2f}], "
             f"vz={self._last_manual_cmd['vz']:+4.2f}, yaw_rate={self._last_manual_cmd['yaw_rate']:+4.2f}, "
             f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}, "
             f"RB={int(bool(self._last_manual_cmd.get('rb_pressed', False)))}\n"

@@ -7,7 +7,8 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 - `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
-- `hnuter_external_direct_drcda.py`: delay-aware, reachability-constrained differential allocator for direct actuator control.
+- `hnuter_external_direct_controller_hardware.py`: RC-driven hardware version of the direct actuator controller. PX4 and the transmitter retain Arm and Offboard authority.
+- `hnuter_external_direct_drcda.py`: dynamic-reachability-constrained differential allocator for direct actuator control.
 - `hnuter_drcda.py`: ROS-independent DRCDA wrench model, actuator predictor, and short-horizon solver.
 - `hnuter_external_setpoint_gamepad.py`: setpoint-only gamepad controller. It publishes position, velocity, attitude, and optional body-rate references while leaving the controller and allocator inside PX4.
 
@@ -55,6 +56,37 @@ vertical speed. Override it with `HNUTER_LISSAJOUS_AMP_X_M`,
 `HNUTER_LISSAJOUS_AMP_Y_M`, `HNUTER_LISSAJOUS_AMP_Z_M`, and
 `HNUTER_LISSAJOUS_PERIOD_S`.
 
+## Hardware Direct Controller
+
+Run the RC-driven hardware entry point with:
+
+```bash
+cd ~/px4_ws_ros2
+python3 hnuter_external_direct_controller_hardware.py
+```
+
+This entry point continuously reads PX4 Arm/Offboard state and RC input. It
+publishes the Offboard proof-of-life, but never sends Arm, Disarm, or mode
+change commands. Arm the aircraft and enable Offboard with the transmitter;
+the controller then takes over at the measured position without commanding an
+automatic climb. Keep an immediate mode-exit and disarm path available during
+all direct-actuator tests.
+
+The standard RC mapping matches the debug controller's gamepad path: Pitch
+commands body-forward speed, Roll commands body-lateral speed, centered
+Throttle commands vertical speed, and Yaw commands yaw rate. PX4
+`manual_control_setpoint` is preferred, with `rc_channels` as a fallback. If RC
+data times out, the manual rates return to zero and the current target is held.
+Direction signs can be changed with `HNUTER_RC_PITCH_SIGN`,
+`HNUTER_RC_ROLL_SIGN`, `HNUTER_RC_THROTTLE_SIGN`, and `HNUTER_RC_YAW_SIGN`.
+Use `HNUTER_RC_MAX_VZ_MPS`, `HNUTER_RC_MAX_YAW_RATE_RPS`, and
+`HNUTER_RC_TIMEOUT_S` for the remaining hardware input limits.
+
+Keys `1`, `2`, and `3` still queue the rectangle, 3D Lissajous, and attitude
+tasks. If Offboard is switched off while a task is running, switching it back
+on restarts that task from the aircraft's current position. Keyboard `o` is
+disabled in this entry point.
+
 Run the experimental DRCDA direct controller:
 
 ```bash
@@ -62,41 +94,84 @@ cd ~/px4_ws_ros2
 python3 hnuter_external_direct_drcda.py
 ```
 
+This entry point defaults to
+`config/identified_delay_damped_xy.json`; set `HNUTER_TUNING_FILE` explicitly
+to test another tuning set.
+
 In this DRCDA controller, LT/RT adjust the currently selected manual attitude
 axis. The initial axis is roll; each rising-edge press of `RB` toggles between
 pitch and roll without resetting the angle already commanded on the other axis.
 Override the default Xbox/XInput RB button index `5` with
 `HNUTER_PAD_RB_BUTTON`.
 
-For the identified-delay SITL plant, load the damped lateral-position tuning
+For the actuator-dynamics SITL plant, load the damped lateral-position tuning
 that was validated with hover and the 3D Lissajous trajectory:
 
 ```bash
+cd ~/PX4-Hnuter/PX4-Autopilot-Hnuter-delay
+HEADLESS=1 make px4_sitl gz_hnuter
+```
+
+In a second terminal, run the DRCDA controller:
+
+```bash
+cd ~/px4_ws_ros2
 HNUTER_TUNING_FILE=$PWD/config/identified_delay_damped_xy.json \
 HNUTER_DRCDA_VARIANT=full \
+HNUTER_DRCDA_SERVO_MODEL=identified \
 python3 hnuter_external_direct_drcda.py
 ```
 
-The position gains use NED axis order. The slower North actuator path therefore
-uses `Kp=1.6`, `Kd=3.2`, and `Ki=0.35`; the East path uses `Kp=2.0`,
-`Kd=2.8`, and `Ki=0.2`. The small horizontal integral gains remove static
-offset, while the increased derivative gains damp the identified actuator lag.
+The DRCDA controller keeps position targets and integrator state in NED, but
+rotates horizontal position and velocity errors into the yaw-only body frame
+before applying gains. Body X uses `Kp=0.8`, `Kd=1.4`, and `Ki=0.02`; the
+slower delayed body Y path uses `Kp=0.8`, `Kd=2.4`, and `Ki=0.02`. Feedback is
+rotated back into NED before the desired wrench is formed. These body-frame
+gains and the body-Y trim belong only to
+`hnuter_external_direct_drcda.py`; the original direct debug controller keeps
+its NED position loop.
 
-DRCDA defaults to the identified primary/secondary servo gain, pure delay,
-first-order lag, and directional rate limits. The current `gz_hnuter` model must
-contain the corresponding plant-side servo dynamics for a meaningful comparison.
+Manual horizontal control uses independent body-X/Y speed limits of `0.5/0.4
+m/s`, with a `0.4 m` maximum position lead and body-X/Y controller
+acceleration limits of `2.0/1.8 m/s^2`. The gamepad uses a `0.12` deadzone,
+`0.5` expo, independent body-X/Y command filters of `0.20/0.45 s`, and
+command acceleration limits of `1.0/0.55 m/s^2`. The lower body-Y reversal
+rate prevents a full-stick direction change from outrunning the slower
+lateral tilt path. All of these values can be changed live in the tuning JSON.
+
+The controller uses the primary/secondary servo static gain and directional
+rate limits. Pure command dead time and the separate first-order command lag
+are disabled. Gazebo joint physics and a near-critically-damped joint PID
+represent the remaining servo response. The current `gz_hnuter` model must
+contain the corresponding plant-side servo dynamics for a meaningful
+comparison.
 When intentionally testing against an ideal instantaneous-servo SITL model, use:
 
 ```bash
 HNUTER_DRCDA_SERVO_MODEL=ideal python3 hnuter_external_direct_drcda.py
 ```
 
-The solver uses a 180 ms move-blocked prediction horizon at 100 Hz by default.
-Select the basic differential-allocation baseline or one DRCDA ablation with
-`HNUTER_DRCDA_VARIANT=basic_da`, `no_delay`, `no_horizon`, or
-`no_rate_limits`; the default is `full`. Each variant writes diagnostics under
-its own `hnuter_logs/external_control/ablation/VARIANT/` directory, including
-predicted actuator state, wrench residual, and solve time. Run the
+The Cuniato paper stages can be selected with
+`HNUTER_DRCDA_VARIANT=ada`, `nda`, or `pda`. They implement the wrench-error
+augmentation, asymmetric actuator-rate normalization with global saturation,
+speed-dependent motor acceleration limits, and exact sampled first-order
+actuator inversion. `HNUTER_DRCDA_VARIANT=ftr_drcda` selects the separate
+180 ms move-blocked finite-time-reachability allocator.
+
+The default `full` mode uses the paper PDA for hover and translational
+trajectories. During the automatic large-attitude trajectory it transfers the
+estimated actuator state to the finite-time reachable allocator, then transfers
+state back to PDA when the trajectory ends. This hybrid remains useful for the
+slower, rate-limited tilt response during large-attitude motion; pure paper PDA
+remains available for an apples-to-apples paper-stage comparison.
+
+Select the original differential-allocation baseline with
+`HNUTER_DRCDA_VARIANT=basic_da`. The `no_delay` name remains as a compatibility
+alias and is equivalent to the zero-delay default. Reachability ablations remain
+available as `no_horizon`, `no_physical_rate`,
+`no_command_slew`, `no_reachability_gate`, and `no_multirate`. Each variant
+writes diagnostics under its own
+`hnuter_logs/external_control/ablation/VARIANT/` directory. Run the
 ROS-independent model and allocation checks with:
 
 ```bash
@@ -130,6 +205,36 @@ python3 plot_drcda_ablation.py \
   --run no_delay=hnuter_logs/external_control/ablation/no_delay/RUN.csv \
   --run no_horizon=hnuter_logs/external_control/ablation/no_horizon/RUN.csv \
   --run no_rate_limits=hnuter_logs/external_control/ablation/no_rate_limits/RUN.csv
+```
+
+Run the repeatable actuator-dynamics SITL matrix. The default set covers the
+24 s 3D Lissajous trajectory, the 8 s aggressive maneuver, the validated
+45/60 degree attitude hold, and the 90/150 degree envelope probe:
+
+```bash
+cd ~/px4_ws_ros2
+python3 run_drcda_multiscenario_experiments.py
+python3 analyze_drcda_multiscenario_experiments.py
+```
+
+The paper revalidation report and its figures are generated from the selected
+final runs with:
+
+```bash
+python3 analyze_cuniato_paper_revalidation.py
+```
+
+The consolidated output is under
+`hnuter_logs/cuniato_paper_revalidation_20260730/`.
+
+The 60/90 degree boundary probe is intentionally excluded from the default
+matrix because the current controller loses stability near 50-60 degrees of
+roll. Re-run that single probe explicitly with:
+
+```bash
+python3 run_drcda_multiscenario_experiments.py \
+  --scenarios large_attitude_60_90 \
+  --variants full
 ```
 
 Run the firmware-controller setpoint gamepad controller:

@@ -3,13 +3,15 @@
 
 The flight-control and safety state machine comes from the established direct
 debug controller.  This class replaces only its algebraic actuator inverse with
-delay-aware, reachability-constrained differential allocation.
+dynamic-reachability-constrained differential allocation.
 """
 
 from __future__ import annotations
 
+import copy
 import math
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -21,11 +23,16 @@ from hnuter_drcda import (
     DRCDAAllocator,
     DRCDAConfig,
     HnuterWrenchModel,
+    PaperDifferentialAllocator,
     configure_allocator_variant,
 )
 from hnuter_external_direct_controller_debug import (
     HnuterController as DirectController,
     env_float,
+)
+from hnuter_position_control import (
+    body_frame_horizontal_feedback_ned,
+    heading_rotation_ned_body_xy,
 )
 
 import rclpy
@@ -40,6 +47,22 @@ class HnuterDRCDAController(DirectController):
         return True
 
     def __init__(self) -> None:
+        os.environ.setdefault(
+            'HNUTER_TUNING_FILE',
+            str(
+                Path(__file__).resolve().parent
+                / 'config'
+                / 'identified_delay_damped_xy.json'
+            ),
+        )
+        self.direct_pos_body_frame_xy_enabled = True
+        self.direct_pos_Kp_body_xy = np.array([2.0, 1.0])
+        self.direct_pos_Kd_body_xy = np.array([2.8, 1.8])
+        self.direct_pos_Ki_body_xy = np.array([0.2, 0.1])
+        self.direct_pos_deadband_body_xy_m = np.zeros(2)
+        self.direct_vel_deadband_body_xy_mps = np.zeros(2)
+        self.direct_manual_max_acc_body_xy = np.array([3.0, 2.0])
+        self.direct_body_force_trim_xy_n = np.array([0.0, 1.35])
         self._drcda_variant = os.environ.get(
             'HNUTER_DRCDA_VARIANT', 'full'
         ).strip().lower()
@@ -69,8 +92,14 @@ class HnuterDRCDAController(DirectController):
                 'HNUTER_DRCDA_MOTOR_BLOCK_SWITCH_S', 0.10
             ),
             'gauss_newton_iterations': int(env_float('HNUTER_DRCDA_ITERATIONS', 2)),
-            'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 8.0),
+            'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 12.0),
             'lm_damping': env_float('HNUTER_DRCDA_LM_DAMPING', 1.0e-3),
+            'paper_delay_aware_motor_residual_enabled': (
+                env_float(
+                    'HNUTER_DRCDA_DELAY_MOTOR_RESIDUAL_ENABLED',
+                    0.0,
+                ) >= 0.5
+            ),
         }
         if model_name in ('ideal', 'instant', 'sitl_ideal'):
             config = DRCDAConfig.ideal_servos(**config_kwargs)
@@ -110,12 +139,24 @@ class HnuterDRCDAController(DirectController):
             tail_x_m=-self.l2,
             reaction_torque_ratio_m=env_float('HNUTER_DRCDA_REACTION_RATIO_M', 0.016),
         )
-        allocator_type = (
-            BasicDifferentialAllocator
-            if self._drcda_variant == 'basic_da'
-            else DRCDAAllocator
-        )
-        self.drcda = allocator_type(wrench_model, config)
+        if self._drcda_variant == 'basic_da':
+            self.drcda = BasicDifferentialAllocator(wrench_model, config)
+        elif self._drcda_variant in ('full', 'ada', 'nda', 'pda'):
+            paper_method = (
+                'pda' if self._drcda_variant == 'full'
+                else self._drcda_variant
+            )
+            self.drcda = PaperDifferentialAllocator(
+                wrench_model, config, paper_method
+            )
+            if self._drcda_variant == 'full':
+                self._drcda_paper_allocator = self.drcda
+                self._drcda_large_attitude_allocator = DRCDAAllocator(
+                    wrench_model,
+                    copy.deepcopy(config),
+                )
+        else:
+            self.drcda = DRCDAAllocator(wrench_model, config)
         self._drcda_update_period_s = env_float('HNUTER_DRCDA_UPDATE_PERIOD_S', 0.01)
         self._drcda_update_period_s = float(np.clip(
             self._drcda_update_period_s, 0.002, 0.05
@@ -130,6 +171,169 @@ class HnuterDRCDAController(DirectController):
             f'update_period={self._drcda_update_period_s * 1000.0:.1f}ms, '
             f'log={self.diagnostic_path}'
         )
+        if self._drcda_variant == 'full':
+            self.get_logger().info(
+                'Full allocator scheduling: paper PDA for nominal/aggressive '
+                'flight, finite-time reachable allocation for automatic '
+                'large-attitude trajectories.'
+            )
+        self.get_logger().info(
+            'DRCDA body-frame XY position loop: '
+            f'enabled={self.direct_pos_body_frame_xy_enabled}, '
+            f'Kp={self.direct_pos_Kp_body_xy.tolist()}, '
+            f'Kd={self.direct_pos_Kd_body_xy.tolist()}, '
+            f'Ki={self.direct_pos_Ki_body_xy.tolist()}, '
+            f'force_trim_N={self.direct_body_force_trim_xy_n.tolist()}'
+        )
+
+    def _tuning_snapshot(self) -> dict:
+        snapshot = super()._tuning_snapshot()
+        snapshot.update({
+            'direct_pos_body_frame_xy_enabled': bool(
+                self.direct_pos_body_frame_xy_enabled
+            ),
+            'direct_pos_Kp_body_xy': self.direct_pos_Kp_body_xy.tolist(),
+            'direct_pos_Kd_body_xy': self.direct_pos_Kd_body_xy.tolist(),
+            'direct_pos_Ki_body_xy': self.direct_pos_Ki_body_xy.tolist(),
+            'direct_pos_deadband_body_xy_m': (
+                self.direct_pos_deadband_body_xy_m.tolist()
+            ),
+            'direct_vel_deadband_body_xy_mps': (
+                self.direct_vel_deadband_body_xy_mps.tolist()
+            ),
+            'direct_manual_max_acc_body_xy': (
+                self.direct_manual_max_acc_body_xy.tolist()
+            ),
+            'direct_body_force_trim_xy_n': self.direct_body_force_trim_xy_n.tolist(),
+        })
+        return snapshot
+
+    def _apply_tuning(self, data: dict):
+        super()._apply_tuning(data)
+        self.direct_pos_body_frame_xy_enabled = self._tuning_bool(
+            data,
+            'direct_pos_body_frame_xy_enabled',
+            self.direct_pos_body_frame_xy_enabled,
+        )
+        self.direct_pos_Kp_body_xy = np.maximum(
+            self._tuning_array(
+                data, 'direct_pos_Kp_body_xy', self.direct_pos_Kp_body_xy
+            ),
+            0.0,
+        )
+        self.direct_pos_Kd_body_xy = np.maximum(
+            self._tuning_array(
+                data, 'direct_pos_Kd_body_xy', self.direct_pos_Kd_body_xy
+            ),
+            0.0,
+        )
+        self.direct_pos_Ki_body_xy = np.maximum(
+            self._tuning_array(
+                data, 'direct_pos_Ki_body_xy', self.direct_pos_Ki_body_xy
+            ),
+            0.0,
+        )
+        self.direct_pos_deadband_body_xy_m = np.maximum(
+            self._tuning_array(
+                data,
+                'direct_pos_deadband_body_xy_m',
+                self.direct_pos_deadband_body_xy_m,
+            ),
+            0.0,
+        )
+        self.direct_vel_deadband_body_xy_mps = np.maximum(
+            self._tuning_array(
+                data,
+                'direct_vel_deadband_body_xy_mps',
+                self.direct_vel_deadband_body_xy_mps,
+            ),
+            0.0,
+        )
+        self.direct_manual_max_acc_body_xy = np.maximum(
+            self._tuning_array(
+                data,
+                'direct_manual_max_acc_body_xy',
+                self.direct_manual_max_acc_body_xy,
+            ),
+            0.05,
+        )
+        self.direct_body_force_trim_xy_n = self._tuning_array(
+            data,
+            'direct_body_force_trim_xy_n',
+            self.direct_body_force_trim_xy_n,
+        )
+
+    def _direct_position_acceleration_ned(
+        self,
+        acc_ff_ned: np.ndarray,
+        pos_error_ned: np.ndarray,
+        vel_error_ned: np.ndarray,
+        xy_lock_active: bool,
+    ) -> np.ndarray:
+        if not self.direct_pos_body_frame_xy_enabled:
+            return super()._direct_position_acceleration_ned(
+                acc_ff_ned,
+                pos_error_ned,
+                vel_error_ned,
+                xy_lock_active,
+            )
+
+        kp_body_xy = self.direct_pos_Kp_body_xy.copy()
+        if xy_lock_active:
+            kp_body_xy *= 0.8
+        acceleration_ned = acc_ff_ned.copy()
+        acceleration_ned[:2] += body_frame_horizontal_feedback_ned(
+            self.R_ned_frd,
+            pos_error_ned[:2],
+            vel_error_ned[:2],
+            self.integral_pos_error[:2],
+            kp_body_xy,
+            self.direct_pos_Kd_body_xy,
+            self.direct_pos_Ki_body_xy,
+            getattr(
+                self, 'direct_pos_deadband_body_xy_m', np.zeros(2)
+            ),
+            getattr(
+                self, 'direct_vel_deadband_body_xy_mps', np.zeros(2)
+            ),
+        )
+        acceleration_ned[2] += (
+            self.direct_pos_Kp_ned[2] * pos_error_ned[2]
+            + self.direct_pos_Kd_ned[2] * vel_error_ned[2]
+            + self.direct_pos_Ki_ned[2] * self.integral_pos_error[2]
+        )
+        return acceleration_ned
+
+    def _limit_direct_horizontal_acceleration_ned(
+        self,
+        acceleration_xy_ned: np.ndarray,
+        max_acc_xy: float,
+    ) -> np.ndarray:
+        if not self.direct_pos_body_frame_xy_enabled:
+            return super()._limit_direct_horizontal_acceleration_ned(
+                acceleration_xy_ned,
+                max_acc_xy,
+            )
+        heading = heading_rotation_ned_body_xy(self.R_ned_frd)
+        body_limit = np.full(2, max_acc_xy)
+        if self.auto_traj_mode == 'hover':
+            body_limit = np.minimum(
+                body_limit,
+                self.direct_manual_max_acc_body_xy,
+            )
+        acceleration_body_xy = np.clip(
+            heading.T @ acceleration_xy_ned,
+            -body_limit,
+            body_limit,
+        )
+        return heading @ acceleration_body_xy
+
+    def _apply_direct_body_force_trim(self, force_body: np.ndarray) -> np.ndarray:
+        if not self.direct_pos_body_frame_xy_enabled:
+            return force_body
+        trimmed_force = force_body.copy()
+        trimmed_force[:2] += self.direct_body_force_trim_xy_n
+        return trimmed_force
 
     def _diagnostic_file_prefix(self):
         return (
@@ -251,15 +455,35 @@ class HnuterDRCDAController(DirectController):
             -wrench_residual[2],
         ])
         delta_acceleration_ned = self.R_ned_frd @ delta_force_body / self.mass
-        position_integral_gain = self.direct_pos_Ki_ned
-        active = position_integral_gain > 1e-6
         correction = np.zeros(3)
-        correction[active] = (
-            -config.antiwindup_gain
-            * delta_acceleration_ned[active]
-            / position_integral_gain[active]
-            * dt
-        )
+        if self.direct_pos_body_frame_xy_enabled:
+            heading = heading_rotation_ned_body_xy(self.R_ned_frd)
+            delta_acceleration_body_xy = heading.T @ delta_acceleration_ned[:2]
+            active_xy = self.direct_pos_Ki_body_xy > 1e-6
+            correction_body_xy = np.zeros(2)
+            correction_body_xy[active_xy] = (
+                -config.antiwindup_gain
+                * delta_acceleration_body_xy[active_xy]
+                / self.direct_pos_Ki_body_xy[active_xy]
+                * dt
+            )
+            correction[:2] = heading @ correction_body_xy
+        else:
+            active_xy = self.direct_pos_Ki_ned[:2] > 1e-6
+            correction_xy = correction[:2]
+            correction_xy[active_xy] = (
+                -config.antiwindup_gain
+                * delta_acceleration_ned[:2][active_xy]
+                / self.direct_pos_Ki_ned[:2][active_xy]
+                * dt
+            )
+        if self.direct_pos_Ki_ned[2] > 1e-6:
+            correction[2] = (
+                -config.antiwindup_gain
+                * delta_acceleration_ned[2]
+                / self.direct_pos_Ki_ned[2]
+                * dt
+            )
         self.integral_pos_error += correction
         self.integral_pos_error = np.clip(
             self.integral_pos_error,
@@ -279,8 +503,39 @@ class HnuterDRCDAController(DirectController):
     def publish_idle_direct_actuator_setpoint(self):
         if self._drcda_ready:
             self.drcda.reset()
+            for name in (
+                '_drcda_paper_allocator',
+                '_drcda_large_attitude_allocator',
+            ):
+                allocator = getattr(self, name, None)
+                if allocator is not None and allocator is not self.drcda:
+                    allocator.reset()
             self._drcda_accumulated_dt_s = 0.0
         return super().publish_idle_direct_actuator_setpoint()
+
+    def _select_full_allocator(self) -> None:
+        if self._drcda_variant != 'full':
+            return
+        target = (
+            self._drcda_large_attitude_allocator
+            if self.auto_traj_mode == 'attitude'
+            else self._drcda_paper_allocator
+        )
+        if target is self.drcda:
+            return
+        previous = self.drcda
+        target.reset(
+            angle_state=previous.state[:ANGLE_COUNT],
+            thrust_state=previous.state[ANGLE_COUNT:],
+        )
+        self.drcda = target
+        self._drcda_accumulated_dt_s = 0.0
+        mode = (
+            'finite-time reachable'
+            if target is self._drcda_large_attitude_allocator
+            else 'paper PDA'
+        )
+        self.get_logger().info(f'Full allocator switched to {mode}.')
 
     def publish_direct_actuator_setpoint(
         self,
@@ -306,6 +561,7 @@ class HnuterDRCDAController(DirectController):
                 self, motor_controls, alpha1, alpha2, theta1, theta2
             )
 
+        self._select_full_allocator()
         preferred = self._preferred_drcda_command(
             motor_controls, alpha1, alpha2, theta1, theta2
         )
