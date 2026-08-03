@@ -23,6 +23,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from hnuter_log_paths import log_path, stamp
+from tools.plotting.trajectory_alignment import (
+    fit_planar_rotation,
+    transform_points,
+    transform_vectors,
+)
 
 
 POSITION_COLUMNS = (
@@ -143,6 +148,30 @@ def metrics(run: dict[str, dict[str, np.ndarray]]) -> dict[str, float | int]:
     return values
 
 
+def align_to_comparison_frame(
+    reference: dict[str, dict[str, np.ndarray]],
+    moving: dict[str, dict[str, np.ndarray]],
+) -> float:
+    """Put trajectory and hover data in the baseline trajectory frame."""
+    reference_trajectory = reference['trajectory']
+    moving_trajectory = moving['trajectory']
+    rotation, alignment_rmse = fit_planar_rotation(
+        reference_trajectory['target_position'],
+        moving_trajectory['target_position'],
+    )
+    source_origin = moving_trajectory['target_position'][0]
+    destination_origin = reference_trajectory['target_position'][0]
+    for segment in moving.values():
+        for key in ('position', 'target_position'):
+            segment[key] = transform_points(
+                segment[key], source_origin, destination_origin, rotation
+            )
+        segment['velocity_xy'] = transform_vectors(
+            segment['velocity_xy'], rotation
+        )
+    return alignment_rmse
+
+
 def improvement_percent(baseline: float, tuned: float) -> float:
     if abs(baseline) < 1e-12:
         return float('nan')
@@ -187,7 +216,7 @@ def plot_lateral(
     figure, axes = plt.subplots(2, 2, figsize=(13.0, 8.2))
     colors = ('#3666b0', '#d45a35')
     labels = ('Before tuning', 'Damped XY tuning')
-    for column, axis_name in enumerate(('East X', 'North Y')):
+    for column, axis_name in enumerate(('Trajectory X', 'Trajectory Y')):
         for run, color, label in zip((baseline, tuned), colors, labels):
             segment = run['trajectory']
             error = segment['position'][:, column] - segment['target_position'][:, column]
@@ -225,6 +254,7 @@ def write_report(
     tuned_path: Path,
     baseline_metrics: dict[str, float | int],
     tuned_metrics: dict[str, float | int],
+    reference_alignment_rmse: float,
 ) -> None:
     rows = (
         ('3D trajectory RMSE (m)', 'trajectory_position_rmse_3d_m'),
@@ -245,6 +275,9 @@ def write_report(
         '',
         f'- Before tuning: `{baseline_path}`',
         f'- Damped XY tuning: `{tuned_path}`',
+        '- Frame: tuned target rigidly aligned to the before-tuning trajectory '
+        'frame before evaluating X/Y components.',
+        f'- Target alignment residual: `{reference_alignment_rmse:.5f} m`.',
         '',
         '| Metric | Before | Tuned | Reduction |',
         '| --- | ---: | ---: | ---: |',
@@ -272,6 +305,7 @@ def main() -> None:
     run_stamp = stamp()
     baseline = load_run(args.baseline, args.hover_window_s)
     tuned = load_run(args.tuned, args.hover_window_s)
+    reference_alignment_rmse = align_to_comparison_frame(baseline, tuned)
     baseline_metrics = metrics(baseline)
     tuned_metrics = metrics(tuned)
 
@@ -284,6 +318,8 @@ def main() -> None:
     comparison = {
         'baseline_log': str(args.baseline),
         'tuned_log': str(args.tuned),
+        'comparison_frame': 'baseline trajectory frame',
+        'tuned_reference_alignment_rmse_m': reference_alignment_rmse,
         'hover_window_s': args.hover_window_s,
         'before_tuning': baseline_metrics,
         'damped_xy_tuning': tuned_metrics,
@@ -298,6 +334,7 @@ def main() -> None:
         args.tuned,
         baseline_metrics,
         tuned_metrics,
+        reference_alignment_rmse,
     )
     print(f'trajectory_plot={trajectory_path}')
     print(f'lateral_plot={lateral_path}')

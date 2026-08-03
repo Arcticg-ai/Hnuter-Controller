@@ -123,6 +123,22 @@ When intentionally testing against an ideal instantaneous-servo SITL model, use:
 HNUTER_DRCDA_SERVO_MODEL=ideal python3 hnuter_external_direct_drcda.py
 ```
 
+For the no-delay `main` firmware model, use the separately validated tuning
+file. It also overrides the DRCDA horizon and optimization weights, and is
+reloaded while the controller is running whenever the JSON file changes:
+
+```bash
+HNUTER_DRCDA_SERVO_MODEL=ideal \
+HNUTER_DRCDA_VARIANT=full \
+HNUTER_TUNING_FILE=$PWD/config/no_delay_drcda_tuning.json \
+python3 hnuter_external_direct_drcda.py
+```
+
+The direct and DRCDA controllers compensate PX4 estimator quaternion resets by
+synchronizing the yaw references. DRCDA additionally resets its desired-wrench
+derivative history on that event, avoiding a false allocation transient while
+preserving the actuator state estimate.
+
 The solver uses a 180 ms move-blocked prediction horizon at 100 Hz by default.
 Select the basic differential-allocation baseline or one DRCDA ablation with
 `HNUTER_DRCDA_VARIANT=basic_da`, `no_delay`, `no_horizon`, or

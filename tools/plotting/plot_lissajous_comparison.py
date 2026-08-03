@@ -25,6 +25,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from hnuter_log_paths import log_path, stamp
+from tools.plotting.trajectory_alignment import (
+    fit_planar_rotation,
+    transform_points,
+    transform_vectors,
+)
 
 
 POSITION_COLUMNS = (
@@ -100,6 +105,18 @@ def metrics(data: dict[str, np.ndarray]) -> dict[str, float | int]:
     position_norm = np.linalg.norm(position_error, axis=1)
     velocity_norm = np.linalg.norm(velocity_error, axis=1)
     attitude_norm = np.linalg.norm(data['attitude_error_deg'], axis=1)
+    horizontal_speed = np.linalg.norm(data['target_velocity'][:, :2], axis=1)
+    tangent = np.divide(
+        data['target_velocity'][:, :2],
+        horizontal_speed[:, None],
+        out=np.zeros_like(data['target_velocity'][:, :2]),
+        where=horizontal_speed[:, None] > 1e-6,
+    )
+    along_track_error = np.sum(position_error[:, :2] * tangent, axis=1)
+    cross_track_error = (
+        -position_error[:, 0] * tangent[:, 1]
+        + position_error[:, 1] * tangent[:, 0]
+    )
     motor = np.nan_to_num(data['motor'], nan=0.0)
     servo = np.nan_to_num(data['servo'], nan=0.0)
     servo_variation = np.sum(np.abs(np.diff(servo, axis=0)), axis=0)
@@ -112,14 +129,56 @@ def metrics(data: dict[str, np.ndarray]) -> dict[str, float | int]:
         'position_rmse_z_m': float(np.sqrt(np.mean(position_error[:, 2] ** 2))),
         'position_rmse_3d_m': float(np.sqrt(np.mean(position_norm ** 2))),
         'position_mean_3d_m': float(np.mean(position_norm)),
+        'position_median_3d_m': float(np.median(position_norm)),
+        'position_p90_3d_m': float(np.percentile(position_norm, 90.0)),
+        'position_p95_3d_m': float(np.percentile(position_norm, 95.0)),
+        'position_p99_3d_m': float(np.percentile(position_norm, 99.0)),
         'position_max_3d_m': float(np.max(position_norm)),
+        'position_fraction_above_0_15_m': float(np.mean(position_norm > 0.15)),
+        'position_along_track_rmse_m': float(
+            np.sqrt(np.mean(along_track_error ** 2))
+        ),
+        'position_cross_track_rmse_m': float(
+            np.sqrt(np.mean(cross_track_error ** 2))
+        ),
         'velocity_rmse_3d_mps': float(np.sqrt(np.mean(velocity_norm ** 2))),
         'attitude_rmse_norm_deg': float(np.sqrt(np.mean(attitude_norm ** 2))),
+        'attitude_roll_rmse_deg': float(
+            np.sqrt(np.mean(data['attitude_error_deg'][:, 0] ** 2))
+        ),
+        'attitude_pitch_rmse_deg': float(
+            np.sqrt(np.mean(data['attitude_error_deg'][:, 1] ** 2))
+        ),
+        'attitude_yaw_median_abs_deg': float(
+            np.median(np.abs(data['attitude_error_deg'][:, 2]))
+        ),
+        'attitude_yaw_p90_abs_deg': float(
+            np.percentile(np.abs(data['attitude_error_deg'][:, 2]), 90.0)
+        ),
         'motor_rms_normalized': float(np.sqrt(np.mean(motor ** 2))),
         'motor_peak_normalized': float(np.max(np.abs(motor))),
         'servo_total_variation_normalized': float(np.sum(servo_variation)),
         'servo_peak_normalized': float(np.max(np.abs(servo))),
     }
+
+
+def align_to_comparison_frame(
+    reference: dict[str, np.ndarray],
+    moving: dict[str, np.ndarray],
+) -> float:
+    """Align a run whose trajectory was generated at a different initial yaw."""
+    rotation, alignment_rmse = fit_planar_rotation(
+        reference['target_position'], moving['target_position']
+    )
+    source_origin = moving['target_position'][0]
+    destination_origin = reference['target_position'][0]
+    for key in ('position', 'target_position'):
+        moving[key] = transform_points(
+            moving[key], source_origin, destination_origin, rotation
+        )
+    for key in ('velocity', 'target_velocity'):
+        moving[key] = transform_vectors(moving[key], rotation)
+    return alignment_rmse
 
 
 def _relative(data: dict[str, np.ndarray], key: str) -> np.ndarray:
@@ -260,12 +319,21 @@ def write_report(
     drcda_path: Path,
     baseline_metrics: dict[str, float | int],
     drcda_metrics: dict[str, float | int],
+    reference_alignment_rmse: float,
 ) -> None:
     tracked_metrics = (
         ('3D position RMSE (m)', 'position_rmse_3d_m'),
+        ('3D position median (m)', 'position_median_3d_m'),
+        ('3D position P90 (m)', 'position_p90_3d_m'),
+        ('3D position P95 (m)', 'position_p95_3d_m'),
         ('3D position max (m)', 'position_max_3d_m'),
+        ('Along-track RMSE (m)', 'position_along_track_rmse_m'),
+        ('Cross-track RMSE (m)', 'position_cross_track_rmse_m'),
         ('3D velocity RMSE (m/s)', 'velocity_rmse_3d_mps'),
-        ('Attitude error norm RMSE (deg)', 'attitude_rmse_norm_deg'),
+        ('Roll RMSE (deg)', 'attitude_roll_rmse_deg'),
+        ('Pitch RMSE (deg)', 'attitude_pitch_rmse_deg'),
+        ('Yaw median absolute error (deg)', 'attitude_yaw_median_abs_deg'),
+        ('Yaw P90 absolute error (deg)', 'attitude_yaw_p90_abs_deg'),
         ('Servo total variation', 'servo_total_variation_normalized'),
     )
     lines = [
@@ -273,6 +341,13 @@ def write_report(
         '',
         f'- Original direct log: `{baseline_path}`',
         f'- DRCDA log: `{drcda_path}`',
+        '- Plot frame: each run target is rigidly aligned to the original-direct '
+        'trajectory frame before overlay.',
+        f'- Target alignment residual: `{reference_alignment_rmse:.5f} m`.',
+        '- Position norms and actuator metrics are rotation invariant. Axis-wise '
+        'metrics are reported only after frame alignment.',
+        '- Attitude norm RMSE is intentionally omitted from the comparison table '
+        'because estimator yaw resets can dominate it.',
         '',
         '| Metric | Original direct | DRCDA | DRCDA improvement |',
         '| --- | ---: | ---: | ---: |',
@@ -300,6 +375,7 @@ def main() -> None:
     run_stamp = stamp()
     baseline = load_lissajous(args.baseline)
     drcda = load_lissajous(args.drcda)
+    reference_alignment_rmse = align_to_comparison_frame(baseline, drcda)
     baseline_metrics = metrics(baseline)
     drcda_metrics = metrics(drcda)
 
@@ -313,6 +389,8 @@ def main() -> None:
     comparison = {
         'baseline_log': str(args.baseline),
         'drcda_log': str(args.drcda),
+        'comparison_frame': 'baseline trajectory frame',
+        'drcda_reference_alignment_rmse_m': reference_alignment_rmse,
         'original_direct': baseline_metrics,
         'drcda': drcda_metrics,
     }
@@ -326,6 +404,7 @@ def main() -> None:
         args.drcda,
         baseline_metrics,
         drcda_metrics,
+        reference_alignment_rmse,
     )
 
     print(f'trajectory_plot={trajectory_path}')

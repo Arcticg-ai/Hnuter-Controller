@@ -33,6 +33,7 @@ import tty
 from pathlib import Path
 
 from hnuter_attitude_control import (
+    estimator_yaw_reset_enu,
     large_tilt_yaw_scale,
     quaternion_attitude_error,
     reduced_tilt_attitude_error,
@@ -451,6 +452,8 @@ class HnuterController(Node):
         self.R_ned_frd_raw = np.eye(3)
         self._attitude_axis_transform = np.eye(3)
         self._attitude_canonical_initialized = False
+        self._quat_reset_counter = None
+        self.attitude_reset_delta_yaw_rad = 0.0
         self.nav_state = None
         self.control_offboard_enabled = False
         self.armed = False
@@ -697,6 +700,7 @@ class HnuterController(Node):
         self.auto_traj_origin_xy = np.zeros(2)
         self.auto_traj_z = self.takeoff_height
         self.auto_traj_yaw = 0.0
+        self.auto_traj_path_yaw = 0.0
         self.auto_traj_start_attitude = np.zeros(3)
         self.auto_traj_ready_margin = 0.08
         self.rectangle_size_x = 2.0
@@ -1237,6 +1241,14 @@ class HnuterController(Node):
         R_enu_ned = np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
         R_frd_flu = np.array([[1, 0, 0], [0, -1, 0], [0, 0, -1]])
         self.R = R_enu_ned @ R_ned_frd @ R_frd_flu
+        reset_counter = int(getattr(msg, 'quat_reset_counter', 0))
+        if self._quat_reset_counter is None:
+            self._quat_reset_counter = reset_counter
+        elif reset_counter != self._quat_reset_counter:
+            delta_yaw_enu = estimator_yaw_reset_enu(
+                getattr(msg, 'delta_q_reset', np.zeros(4))
+            )
+            self._apply_estimator_yaw_reset(delta_yaw_enu, reset_counter)
         current_yaw = self._current_yaw_enu()
 
         if not self._yaw_initialized:
@@ -1253,6 +1265,37 @@ class HnuterController(Node):
         self.data_received = self.local_position_received and self.attitude_received
         if self.data_received:
             self.control_loop()
+
+    def _apply_estimator_yaw_reset(
+        self,
+        delta_yaw_enu: float,
+        reset_counter: int,
+    ) -> None:
+        self._quat_reset_counter = int(reset_counter)
+        self.attitude_reset_delta_yaw_rad = float(delta_yaw_enu)
+        if not self._yaw_initialized:
+            return
+
+        self.initial_yaw = self._wrap_angle_rad(self.initial_yaw + delta_yaw_enu)
+        self.manual_des_yaw = self._wrap_angle_rad(
+            self.manual_des_yaw + delta_yaw_enu
+        )
+        self.target_attitude[2] = self._wrap_angle_rad(
+            self.target_attitude[2] + delta_yaw_enu
+        )
+        self.auto_traj_yaw = self._wrap_angle_rad(
+            self.auto_traj_yaw + delta_yaw_enu
+        )
+        self.auto_traj_start_attitude[2] = self._wrap_angle_rad(
+            self.auto_traj_start_attitude[2] + delta_yaw_enu
+        )
+        self.integral_e_R[2] = 0.0
+        self._attitude_error_quaternion = None
+        self.get_logger().warn(
+            '检测到 PX4 EKF 航向重置: '
+            f'counter={reset_counter}, delta_enu={math.degrees(delta_yaw_enu):+.2f}deg; '
+            '已同步航向目标并保持轨迹几何连续。'
+        )
 
     def angular_velocity_callback(self, msg):
         # PX4 FRD -> canonical FRD -> FLU
@@ -1712,6 +1755,7 @@ class HnuterController(Node):
         self.auto_traj_mode = mode
         self.auto_traj_start_time = current_time
         self.auto_traj_yaw = float(self.manual_des_yaw)
+        self.auto_traj_path_yaw = self.auto_traj_yaw
         self.auto_traj_start_attitude = np.array([0.0, 0.0, self.auto_traj_yaw], dtype=float)
         self.auto_traj_start_pos = self.manual_des_pos.copy()
         if mode == 'attitude':
@@ -1723,7 +1767,7 @@ class HnuterController(Node):
         ))
         self.auto_traj_z = float(self.auto_traj_start_pos[2])
 
-        R_yaw = self._yaw_rotation_2d(self.auto_traj_yaw)
+        R_yaw = self._yaw_rotation_2d(self.auto_traj_path_yaw)
         if mode == 'lissajous':
             first_rel_xy = np.array([self.lissajous_amp_x, self.lissajous_amp_y], dtype=float)
             self.auto_traj_origin_xy = self.auto_traj_start_pos[:2] - R_yaw @ first_rel_xy
@@ -1808,7 +1852,7 @@ class HnuterController(Node):
         local_vel_xy = smooth_du * delta
         local_acc_xy = smooth_ddu * delta
 
-        R_yaw = self._yaw_rotation_2d(self.auto_traj_yaw)
+        R_yaw = self._yaw_rotation_2d(self.auto_traj_path_yaw)
         pos = np.array([
             *(self.auto_traj_origin_xy + R_yaw @ local_xy),
             self.auto_traj_z
@@ -1848,7 +1892,7 @@ class HnuterController(Node):
             * math.cos(cz * theta)
         )
 
-        R_yaw = self._yaw_rotation_2d(self.auto_traj_yaw)
+        R_yaw = self._yaw_rotation_2d(self.auto_traj_path_yaw)
         pos = np.array([
             *(self.auto_traj_origin_xy + R_yaw @ local_xy),
             float(np.clip(
@@ -2762,6 +2806,7 @@ class HnuterController(Node):
             'takeoff_elapsed_s', 'takeoff_start_z_rel_m', 'control_dt_s',
             'xy_lock_active', 'direct_safety_cutoff',
             'angular_p_frd_rps', 'angular_q_frd_rps', 'angular_r_frd_rps',
+            'quat_reset_counter', 'attitude_reset_delta_yaw_deg',
             'direct_safety_reason',
             'direct_pos_kp_n', 'direct_pos_kp_e', 'direct_pos_kp_d',
             'direct_pos_kd_n', 'direct_pos_kd_e', 'direct_pos_kd_d',
@@ -2845,6 +2890,8 @@ class HnuterController(Node):
             float(self.angular_velocity_frd[0]),
             float(self.angular_velocity_frd[1]),
             float(self.angular_velocity_frd[2]),
+            -1 if self._quat_reset_counter is None else int(self._quat_reset_counter),
+            float(math.degrees(self.attitude_reset_delta_yaw_rad)),
             self.direct_safety_cutoff_reason,
             *self._diag_values(self.direct_pos_Kp_ned, 3),
             *self._diag_values(self.direct_pos_Kd_ned, 3),

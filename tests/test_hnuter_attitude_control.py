@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 
 from hnuter_attitude_control import (
+    estimator_yaw_reset_enu,
     large_tilt_yaw_scale,
     quaternion_attitude_error,
     reduced_tilt_attitude_error,
@@ -61,6 +62,21 @@ class QuaternionAttitudeErrorTest(unittest.TestCase):
             previous,
         )
         self.assertGreater(float(np.dot(previous, current)), 0.99)
+
+
+class EstimatorYawResetTest(unittest.TestCase):
+    def test_ned_positive_yaw_reset_becomes_negative_enu_delta(self):
+        angle = math.radians(24.6)
+        delta = np.array([
+            math.cos(angle / 2.0),
+            0.0,
+            0.0,
+            math.sin(angle / 2.0),
+        ])
+        self.assertAlmostEqual(estimator_yaw_reset_enu(delta), -angle, places=12)
+
+    def test_invalid_zero_quaternion_is_ignored(self):
+        self.assertEqual(estimator_yaw_reset_enu(np.zeros(4)), 0.0)
 
 
 class LargeTiltYawScaleTest(unittest.TestCase):

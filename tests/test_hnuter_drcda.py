@@ -51,6 +51,25 @@ class DRCDAAllocatorTest(unittest.TestCase):
             numerical[:, index] = (plus - minus) / (2.0 * epsilon)
         np.testing.assert_allclose(sensitivity, numerical, atol=2e-5, rtol=2e-4)
 
+    def test_reference_sync_clears_only_wrench_history(self):
+        allocator = DRCDAAllocator(
+            HnuterWrenchModel(), DRCDAConfig.ideal_servos()
+        )
+        allocator.reset(
+            angle_state=[0.1, -0.1, 0.05, -0.05],
+            thrust_state=[10.0, 10.0, 10.0, 10.0, 5.0],
+        )
+        state_before = allocator.state.copy()
+        command_before = allocator.command.copy()
+        desired = np.array([1.0, 2.0, 40.0, 0.1, 0.2, 0.3])
+        allocator.synchronize_wrench_reference(desired)
+
+        np.testing.assert_allclose(allocator.state, state_before)
+        np.testing.assert_allclose(allocator.command, command_before)
+        np.testing.assert_allclose(allocator._previous_desired_wrench, desired)
+        np.testing.assert_allclose(allocator._filtered_wrench_ff, np.zeros(6))
+        self.assertIsNone(allocator.last_result)
+
     def test_hover_and_coupled_wrench_converge(self):
         config = DRCDAConfig(gauss_newton_iterations=2)
         allocator = DRCDAAllocator(HnuterWrenchModel(), config)

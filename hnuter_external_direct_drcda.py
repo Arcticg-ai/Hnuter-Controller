@@ -54,6 +54,7 @@ class HnuterDRCDAController(DirectController):
         self._drcda_current_time_s = 0.0
         self._drcda_current_dt_s = 0.01
         self._drcda_accumulated_dt_s = 0.0
+        self._drcda_estimator_reset_pending = False
         super().__init__()
 
         model_name = os.environ.get(
@@ -97,6 +98,7 @@ class HnuterDRCDAController(DirectController):
         ))
         self._drcda_model_name = model_name
         self._drcda_ready = True
+        self._load_tuning_file(force=True)
         self.get_logger().info(
             'DRCDA initialized: '
             f'variant={self._drcda_variant}, servo_model={model_name}, '
@@ -104,6 +106,64 @@ class HnuterDRCDAController(DirectController):
             f'prediction_dt={config.prediction_dt_s * 1000.0:.1f}ms, '
             f'update_period={self._drcda_update_period_s * 1000.0:.1f}ms, '
             f'log={self.diagnostic_path}'
+        )
+
+    def _apply_tuning(self, data: dict):
+        super()._apply_tuning(data)
+        if not getattr(self, '_drcda_ready', False):
+            return
+
+        config = self.drcda.config
+        config.horizon_s = max(
+            self._tuning_float(data, 'drcda_horizon_s', config.horizon_s),
+            config.prediction_dt_s,
+        )
+        config.wrench_error_gain = max(
+            self._tuning_float(
+                data, 'drcda_wrench_error_gain', config.wrench_error_gain
+            ),
+            0.0,
+        )
+        config.wrench_ff_tau_s = max(
+            self._tuning_float(data, 'drcda_wrench_ff_tau_s', config.wrench_ff_tau_s),
+            0.0,
+        )
+        config.wrench_rate_weight = max(
+            self._tuning_float(
+                data, 'drcda_wrench_rate_weight', config.wrench_rate_weight
+            ),
+            0.0,
+        )
+        config.wrench_weight = np.maximum(
+            self._tuning_array(data, 'drcda_wrench_weight', config.wrench_weight),
+            0.0,
+        )
+        config.command_move_weight = np.maximum(
+            self._tuning_array(
+                data, 'drcda_command_move_weight', config.command_move_weight
+            ),
+            0.0,
+        )
+        config.command_preference_weight = np.maximum(
+            self._tuning_array(
+                data,
+                'drcda_command_preference_weight',
+                config.command_preference_weight,
+            ),
+            0.0,
+        )
+        config.antiwindup_gain = max(
+            self._tuning_float(
+                data, 'drcda_antiwindup_gain', config.antiwindup_gain
+            ),
+            0.0,
+        )
+        self.get_logger().info(
+            'DRCDA 在线参数已加载: '
+            f'horizon={config.horizon_s:.3f}s, '
+            f'wrench_gain={config.wrench_error_gain:.2f}, '
+            f'ff_tau={config.wrench_ff_tau_s:.3f}s, '
+            f'rate_weight={config.wrench_rate_weight:.3f}'
         )
 
     def _diagnostic_file_prefix(self):
@@ -238,6 +298,16 @@ class HnuterDRCDAController(DirectController):
         finally:
             self._drcda_active_call = False
 
+    def _apply_estimator_yaw_reset(
+        self,
+        delta_yaw_enu: float,
+        reset_counter: int,
+    ) -> None:
+        super()._apply_estimator_yaw_reset(delta_yaw_enu, reset_counter)
+        if self._drcda_ready:
+            self._drcda_estimator_reset_pending = True
+            self._drcda_accumulated_dt_s = self._drcda_update_period_s
+
     def publish_idle_direct_actuator_setpoint(self):
         if self._drcda_ready:
             self.drcda.reset()
@@ -280,6 +350,9 @@ class HnuterDRCDAController(DirectController):
             allocation_dt = max(
                 self._drcda_accumulated_dt_s, self._drcda_current_dt_s
             )
+            if self._drcda_estimator_reset_pending:
+                self.drcda.synchronize_wrench_reference(self.last_W)
+                self._drcda_estimator_reset_pending = False
             result = self.drcda.allocate(
                 desired_wrench=self.last_W,
                 dt=allocation_dt,

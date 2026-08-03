@@ -328,6 +328,14 @@ class DRCDAAllocator:
         self._filtered_wrench_ff[:] = 0.0
         self.last_result = None
 
+    def synchronize_wrench_reference(self, desired_wrench: Iterable[float]) -> None:
+        """Drop derivative history after an estimator reference-frame reset."""
+        self._previous_desired_wrench = _array(
+            desired_wrench, 6, 'desired_wrench'
+        ).copy()
+        self._filtered_wrench_ff[:] = 0.0
+        self.last_result = None
+
     def _servo_parameters(self, index: int, command: float) -> tuple[float, float, float, float]:
         cfg = self.config
         if command >= 0.0:

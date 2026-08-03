@@ -1,0 +1,10 @@
+# PX4 Python build helpers
+empy==3.3.4
+kconfiglib==14.1.0
+pyros-genmsg==0.5.8
+PyYAML==6.0.3
+
+# Hnuter controller, gamepad, and analysis tools
+numpy==2.5.1
+pygame==2.6.1
+matplotlib==3.11.1

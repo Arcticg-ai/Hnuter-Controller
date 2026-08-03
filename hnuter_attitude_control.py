@@ -6,6 +6,22 @@ from __future__ import annotations
 import numpy as np
 
 
+def estimator_yaw_reset_enu(delta_quaternion: np.ndarray) -> float:
+    """Convert PX4's NED attitude-reset quaternion to an ENU yaw delta."""
+    quaternion = np.asarray(delta_quaternion, dtype=float).reshape(-1)
+    if quaternion.size != 4:
+        raise ValueError('delta_quaternion must contain four values')
+    norm = float(np.linalg.norm(quaternion))
+    if norm < 1e-6 or not np.isfinite(norm):
+        return 0.0
+    w, x, y, z = quaternion / norm
+    yaw_ned = np.arctan2(
+        2.0 * (w * z + x * y),
+        1.0 - 2.0 * (y * y + z * z),
+    )
+    return float(-yaw_ned)
+
+
 def update_attitude_axis_toggle(
     current_axis: str,
     rb_pressed: bool,
