@@ -1,0 +1,124 @@
+{
+  "allocator_force_x_sign": 1.0,
+  "allocator_force_y_sign": -1.0,
+  "alpha_limit_deg": 185.0,
+  "attitude_peak_hold_s": 1.0,
+  "attitude_segment_time_s": 5.0,
+  "attitude_step_angle_deg": 180.0,
+  "attitude_step_pitch_deg": 180.0,
+  "attitude_step_roll_deg": 90.0,
+  "attitude_step_yaw_deg": 0.0,
+  "attitude_test_altitude_m": 1.3,
+  "attitude_test_altitude_only": false,
+  "attitude_test_bidirectional": true,
+  "attitude_test_max_acc_xy": 3.0,
+  "direct_Domega": [
+    1.35,
+    1.35,
+    2.5
+  ],
+  "direct_KR": [
+    1.8,
+    1.8,
+    3.8
+  ],
+  "direct_attitude_Ki": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "direct_attitude_gyro_compensation_enabled": true,
+  "direct_attitude_integral_activation_error_deg": 35.0,
+  "direct_attitude_integral_limit": [
+    0.6,
+    0.6,
+    0.4
+  ],
+  "direct_large_tilt_yaw_full_deg": 80.0,
+  "direct_large_tilt_yaw_min_scale": 0.1,
+  "direct_large_tilt_yaw_scheduling_enabled": true,
+  "direct_large_tilt_yaw_start_deg": 45.0,
+  "direct_pos_Kd_ned": [
+    2.1,
+    2.1,
+    4.0
+  ],
+  "direct_pos_Ki_ned": [
+    0.0,
+    0.0,
+    3.0
+  ],
+  "direct_pos_Kp_ned": [
+    3.0,
+    3.0,
+    8.0
+  ],
+  "direct_pos_integral_limit_ned": [
+    1.0,
+    1.0,
+    2.0
+  ],
+  "direct_quaternion_error_enabled": true,
+  "direct_reduced_tilt_error_enabled": true,
+  "direct_safety_attitude_check_enabled": false,
+  "direct_safety_attitude_limit_deg": 55.0,
+  "direct_takeoff_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_takeoff_KR": [
+    1.5,
+    1.5,
+    1.5
+  ],
+  "direct_takeoff_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_tau_limit": [
+    0.9,
+    0.9,
+    1.8
+  ],
+  "direct_xy_lock_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_xy_lock_KR": [
+    1.5,
+    1.5,
+    1.5
+  ],
+  "direct_xy_lock_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_yaw_control_enabled": true,
+  "gamepad_deadzone": 0.1,
+  "gamepad_expo": 0.4,
+  "gamepad_filter_tau_body_xy_s": [
+    0.35,
+    0.35
+  ],
+  "gamepad_filter_tau_s": 0.35,
+  "gamepad_max_acc_body_xy_mps2": [
+    1.0,
+    0.55
+  ],
+  "gamepad_max_vxy_body_mps": [
+    0.6,
+    0.6
+  ],
+  "gamepad_max_vxy_mps": 0.6,
+  "manual_max_position_lead_xy": 0.6,
+  "manual_pitch_limit_deg": 180.0,
+  "manual_roll_limit_deg": 90.0,
+  "max_acc_xy": 20.0,
+  "max_acc_z": 20.0,
+  "theta_limit_deg": 90.0,
+  "xy_lock_max_acc_xy": 3.0
+}

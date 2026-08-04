@@ -148,5 +148,109 @@ class HardwareControllerSafetyTest(unittest.TestCase):
         self.assertEqual(len(warnings), 3)
 
 
+class HardwareServoCalibrationTest(unittest.TestCase):
+    def setUp(self):
+        self.controller = types.SimpleNamespace(
+            primary_servo_angle_max_rad=np.deg2rad(180.0),
+            secondary_servo_angle_max_rad=np.deg2rad(180.0),
+            secondary_servo_gear_ratio=2.0,
+            servo_rate_limit_rad_s=6.0,
+            servo_pwm_min_us=500,
+            servo_pwm_trim_us=1500,
+            servo_pwm_max_us=2500,
+        )
+
+    def test_primary_joint_uses_full_servo_shaft_range(self):
+        convert = HnuterHardwareController._primary_joint_angle_to_normalized
+        self.assertAlmostEqual(convert(self.controller, np.deg2rad(180.0)), 1.0)
+        self.assertAlmostEqual(convert(self.controller, np.deg2rad(-90.0)), -0.5)
+
+    def test_secondary_joint_applies_two_to_one_gear_ratio(self):
+        convert = HnuterHardwareController._secondary_joint_angle_to_normalized
+        self.assertAlmostEqual(convert(self.controller, np.deg2rad(90.0)), 1.0)
+        self.assertAlmostEqual(convert(self.controller, np.deg2rad(45.0)), 0.5)
+        self.assertAlmostEqual(convert(self.controller, np.deg2rad(-45.0)), -0.5)
+
+    def test_secondary_joint_rate_is_reduced_by_gearing(self):
+        rate = HnuterHardwareController._secondary_joint_rate_limit_rad_s(
+            self.controller
+        )
+        self.assertAlmostEqual(rate, 3.0)
+
+    def test_normalized_command_matches_firmware_pwm_calibration(self):
+        convert = HnuterHardwareController._normalized_servo_to_expected_pwm_us
+        self.assertAlmostEqual(convert(self.controller, -1.0), 500.0)
+        self.assertAlmostEqual(convert(self.controller, -0.5), 1000.0)
+        self.assertAlmostEqual(convert(self.controller, 0.0), 1500.0)
+        self.assertAlmostEqual(convert(self.controller, 0.5), 2000.0)
+        self.assertAlmostEqual(convert(self.controller, 1.0), 2500.0)
+
+    def test_flown_e095_profile_keeps_legacy_primary_and_pwm_ranges(self):
+        self.controller.primary_servo_angle_max_rad = np.deg2rad(185.0)
+        self.controller.servo_pwm_min_us = 800
+        self.controller.servo_pwm_max_us = 2200
+        primary = HnuterHardwareController._primary_joint_angle_to_normalized
+        pwm = HnuterHardwareController._normalized_servo_to_expected_pwm_us
+        self.assertAlmostEqual(primary(self.controller, np.deg2rad(185.0)), 1.0)
+        self.assertAlmostEqual(pwm(self.controller, -1.0), 800.0)
+        self.assertAlmostEqual(pwm(self.controller, 1.0), 2200.0)
+
+
+class HardwareIntegralSafetyTest(unittest.TestCase):
+    def test_disabled_integral_axes_are_cleared(self):
+        controller = types.SimpleNamespace(
+            integral_e_R=np.array([0.6, -0.6, 0.4]),
+            direct_attitude_integral_limit=np.array([0.6, 0.6, 0.4]),
+            direct_attitude_integral_activation_error_rad=np.deg2rad(35.0),
+        )
+
+        previous = HnuterHardwareController._update_attitude_integral(
+            controller,
+            np.array([0.2, -0.1, 0.3]),
+            np.deg2rad(10.0),
+            np.zeros(3),
+            0.1,
+        )
+
+        np.testing.assert_allclose(controller.integral_e_R, np.zeros(3))
+        np.testing.assert_allclose(previous, np.zeros(3))
+
+    def test_enabling_ki_does_not_apply_preexisting_integral(self):
+        state = HnuterHardwareController._bumpless_integral_gain_change(
+            np.array([0.6, -0.6, 0.4]),
+            np.zeros(3),
+            np.array([0.15, 0.18, 0.5]),
+            np.array([0.6, 0.6, 0.4]),
+        )
+
+        np.testing.assert_allclose(state, np.zeros(3))
+
+    def test_ki_retune_preserves_integral_torque(self):
+        state = HnuterHardwareController._bumpless_integral_gain_change(
+            np.array([0.2, -0.3, 0.1]),
+            np.array([0.1, 0.2, 0.3]),
+            np.array([0.2, 0.4, 0.6]),
+            np.ones(3),
+        )
+
+        np.testing.assert_allclose(state, np.array([0.1, -0.15, 0.05]))
+
+    def test_integral_update_that_pushes_saturation_is_rejected(self):
+        controller = types.SimpleNamespace(
+            integral_e_R=np.array([-0.1, 0.0, 0.0]),
+        )
+
+        rejected = HnuterHardwareController._reject_saturating_attitude_integration(
+            controller,
+            np.zeros(3),
+            np.ones(3),
+            np.array([1.2, 0.0, 0.0]),
+            np.array([1.0, 1.0, 1.0]),
+        )
+
+        self.assertTrue(rejected)
+        np.testing.assert_allclose(controller.integral_e_R, np.zeros(3))
+
+
 if __name__ == '__main__':
     unittest.main()

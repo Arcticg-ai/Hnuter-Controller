@@ -1,0 +1,118 @@
+Logging start time: 1:19:05, duration: 0:03:13
+No Dropouts
+Info Messages:
+ boot_time_utc_us: 1785811047520501
+ metadata_events_sha256: cd88c2394f72c1c3ce6eb24e3d6d3320a26423d3535701851951cd9b9f3ad85e
+ sys_mcu: STM32H7[4|5]xxx, rev. V
+ sys_name: PX4
+ sys_os_name: NuttX
+ sys_os_ver:
+ sys_os_ver_release: 255
+ sys_toolchain: GNU GCC
+ sys_toolchain_ver: 13.2.1 20231009
+ sys_uuid: 000600000000303736303532510a002e0031
+ time_ref_utc: 0
+ ver_data_format: 2
+ ver_hw: CUAV_7_NANO
+ ver_sw: e0958bbd93ec1346e42d28d01b8bcf434344699f
+ ver_sw_branch: codex/hnuter-180deg-tilt-margin
+ ver_sw_release: 17825792
+Info Multiple Messages: [boot_console_output: 1], [excluded_optional_topics: 40], [metadata_events: 1], [perf_counter_postflight: 1], [perf_counter_preflight: 1], [perf_top_postflight: 2]
+
+Name (multi id, message size in bytes)    number of data points, total bytes
+ action_request (0, 11)                         3         33
+ actuator_armed (0, 15)                       385       5775
+ actuator_motors (0, 66)                     1935     127710
+ actuator_outputs (0, 76)                    1935     147060
+ actuator_servos (0, 48)                     1935      92880
+ battery_status (0, 166)                      968     160688
+ can_interface_status (0, 33)                1897      62601
+ can_interface_status (1, 33)                1897      62601
+ config_overrides (0, 14)                     382       5348
+ control_allocator_status (0, 54)             968      52272
+ cpuload (0, 16)                              388       6208
+ estimator_aid_src_baro_hgt (0, 59)           387      22833
+ estimator_aid_src_baro_hgt (1, 59)           388      22892
+ estimator_aid_src_ev_hgt (0, 59)             388      22892
+ estimator_aid_src_ev_hgt (1, 59)             388      22892
+ estimator_aid_src_ev_pos (0, 95)             388      36860
+ estimator_aid_src_ev_pos (1, 95)             388      36860
+ estimator_aid_src_ev_yaw (0, 59)             388      22892
+ estimator_aid_src_ev_yaw (1, 59)             388      22892
+ estimator_aid_src_gravity (0, 115)           388      44620
+ estimator_aid_src_gravity (1, 115)           388      44620
+ estimator_aid_src_mag (0, 115)               388      44620
+ estimator_aid_src_mag (1, 115)               388      44620
+ estimator_attitude (0, 49)                   388      19012
+ estimator_attitude (1, 49)                   387      18963
+ estimator_baro_bias (0, 40)                  387      15480
+ estimator_baro_bias (1, 40)                  387      15480
+ estimator_event_flags (0, 37)                193       7141
+ estimator_event_flags (1, 37)                192       7104
+ estimator_innovation_test_ratios (0, 140)     387      54180
+ estimator_innovation_test_ratios (1, 140)     387      54180
+ estimator_innovation_variances (0, 140)      387      54180
+ estimator_innovation_variances (1, 140)      387      54180
+ estimator_innovations (0, 140)               387      54180
+ estimator_innovations (1, 140)               387      54180
+ estimator_local_position (0, 192)            387      74304
+ estimator_local_position (1, 192)            387      74304
+ estimator_odometry (0, 108)                  387      41796
+ estimator_odometry (1, 108)                  387      41796
+ estimator_selector_status (0, 153)           194      29682
+ estimator_sensor_bias (0, 118)               193      22774
+ estimator_sensor_bias (1, 118)               193      22774
+ estimator_states (0, 213)                    387      82431
+ estimator_states (1, 213)                    387      82431
+ estimator_status (0, 129)                    968     124872
+ estimator_status (1, 129)                    968     124872
+ estimator_status_flags (0, 97)               207      20079
+ estimator_status_flags (1, 97)               211      20467
+ event (0, 40)                                 14        560
+ failsafe_flags (0, 91)                       352      32032
+ failure_detector_status (0, 24)              385       9240
+ home_position (0, 60)                          2        120
+ hover_thrust_estimate (0, 41)               1582      64862
+ input_rc (0, 71)                             387      27477
+ magnetometer_bias_estimate (0, 64)             5        320
+ manual_control_setpoint (0, 65)              968      62920
+ manual_control_switches (0, 33)              194       6402
+ navigator_status (0, 10)                     382       3820
+ offboard_control_mode (0, 15)               1935      29025
+ parameter_update (0, 34)                       1         34
+ rtl_status (0, 16)                            97       1552
+ rtl_time_estimate (0, 17)                     96       1632
+ sensor_accel (0, 44)                         193       8492
+ sensor_accel (1, 44)                         193       8492
+ sensor_baro (0, 32)                          193       6176
+ sensor_baro (1, 32)                          193       6176
+ sensor_combined (0, 48)                    38246    1835808
+ sensor_gyro (0, 44)                          193       8492
+ sensor_gyro (1, 44)                          193       8492
+ sensor_mag (0, 40)                           193       7720
+ sensors_status_imu (0, 96)                   968      92928
+ system_power (0, 42)                         387      16254
+ takeoff_status (0, 13)                         7         91
+ telemetry_status (0, 84)                     194      16296
+ telemetry_status (1, 84)                     194      16296
+ timesync_status (0, 37)                      194       7178
+ trajectory_setpoint (0, 64)                   23       1472
+ vehicle_acceleration (0, 28)                3871     108388
+ vehicle_air_data (0, 38)                     968      36784
+ vehicle_angular_velocity (0, 40)            9675     387000
+ vehicle_attitude (0, 49)                    3871     189679
+ vehicle_attitude_setpoint (0, 40)             87       3480
+ vehicle_constraints (0, 17)                    6        102
+ vehicle_control_mode (0, 23)                 385       8855
+ vehicle_imu (0, 60)                          387      23220
+ vehicle_imu (1, 60)                          387      23220
+ vehicle_imu_status (0, 132)                  193      25476
+ vehicle_imu_status (1, 132)                  193      25476
+ vehicle_land_detected (0, 20)                196       3920
+ vehicle_local_position (0, 192)             1935     371520
+ vehicle_local_position_setpoint (0, 64)       44       2816
+ vehicle_magnetometer (0, 33)                 387      12771
+ vehicle_rates_setpoint (0, 33)               216       7128
+ vehicle_status (0, 74)                       385      28490
+ vehicle_thrust_setpoint (0, 28)             9379     262612
+ vehicle_torque_setpoint (0, 28)              216       6048

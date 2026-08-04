@@ -782,11 +782,12 @@ class HnuterController(Node):
         self.allocator_force_y_sign = env_float('HNUTER_ALLOCATOR_FORCE_Y_SIGN', -1.0)
         # Match the no-delay PX4 main-branch Hnuter allocator parameters.
         # Pitch bias is normalized torque, not a raw Motor5 command offset.
-        # The latest CUAV flight logs consistently use HNTR_PITCH_BIAS=0.09.
+        # The 2026-08-04 hardware flight used 0.09. Airframe observation shows
+        # that a smaller value lowers the tail, so start the next test at 0.10.
         self.pitch_torque_bias = float(np.clip(
             env_float(
                 'HNUTER_PITCH_BIAS',
-                env_float('HNTR_PITCH_BIAS', 0.09),
+                env_float('HNTR_PITCH_BIAS', 0.10),
             ),
             -1.0,
             1.0,
@@ -808,10 +809,46 @@ class HnuterController(Node):
             1.0,
         ))
 
-        # Actuator limits
+        # Default to the firmware/profile actually used by flight log 113.
+        # The newer 3131ddd4 mapping remains available in a separate config.
+        self.hardware_firmware_profile = os.environ.get(
+            'HNUTER_HARDWARE_FIRMWARE_PROFILE',
+            'e0958bbd_800_2200',
+        ).strip()
+        self.primary_servo_angle_max_rad = math.radians(max(
+            1.0, env_float('HNUTER_PRIMARY_SERVO_MAX_DEG', 185.0)
+        ))
+        self.secondary_servo_angle_max_rad = math.radians(max(
+            1.0, env_float('HNUTER_SECONDARY_SERVO_MAX_DEG', 180.0)
+        ))
+        self.secondary_servo_gear_ratio = float(np.clip(
+            env_float(
+                'HNUTER_S2_GEAR',
+                env_float('HNTR_S2_GEAR', 2.0),
+            ),
+            0.1,
+            10.0,
+        ))
+        self.servo_pwm_min_us = int(np.clip(
+            env_float('HNUTER_SERVO_PWM_MIN_US', 800.0), 500.0, 1500.0
+        ))
+        self.servo_pwm_trim_us = int(np.clip(
+            env_float('HNUTER_SERVO_PWM_TRIM_US', 1500.0), 500.0, 2500.0
+        ))
+        self.servo_pwm_max_us = int(np.clip(
+            env_float('HNUTER_SERVO_PWM_MAX_US', 2200.0), 1500.0, 2500.0
+        ))
+
+        # Actuator limits are physical joint limits, not servo-shaft limits.
         self.pitch_command_limit_rad = np.radians(180.0)
-        self.alpha_limit_rad = np.radians(env_float('HNUTER_ALPHA_LIMIT_DEG', 185.0))
-        self.theta_limit_rad = np.radians(env_float('HNUTER_THETA_LIMIT_DEG', 180.0))
+        self.alpha_limit_rad = min(
+            math.radians(abs(env_float('HNUTER_ALPHA_LIMIT_DEG', 185.0))),
+            self.primary_servo_angle_max_rad,
+        )
+        self.theta_limit_rad = min(
+            math.radians(abs(env_float('HNUTER_THETA_LIMIT_DEG', 90.0))),
+            self.secondary_servo_angle_max_rad / self.secondary_servo_gear_ratio,
+        )
         self.servo_rate_limit_rad_s = 50.0
         self.takeoff_tilt_suppress_time_s = 1.0
         self.takeoff_tilt_limit_rad = np.radians(20.0)
@@ -855,9 +892,9 @@ class HnuterController(Node):
         self.direct_takeoff_Domega = np.array([1.2, 1.2, 1.2])
         self.direct_xy_lock_KR = np.array([1.5, 1.5, 1.5])
         self.direct_xy_lock_Domega = np.array([1.2, 1.2, 1.2])
-        self.direct_KR = np.array([1.5, 1.5, env_float('HNUTER_DIRECT_KR_YAW', 3.2)])
-        self.direct_Domega = np.array([1.2, 1.2, env_float('HNUTER_DIRECT_DOMEGA_YAW', 2.2)])
-        self.direct_attitude_Ki = np.zeros(3)
+        self.direct_KR = np.array([2.1, 2.1, env_float('HNUTER_DIRECT_KR_YAW', 4.2)])
+        self.direct_Domega = np.array([1.4, 1.4, env_float('HNUTER_DIRECT_DOMEGA_YAW', 2.6)])
+        self.direct_attitude_Ki = np.array([0.15, 0.18, 0.50])
         self.direct_attitude_integral_limit = np.array([0.6, 0.6, 0.4])
         self.direct_attitude_integral_activation_error_rad = math.radians(35.0)
         self.direct_quaternion_error_enabled = True
@@ -879,8 +916,8 @@ class HnuterController(Node):
         self.max_acc_xy = 20.0
         self.max_acc_z = 20.0
         # Position-loop arrays use NED axis order: north, east, down.
-        self.direct_pos_Kp_ned = np.array([2.5, 2.5, 8.0])
-        self.direct_pos_Kd_ned = np.array([1.8, 1.8, 4.0])
+        self.direct_pos_Kp_ned = np.array([3.0, 3.0, 8.0])
+        self.direct_pos_Kd_ned = np.array([2.1, 2.1, 4.0])
         self.direct_pos_Ki_ned = np.array([0.0, 0.0, 3.0])
         self.direct_pos_integral_limit_ned = np.array([1.0, 1.0, 2.0])
         self.max_climb_rate = 0.35
@@ -895,7 +932,7 @@ class HnuterController(Node):
         )
         self.gamepad_expo = env_float('HNUTER_PAD_EXPO', 0.40)
         self.gamepad_filter_tau_s = env_float(
-            'HNUTER_PAD_FILTER_TAU_S', 0.35
+            'HNUTER_PAD_FILTER_TAU_S', 0.25
         )
         self.gamepad_max_vxy_body_mps = np.full(
             2, self.gamepad_max_vxy_mps, dtype=float
@@ -903,7 +940,7 @@ class HnuterController(Node):
         self.gamepad_filter_tau_body_xy_s = np.full(
             2, self.gamepad_filter_tau_s, dtype=float
         )
-        self.gamepad_max_acc_body_xy_mps2 = np.array([1.0, 0.55])
+        self.gamepad_max_acc_body_xy_mps2 = np.array([1.0, 0.70])
         # Direct debug: 按 o 后不交给 PX4 位置控制器，而是直接发布 actuator_motors/servos。
         # 若要用同一份日志结构记录 PX4 position baseline，启动前设置 HNUTER_CONTROL_MODE=px4。
         control_mode_env = os.environ.get('HNUTER_CONTROL_MODE', 'direct').strip().lower()
@@ -1022,7 +1059,7 @@ class HnuterController(Node):
         default_tuning_path = (
             Path(__file__).resolve().parent
             / 'config'
-            / 'hnuter_direct_tuning.json'
+            / self._default_tuning_filename()
         )
         self.tuning_path = os.path.expanduser(os.environ.get(
             'HNUTER_TUNING_FILE', str(default_tuning_path)
@@ -1095,6 +1132,9 @@ class HnuterController(Node):
     def _node_name(self):
         return 'hnuter_controller_direct_debug'
 
+    def _default_tuning_filename(self):
+        return 'hnuter_direct_tuning.json'
+
     def _vehicle_command_publication_enabled(self):
         return True
 
@@ -1145,6 +1185,17 @@ class HnuterController(Node):
             "attitude_test_max_acc_xy": float(self.attitude_test_max_acc_xy),
             "alpha_limit_deg": float(math.degrees(self.alpha_limit_rad)),
             "theta_limit_deg": float(math.degrees(self.theta_limit_rad)),
+            "hardware_firmware_profile": self.hardware_firmware_profile,
+            "primary_servo_angle_max_deg": float(
+                math.degrees(self.primary_servo_angle_max_rad)
+            ),
+            "secondary_servo_angle_max_deg": float(
+                math.degrees(self.secondary_servo_angle_max_rad)
+            ),
+            "HNTR_S2_GEAR": float(self.secondary_servo_gear_ratio),
+            "servo_pwm_min_us": int(self.servo_pwm_min_us),
+            "servo_pwm_trim_us": int(self.servo_pwm_trim_us),
+            "servo_pwm_max_us": int(self.servo_pwm_max_us),
             "manual_roll_limit_deg": float(math.degrees(self.manual_roll_limit_rad)),
             "manual_pitch_limit_deg": float(math.degrees(self.manual_pitch_limit_rad)),
             "direct_safety_attitude_check_enabled": bool(self.direct_safety_attitude_check_enabled),
@@ -1247,6 +1298,75 @@ class HnuterController(Node):
             return value.strip().lower() in ('1', 'true', 'yes', 'on')
         return bool(value)
 
+    @staticmethod
+    def _tuning_string(data: dict, key: str, current: str) -> str:
+        value = data.get(key)
+        if value is None:
+            return str(current)
+        value = str(value).strip()
+        return value if value else str(current)
+
+    @staticmethod
+    def _bumpless_integral_gain_change(
+        integral_state: np.ndarray,
+        previous_gain: np.ndarray,
+        new_gain: np.ndarray,
+        integral_limit: np.ndarray,
+    ) -> np.ndarray:
+        state = np.asarray(integral_state, dtype=float).copy()
+        previous_gain = np.asarray(previous_gain, dtype=float)
+        new_gain = np.asarray(new_gain, dtype=float)
+        enabled = new_gain > 1e-8
+        retained = enabled & (previous_gain > 1e-8)
+        state[~enabled] = 0.0
+        state[enabled & ~retained] = 0.0
+        state[retained] *= previous_gain[retained] / new_gain[retained]
+        return np.clip(state, -integral_limit, integral_limit)
+
+    def _update_attitude_integral(
+        self,
+        attitude_error: np.ndarray,
+        attitude_error_angle: float,
+        attitude_ki: np.ndarray,
+        dt: float,
+    ) -> np.ndarray:
+        previous = self.integral_e_R.copy()
+        enabled = np.asarray(attitude_ki) > 1e-8
+        self.integral_e_R[~enabled] = 0.0
+        previous[~enabled] = 0.0
+        if attitude_error_angle <= self.direct_attitude_integral_activation_error_rad:
+            self.integral_e_R[enabled] += np.asarray(attitude_error)[enabled] * dt
+        else:
+            self.integral_e_R[enabled] *= math.exp(-dt / 0.5)
+        self.integral_e_R = np.clip(
+            self.integral_e_R,
+            -self.direct_attitude_integral_limit,
+            self.direct_attitude_integral_limit,
+        )
+        return previous
+
+    def _reject_saturating_attitude_integration(
+        self,
+        previous_integral: np.ndarray,
+        attitude_ki: np.ndarray,
+        unconstrained_torque: np.ndarray,
+        torque_limit: np.ndarray,
+    ) -> bool:
+        integral_torque_change = -np.asarray(attitude_ki) * (
+            self.integral_e_R - np.asarray(previous_integral)
+        )
+        pushing_positive = (
+            unconstrained_torque > torque_limit
+        ) & (integral_torque_change > 0.0)
+        pushing_negative = (
+            unconstrained_torque < -torque_limit
+        ) & (integral_torque_change < 0.0)
+        reject = pushing_positive | pushing_negative
+        if np.any(reject):
+            self.integral_e_R[reject] = np.asarray(previous_integral)[reject]
+            return True
+        return False
+
     def _apply_tuning(self, data: dict):
         self.attitude_step_angle_rad = math.radians(
             self._tuning_float(data, 'attitude_step_angle_deg', math.degrees(self.attitude_step_angle_rad))
@@ -1278,11 +1398,73 @@ class HnuterController(Node):
             data, 'attitude_test_altitude_m', self.attitude_test_altitude_m
         )
         self.attitude_test_max_acc_xy = self._tuning_float(data, 'attitude_test_max_acc_xy', self.attitude_test_max_acc_xy)
-        self.alpha_limit_rad = math.radians(
-            self._tuning_float(data, 'alpha_limit_deg', math.degrees(self.alpha_limit_rad))
+        self.hardware_firmware_profile = self._tuning_string(
+            data,
+            'hardware_firmware_profile',
+            self.hardware_firmware_profile,
         )
-        self.theta_limit_rad = math.radians(
-            self._tuning_float(data, 'theta_limit_deg', math.degrees(self.theta_limit_rad))
+        self.primary_servo_angle_max_rad = math.radians(max(
+            1.0,
+            self._tuning_float(
+                data,
+                'primary_servo_angle_max_deg',
+                math.degrees(self.primary_servo_angle_max_rad),
+            ),
+        ))
+        self.secondary_servo_angle_max_rad = math.radians(max(
+            1.0,
+            self._tuning_float(
+                data,
+                'secondary_servo_angle_max_deg',
+                math.degrees(self.secondary_servo_angle_max_rad),
+            ),
+        ))
+        self.secondary_servo_gear_ratio = float(np.clip(
+            self._tuning_float(
+                data, 'HNTR_S2_GEAR', self.secondary_servo_gear_ratio
+            ),
+            0.1,
+            10.0,
+        ))
+        pwm_min = int(np.clip(
+            self._tuning_float(data, 'servo_pwm_min_us', self.servo_pwm_min_us),
+            500.0,
+            1500.0,
+        ))
+        pwm_trim = int(np.clip(
+            self._tuning_float(data, 'servo_pwm_trim_us', self.servo_pwm_trim_us),
+            500.0,
+            2500.0,
+        ))
+        pwm_max = int(np.clip(
+            self._tuning_float(data, 'servo_pwm_max_us', self.servo_pwm_max_us),
+            1500.0,
+            2500.0,
+        ))
+        if not pwm_min < pwm_trim < pwm_max:
+            raise ValueError(
+                'servo PWM calibration must satisfy min < trim < max'
+            )
+        self.servo_pwm_min_us = pwm_min
+        self.servo_pwm_trim_us = pwm_trim
+        self.servo_pwm_max_us = pwm_max
+        requested_alpha_limit_rad = abs(math.radians(
+            self._tuning_float(
+                data, 'alpha_limit_deg', math.degrees(self.alpha_limit_rad)
+            )
+        ))
+        requested_theta_limit_rad = abs(math.radians(
+            self._tuning_float(
+                data, 'theta_limit_deg', math.degrees(self.theta_limit_rad)
+            )
+        ))
+        self.alpha_limit_rad = min(
+            requested_alpha_limit_rad,
+            self.primary_servo_angle_max_rad,
+        )
+        self.theta_limit_rad = min(
+            requested_theta_limit_rad,
+            self.secondary_servo_angle_max_rad / self.secondary_servo_gear_ratio,
         )
         requested_manual_roll_limit = abs(math.radians(
             self._tuning_float(data, 'manual_roll_limit_deg', math.degrees(self.manual_roll_limit_rad))
@@ -1332,6 +1514,7 @@ class HnuterController(Node):
 
         self.direct_KR = self._tuning_array(data, 'direct_KR', self.direct_KR)
         self.direct_Domega = self._tuning_array(data, 'direct_Domega', self.direct_Domega)
+        previous_attitude_ki = self.direct_attitude_Ki.copy()
         self.direct_attitude_Ki = np.maximum(
             self._tuning_array(data, 'direct_attitude_Ki', self.direct_attitude_Ki),
             0.0,
@@ -1343,6 +1526,12 @@ class HnuterController(Node):
                 self.direct_attitude_integral_limit,
             ),
             0.0,
+        )
+        self.integral_e_R = self._bumpless_integral_gain_change(
+            self.integral_e_R,
+            previous_attitude_ki,
+            self.direct_attitude_Ki,
+            self.direct_attitude_integral_limit,
         )
         self.direct_attitude_integral_activation_error_rad = math.radians(max(
             0.0,
@@ -1412,6 +1601,7 @@ class HnuterController(Node):
             self._tuning_array(data, 'direct_pos_Kd_ned', self.direct_pos_Kd_ned),
             0.0,
         )
+        previous_pos_ki = self.direct_pos_Ki_ned.copy()
         self.direct_pos_Ki_ned = np.maximum(
             self._tuning_array(data, 'direct_pos_Ki_ned', self.direct_pos_Ki_ned),
             0.0,
@@ -1423,6 +1613,12 @@ class HnuterController(Node):
                 self.direct_pos_integral_limit_ned,
             ),
             0.0,
+        )
+        self.integral_pos_error = self._bumpless_integral_gain_change(
+            self.integral_pos_error,
+            previous_pos_ki,
+            self.direct_pos_Ki_ned,
+            self.direct_pos_integral_limit_ned,
         )
         self.manual_max_position_lead_xy = float(np.clip(
             self._tuning_float(
@@ -1549,6 +1745,11 @@ class HnuterController(Node):
                 f'manual_pitch_lim={math.degrees(self.manual_pitch_limit_rad):.1f}deg, '
                 f'att_safety={self.direct_safety_attitude_check_enabled}, '
                 f'theta_lim={math.degrees(self.theta_limit_rad):.1f}deg, '
+                f'servo_cal=[profile={self.hardware_firmware_profile}, '
+                f'primary={math.degrees(self.primary_servo_angle_max_rad):.1f}deg, '
+                f'secondary={math.degrees(self.secondary_servo_angle_max_rad):.1f}deg, '
+                f'gear={self.secondary_servo_gear_ratio:.3f}, '
+                f'pwm={self.servo_pwm_min_us}/{self.servo_pwm_trim_us}/{self.servo_pwm_max_us}us], '
                 f'force_sign=[{self.allocator_force_x_sign:+.0f}, {self.allocator_force_y_sign:+.0f}], '
                 f'tail=[bias={self.pitch_torque_bias:+.3f}, '
                 f'sign={self.tail_torque_sign:+.0f}, '
@@ -1557,6 +1758,8 @@ class HnuterController(Node):
                 f'D={np.round(self.direct_Domega, 3).tolist()}, '
                 f'att_Ki={np.round(self.direct_attitude_Ki, 3).tolist()}, '
                 f'tau_lim={np.round(self.direct_tau_limit, 3).tolist()}, '
+                f'rc_filter={np.round(self.gamepad_filter_tau_body_xy_s, 3).tolist()}s, '
+                f'rc_acc={np.round(self.gamepad_max_acc_body_xy_mps2, 3).tolist()}m/s2, '
                 f'pos_Kp_ned={np.round(self.direct_pos_Kp_ned, 3).tolist()}, '
                 f'pos_Kd_ned={np.round(self.direct_pos_Kd_ned, 3).tolist()}, '
                 f'pos_Ki_ned={np.round(self.direct_pos_Ki_ned, 3).tolist()}'
@@ -1957,17 +2160,38 @@ class HnuterController(Node):
         if hasattr(servo_msg, 'timestamp_sample'):
             servo_msg.timestamp_sample = timestamp
         servo_msg.control = [float('nan')] * 8
-        alpha_angle_max = np.radians(185.0)
-        # GZ maps normalized servo output through SIM_GZ_SV_MIN/MAXA3/4
-        # (currently +/-180 deg). Dividing by 90 deg here doubled the physical
-        # secondary-tilt angle.
-        theta_angle_max = np.radians(180.0)
-        servo_msg.control[0] = float(np.clip(alpha2 / alpha_angle_max, -1.0, 1.0))
-        servo_msg.control[1] = float(np.clip(alpha1 / alpha_angle_max, -1.0, 1.0))
-        servo_msg.control[2] = float(np.clip(theta2 / theta_angle_max, -1.0, 1.0))
-        servo_msg.control[3] = float(np.clip(theta1 / theta_angle_max, -1.0, 1.0))
+        servo_msg.control[0] = self._primary_joint_angle_to_normalized(alpha2)
+        servo_msg.control[1] = self._primary_joint_angle_to_normalized(alpha1)
+        servo_msg.control[2] = self._secondary_joint_angle_to_normalized(theta2)
+        servo_msg.control[3] = self._secondary_joint_angle_to_normalized(theta1)
         self.last_servo_cmd = np.array(servo_msg.control)
         self.actuator_servos_pub.publish(servo_msg)
+
+    def _primary_joint_angle_to_normalized(self, joint_angle_rad: float) -> float:
+        return float(np.clip(
+            float(joint_angle_rad) / max(self.primary_servo_angle_max_rad, 1e-8),
+            -1.0,
+            1.0,
+        ))
+
+    def _secondary_joint_angle_to_normalized(self, joint_angle_rad: float) -> float:
+        servo_shaft_angle = float(joint_angle_rad) * self.secondary_servo_gear_ratio
+        return float(np.clip(
+            servo_shaft_angle / max(self.secondary_servo_angle_max_rad, 1e-8),
+            -1.0,
+            1.0,
+        ))
+
+    def _normalized_servo_to_expected_pwm_us(self, normalized: float) -> float:
+        normalized = float(np.clip(normalized, -1.0, 1.0))
+        if normalized >= 0.0:
+            span = self.servo_pwm_max_us - self.servo_pwm_trim_us
+        else:
+            span = self.servo_pwm_trim_us - self.servo_pwm_min_us
+        return float(self.servo_pwm_trim_us + normalized * span)
+
+    def _secondary_joint_rate_limit_rad_s(self) -> float:
+        return self.servo_rate_limit_rad_s / self.secondary_servo_gear_ratio
 
     def _preflight_tilt_targets(self, current_time: float):
         if not self.preflight_tilt_test_enabled:
@@ -2008,8 +2232,9 @@ class HnuterController(Node):
         dt = float(np.clip(dt, 0.01, 0.1))
         self._alpha1_cmd = self._slew_limit(self._alpha1_cmd, alpha1, self.servo_rate_limit_rad_s, dt)
         self._alpha2_cmd = self._slew_limit(self._alpha2_cmd, alpha2, self.servo_rate_limit_rad_s, dt)
-        self._theta1_cmd = self._slew_limit(self._theta1_cmd, theta1, self.servo_rate_limit_rad_s, dt)
-        self._theta2_cmd = self._slew_limit(self._theta2_cmd, theta2, self.servo_rate_limit_rad_s, dt)
+        secondary_rate_limit = self._secondary_joint_rate_limit_rad_s()
+        self._theta1_cmd = self._slew_limit(self._theta1_cmd, theta1, secondary_rate_limit, dt)
+        self._theta2_cmd = self._slew_limit(self._theta2_cmd, theta2, secondary_rate_limit, dt)
 
         self.last_F1 = 0.0
         self.last_F2 = 0.0
@@ -2921,7 +3146,11 @@ class HnuterController(Node):
             self.integral_pos_error[0] = 0.0
             self.integral_pos_error[1] = 0.0
 
-        self.integral_pos_error += pos_error * dt
+        position_integral_enabled = self.direct_pos_Ki_ned > 1e-8
+        self.integral_pos_error[~position_integral_enabled] = 0.0
+        self.integral_pos_error[position_integral_enabled] += (
+            pos_error[position_integral_enabled] * dt
+        )
         self.integral_pos_error = np.clip(
             self.integral_pos_error,
             -self.direct_pos_integral_limit_ned,
@@ -3034,6 +3263,8 @@ class HnuterController(Node):
             Domega = self.direct_Domega.copy()
             attitude_Ki = self.direct_attitude_Ki.copy()
             tau_limit = self.direct_tau_limit.copy()
+        if not self.direct_yaw_control_enabled:
+            attitude_Ki[2] = 0.0
 
         yaw_authority_scale = 1.0
         if (
@@ -3056,27 +3287,41 @@ class HnuterController(Node):
             self.integral_e_R[2] *= math.exp(-dt * (1.0 - yaw_authority_scale) / 0.3)
         self.last_yaw_authority_scale = yaw_authority_scale
 
-        if attitude_error_angle <= self.direct_attitude_integral_activation_error_rad:
-            self.integral_e_R += e_R * dt
-        else:
-            # Keep the integrator out of large-error recovery and unwind any
-            # bias accumulated before a half-turn transition.
-            decay = math.exp(-dt / 0.5)
-            self.integral_e_R *= decay
-        self.integral_e_R = np.clip(
-            self.integral_e_R,
-            -self.direct_attitude_integral_limit,
-            self.direct_attitude_integral_limit,
+        previous_integral = self._update_attitude_integral(
+            e_R,
+            attitude_error_angle,
+            attitude_Ki,
+            dt,
         )
 
-        tau_c = -KR * e_R - Domega * omega_error - attitude_Ki * self.integral_e_R
+        gyro_torque = np.zeros(3)
         if self.direct_attitude_gyro_compensation_enabled:
-            tau_c += np.cross(
+            gyro_torque = np.cross(
                 self.angular_velocity_frd,
                 self.J @ self.angular_velocity_frd,
             )
+        tau_c = (
+            -KR * e_R
+            - Domega * omega_error
+            - attitude_Ki * self.integral_e_R
+            + gyro_torque
+        )
         if not self.direct_yaw_control_enabled:
             tau_c[2] = 0.0
+        if self._reject_saturating_attitude_integration(
+            previous_integral,
+            attitude_Ki,
+            tau_c,
+            tau_limit,
+        ):
+            tau_c = (
+                -KR * e_R
+                - Domega * omega_error
+                - attitude_Ki * self.integral_e_R
+                + gyro_torque
+            )
+            if not self.direct_yaw_control_enabled:
+                tau_c[2] = 0.0
         tau_c = np.clip(tau_c, -tau_limit, tau_limit)
         self.last_attitude_error = e_R.copy()
         self.last_attitude_error_angle_rad = float(attitude_error_angle)
@@ -3217,8 +3462,9 @@ class HnuterController(Node):
         dt_slew = float(np.clip(dt, 0.0, 0.2))
         self._alpha1_cmd = self._slew_limit(self._alpha1_cmd, alpha1, self.servo_rate_limit_rad_s, dt_slew)
         self._alpha2_cmd = self._slew_limit(self._alpha2_cmd, alpha2, self.servo_rate_limit_rad_s, dt_slew)
-        self._theta1_cmd = self._slew_limit(self._theta1_cmd, theta1, self.servo_rate_limit_rad_s, dt_slew)
-        self._theta2_cmd = self._slew_limit(self._theta2_cmd, theta2, self.servo_rate_limit_rad_s, dt_slew)
+        secondary_rate_limit = self._secondary_joint_rate_limit_rad_s()
+        self._theta1_cmd = self._slew_limit(self._theta1_cmd, theta1, secondary_rate_limit, dt_slew)
+        self._theta2_cmd = self._slew_limit(self._theta2_cmd, theta2, secondary_rate_limit, dt_slew)
 
         self.last_F1 = F1
         self.last_F2 = F2
@@ -3704,6 +3950,9 @@ class HnuterHardwareController(HnuterController):
     def _node_name(self):
         return 'hnuter_controller_direct_hardware'
 
+    def _default_tuning_filename(self):
+        return 'hnuter_direct_hardware_tuning.json'
+
     def _vehicle_command_publication_enabled(self):
         return False
 
@@ -3780,6 +4029,16 @@ class HnuterHardwareController(HnuterController):
         self.get_logger().warn(
             'HARDWARE MODE: 本节点不会 Arm/Disarm，也不会切换 Offboard。'
             '请使用遥控器完成解锁和模式切换；Arm 与 Offboard 同时有效后在当前位置接管。'
+        )
+        self.get_logger().warn(
+            '实机舵机映射要求 PX4 MAIN8--11 参数与控制器一致: '
+            f'profile={self.hardware_firmware_profile}, '
+            f'PWM={self.servo_pwm_min_us}/{self.servo_pwm_trim_us}/'
+            f'{self.servo_pwm_max_us}us, '
+            f'primary=+/-{math.degrees(self.primary_servo_angle_max_rad):.1f}deg, '
+            f'secondary_servo=+/-{math.degrees(self.secondary_servo_angle_max_rad):.1f}deg, '
+            f'HNTR_S2_GEAR={self.secondary_servo_gear_ratio:.3f}, '
+            f'secondary_joint=+/-{math.degrees(self.theta_limit_rad):.1f}deg。'
         )
         if self.hardware_takeoff_gate_enabled:
             self.get_logger().warn(

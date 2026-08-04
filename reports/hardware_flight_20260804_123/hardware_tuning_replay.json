@@ -1,0 +1,48 @@
+{
+  "method": "controller-law replay on recorded attitude/rate errors; not a closed-loop flight prediction",
+  "new_gains": {
+    "KR": [
+      2.1,
+      2.1,
+      4.2
+    ],
+    "Domega": [
+      1.4,
+      1.4,
+      2.6
+    ],
+    "Ki": [
+      0.15,
+      0.18,
+      0.5
+    ],
+    "tau_limit": [
+      0.9,
+      0.9,
+      1.8
+    ]
+  },
+  "airborne": {
+    "x": {
+      "old_abs_p95_nm": 0.26281372634324446,
+      "new_abs_p95_nm": 0.3846556400481362,
+      "new_abs_max_nm": 0.5476405393509124,
+      "raw_limit_exceed_percent": 0.0,
+      "integral_final": -0.6
+    },
+    "y": {
+      "old_abs_p95_nm": 0.5420718307080685,
+      "new_abs_p95_nm": 0.733197938115698,
+      "new_abs_max_nm": 0.8833523052931127,
+      "raw_limit_exceed_percent": 0.0,
+      "integral_final": 0.6
+    },
+    "z": {
+      "old_abs_p95_nm": 0.6243848454168884,
+      "new_abs_p95_nm": 0.8805989122025795,
+      "new_abs_max_nm": 1.186725560628732,
+      "raw_limit_exceed_percent": 0.0,
+      "integral_final": -0.4
+    }
+  }
+}
