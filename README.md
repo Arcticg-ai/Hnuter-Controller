@@ -80,6 +80,19 @@ the printed `?token=...` value to the browser URL.
 
 The browser receives attitude, local NED position, tracking-error, torque, and
 motor-command plots at 15 Hz by default, while CSV data is recorded at 25 Hz
-under `hnuter_saved_plots/`. Parameter changes are sent only by each
-row's Apply button and are read back from PX4 before the UI reports success.
-`Save to PX4` remains a separate confirmed operation.
+under `hnuter_saved_plots/`. Use the `Parameter source` selector to switch
+between PX4 firmware parameters (MAVLink) and Hardware Offboard parameters
+(`config/hnuter_direct_hardware_tuning.json`). Firmware changes are read back
+from PX4. Offboard changes are written atomically, hot-loaded by the controller
+within about 0.5 s, and acknowledged by the running controller before the UI
+reports `applied`. The Offboard view can undo changes made since the web server
+started. When the vehicle is armed, each Offboard Apply/Undo requires an
+explicit browser confirmation.
+
+To tune a controller started with a custom `HNUTER_TUNING_FILE`, point the web
+server at exactly the same file:
+
+```bash
+python3 hnuter_attitude_tuning_web.py \
+  --offboard-tuning /path/to/hnuter_direct_hardware_tuning.json
+```

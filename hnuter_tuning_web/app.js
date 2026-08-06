@@ -25,6 +25,7 @@ let drawPending = false;
 let receivedSinceRate = 0;
 let rateStarted = performance.now();
 let parameterLoadGeneration = 0;
+let parameterSource = 'firmware';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -65,6 +66,13 @@ class CanvasChart {
     this.fixedRange = options.fixedRange || null;
     this.minimumSpan = options.minimumSpan || 1;
     this.margin = options.margin ?? 0.08;
+    this.axisFilter = canvas.closest('.plot-panel')?.querySelector('.axis-filter') || null;
+  }
+
+  visibleSeries() {
+    const axis = this.axisFilter ? this.axisFilter.value : 'all';
+    if (axis === 'all') return this.series;
+    return this.series.filter((line) => line.axis === axis || line.always);
   }
 
   resize() {
@@ -84,7 +92,7 @@ class CanvasChart {
     if (this.fixedRange) return this.fixedRange;
     const values = [];
     for (const sample of visible) {
-      for (const line of this.series) {
+      for (const line of this.visibleSeries()) {
         const value = valueAt(sample, line.path);
         if (finite(value)) values.push(value);
       }
@@ -150,7 +158,7 @@ class CanvasChart {
 
     const xOf = (t) => left + ((t - startT) / historySeconds) * plotWidth;
     const yOf = (value) => top + ((yHigh - value) / (yHigh - yLow)) * plotHeight;
-    for (const line of this.series) {
+    for (const line of this.visibleSeries()) {
       ctx.strokeStyle = line.color;
       ctx.lineWidth = line.width || 1.5;
       ctx.setLineDash(line.dash || []);
@@ -173,7 +181,7 @@ class CanvasChart {
 
     let legendX = left;
     ctx.textAlign = 'left';
-    for (const line of this.series) {
+    for (const line of this.visibleSeries()) {
       ctx.strokeStyle = line.color;
       ctx.lineWidth = line.width || 1.5;
       ctx.setLineDash(line.dash || []);
@@ -191,35 +199,35 @@ class CanvasChart {
 
 const charts = [
   new CanvasChart($('#attitude-chart'), [
-    {label: 'roll', path: ['attitude', 0], color: palette.red},
-    {label: 'roll sp', path: ['setpoint', 0], color: palette.red, dash: [5, 4]},
-    {label: 'pitch', path: ['attitude', 1], color: palette.blue},
-    {label: 'pitch sp', path: ['setpoint', 1], color: palette.blue, dash: [5, 4]},
-    {label: 'yaw', path: ['attitude', 2], color: palette.green},
-    {label: 'yaw sp', path: ['setpoint', 2], color: palette.green, dash: [5, 4]},
+    {label: 'roll', axis: 'roll', path: ['attitude', 0], color: palette.red},
+    {label: 'roll sp', axis: 'roll', path: ['setpoint', 0], color: palette.red, dash: [5, 4]},
+    {label: 'pitch', axis: 'pitch', path: ['attitude', 1], color: palette.blue},
+    {label: 'pitch sp', axis: 'pitch', path: ['setpoint', 1], color: palette.blue, dash: [5, 4]},
+    {label: 'yaw', axis: 'yaw', path: ['attitude', 2], color: palette.green},
+    {label: 'yaw sp', axis: 'yaw', path: ['setpoint', 2], color: palette.green, dash: [5, 4]},
   ], {minimumSpan: 5}),
   new CanvasChart($('#position-chart'), [
-    {label: 'N', path: ['position', 0], color: palette.red},
-    {label: 'N sp', path: ['position_setpoint', 0], color: palette.red, dash: [5, 4]},
-    {label: 'E', path: ['position', 1], color: palette.blue},
-    {label: 'E sp', path: ['position_setpoint', 1], color: palette.blue, dash: [5, 4]},
-    {label: 'D', path: ['position', 2], color: palette.green},
-    {label: 'D sp', path: ['position_setpoint', 2], color: palette.green, dash: [5, 4]},
+    {label: 'N', axis: 'N', path: ['position', 0], color: palette.red},
+    {label: 'N sp', axis: 'N', path: ['position_setpoint', 0], color: palette.red, dash: [5, 4]},
+    {label: 'E', axis: 'E', path: ['position', 1], color: palette.blue},
+    {label: 'E sp', axis: 'E', path: ['position_setpoint', 1], color: palette.blue, dash: [5, 4]},
+    {label: 'D', axis: 'D', path: ['position', 2], color: palette.green},
+    {label: 'D sp', axis: 'D', path: ['position_setpoint', 2], color: palette.green, dash: [5, 4]},
   ], {minimumSpan: 1}),
   new CanvasChart($('#error-chart'), [
-    {label: 'roll', path: ['error', 0], color: palette.red},
-    {label: 'pitch', path: ['error', 1], color: palette.blue},
-    {label: 'yaw', path: ['error', 2], color: palette.green},
+    {label: 'roll', axis: 'roll', path: ['error', 0], color: palette.red},
+    {label: 'pitch', axis: 'pitch', path: ['error', 1], color: palette.blue},
+    {label: 'yaw', axis: 'yaw', path: ['error', 2], color: palette.green},
   ], {minimumSpan: 2}),
   new CanvasChart($('#position-error-chart'), [
-    {label: 'N', path: ['position_error', 0], color: palette.red},
-    {label: 'E', path: ['position_error', 1], color: palette.blue},
-    {label: 'D', path: ['position_error', 2], color: palette.green},
+    {label: 'N', axis: 'N', path: ['position_error', 0], color: palette.red},
+    {label: 'E', axis: 'E', path: ['position_error', 1], color: palette.blue},
+    {label: 'D', axis: 'D', path: ['position_error', 2], color: palette.green},
   ], {minimumSpan: 0.2}),
   new CanvasChart($('#torque-chart'), [
-    {label: 'Tx', path: ['torque', 0], color: palette.red},
-    {label: 'Ty', path: ['torque', 1], color: palette.blue},
-    {label: 'Tz', path: ['torque', 2], color: palette.green},
+    {label: 'Tx', axis: 'Tx', path: ['torque', 0], color: palette.red},
+    {label: 'Ty', axis: 'Ty', path: ['torque', 1], color: palette.blue},
+    {label: 'Tz', axis: 'Tz', path: ['torque', 2], color: palette.green},
   ], {minimumSpan: 0.02}),
   new CanvasChart($('#motor-chart'), [
     {label: 'M1', path: ['motors', 0], color: palette.gray1},
@@ -229,6 +237,29 @@ const charts = [
     {label: 'M5', path: ['motors', 4], color: palette.purple, width: 2.2},
   ], {fixedRange: [-1.05, 1.05]}),
 ];
+
+function axisFamily(select) {
+  const values = Array.from(select.options).map((option) => option.value).join('|');
+  if (values.includes('roll') && values.includes('pitch')) return 'attitude';
+  if (values.includes('N') && values.includes('E')) return 'position';
+  if (values.includes('Tx') && values.includes('Ty')) return 'torque';
+  return '';
+}
+
+function syncAxisFilters(source) {
+  const family = axisFamily(source);
+  if (!family) return;
+  for (const select of document.querySelectorAll('.axis-filter')) {
+    if (select !== source && axisFamily(select) === family) select.value = source.value;
+  }
+}
+
+document.querySelectorAll('.axis-filter').forEach((select) => {
+  select.addEventListener('change', () => {
+    syncAxisFilters(select);
+    scheduleDraw();
+  });
+});
 
 function scheduleDraw() {
   if (drawPending) return;
@@ -304,13 +335,47 @@ function showMessage(text, kind = '') {
   element.className = `message ${kind}`;
 }
 
+function sourceConfig() {
+  return config.sources[parameterSource];
+}
+
+function sourceValueLabel() {
+  return parameterSource === 'firmware' ? 'PX4' : 'Offboard';
+}
+
+function renderParameterSource() {
+  parameterSource = $('#source-select').value;
+  parameterLoadGeneration += 1;
+  const source = sourceConfig();
+  $('#source-description').textContent = source.description;
+  $('#reconnect').disabled = parameterSource !== 'firmware';
+  $('#save-params').textContent = parameterSource === 'firmware'
+    ? 'Save to PX4'
+    : 'Undo last change';
+
+  const groupSelect = $('#group-select');
+  groupSelect.replaceChildren();
+  for (const name of Object.keys(source.groups)) {
+    const option = document.createElement('option');
+    option.value = name;
+    option.textContent = name;
+    groupSelect.appendChild(option);
+  }
+  renderParameterGroup();
+}
+
 function renderParameterGroup() {
   const groupName = $('#group-select').value;
-  const group = config.groups[groupName];
+  const group = sourceConfig().groups[groupName];
   const list = $('#parameter-list');
   list.replaceChildren();
   const warning = $('#group-warning');
-  if (groupName === 'Vehicle model' || groupName === 'Allocator') {
+  if (parameterSource === 'offboard') {
+    warning.textContent = latestMode.armed
+      ? 'ARMED: each Apply changes the running Offboard controller. Change one value at a time and keep a mode-exit path ready.'
+      : 'Each Apply is saved atomically and normally loaded by the Offboard controller within 0.5 s.';
+    warning.classList.remove('hidden');
+  } else if (groupName === 'Vehicle model' || groupName === 'Allocator') {
     warning.textContent = 'These values change the vehicle model or allocation. Verify the airframe before applying.';
     warning.classList.remove('hidden');
   } else {
@@ -344,20 +409,25 @@ function renderParameterGroup() {
 }
 
 async function loadParameters() {
+  const source = parameterSource;
   const group = $('#group-select').value;
   const generation = ++parameterLoadGeneration;
   const button = $('#read-params');
   button.disabled = true;
-  showMessage(`Reading ${group} from PX4...`);
+  showMessage(`Reading ${group} from ${sourceValueLabel()}...`);
   try {
-    const response = await api(`/api/params?group=${encodeURIComponent(group)}`);
-    if (generation !== parameterLoadGeneration || group !== $('#group-select').value) return;
+    const response = await api(
+      `/api/params?source=${encodeURIComponent(source)}&group=${encodeURIComponent(group)}`,
+    );
+    if (generation !== parameterLoadGeneration
+        || source !== parameterSource
+        || group !== $('#group-select').value) return;
     for (const [name, value] of Object.entries(response.values)) {
       const row = document.querySelector(`.parameter-row[data-name="${name}"]`);
       if (!row || !finite(value) || row.classList.contains('dirty') || row.classList.contains('applying')) continue;
       row.querySelector('.range').value = value;
       row.querySelector('.number').value = value;
-      row.querySelector('.confirmed').textContent = `PX4 ${Number(value).toPrecision(6)}`;
+      row.querySelector('.confirmed').textContent = `${sourceValueLabel()} ${Number(value).toPrecision(6)}`;
     }
     if (response.missing.length) showMessage(`Missing: ${response.missing.join(', ')}`, 'error');
     else showMessage(`${Object.keys(response.values).length} parameters read`, 'success');
@@ -376,18 +446,40 @@ async function applyParameter(row) {
     showMessage(`${name}: invalid value`, 'error');
     return;
   }
+  let armedConfirmed = false;
+  if (parameterSource === 'offboard' && latestMode.armed) {
+    armedConfirmed = window.confirm(
+      `Vehicle is ARMED. Apply ${name}=${value} to the running Offboard controller?`,
+    );
+    if (!armedConfirmed) return;
+  }
+  const source = parameterSource;
   button.disabled = true;
   row.classList.add('applying');
   showMessage(`Applying ${name}...`);
   try {
     const response = await api('/api/params/set', {
-      method: 'POST', body: JSON.stringify({name, value}),
+      method: 'POST',
+      body: JSON.stringify({source, name, value, armed_confirmed: armedConfirmed}),
     });
+    if (source !== parameterSource) return;
     row.querySelector('.range').value = response.confirmed;
     row.querySelector('.number').value = response.confirmed;
-    row.querySelector('.confirmed').textContent = `PX4 ${Number(response.confirmed).toPrecision(6)}`;
+    const state = source === 'offboard' && !response.applied ? 'saved, load pending' : 'applied';
+    row.querySelector('.confirmed').textContent = source === 'firmware'
+      ? `PX4 ${Number(response.confirmed).toPrecision(6)}`
+      : `Offboard ${Number(response.confirmed).toPrecision(6)} · ${state}`;
     row.classList.remove('dirty');
-    showMessage(`${name} confirmed by PX4`, 'success');
+    if (source === 'offboard' && !response.applied) {
+      showMessage(`${name} saved, but no controller load acknowledgement was received`, 'error');
+    } else {
+      showMessage(
+        source === 'firmware'
+          ? `${name} confirmed by PX4`
+          : `${name} loaded by the Offboard controller`,
+        'success',
+      );
+    }
   } catch (error) {
     showMessage(`${name}: ${error.message}`, 'error');
   } finally {
@@ -399,15 +491,17 @@ async function applyParameter(row) {
 async function initialize() {
   try {
     config = await api('/api/config');
-    const select = $('#group-select');
-    for (const name of Object.keys(config.groups)) {
+    const sourceSelect = $('#source-select');
+    for (const [name, source] of Object.entries(config.sources)) {
       const option = document.createElement('option');
       option.value = name;
-      option.textContent = name;
-      select.appendChild(option);
+      option.textContent = source.label;
+      sourceSelect.appendChild(option);
     }
-    select.addEventListener('change', renderParameterGroup);
-    renderParameterGroup();
+    sourceSelect.value = parameterSource;
+    sourceSelect.addEventListener('change', renderParameterSource);
+    $('#group-select').addEventListener('change', renderParameterGroup);
+    renderParameterSource();
     connectEvents();
   } catch (error) {
     showMessage(error.message, 'error');
@@ -426,14 +520,41 @@ $('#pause').addEventListener('click', (event) => {
 $('#clear').addEventListener('click', () => { samples.length = 0; scheduleDraw(); });
 $('#read-params').addEventListener('click', loadParameters);
 $('#save-params').addEventListener('click', async () => {
+  if (parameterSource === 'offboard') {
+    let armedConfirmed = false;
+    if (latestMode.armed) {
+      armedConfirmed = window.confirm(
+        'Vehicle is ARMED. Undo the most recent Offboard parameter change now?',
+      );
+      if (!armedConfirmed) return;
+    } else if (!window.confirm('Undo the most recent Offboard parameter change?')) {
+      return;
+    }
+    try {
+      const response = await api('/api/params/revert', {
+        method: 'POST',
+        body: JSON.stringify({source: 'offboard', armed_confirmed: armedConfirmed}),
+      });
+      if (response.applied) {
+        showMessage('Previous Offboard values restored and loaded', 'success');
+      } else {
+        showMessage('Previous values restored, but controller load acknowledgement is pending', 'error');
+      }
+      loadParameters();
+    } catch (error) { showMessage(error.message, 'error'); }
+    return;
+  }
   const warning = latestMode.armed ? 'The vehicle is ARMED. ' : '';
   if (!window.confirm(`${warning}Permanently save current PX4 parameters?`)) return;
   try {
-    await api('/api/params/save', {method: 'POST', body: '{}'});
+    await api('/api/params/save', {
+      method: 'POST', body: JSON.stringify({source: 'firmware'}),
+    });
     showMessage('PX4 parameter save requested', 'success');
   } catch (error) { showMessage(error.message, 'error'); }
 });
 $('#reconnect').addEventListener('click', async () => {
+  if (parameterSource !== 'firmware') return;
   showMessage('Reconnecting MAVLink...');
   try {
     const response = await api('/api/mavlink/reconnect', {method: 'POST', body: '{}'});

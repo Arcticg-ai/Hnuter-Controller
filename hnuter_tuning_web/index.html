@@ -36,23 +36,23 @@
 
       <div class="plot-grid">
         <article class="plot-panel">
-          <div class="plot-title"><span>Attitude tracking</span><span>deg</span></div>
+          <div class="plot-title"><span>Attitude tracking</span><span>deg <select class="axis-filter" aria-label="Attitude axis"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="attitude-chart"></canvas>
         </article>
         <article class="plot-panel">
-          <div class="plot-title"><span>Position tracking (NED)</span><span>m</span></div>
+          <div class="plot-title"><span>Position tracking (NED)</span><span>m <select class="axis-filter" aria-label="Position axis"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
           <canvas id="position-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Attitude error</span><span>deg</span></div>
+          <div class="plot-title"><span>Attitude error</span><span>deg <select class="axis-filter" aria-label="Attitude error axis"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Position error (setpoint - actual)</span><span>m</span></div>
+          <div class="plot-title"><span>Position error (setpoint - actual)</span><span>m <select class="axis-filter" aria-label="Position error axis"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
           <canvas id="position-error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Torque setpoint</span><span>normalized</span></div>
+          <div class="plot-title"><span>Torque setpoint</span><span>normalized <select class="axis-filter" aria-label="Torque axis"><option value="all">All</option><option value="Tx">Tx</option><option value="Ty">Ty</option><option value="Tz">Tz</option></select></span></div>
           <canvas id="torque-chart"></canvas>
         </article>
         <article class="plot-panel compact">
@@ -62,14 +62,17 @@
       </div>
     </section>
 
-    <aside class="parameters" aria-label="PX4 parameter tuning">
+    <aside class="parameters" aria-label="firmware and Offboard parameter tuning">
       <div class="parameter-header">
         <div>
           <h2>Parameters</h2>
-          <p>Applied values are read back from PX4.</p>
+          <p id="source-description">Choose PX4 firmware or the Offboard controller.</p>
         </div>
         <button id="reconnect" type="button">Reconnect</button>
       </div>
+
+      <label class="field-label" for="source-select">Parameter source</label>
+      <select id="source-select"></select>
 
       <label class="field-label" for="group-select">Parameter group</label>
       <select id="group-select"></select>

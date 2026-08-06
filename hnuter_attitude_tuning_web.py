@@ -137,6 +137,135 @@ PARAM_CONFIG = {
 INTEGER_PARAMS = {'HNTR_CTRL_MODE'}
 
 
+def offboard_param(
+    json_key: str,
+    index: Optional[int],
+    minimum: float,
+    maximum: float,
+    step: float,
+    default: float,
+) -> dict:
+    config = param(minimum, maximum, step, default)
+    config.update({'json_key': json_key, 'index': index})
+    return config
+
+
+OFFBOARD_PARAM_GROUPS = {
+    'Attitude roll / pitch': {
+        'HNTR_PITCH_BIAS': offboard_param('HNTR_PITCH_BIAS', None, -0.3, 0.3, 0.001, 0.09),
+        'direct_KR.roll': offboard_param('direct_KR', 0, 0.0, 20.0, 0.05, 4.0),
+        'direct_KR.pitch': offboard_param('direct_KR', 1, 0.0, 20.0, 0.05, 6.0),
+        'direct_Domega.roll': offboard_param('direct_Domega', 0, 0.0, 20.0, 0.05, 2.2),
+        'direct_Domega.pitch': offboard_param('direct_Domega', 1, 0.0, 20.0, 0.05, 3.2),
+        'direct_attitude_Ki.roll': offboard_param('direct_attitude_Ki', 0, 0.0, 3.0, 0.01, 0.3),
+        'direct_attitude_Ki.pitch': offboard_param('direct_attitude_Ki', 1, 0.0, 3.0, 0.01, 0.3),
+        'direct_attitude_integral_limit.roll': offboard_param(
+            'direct_attitude_integral_limit', 0, 0.0, 5.0, 0.05, 1.2
+        ),
+        'direct_attitude_integral_limit.pitch': offboard_param(
+            'direct_attitude_integral_limit', 1, 0.0, 5.0, 0.05, 1.2
+        ),
+        'direct_tau_limit.roll': offboard_param('direct_tau_limit', 0, 0.05, 20.0, 0.05, 2.0),
+        'direct_tau_limit.pitch': offboard_param('direct_tau_limit', 1, 0.05, 20.0, 0.05, 2.5),
+    },
+    'Attitude yaw': {
+        'direct_KR.yaw': offboard_param('direct_KR', 2, 0.0, 20.0, 0.05, 5.5),
+        'direct_Domega.yaw': offboard_param('direct_Domega', 2, 0.0, 20.0, 0.05, 2.6),
+        'direct_attitude_Ki.yaw': offboard_param('direct_attitude_Ki', 2, 0.0, 3.0, 0.01, 0.6),
+        'direct_attitude_integral_limit.yaw': offboard_param(
+            'direct_attitude_integral_limit', 2, 0.0, 5.0, 0.05, 0.6
+        ),
+        'direct_tau_limit.yaw': offboard_param('direct_tau_limit', 2, 0.05, 20.0, 0.05, 1.2),
+    },
+    'Position XY': {
+        'direct_pos_Kp.north': offboard_param('direct_pos_Kp_ned', 0, 0.0, 15.0, 0.05, 6.0),
+        'direct_pos_Kp.east': offboard_param('direct_pos_Kp_ned', 1, 0.0, 15.0, 0.05, 6.0),
+        'direct_pos_Kd.north': offboard_param('direct_pos_Kd_ned', 0, 0.0, 15.0, 0.05, 3.5),
+        'direct_pos_Kd.east': offboard_param('direct_pos_Kd_ned', 1, 0.0, 15.0, 0.05, 3.5),
+        'direct_pos_Ki.north': offboard_param('direct_pos_Ki_ned', 0, 0.0, 10.0, 0.01, 0.0),
+        'direct_pos_Ki.east': offboard_param('direct_pos_Ki_ned', 1, 0.0, 10.0, 0.01, 0.0),
+        'direct_pos_integral_limit.north': offboard_param(
+            'direct_pos_integral_limit_ned', 0, 0.0, 10.0, 0.05, 1.0
+        ),
+        'direct_pos_integral_limit.east': offboard_param(
+            'direct_pos_integral_limit_ned', 1, 0.0, 10.0, 0.05, 1.0
+        ),
+        'max_acc_xy': offboard_param('max_acc_xy', None, 0.1, 30.0, 0.1, 3.0),
+    },
+    'Position Z': {
+        'direct_pos_Kp.down': offboard_param('direct_pos_Kp_ned', 2, 0.0, 20.0, 0.05, 8.0),
+        'direct_pos_Kd.down': offboard_param('direct_pos_Kd_ned', 2, 0.0, 20.0, 0.05, 4.0),
+        'direct_pos_Ki.down': offboard_param('direct_pos_Ki_ned', 2, 0.0, 10.0, 0.01, 3.0),
+        'direct_pos_integral_limit.down': offboard_param(
+            'direct_pos_integral_limit_ned', 2, 0.0, 10.0, 0.05, 2.0
+        ),
+        'max_acc_z': offboard_param('max_acc_z', None, 0.1, 30.0, 0.1, 20.0),
+    },
+    'RC response': {
+        'gamepad_filter_tau.forward': offboard_param(
+            'gamepad_filter_tau_body_xy_s', 0, 0.0, 2.0, 0.01, 0.10
+        ),
+        'gamepad_filter_tau.right': offboard_param(
+            'gamepad_filter_tau_body_xy_s', 1, 0.0, 2.0, 0.01, 0.10
+        ),
+        'RC attitude / yaw filter (s)': offboard_param(
+            'gamepad_filter_tau_s', None, 0.0, 2.0, 0.01, 0.10
+        ),
+        'gamepad_max_acc.forward': offboard_param(
+            'gamepad_max_acc_body_xy_mps2', 0, 0.05, 5.0, 0.05, 3.0
+        ),
+        'gamepad_max_acc.right': offboard_param(
+            'gamepad_max_acc_body_xy_mps2', 1, 0.05, 5.0, 0.05, 3.0
+        ),
+        'gamepad_max_speed.forward': offboard_param(
+            'gamepad_max_vxy_body_mps', 0, 0.05, 3.0, 0.05, 1.2
+        ),
+        'gamepad_max_speed.right': offboard_param(
+            'gamepad_max_vxy_body_mps', 1, 0.05, 3.0, 0.05, 1.2
+        ),
+        'manual_max_position_lead_xy': offboard_param(
+            'manual_max_position_lead_xy', None, 0.05, 2.0, 0.05, 0.75
+        ),
+        'gamepad_deadzone': offboard_param('gamepad_deadzone', None, 0.0, 0.4, 0.01, 0.1),
+        'gamepad_expo': offboard_param('gamepad_expo', None, 0.0, 1.0, 0.05, 0.4),
+        'RC15 AUX1 roll rate (deg/s)': offboard_param(
+            'rc_attitude_rate_deg_s', 0, 0.0, 90.0, 1.0, 20.0
+        ),
+        'RC16 AUX2 pitch rate (deg/s)': offboard_param(
+            'rc_attitude_rate_deg_s', 1, 0.0, 90.0, 1.0, 20.0
+        ),
+        'RC attitude angle limit (deg)': offboard_param(
+            'rc_attitude_angle_limit_deg', None, 0.0, 90.0, 1.0, 45.0
+        ),
+        'RC15 AUX1 roll sign': offboard_param(
+            'rc_attitude_sign', 0, -1.0, 1.0, 2.0, -1.0
+        ),
+        'RC16 AUX2 pitch sign': offboard_param(
+            'rc_attitude_sign', 1, -1.0, 1.0, 2.0, -1.0
+        ),
+    },
+}
+
+OFFBOARD_PARAM_CONFIG = {
+    name: cfg
+    for group in OFFBOARD_PARAM_GROUPS.values()
+    for name, cfg in group.items()
+}
+
+
+def public_param_groups(groups: dict) -> dict:
+    public = {}
+    for group_name, group in groups.items():
+        public[group_name] = {
+            name: {
+                key: cfg[key]
+                for key in ('min', 'max', 'step', 'default')
+            }
+            for name, cfg in group.items()
+        }
+    return public
+
+
 def wrap_pi(angle: float) -> float:
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
@@ -325,6 +454,135 @@ class MavlinkParamClient:
             except Exception as exc:  # noqa: BLE001
                 print(f'[PARAM_SAVE] failed: {exc}')
                 return False
+
+
+class OffboardTuningStore:
+    """Validated, atomic access to the controller's hot-reloaded JSON file."""
+
+    def __init__(self, path: Path):
+        self.path = path.expanduser().resolve()
+        self.status_path = self.path.with_suffix('.applied.json')
+        self.lock = threading.Lock()
+        self.history: list[dict] = []
+
+    @property
+    def available(self) -> bool:
+        return self.path.is_file()
+
+    def _read_unlocked(self) -> dict:
+        with self.path.open('r', encoding='utf-8') as stream:
+            data = json.load(stream)
+        if not isinstance(data, dict):
+            raise ValueError('Offboard tuning file must contain a JSON object')
+        return data
+
+    @staticmethod
+    def _configured_value(data: dict, cfg: dict) -> Optional[float]:
+        value = data.get(cfg['json_key'])
+        index = cfg['index']
+        if index is not None:
+            if not isinstance(value, list) or index >= len(value):
+                return None
+            value = value[index]
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return None
+        return number if math.isfinite(number) else None
+
+    def group_values(self, group_name: str) -> dict:
+        group = OFFBOARD_PARAM_GROUPS.get(group_name)
+        if group is None:
+            raise KeyError('unknown Offboard parameter group')
+        with self.lock:
+            data = self._read_unlocked()
+            return {
+                name: self._configured_value(data, cfg)
+                for name, cfg in group.items()
+            }
+
+    def _atomic_write_unlocked(self, data: dict) -> int:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = self.path.with_name(
+            f'.{self.path.name}.{os.getpid()}.{time.time_ns()}.tmp'
+        )
+        try:
+            with temporary.open('x', encoding='utf-8') as stream:
+                json.dump(data, stream, indent=2, sort_keys=True)
+                stream.write('\n')
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, self.path)
+        finally:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
+        return self.path.stat().st_mtime_ns
+
+    def set_value(self, name: str, value: float) -> tuple[float, int, int]:
+        cfg = OFFBOARD_PARAM_CONFIG.get(name)
+        if cfg is None:
+            raise KeyError('unknown Offboard parameter')
+        if not math.isfinite(value) or value < cfg['min'] or value > cfg['max']:
+            raise ValueError(f"value must be in [{cfg['min']}, {cfg['max']}]")
+        with self.lock:
+            data = self._read_unlocked()
+            previous = json.loads(json.dumps(data))
+            index = cfg['index']
+            if index is None:
+                data[cfg['json_key']] = float(value)
+            else:
+                array = data.get(cfg['json_key'])
+                if not isinstance(array, list) or index >= len(array):
+                    raise ValueError(
+                        f"{cfg['json_key']} must be an array with at least {index + 1} values"
+                    )
+                array[index] = float(value)
+            revision = time.time_ns()
+            data['_web_revision'] = revision
+            mtime_ns = self._atomic_write_unlocked(data)
+            confirmed = self._configured_value(data, cfg)
+            if confirmed is None:
+                raise RuntimeError('failed to read back Offboard tuning value')
+            self.history.append(previous)
+            if len(self.history) > 50:
+                self.history.pop(0)
+            return confirmed, revision, mtime_ns
+
+    def revert(self) -> tuple[int, int]:
+        with self.lock:
+            if not self.history:
+                raise LookupError('no Offboard change to undo since the web server started')
+            data = self.history.pop()
+            revision = time.time_ns()
+            data['_web_revision'] = revision
+            mtime_ns = self._atomic_write_unlocked(data)
+            return revision, mtime_ns
+
+    def wait_applied(self, revision: int, timeout: float = 1.5) -> tuple[bool, Optional[dict]]:
+        deadline = time.monotonic() + max(timeout, 0.0)
+        last_status = None
+        while time.monotonic() <= deadline:
+            try:
+                with self.status_path.open('r', encoding='utf-8') as stream:
+                    status = json.load(stream)
+                if isinstance(status, dict):
+                    last_status = status
+                    if status.get('revision') == revision and status.get('ok') is True:
+                        return True, status
+            except (OSError, ValueError, json.JSONDecodeError):
+                pass
+            time.sleep(0.05)
+        return False, last_status
+
+    def status(self) -> dict:
+        try:
+            with self.status_path.open('r', encoding='utf-8') as stream:
+                status = json.load(stream)
+            return status if isinstance(status, dict) else {}
+        except (OSError, ValueError, json.JSONDecodeError):
+            return {}
 
 
 class HnuterTelemetry(Node):
@@ -541,6 +799,7 @@ class TuningHttpServer(ThreadingHTTPServer):
         handler,
         telemetry: HnuterTelemetry,
         mavlink: MavlinkParamClient,
+        offboard_tuning: OffboardTuningStore,
         static_dir: Path,
         stream_hz: float,
         token: str,
@@ -549,6 +808,7 @@ class TuningHttpServer(ThreadingHTTPServer):
         super().__init__(address, handler)
         self.telemetry = telemetry
         self.mavlink = mavlink
+        self.offboard_tuning = offboard_tuning
         self.static_dir = static_dir
         self.stream_period = 1.0 / max(stream_hz, 1.0)
         self.token = token
@@ -605,7 +865,21 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
         if parsed.path == '/api/config':
             self._send_json({
                 'ok': True,
-                'groups': PARAM_GROUPS,
+                'sources': {
+                    'firmware': {
+                        'label': 'PX4 firmware (MAVLink)',
+                        'description': 'Read and write HNTR_* parameters in PX4 firmware.',
+                        'groups': public_param_groups(PARAM_GROUPS),
+                        'available': self.tuning_server.mavlink.connected,
+                    },
+                    'offboard': {
+                        'label': 'Offboard controller (live JSON)',
+                        'description': 'Atomically update the Hardware controller JSON; reload is normally confirmed within 0.5 s.',
+                        'groups': public_param_groups(OFFBOARD_PARAM_GROUPS),
+                        'available': self.tuning_server.offboard_tuning.available,
+                        'path': str(self.tuning_server.offboard_tuning.path),
+                    },
+                },
                 'stream_hz': round(1.0 / self.tuning_server.stream_period, 2),
                 'mavlink': self.tuning_server.mavlink.connected,
                 'endpoint': self.tuning_server.mavlink.connected_endpoint,
@@ -636,11 +910,16 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
         if parsed.path == '/api/params/set':
             self._set_param(body)
         elif parsed.path == '/api/params/save':
+            if str(body.get('source', 'firmware')) != 'firmware':
+                self._error('Offboard values are persisted on every Apply; use Undo to revert')
+                return
             saved = self.tuning_server.mavlink.save()
             if saved:
                 self._send_json({'ok': True})
             else:
                 self._error('MAVLink is not connected', HTTPStatus.SERVICE_UNAVAILABLE)
+        elif parsed.path == '/api/params/revert':
+            self._revert_offboard(body)
         elif parsed.path == '/api/mavlink/reconnect':
             connected = self.tuning_server.mavlink.connect(timeout=5.0)
             self._send_json({
@@ -651,7 +930,33 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
             self._error('not found', HTTPStatus.NOT_FOUND)
 
     def _get_params(self, parsed) -> None:
-        group_name = parse_qs(parsed.query).get('group', [''])[0]
+        query = parse_qs(parsed.query)
+        source = query.get('source', ['firmware'])[0]
+        group_name = query.get('group', [''])[0]
+        if source == 'offboard':
+            try:
+                values = self.tuning_server.offboard_tuning.group_values(group_name)
+            except KeyError as exc:
+                self._error(str(exc))
+                return
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                self._error(
+                    f'cannot read Offboard tuning file: {exc}',
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                )
+                return
+            missing = [name for name, value in values.items() if value is None]
+            self._send_json({
+                'ok': not missing,
+                'source': source,
+                'values': values,
+                'missing': missing,
+                'applied_status': self.tuning_server.offboard_tuning.status(),
+            })
+            return
+        if source != 'firmware':
+            self._error('unknown parameter source')
+            return
         group = PARAM_GROUPS.get(group_name)
         if group is None:
             self._error('unknown parameter group')
@@ -666,11 +971,24 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
                 value = self.tuning_server.mavlink.request_param(name, timeout=1.0)
             values[name] = value
         missing = [name for name, value in values.items() if value is None]
-        self._send_json({'ok': not missing, 'values': values, 'missing': missing})
+        self._send_json({
+            'ok': not missing,
+            'source': source,
+            'values': values,
+            'missing': missing,
+        })
 
     def _set_param(self, body: dict) -> None:
+        source = str(body.get('source', 'firmware'))
         name = str(body.get('name', ''))
-        cfg = PARAM_CONFIG.get(name)
+        cfg = (
+            OFFBOARD_PARAM_CONFIG.get(name)
+            if source == 'offboard'
+            else PARAM_CONFIG.get(name)
+        )
+        if source not in ('firmware', 'offboard'):
+            self._error('unknown parameter source')
+            return
         if cfg is None:
             self._error('unknown parameter')
             return
@@ -682,6 +1000,37 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
         if not math.isfinite(value) or value < cfg['min'] or value > cfg['max']:
             self._error(f"value must be in [{cfg['min']}, {cfg['max']}]")
             return
+        if source == 'offboard':
+            mode = self.tuning_server.telemetry.snapshot()['mode']
+            if mode.get('armed') and not bool(body.get('armed_confirmed')):
+                self._error(
+                    'vehicle is armed; explicit confirmation is required',
+                    HTTPStatus.CONFLICT,
+                )
+                return
+            try:
+                confirmed, revision, _mtime_ns = (
+                    self.tuning_server.offboard_tuning.set_value(name, value)
+                )
+            except KeyError as exc:
+                self._error(str(exc))
+                return
+            except (OSError, ValueError, RuntimeError, json.JSONDecodeError) as exc:
+                self._error(f'cannot update Offboard tuning file: {exc}')
+                return
+            applied, status = self.tuning_server.offboard_tuning.wait_applied(revision)
+            self._send_json({
+                'ok': True,
+                'source': source,
+                'name': name,
+                'requested': value,
+                'confirmed': confirmed,
+                'persisted': True,
+                'applied': applied,
+                'applied_status': status,
+                'revert_available': True,
+            })
+            return
         confirmed, observed = self.tuning_server.mavlink.set_and_confirm(name, value)
         if confirmed is None:
             detail = '' if observed is None else f'; PX4 still reports {observed:.6g}'
@@ -690,7 +1039,42 @@ class TuningRequestHandler(BaseHTTPRequestHandler):
                 HTTPStatus.GATEWAY_TIMEOUT,
             )
             return
-        self._send_json({'ok': True, 'name': name, 'requested': value, 'confirmed': confirmed})
+        self._send_json({
+            'ok': True,
+            'source': source,
+            'name': name,
+            'requested': value,
+            'confirmed': confirmed,
+        })
+
+    def _revert_offboard(self, body: dict) -> None:
+        if str(body.get('source', 'offboard')) != 'offboard':
+            self._error('Undo is only available for Offboard tuning')
+            return
+        mode = self.tuning_server.telemetry.snapshot()['mode']
+        if mode.get('armed') and not bool(body.get('armed_confirmed')):
+            self._error(
+                'vehicle is armed; explicit confirmation is required',
+                HTTPStatus.CONFLICT,
+            )
+            return
+        try:
+            revision, _mtime_ns = self.tuning_server.offboard_tuning.revert()
+        except LookupError as exc:
+            self._error(str(exc), HTTPStatus.CONFLICT)
+            return
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            self._error(f'cannot undo Offboard tuning change: {exc}')
+            return
+        applied, status = self.tuning_server.offboard_tuning.wait_applied(revision)
+        self._send_json({
+            'ok': True,
+            'source': 'offboard',
+            'persisted': True,
+            'applied': applied,
+            'applied_status': status,
+            'revert_available': bool(self.tuning_server.offboard_tuning.history),
+        })
 
     def _stream_events(self) -> None:
         self.send_response(HTTPStatus.OK)
@@ -762,6 +1146,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--csv-rate-hz', type=float, default=25.0, help='CSV logging rate')
     parser.add_argument('--csv', type=Path, default=None, help='CSV output path')
     parser.add_argument('--mavlink', default=os.environ.get('HNUTER_MAVLINK', 'auto'))
+    parser.add_argument(
+        '--offboard-tuning',
+        type=Path,
+        default=Path(__file__).resolve().parent / 'config' / 'hnuter_direct_hardware_tuning.json',
+        help='Hardware Offboard live-tuning JSON path',
+    )
     parser.add_argument('--token', default=os.environ.get('HNUTER_WEB_TOKEN', ''),
                         help='optional LAN access token')
     return parser.parse_args()
@@ -784,6 +1174,7 @@ def main() -> int:
     telemetry = HnuterTelemetry()
     mavlink = MavlinkParamClient(args.mavlink)
     mavlink.connect(timeout=5.0)
+    offboard_tuning = OffboardTuningStore(args.offboard_tuning)
     ros_thread = threading.Thread(target=spin_ros, args=(telemetry, stop_event), name='ros-spin', daemon=True)
     ros_thread.start()
     recorder = CsvRecorder(telemetry, csv_path, args.csv_rate_hz, stop_event)
@@ -794,6 +1185,7 @@ def main() -> int:
         TuningRequestHandler,
         telemetry,
         mavlink,
+        offboard_tuning,
         static_dir,
         args.stream_hz,
         args.token,
@@ -810,6 +1202,7 @@ def main() -> int:
     signal.signal(signal.SIGTERM, request_shutdown)
 
     print(f'[CSV] {csv_path}')
+    print(f'[OFFBOARD] live tuning: {offboard_tuning.path}')
     print('[WEB] Hnuter tuning dashboard:')
     for address in local_addresses(args.port):
         suffix = f'?token={args.token}' if args.token else ''

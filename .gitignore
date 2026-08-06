@@ -7,6 +7,7 @@ log/
 
 *.csv
 hnuter_saved_plots/
+config/*.applied.json
 
 .agents/
 .codex/
@@ -14,4 +15,3 @@ hnuter_saved_plots/
 .env
 .venv/
 venv/
-
