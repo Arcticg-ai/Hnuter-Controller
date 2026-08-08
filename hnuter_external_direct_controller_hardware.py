@@ -810,14 +810,14 @@ class HnuterController(Node):
             1.0,
         ))
 
-        # Default to the firmware/profile actually used by flight log 113.
-        # The newer 3131ddd4 mapping remains available in a separate config.
+        # Match the current hardware firmware servo calibration. PX4 converts
+        # normalized ActuatorServos commands to the configured PWM endpoints.
         self.hardware_firmware_profile = os.environ.get(
             'HNUTER_HARDWARE_FIRMWARE_PROFILE',
-            'e0958bbd_800_2200',
+            '3131ddd4_500_2500_gear2',
         ).strip()
         self.primary_servo_angle_max_rad = math.radians(max(
-            1.0, env_float('HNUTER_PRIMARY_SERVO_MAX_DEG', 185.0)
+            1.0, env_float('HNUTER_PRIMARY_SERVO_MAX_DEG', 180.0)
         ))
         self.secondary_servo_angle_max_rad = math.radians(max(
             1.0, env_float('HNUTER_SECONDARY_SERVO_MAX_DEG', 180.0)
@@ -831,19 +831,19 @@ class HnuterController(Node):
             10.0,
         ))
         self.servo_pwm_min_us = int(np.clip(
-            env_float('HNUTER_SERVO_PWM_MIN_US', 800.0), 500.0, 1500.0
+            env_float('HNUTER_SERVO_PWM_MIN_US', 500.0), 500.0, 1500.0
         ))
         self.servo_pwm_trim_us = int(np.clip(
             env_float('HNUTER_SERVO_PWM_TRIM_US', 1500.0), 500.0, 2500.0
         ))
         self.servo_pwm_max_us = int(np.clip(
-            env_float('HNUTER_SERVO_PWM_MAX_US', 2200.0), 1500.0, 2500.0
+            env_float('HNUTER_SERVO_PWM_MAX_US', 2500.0), 1500.0, 2500.0
         ))
 
         # Actuator limits are physical joint limits, not servo-shaft limits.
         self.pitch_command_limit_rad = np.radians(180.0)
         self.alpha_limit_rad = min(
-            math.radians(abs(env_float('HNUTER_ALPHA_LIMIT_DEG', 185.0))),
+            math.radians(abs(env_float('HNUTER_ALPHA_LIMIT_DEG', 180.0))),
             self.primary_servo_angle_max_rad,
         )
         self.theta_limit_rad = min(
