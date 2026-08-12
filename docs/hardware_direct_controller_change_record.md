@@ -52,21 +52,35 @@ HNUTER_HARDWARE_SPOOL_RAMP_S
 - 默认 `HNTR_PITCH_BIAS=0.09`，来自当时最近实飞日志保存参数；三项参数均写入
   启动参数快照和逐行诊断日志。
 
-## 当前舵机映射与已知待同步项
+## 舵机映射历史与当前状态
 
-当前文件直接发布 `ActuatorServos.control[]`，不经过 PX4 内部 Hnuter control
-allocator。记录时的映射为：
+该文档记录的早期实飞版本直接发布 `ActuatorServos.control[]`，不经过 PX4
+内部 Hnuter control allocator。当时的历史映射为：
 
 ```text
 一级 normalized = primary_joint_angle / 185 deg
 二级 normalized = secondary_joint_angle / 180 deg
 ```
 
-2026-08-04 无延迟固件提交 `3131ddd4` 已把实机舵机完整 PWM 范围改为
-`500--2500 us`，一级完整轴角改为 `±180 deg`，并新增二级减速比
-`HNTR_S2_GEAR=2.0`。因此当前 hardware 文件尚未匹配新固件：一级归一化分母、
-二级角度到舵机轴角的减速比、二级关节可达范围和二级关节速率限制都需要同步。
-该兼容修改应在台架拆桨验证后再提交，不包含在本文记录提交中。
+2026-08-12 当前四个实机入口统一适配无延迟固件 profile
+`3131ddd4_500_2500_gear2`：
+
+- `hnuter_external_direct_controller_hardware.py`、
+  `hnuter_external_direct_ok_hardware.py` 和
+  `hnuter_external_direct_drcda_hardware.py` 的四路倾转舵机输入都使用
+  `500/1500/2500 us`。该范围不用于电机。
+- 一级归一化为 `primary_joint_angle / 180 deg`。
+- 二级归一化为
+  `secondary_joint_angle * HNTR_S2_GEAR / 180 deg`。
+- 默认 `HNTR_S2_GEAR=2.0`，二级物理关节限幅为 `±90 deg`。
+- 二级关节 slew rate 改为舵机轴 rate 除以齿轮比。
+- 三个直接分配入口分别加载独立的 hardware tuning JSON，启动时
+  会记录 profile、PWM 范围、舵机轴角和减速比。
+- 电机命令仍为 `ActuatorMotors.control` 归一化推力，使用独立的前电机/尾电机
+  推力限幅和可逆设置，不读取 `servo_pwm_*_us`。
+- `hnuter_external_controller_px4_position_hardware.py` 只发布 PX4 位置/速度
+  setpoint，不发布电机或舵机命令；它记录同一 profile，PWM 映射由
+  PX4 内部完成。
 
 ## 日志与验证边界
 

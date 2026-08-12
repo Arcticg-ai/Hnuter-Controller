@@ -1,0 +1,108 @@
+{
+  "hardware_firmware_profile": "3131ddd4_500_2500_gear2",
+  "servo_pwm_min_us": 500,
+  "servo_pwm_trim_us": 1500,
+  "servo_pwm_max_us": 2500,
+  "primary_servo_angle_max_deg": 180.0,
+  "secondary_servo_angle_max_deg": 180.0,
+  "HNTR_S2_GEAR": 2.0,
+  "alpha_limit_deg": 180.0,
+  "theta_limit_deg": 90.0,
+  "attitude_peak_hold_s": 1.0,
+  "attitude_segment_time_s": 6.0,
+  "attitude_step_angle_deg": 180.0,
+  "attitude_step_pitch_deg": 180.0,
+  "attitude_step_roll_deg": 90.0,
+  "attitude_step_yaw_deg": 0.0,
+  "attitude_test_altitude_m": 3.0,
+  "attitude_test_altitude_only": false,
+  "attitude_test_max_acc_xy": 3.0,
+  "direct_Domega": [
+    2.5,
+    2.5,
+    7.0
+  ],
+  "direct_safety_attitude_check_enabled": false,
+  "direct_safety_attitude_limit_deg": 55.0,
+  "direct_KR": [
+    4.0,
+    5.0,
+    14.0
+  ],
+  "direct_takeoff_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_takeoff_KR": [
+    1.5,
+    1.5,
+    1.5
+  ],
+  "direct_takeoff_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_tau_limit": [
+    2.5,
+    3.0,
+    8.0
+  ],
+  "direct_xy_lock_Domega": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "direct_xy_lock_KR": [
+    1.5,
+    1.5,
+    1.5
+  ],
+  "direct_xy_lock_tau_limit": [
+    0.9,
+    0.9,
+    0.5
+  ],
+  "direct_yaw_control_enabled": true,
+  "max_acc_xy": 20.0,
+  "max_acc_z": 20.0,
+  "manual_roll_limit_deg": 90.0,
+  "manual_pitch_limit_deg": 180.0,
+  "xy_lock_max_acc_xy": 3.0,
+  "drcda_horizon_s": 0.10,
+  "drcda_wrench_error_gain": 6.0,
+  "drcda_wrench_ff_tau_s": 0.08,
+  "drcda_wrench_rate_weight": 0.06,
+  "drcda_wrench_weight": [
+    1.2,
+    1.2,
+    2.0,
+    3.0,
+    3.0,
+    2.5
+  ],
+  "drcda_command_move_weight": [
+    0.035,
+    0.05,
+    0.035,
+    0.05,
+    0.006,
+    0.006,
+    0.006,
+    0.006,
+    0.008
+  ],
+  "drcda_command_preference_weight": [
+    0.003,
+    0.004,
+    0.003,
+    0.004,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.002
+  ],
+  "drcda_antiwindup_gain": 0.20
+}

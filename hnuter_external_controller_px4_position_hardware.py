@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Hnuter PX4 position-offboard controller.
+"""Hnuter PX4 position-offboard controller for real-aircraft use.
 
-The node publishes only PX4 Offboard mode, trajectory setpoint, and vehicle
-command topics. PX4 keeps ownership of the position, attitude, rate, and
-actuator control loops. Gamepad control and keyboard-triggered rectangle,
-Lissajous, and attitude-reference trajectories are retained.
+The transmitter owns Arm and Offboard mode selection. This node never publishes
+VehicleCommand. It continuously reads PX4 RC topics and publishes position,
+velocity, acceleration, yaw, and Hnuter attitude-extension references only
+while using the current local position as the origin of each flight session and
+each keyboard-triggered trajectory. PX4 owns actuator mapping; this version is
+intended for firmware profile 3131ddd4_500_2500_gear2, where 500/1500/2500 us
+applies only to the four tilt-servo inputs and not to motor outputs.
 """
 
 import sys
@@ -16,6 +19,7 @@ import select
 import termios
 import threading
 import tty
+from dataclasses import dataclass
 
 from hnuter_log_paths import configure_ros_log_dir
 
@@ -34,51 +38,58 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPo
 
 from px4_msgs.msg import VehicleLocalPosition
 from px4_msgs.msg import VehicleAttitude
-from px4_msgs.msg import VehicleCommand
-from px4_msgs.msg import VehicleCommandAck
+from px4_msgs.msg import ManualControlSetpoint
 from px4_msgs.msg import OffboardControlMode
+from px4_msgs.msg import RcChannels
 from px4_msgs.msg import TrajectorySetpoint
 from px4_msgs.msg import VehicleControlMode
 from px4_msgs.msg import VehicleStatus
 
-try:
-    import pygame
-except Exception:  # 允许没有手柄/没有 pygame 时保持悬停
-    pygame = None
+
+def env_float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return float(default)
 
 
-# ============================================================
-# 手柄管理器：从 hnuter104.py 移植，加入异常保护
-# ============================================================
-class GamepadManager:
-    def __init__(self,
-                 max_vxy: float = 1.0,
-                 max_vz: float = 0.5,
-                 max_yaw_rate: float = 0.6,
-                 max_roll_rate: float = math.radians(20.0),
-                 deadzone: float = 0.10,
-                 expo: float = 0.40,
-                 filter_tau: float = 0.20,
-                 lt_axis: int = 2,
-                 rt_axis: int = 5,
-                 trigger_mode: str = 'minus_one_to_one',
-                 logger=None):
+@dataclass
+class _StickSample:
+    roll: float = 0.0
+    pitch: float = 0.0
+    yaw: float = 0.0
+    throttle: float = 0.0
+
+
+class RCCommandManager:
+    """Convert PX4 RC telemetry into body-frame velocity references."""
+
+    def __init__(self, logger=None):
         self.logger = logger
-        self.joystick = None
-        self.max_vxy = float(max_vxy)
-        self.max_vz = float(max_vz)
-        self.max_yaw_rate = float(max_yaw_rate)
-        self.max_roll_rate = float(max_roll_rate)
-        self.deadzone = float(deadzone)
-        self.expo = float(expo)
-        self.filter_tau = float(filter_tau)
-        self.lt_axis = int(lt_axis)
-        self.rt_axis = int(rt_axis)
-        # 常见 Xbox/XInput 手柄 LT/RT: 未按=-1，按满=+1。
-        # 若你的手柄是未按=0，按满=1，把 trigger_mode 改为 'zero_to_one'。
-        # 若你的手柄是未按=+1，按满=-1，把 trigger_mode 改为 'one_to_minus_one'。
-        self.trigger_mode = str(trigger_mode)
-        self.filtered_cmds = {
+        self.max_vxy = env_float('HNUTER_RC_MAX_VXY_MPS', 0.6)
+        self.max_vz = env_float('HNUTER_RC_MAX_VZ_MPS', 0.3)
+        self.max_yaw_rate = env_float('HNUTER_RC_MAX_YAW_RATE_RPS', 0.4)
+        self.deadzone = env_float('HNUTER_RC_DEADZONE', 0.10)
+        self.expo = env_float('HNUTER_RC_EXPO', 0.40)
+        self.filter_tau = env_float('HNUTER_RC_FILTER_TAU_S', 0.20)
+        self.timeout_s = max(env_float('HNUTER_RC_TIMEOUT_S', 0.50), 0.05)
+        self.pitch_sign = env_float('HNUTER_RC_PITCH_SIGN', 1.0)
+        self.roll_sign = env_float('HNUTER_RC_ROLL_SIGN', -1.0)
+        self.throttle_sign = env_float('HNUTER_RC_THROTTLE_SIGN', 1.0)
+        self.yaw_sign = env_float('HNUTER_RC_YAW_SIGN', -1.0)
+
+        self._manual_sample = _StickSample()
+        self._manual_valid = False
+        self._manual_received_s = -math.inf
+        self._channels_sample = _StickSample()
+        self._channels_valid = False
+        self._channels_received_s = -math.inf
+        self._source = 'none'
+        self.filtered_cmds = self._zero_commands()
+
+    @staticmethod
+    def _zero_commands() -> dict:
+        return {
             'vx_b': 0.0,
             'vy_b': 0.0,
             'vz': 0.0,
@@ -88,114 +99,115 @@ class GamepadManager:
             'rt': 0.0,
         }
 
-        if pygame is None:
-            self._log_warn('未导入 pygame，手柄不可用，控制器将保持悬停。')
-            return
+    @staticmethod
+    def _finite_sticks(sample: _StickSample) -> bool:
+        return bool(np.all(np.isfinite([
+            sample.roll, sample.pitch, sample.yaw, sample.throttle
+        ])))
 
-        try:
-            pygame.init()
-            pygame.joystick.init()
-            if pygame.joystick.get_count() > 0:
-                self.joystick = pygame.joystick.Joystick(0)
-                self.joystick.init()
-                self._log_info(f'🎮 成功连接控制外设: {self.joystick.get_name()}')
-            else:
-                self._log_warn('⚠️ 未检测到手柄，控制器将保持悬停。')
-        except Exception as exc:
-            self._log_warn(f'⚠️ 手柄初始化失败: {exc}，控制器将保持悬停。')
-            self.joystick = None
+    def feed_manual_control(self, message) -> None:
+        sample = _StickSample(
+            roll=float(getattr(message, 'roll', math.nan)),
+            pitch=float(getattr(message, 'pitch', math.nan)),
+            yaw=float(getattr(message, 'yaw', math.nan)),
+            throttle=float(getattr(message, 'throttle', math.nan)),
+        )
+        source = int(getattr(
+            message, 'data_source', ManualControlSetpoint.SOURCE_RC
+        ))
+        self._manual_valid = bool(
+            getattr(message, 'valid', False)
+            and source == ManualControlSetpoint.SOURCE_RC
+            and self._finite_sticks(sample)
+        )
+        if self._manual_valid:
+            self._manual_sample = sample
+        self._manual_received_s = time.monotonic()
 
-    def _log_info(self, text: str):
-        if self.logger:
-            self.logger.info(text)
-        else:
-            print(text)
+    @staticmethod
+    def _mapped_channel(message, function_id: int):
+        mapping = tuple(getattr(message, 'function', ()))
+        channels = tuple(getattr(message, 'channels', ()))
+        channel_count = min(int(getattr(message, 'channel_count', 0)), len(channels))
+        if not 0 <= function_id < len(mapping):
+            return None
+        channel_index = int(mapping[function_id])
+        if not 0 <= channel_index < channel_count:
+            return None
+        value = float(channels[channel_index])
+        return value if math.isfinite(value) else None
 
-    def _log_warn(self, text: str):
-        if self.logger:
-            self.logger.warn(text)
-        else:
-            print(text)
+    def feed_rc_channels(self, message) -> None:
+        roll = self._mapped_channel(message, RcChannels.FUNCTION_ROLL)
+        pitch = self._mapped_channel(message, RcChannels.FUNCTION_PITCH)
+        yaw = self._mapped_channel(message, RcChannels.FUNCTION_YAW)
+        throttle = self._mapped_channel(message, RcChannels.FUNCTION_THROTTLE)
+        values = (roll, pitch, yaw, throttle)
+        self._channels_valid = bool(
+            not getattr(message, 'signal_lost', True)
+            and all(value is not None for value in values)
+        )
+        if self._channels_valid:
+            self._channels_sample = _StickSample(
+                roll=float(roll),
+                pitch=float(pitch),
+                yaw=float(yaw),
+                throttle=2.0 * float(throttle) - 1.0,
+            )
+        self._channels_received_s = time.monotonic()
 
-    def close(self):
-        if pygame is not None:
-            try:
-                pygame.quit()
-            except Exception:
-                pass
+    def _active_sample(self):
+        now = time.monotonic()
+        if self._manual_valid and now - self._manual_received_s <= self.timeout_s:
+            return self._manual_sample, 'manual_control_setpoint'
+        if self._channels_valid and now - self._channels_received_s <= self.timeout_s:
+            return self._channels_sample, 'rc_channels'
+        return _StickSample(), 'stale'
 
-    def _apply_deadzone(self, val: float) -> float:
-        return float(val) if abs(float(val)) > self.deadzone else 0.0
-
-    def _apply_expo(self, val: float) -> float:
-        return self.expo * (val ** 3) + (1.0 - self.expo) * val
-
-    def _trigger_to_unit(self, raw: float) -> float:
-        """将 LT/RT 原始轴值转换为 [0, 1]，并施加死区与 EXPO。"""
-        raw = float(raw)
-        if self.trigger_mode == 'zero_to_one':
-            val = raw
-        elif self.trigger_mode == 'one_to_minus_one':
-            val = 0.5 * (1.0 - raw)
-        else:
-            # 默认 Xbox/XInput: -1 未按，+1 按满
-            val = 0.5 * (raw + 1.0)
-
-        val = float(np.clip(val, 0.0, 1.0))
-        if val <= self.deadzone:
+    def _shape(self, value: float) -> float:
+        value = float(np.clip(value, -1.0, 1.0))
+        if abs(value) <= self.deadzone:
             return 0.0
-
-        # 把死区之后的行程重新归一化到 [0, 1]
-        val = (val - self.deadzone) / max(1.0 - self.deadzone, 1e-6)
-        return float(np.clip(self._apply_expo(val), 0.0, 1.0))
+        magnitude = (abs(value) - self.deadzone) / max(1.0 - self.deadzone, 1e-6)
+        magnitude = self.expo * magnitude ** 3 + (1.0 - self.expo) * magnitude
+        return math.copysign(magnitude, value)
 
     def get_velocity_commands(self, dt: float) -> dict:
-        if pygame is None or self.joystick is None:
-            return self.filtered_cmds.copy()
+        previous_source = self._source
+        sample, self._source = self._active_sample()
+        if self.logger is not None and self._source != previous_source:
+            if self._source == 'stale':
+                self.logger.warn('RC 输入超时，速度期望正在回零。')
+            else:
+                self.logger.info(f'RC 输入源: {self._source}')
 
-        try:
-            pygame.event.pump()
-            num_axes = self.joystick.get_numaxes()
+        targets = {
+            'vx_b': self.pitch_sign * self._shape(sample.pitch) * self.max_vxy,
+            'vy_b': self.roll_sign * self._shape(sample.roll) * self.max_vxy,
+            'vz': self.throttle_sign * self._shape(sample.throttle) * self.max_vz,
+            'yaw_rate': self.yaw_sign * self._shape(sample.yaw) * self.max_yaw_rate,
+        }
+        alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-3 else 1.0
+        alpha = float(np.clip(alpha, 0.0, 1.0))
+        for key, target in targets.items():
+            self.filtered_cmds[key] += alpha * (target - self.filtered_cmds[key])
+        return self.filtered_cmds.copy()
 
-            # Xbox/PS 常用轴映射：0 左摇杆左右；1 左摇杆上下；3 右摇杆左右；4 右摇杆上下
-            raw_yaw = self.joystick.get_axis(0) if num_axes > 0 else 0.0
-            raw_throttle = self.joystick.get_axis(1) if num_axes > 1 else 0.0
-            raw_roll = self.joystick.get_axis(3) if num_axes > 3 else 0.0
-            raw_pitch = self.joystick.get_axis(4) if num_axes > 4 else 0.0
-            raw_lt = self.joystick.get_axis(self.lt_axis) if num_axes > self.lt_axis else -1.0
-            raw_rt = self.joystick.get_axis(self.rt_axis) if num_axes > self.rt_axis else -1.0
+    @property
+    def source(self) -> str:
+        return self._active_sample()[1]
 
-            yaw_expo = self._apply_expo(self._apply_deadzone(raw_yaw))
-            thr_expo = self._apply_expo(self._apply_deadzone(raw_throttle))
-            roll_expo = self._apply_expo(self._apply_deadzone(raw_roll))
-            pitch_expo = self._apply_expo(self._apply_deadzone(raw_pitch))
-            lt_expo = self._trigger_to_unit(raw_lt)
-            rt_expo = self._trigger_to_unit(raw_rt)
+    @property
+    def age_s(self) -> float:
+        latest = max(self._manual_received_s, self._channels_received_s)
+        return float(time.monotonic() - latest) if math.isfinite(latest) else math.inf
 
-            # FLU 机体系：x 前，y 左，z 上；上推为正向前/上升
-            target_vx_b = -pitch_expo * self.max_vxy
-            target_vy_b = -roll_expo * self.max_vxy
-            target_vz_w = -thr_expo * self.max_vz
-            target_yaw_rate = -yaw_expo * self.max_yaw_rate
+    @property
+    def valid(self) -> bool:
+        return self._active_sample()[1] != 'stale'
 
-            # LT 增大期望 roll，RT 减小期望 roll。
-            # 输出是 roll 角速度，后面在 update_trajectory() 中积分为目标横滚角。
-            target_roll_rate = (lt_expo - rt_expo) * self.max_roll_rate
-
-            alpha = dt / (self.filter_tau + dt) if self.filter_tau > 1e-3 else 1.0
-            alpha = float(np.clip(alpha, 0.0, 1.0))
-
-            self.filtered_cmds['vx_b'] += alpha * (target_vx_b - self.filtered_cmds['vx_b'])
-            self.filtered_cmds['vy_b'] += alpha * (target_vy_b - self.filtered_cmds['vy_b'])
-            self.filtered_cmds['vz'] += alpha * (target_vz_w - self.filtered_cmds['vz'])
-            self.filtered_cmds['yaw_rate'] += alpha * (target_yaw_rate - self.filtered_cmds['yaw_rate'])
-            self.filtered_cmds['roll_rate'] += alpha * (target_roll_rate - self.filtered_cmds['roll_rate'])
-            self.filtered_cmds['lt'] = lt_expo
-            self.filtered_cmds['rt'] = rt_expo
-            return self.filtered_cmds.copy()
-        except Exception as exc:
-            self._log_warn(f'读取手柄失败: {exc}，本周期保持上一指令。')
-            return self.filtered_cmds.copy()
+    def close(self) -> None:
+        pass
 
 
 class KeyboardCommandReader:
@@ -219,7 +231,10 @@ class KeyboardCommandReader:
             tty.setcbreak(self._stdin_fd)
             self._thread = threading.Thread(target=self._read_loop, daemon=True)
             self._thread.start()
-            self._log_info('键盘已启用：按 o 起飞悬停；按 1/2/3 分别执行矩形/李萨如/姿态角轨迹。')
+            self._log_info(
+                '键盘已启用：按 1/2/3 分别执行相对当前位置的矩形/李萨如/姿态角轨迹；'
+                '实机版本忽略 o。'
+            )
         except Exception as exc:
             self._log_warn(f'键盘输入初始化失败: {exc}；悬停/手柄功能不受影响。')
             self._restore_terminal()
@@ -277,8 +292,10 @@ class KeyboardCommandReader:
 
 
 class HnuterController(Node):
+    HARDWARE_FIRMWARE_PROFILE = '3131ddd4_500_2500_gear2'
+
     def __init__(self):
-        super().__init__('hnuter_controller_gamepad')
+        super().__init__('hnuter_px4_position_hardware')
 
         qos_profile_out = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -298,9 +315,6 @@ class HnuterController(Node):
             OffboardControlMode, '/fmu/in/offboard_control_mode', qos_profile_command)
         self.trajectory_setpoint_pub = self.create_publisher(
             TrajectorySetpoint, '/fmu/in/trajectory_setpoint', qos_profile_command)
-        self.vehicle_command_pub = self.create_publisher(
-            VehicleCommand, '/fmu/in/vehicle_command', qos_profile_command)
-
         self.local_position_sub = self.create_subscription(
             VehicleLocalPosition, '/fmu/out/vehicle_local_position_v1', self.local_position_callback, qos_profile_out)
         self.attitude_sub = self.create_subscription(
@@ -309,23 +323,26 @@ class HnuterController(Node):
             VehicleStatus, '/fmu/out/vehicle_status_v1', self.status_callback, qos_profile_out)
         self.vehicle_control_mode_sub = self.create_subscription(
             VehicleControlMode, '/fmu/out/vehicle_control_mode', self.control_mode_callback, qos_profile_out)
-        self.vehicle_command_ack_sub = self.create_subscription(
-            VehicleCommandAck, '/fmu/out/vehicle_command_ack', self.vehicle_command_ack_callback, qos_profile_out)
+        qos_profile_rc = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+        )
+        self.manual_control_sub = self.create_subscription(
+            ManualControlSetpoint,
+            '/fmu/out/manual_control_setpoint',
+            self.manual_control_callback,
+            qos_profile_rc,
+        )
+        self.rc_channels_sub = self.create_subscription(
+            RcChannels,
+            '/fmu/out/rc_channels',
+            self.rc_channels_callback,
+            qos_profile_rc,
+        )
 
         # PX4 常量，兼容不同 px4_msgs 版本
-        self.CMD_DO_SET_MODE = getattr(VehicleCommand, 'VEHICLE_CMD_DO_SET_MODE', 176)
-        self.CMD_COMPONENT_ARM_DISARM = getattr(VehicleCommand, 'VEHICLE_CMD_COMPONENT_ARM_DISARM', 400)
-        self.NAVIGATION_STATE_OFFBOARD = getattr(VehicleStatus, 'NAVIGATION_STATE_OFFBOARD', 14)
         self.ARMING_STATE_ARMED = getattr(VehicleStatus, 'ARMING_STATE_ARMED', 2)
-        self.command_ack_result_names = {
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_ACCEPTED', 0): 'ACCEPTED',
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_TEMPORARILY_REJECTED', 1): 'TEMPORARILY_REJECTED',
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_DENIED', 2): 'DENIED',
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_UNSUPPORTED', 3): 'UNSUPPORTED',
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_FAILED', 4): 'FAILED',
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_IN_PROGRESS', 5): 'IN_PROGRESS',
-            getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_CANCELLED', 6): 'CANCELLED',
-        }
 
         # State variables
         self.position = np.zeros(3)       # ENU: x East, y North, z Up
@@ -339,33 +356,8 @@ class HnuterController(Node):
         self.attitude_received = False
         self.px4_timestamp = 0
 
-        # Offboard/Arm 启动状态机
-        self.offboard_setpoint_counter = 0
-        self._last_offboard_cmd_time = 0.0
-        self._last_arm_cmd_time = 0.0
-        self._last_arm_command_param1 = None
-
-        # ====== 启动策略配置：防止 PX4 自动 disarm 后被程序反复 arm ======
-        # True : 节点启动后自动尝试切 Offboard，并只自动 Arm 一次。
-        # False: 节点只维持 OffboardControlMode 心跳，需要你用 QGC/遥控器手动 Arm。
-        self.auto_arm_enabled = True
-
-        # 强烈建议 False。PX4 如果因为预起飞超时、落地检测或 failsafe disarm，
-        # 程序不应立刻再次解锁，否则会出现“反复 arm / 反复起落”的循环。
-        self.rearm_after_auto_disarm = False
-
-        # 自动 Arm 最多尝试次数。调试期建议 1；若想完全手动解锁，设 auto_arm_enabled=False。
-        self.max_auto_arm_attempts = 1
-        self.auto_arm_attempts = 0
-        self.was_armed_once = False
-        self._last_armed_state = False
-        self.startup_blocked_after_disarm = False
-
-        # PX4 要求进入 Offboard 前先连续发送 >1s 的 OffboardControlMode。
-        # 这里 20Hz * 30 = 1.5s，留出裕量。
-        self.offboard_warmup_ticks = 30
-        self.mode_request_period_s = 1.0
-        self.arm_request_period_s = 1.0
+        self._hardware_control_active = False
+        self._interrupted_task = None
 
         # Runtime status
         self.control_loop_count = 0
@@ -379,28 +371,19 @@ class HnuterController(Node):
             'rt': 0.0,
         }
 
-        # Takeoff setpoint constraints
-        self.takeoff_xy_lock_time_s = 3.0
-        self._xy_lock_position = np.zeros(2)
-        self._takeoff_lock_start_time_s = None
-
         # Yaw variables
         self._yaw_initialized = False
         self.initial_yaw = 0.0
 
-        self.max_climb_rate = 1.0
-
-        self.target_position = np.array([0.0, 0.0, 1.3])
+        self.target_position = np.zeros(3)
         self.target_velocity = np.zeros(3)
         self.target_acceleration = np.zeros(3)
         self.target_attitude = np.array([0.0, 0.0, 0.0])
         self.target_attitude_rate = np.zeros(3)
 
-        self.takeoff_height = 1.3
         self.max_altitude = 5.0
-        self.min_altitude = 0.25
+        self.min_altitude = -5.0
         self.manual_enabled = True
-        self.takeoff_requested = False
         self.manual_pos_initialized = False
         self.manual_des_pos = np.zeros(3)   # [x_enu, y_enu, z_relative]
         self.manual_des_yaw = 0.0
@@ -416,10 +399,9 @@ class HnuterController(Node):
         self.auto_traj_start_time = 0.0
         self.auto_traj_start_pos = np.zeros(3)
         self.auto_traj_origin_xy = np.zeros(2)
-        self.auto_traj_z = self.takeoff_height
+        self.auto_traj_z = 0.0
         self.auto_traj_yaw = 0.0
         self.auto_traj_start_attitude = np.zeros(3)
-        self.auto_traj_ready_margin = 0.08
         self.rectangle_size_x = 2.0
         self.rectangle_size_y = 1.5
         self.rectangle_segment_time_s = 5.0
@@ -441,26 +423,15 @@ class HnuterController(Node):
         self.debug_print_period_s = 1.0
         self._last_debug_print_time = 0.0
 
-        # Gamepad: 实机建议先用低速度，确认方向后再加大
-        self.gamepad = GamepadManager(
-            max_vxy=1.0,
-            max_vz=0.5,
-            max_yaw_rate=0.6,
-            max_roll_rate=math.radians(20.0),
-            deadzone=0.10,
-            expo=0.40,
-            filter_tau=0.20,
-            lt_axis=2,
-            rt_axis=5,
-            trigger_mode='minus_one_to_one',
-            logger=self.get_logger()
-        )
+        self.rc_input = RCCommandManager(logger=self.get_logger())
         self.keyboard = KeyboardCommandReader(logger=self.get_logger())
         self.keyboard_timer = self.create_timer(0.1, self.poll_keyboard_commands)
 
         self.get_logger().info(
-            'Hnuter PX4 position-offboard controller initialized: '
-            'gamepad + keyboard trajectories; actuator control remains inside PX4.'
+            'Hnuter PX4 position hardware controller initialized. Arm and '
+            'Offboard remain under transmitter/PX4 authority. '
+            f'Firmware profile={self.HARDWARE_FIRMWARE_PROFILE}; servo-only PWM '
+            'mapping remains inside PX4 and does not apply to motors.'
         )
 
     # ============================================================
@@ -502,118 +473,98 @@ class HnuterController(Node):
             self.control_loop()
 
     def status_callback(self, msg):
-        if int(getattr(msg, 'arming_state', -1)) == self.ARMING_STATE_ARMED:
-            self.armed = True
+        self.armed = int(getattr(msg, 'arming_state', -1)) == self.ARMING_STATE_ARMED
         self.nav_state = int(getattr(msg, 'nav_state', -1))
+        self._update_hardware_control_gate()
 
     def control_mode_callback(self, msg):
         self.control_offboard_enabled = bool(getattr(msg, 'flag_control_offboard_enabled', False))
         if hasattr(msg, 'flag_armed'):
             self.armed = bool(msg.flag_armed)
+        self._update_hardware_control_gate()
 
-    def vehicle_command_ack_callback(self, msg):
-        command = int(msg.command)
-        if command not in (self.CMD_DO_SET_MODE, self.CMD_COMPONENT_ARM_DISARM):
-            return
+    def manual_control_callback(self, msg):
+        self.rc_input.feed_manual_control(msg)
 
-        result = int(msg.result)
-        result_name = self.command_ack_result_names.get(result, f'UNKNOWN({result})')
-        command_name = 'DO_SET_MODE' if command == self.CMD_DO_SET_MODE else 'ARM_DISARM'
-        text = (
-            f'PX4 command ack: {command_name} -> {result_name} '
-            f'(result_param1={int(msg.result_param1)}, result_param2={int(msg.result_param2)})'
-        )
-        accepted = result == getattr(VehicleCommandAck, 'VEHICLE_CMD_RESULT_ACCEPTED', 0)
-        if accepted:
-            if command == self.CMD_DO_SET_MODE:
-                self.nav_state = self.NAVIGATION_STATE_OFFBOARD
-                self.control_offboard_enabled = True
-            elif command == self.CMD_COMPONENT_ARM_DISARM and self._last_arm_command_param1 is not None:
-                self.armed = self._last_arm_command_param1 > 0.5
-            self.get_logger().info(text)
-        else:
-            self.get_logger().warn(text)
+    def rc_channels_callback(self, msg):
+        self.rc_input.feed_rc_channels(msg)
 
     # ============================================================
-    # Offboard/Arm startup logic
+    # Transmitter-owned Arm/Offboard gate
     # ============================================================
     def is_offboard(self) -> bool:
-        return bool(self.control_offboard_enabled) or self.nav_state == self.NAVIGATION_STATE_OFFBOARD
+        return bool(self.control_offboard_enabled)
 
     def timestamp_now_us(self) -> int:
         return int(self.px4_timestamp) if self.px4_timestamp > 0 else int(self.get_clock().now().nanoseconds / 1000)
 
     def offboard_startup_tick(self):
-        # 1) 始终发送 OffboardControlMode 作为 proof-of-life，频率 20Hz。
-        #    这是维持 Offboard 的心跳，不等价于重复 arm。
+        # Required proof-of-life only. This hardware node has no VehicleCommand
+        # publisher and cannot request Arm, Disarm, or Offboard.
         self.publish_offboard_control_mode()
+        self._update_hardware_control_gate()
 
-        # 2) 未收到状态数据前不切模式、不解锁。
         if not self.data_received or self.px4_timestamp <= 0:
             return
+        if not self._hardware_control_active:
+            self._hold_current_position()
+            self.publish_px4_trajectory_setpoint()
 
-        # Offboard 切换前也持续发送轨迹设定值，避免 commander 因设定值流不完整而拒绝。
-        self.publish_px4_trajectory_setpoint()
+    def _hold_current_position(self):
+        self._z0 = float(self.position[2])
+        self._z0_initialized = True
+        self.target_position = np.array([self.position[0], self.position[1], 0.0])
+        self.target_velocity = np.zeros(3)
+        self.target_acceleration = np.zeros(3)
+        self.target_attitude = np.array([0.0, 0.0, self.initial_yaw])
+        self.target_attitude_rate = np.zeros(3)
 
-        self.offboard_setpoint_counter += 1
-        now = time.time()
+    def _begin_hardware_control(self):
+        self._hardware_control_active = True
+        self._z0 = float(self.position[2])
+        self._z0_initialized = True
+        self.manual_des_pos = np.array([self.position[0], self.position[1], 0.0])
+        self.manual_des_yaw = self.initial_yaw
+        self.manual_des_roll = 0.0
+        self.manual_pos_initialized = True
+        self.target_position = self.manual_des_pos.copy()
+        self.target_velocity = np.zeros(3)
+        self.target_acceleration = np.zeros(3)
+        self.target_attitude = np.array([0.0, 0.0, self.manual_des_yaw])
+        self.target_attitude_rate = np.zeros(3)
+        self.auto_traj_mode = 'hover'
+        self.pending_auto_traj_mode = (
+            self._interrupted_task or self.pending_auto_traj_mode
+        )
+        self._interrupted_task = None
+        self._last_timestamp_s = self.px4_timestamp / 1_000_000.0
+        restart = (
+            f'，任务 {self.pending_auto_traj_mode} 将从当前位置重新开始'
+            if self.pending_auto_traj_mode else ''
+        )
+        self.get_logger().info(f'检测到 Armed + Offboard，当前位置接管{restart}。')
 
-        # 3) 检测 PX4 是否从 armed 变成 disarmed。
-        #    如果已经成功 arm 过一次，之后又被 PX4 自动上锁，默认禁止自动二次 arm。
-        if self._last_armed_state and not self.armed:
-            takeoff_was_requested = self.takeoff_requested
-            self.was_armed_once = True
-            self.takeoff_requested = False
-            self.manual_pos_initialized = False
-            if not takeoff_was_requested:
-                self.startup_blocked_after_disarm = True
-                self.auto_arm_attempts = 0
-                self.was_armed_once = False
-                self.get_logger().warn(
-                    'PX4 在起飞许可前已自动上锁，可能是 COM_DISARM_PRFLT 预起飞超时。'
-                    '已停止自动二次 Arm；按键盘 o 后会重新请求 Offboard/Arm 并起飞悬停。'
-                )
-            elif not self.rearm_after_auto_disarm:
-                self.startup_blocked_after_disarm = True
-                self.get_logger().warn(
-                    'PX4 已从 armed 变为 disarmed。已阻止自动二次 Arm。'
-                    '请检查是否触发 COM_DISARM_PRFLT、COM_DISARM_LAND、land detector 或 failsafe；'
-                    '确认安全后重启本节点或手动 Arm。'
-                )
-        self._last_armed_state = self.armed
+    def _end_hardware_control(self):
+        if self.auto_traj_mode != 'hover':
+            self._interrupted_task = self.auto_traj_mode
+        elif self.pending_auto_traj_mode is not None:
+            self._interrupted_task = self.pending_auto_traj_mode
+        if self._hardware_control_active:
+            self.get_logger().warn('Armed 或 Offboard 已关闭，停止推进控制任务。')
+        self._hardware_control_active = False
+        self.manual_pos_initialized = False
+        self.auto_traj_mode = 'hover'
+        self.pending_auto_traj_mode = None
+        self.rc_input.filtered_cmds = self.rc_input._zero_commands()
+        if self.data_received:
+            self._hold_current_position()
 
-        if self.startup_blocked_after_disarm:
-            return
-
-        # 4) 至少连续发送 1s 以上 OffboardControlMode 后，再请求 Offboard。
-        stream_ready = self.offboard_setpoint_counter >= self.offboard_warmup_ticks
-        if stream_ready and not self.is_offboard():
-            if now - self._last_offboard_cmd_time > self.mode_request_period_s:
-                self.set_offboard_mode()
-                self._last_offboard_cmd_time = now
-                self.get_logger().info('请求切换到 Offboard 模式...')
-            return
-
-        # 5) 已进入 Offboard 后再 Arm；等待键盘 o 作为起飞/解锁许可。
-        if self.is_offboard() and not self.armed:
-            if not self.takeoff_requested:
-                return
-            if not self.auto_arm_enabled:
-                return
-            if self.was_armed_once and not self.rearm_after_auto_disarm:
-                return
-            if self.auto_arm_attempts >= self.max_auto_arm_attempts:
-                return
-            if now - self._last_arm_cmd_time > self.arm_request_period_s:
-                self.arm()
-                self.auto_arm_attempts += 1
-                self._last_arm_cmd_time = now
-                self.get_logger().info(
-                    f'请求 Arm 解锁... ({self.auto_arm_attempts}/{self.max_auto_arm_attempts})'
-                )
-
-        if self.armed:
-            self.was_armed_once = True
+    def _update_hardware_control_gate(self):
+        should_control = bool(self.data_received and self.armed and self.is_offboard())
+        if should_control and not self._hardware_control_active:
+            self._begin_hardware_control()
+        elif not should_control and self._hardware_control_active:
+            self._end_hardware_control()
 
     def publish_offboard_control_mode(self):
         msg = OffboardControlMode()
@@ -675,37 +626,6 @@ class HnuterController(Node):
         msg.yawspeed = float(-self.target_attitude_rate[2])
         self.trajectory_setpoint_pub.publish(msg)
 
-    def publish_vehicle_command(self, command, param1=0.0, param2=0.0, param3=0.0,
-                                param4=0.0, param5=0.0, param6=0.0, param7=0.0):
-        msg = VehicleCommand()
-        msg.command = int(command)
-        msg.param1 = float(param1)
-        msg.param2 = float(param2)
-        msg.param3 = float(param3)
-        msg.param4 = float(param4)
-        msg.param5 = float(param5)
-        msg.param6 = float(param6)
-        msg.param7 = float(param7)
-        msg.target_system = 1
-        msg.target_component = 1
-        msg.source_system = 1
-        msg.source_component = 1
-        msg.from_external = True
-        msg.timestamp = self.timestamp_now_us()
-        self.vehicle_command_pub.publish(msg)
-
-    def arm(self):
-        self._last_arm_command_param1 = 1.0
-        self.publish_vehicle_command(self.CMD_COMPONENT_ARM_DISARM, param1=1.0)
-
-    def disarm(self):
-        self._last_arm_command_param1 = 0.0
-        self.publish_vehicle_command(self.CMD_COMPONENT_ARM_DISARM, param1=0.0)
-
-    def set_offboard_mode(self):
-        # VEHICLE_CMD_DO_SET_MODE: param1=1(custom), param2=6(OFFBOARD)
-        self.publish_vehicle_command(self.CMD_DO_SET_MODE, param1=1.0, param2=6.0)
-
     # ============================================================
     # Keyboard trajectory commands
     # ============================================================
@@ -723,34 +643,27 @@ class HnuterController(Node):
     def poll_keyboard_commands(self):
         for key in self.keyboard.get_commands():
             if key in ('o', 'O'):
-                if self.startup_blocked_after_disarm and not self.was_armed_once:
-                    self.startup_blocked_after_disarm = False
-                    self.was_armed_once = False
-                    self.auto_arm_attempts = 0
-                    self._last_offboard_cmd_time = 0.0
-                    self._last_arm_cmd_time = 0.0
-                self.takeoff_requested = True
-                self.manual_pos_initialized = False
-                self._takeoff_lock_start_time_s = None
-                self._z0_initialized = False
-                self._z0 = 0.0
-                self.get_logger().info('收到键盘 o：起飞许可已打开，开始爬升到悬停高度。')
+                self.get_logger().warn(
+                    '实机版本不接受键盘起飞命令；请用遥控器控制 Arm、Offboard 和升降。'
+                )
             elif key == '1':
                 self.pending_auto_traj_mode = 'rectangle'
-                self.get_logger().info('收到键盘 1：矩形轨迹已排队，悬停稳定后开始。')
+                self.get_logger().info('收到键盘 1：矩形轨迹将从当前实测位置开始。')
             elif key == '2':
                 self.pending_auto_traj_mode = 'lissajous'
-                self.get_logger().info('收到键盘 2：李萨如轨迹已排队，悬停稳定后开始。')
+                self.get_logger().info('收到键盘 2：李萨如轨迹将从当前实测位置开始。')
             elif key == '3':
                 self.pending_auto_traj_mode = 'attitude'
-                self.get_logger().info('收到键盘 3：姿态角轨迹已排队，悬停稳定后开始。')
+                self.get_logger().info('收到键盘 3：姿态角轨迹将从当前实测位置开始。')
 
     def _trajectory_ready(self, current_time: float) -> bool:
-        if not (self.is_offboard() and self.armed and self.manual_pos_initialized):
-            return False
-        if current_time < self.takeoff_xy_lock_time_s:
-            return False
-        return self.manual_des_pos[2] >= self.takeoff_height - self.auto_traj_ready_margin
+        del current_time
+        return bool(
+            self._hardware_control_active
+            and self.is_offboard()
+            and self.armed
+            and self.manual_pos_initialized
+        )
 
     def _yaw_rotation_2d(self, yaw: float) -> np.ndarray:
         c = math.cos(yaw)
@@ -761,13 +674,19 @@ class HnuterController(Node):
         return float(math.atan2(math.sin(angle), math.cos(angle)))
 
     def _start_auto_trajectory(self, mode: str, current_time: float):
+        # PX4 needs an absolute local setpoint, so resolve every relative task
+        # against the measured position at the instant the task starts.
+        current_relative_z = float(self.position[2] - self._z0)
+        self.manual_des_pos = np.array([
+            self.position[0], self.position[1], current_relative_z
+        ])
         self.auto_traj_mode = mode
         self.auto_traj_start_time = current_time
         self.auto_traj_yaw = float(self.manual_des_yaw)
         self.auto_traj_start_attitude = np.array([0.0, 0.0, self.auto_traj_yaw], dtype=float)
         self.auto_traj_start_pos = self.manual_des_pos.copy()
         self.auto_traj_start_pos[2] = float(np.clip(
-            max(self.auto_traj_start_pos[2], self.takeoff_height),
+            self.auto_traj_start_pos[2],
             self.min_altitude,
             self.max_altitude
         ))
@@ -950,47 +869,28 @@ class HnuterController(Node):
         return True
 
     # ============================================================
-    # Manual trajectory: gamepad velocity -> desired position/yaw
+    # Manual trajectory: RC velocity -> desired position/yaw
     # ============================================================
     def update_trajectory(self, current_time: float, dt: float):
         if not self._z0_initialized:
             self._z0 = float(self.position[2])
             self._z0_initialized = True
 
-        # 未进入 Offboard 或未解锁前，目标点贴住当前点，避免一解锁就猛冲。
-        if (not self.is_offboard()) or (not self.armed):
+        # Arm 或 Offboard 无效时只发布当前位置，绝不推进遥控/轨迹状态。
+        if not self._hardware_control_active:
             self.manual_pos_initialized = False
             self.auto_traj_mode = 'hover'
-            self._takeoff_lock_start_time_s = None
-            self.manual_des_roll = 0.0
-            self.target_position = np.array([self.position[0], self.position[1], 0.0])
-            self.target_velocity = np.zeros(3)
-            self.target_acceleration = np.zeros(3)
-            self.target_attitude = np.array([0.0, 0.0, self.initial_yaw])
-            self.target_attitude_rate = np.zeros(3)
-            return
-
-        if not self.takeoff_requested:
-            self.manual_pos_initialized = False
-            self.auto_traj_mode = 'hover'
-            self._z0_initialized = False
-            self._z0 = 0.0
-            self._takeoff_lock_start_time_s = None
             self.manual_des_roll = 0.0
             self._last_manual_cmd = self._zero_manual_cmd()
-            self.target_position = np.array([self.position[0], self.position[1], 0.0])
-            self.target_velocity = np.zeros(3)
-            self.target_acceleration = np.zeros(3)
-            self.target_attitude = np.array([0.0, 0.0, self.initial_yaw])
-            self.target_attitude_rate = np.zeros(3)
+            self._hold_current_position()
             return
 
         if not self.manual_pos_initialized:
-            self.manual_des_pos = np.array([self.position[0], self.position[1], max(0.0, self.position[2] - self._z0)])
+            self.manual_des_pos = np.array([
+                self.position[0], self.position[1], self.position[2] - self._z0
+            ])
             self.manual_des_yaw = self.initial_yaw if self._yaw_initialized else 0.0
             self.manual_des_roll = 0.0
-            self._xy_lock_position = self.position[:2].copy()
-            self._takeoff_lock_start_time_s = current_time
             self.manual_pos_initialized = True
 
         if self.pending_auto_traj_mode is not None and self._trajectory_ready(current_time):
@@ -1001,31 +901,15 @@ class HnuterController(Node):
             if self._update_auto_trajectory(current_time):
                 return
 
-        cmds = self.gamepad.get_velocity_commands(dt) if self.manual_enabled else self._zero_manual_cmd()
+        cmds = self.rc_input.get_velocity_commands(dt) if self.manual_enabled else self._zero_manual_cmd()
         self._last_manual_cmd = cmds.copy()
-
-        # 初始爬升：若手柄不动，则自动缓慢爬到 takeoff_height；若手柄给 z，则叠加人工指令
-        z_auto_vel = 0.0
-        if self.manual_des_pos[2] < self.takeoff_height:
-            z_err = self.takeoff_height - self.manual_des_pos[2]
-            z_auto_vel = float(np.clip(z_err, 0.0, self.max_climb_rate))
 
         yaw_ref = self.manual_des_yaw
         vx_w = cmds['vx_b'] * math.cos(yaw_ref) - cmds['vy_b'] * math.sin(yaw_ref)
         vy_w = cmds['vx_b'] * math.sin(yaw_ref) + cmds['vy_b'] * math.cos(yaw_ref)
-        vz_w = cmds['vz'] + z_auto_vel
+        vz_w = cmds['vz']
         yaw_rate = cmds['yaw_rate']
         roll_rate = cmds.get('roll_rate', 0.0)
-
-        takeoff_elapsed_s = (
-            current_time - self._takeoff_lock_start_time_s
-            if self._takeoff_lock_start_time_s is not None else float('inf')
-        )
-        if takeoff_elapsed_s < self.takeoff_xy_lock_time_s:
-            vx_w = 0.0
-            vy_w = 0.0
-            self.manual_des_pos[0] = float(self._xy_lock_position[0])
-            self.manual_des_pos[1] = float(self._xy_lock_position[1])
 
         self.manual_des_pos[0] += vx_w * dt
         self.manual_des_pos[1] += vy_w * dt
@@ -1076,7 +960,7 @@ class HnuterController(Node):
 
         now = time.time()
         if now - self._last_debug_print_time >= self.debug_print_period_s:
-            state = '起飞/轨迹控制' if self.takeoff_requested else '等待起飞许可'
+            state = 'RC/轨迹控制' if self._hardware_control_active else '等待 Armed + Offboard'
             self.get_logger().info(
                 f'PX4 position Offboard {state} dt={dt * 1000:.1f}ms | '
                 f'Offboard={self.is_offboard()} | Armed={self.armed} | '
@@ -1097,11 +981,11 @@ class HnuterController(Node):
         self.get_logger().info(
             f"\n{'=' * 72}\n"
             f"Mode: Offboard={self.is_offboard()} | Armed={self.armed} | nav_state={self.nav_state} | ctrl≈{control_hz}Hz\n"
-            f"Takeoff gate: requested={self.takeoff_requested} | restart_blocked={self.startup_blocked_after_disarm}\n"
+            f"Hardware gate: active={self._hardware_control_active} | RC={self.rc_input.source} | age={self.rc_input.age_s:.3f}s\n"
             f"Target ENU/Zrel: [{self.target_position[0]:6.2f}, {self.target_position[1]:6.2f}, {self.target_position[2]:6.2f}] m\n"
             f"Current ENU/Zrel: [{self.position[0]:6.2f}, {self.position[1]:6.2f}, {pos_curr_rel_z:6.2f}] m\n"
             f"Keyboard trajectory: active={self.auto_traj_mode} | pending={self.pending_auto_traj_mode}\n"
-            f"Gamepad: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
+            f"RC: vx_b={self._last_manual_cmd['vx_b']:+4.2f}, vy_b={self._last_manual_cmd['vy_b']:+4.2f}, "
             f"vz={self._last_manual_cmd['vz']:+4.2f}, yaw_rate={self._last_manual_cmd['yaw_rate']:+4.2f}, "
             f"LT={self._last_manual_cmd.get('lt', 0.0):4.2f}, RT={self._last_manual_cmd.get('rt', 0.0):4.2f}\n"
             f"RollCmd: des={np.degrees(self.manual_des_roll):+5.1f}° | Pitch: current={current_pitch_deg:+5.1f}° | "
@@ -1115,7 +999,7 @@ class HnuterController(Node):
         except Exception:
             pass
         try:
-            self.gamepad.close()
+            self.rc_input.close()
         except Exception:
             pass
         super().destroy_node()

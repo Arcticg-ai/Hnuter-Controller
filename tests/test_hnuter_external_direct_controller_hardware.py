@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import json
 import types
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -185,15 +187,28 @@ class HardwareServoCalibrationTest(unittest.TestCase):
         self.assertAlmostEqual(convert(self.controller, 0.5), 2000.0)
         self.assertAlmostEqual(convert(self.controller, 1.0), 2500.0)
 
-    def test_flown_e095_profile_keeps_legacy_primary_and_pwm_ranges(self):
-        self.controller.primary_servo_angle_max_rad = np.deg2rad(185.0)
-        self.controller.servo_pwm_min_us = 800
-        self.controller.servo_pwm_max_us = 2200
-        primary = HnuterHardwareController._primary_joint_angle_to_normalized
-        pwm = HnuterHardwareController._normalized_servo_to_expected_pwm_us
-        self.assertAlmostEqual(primary(self.controller, np.deg2rad(185.0)), 1.0)
-        self.assertAlmostEqual(pwm(self.controller, -1.0), 800.0)
-        self.assertAlmostEqual(pwm(self.controller, 1.0), 2200.0)
+    def test_default_hardware_config_uses_current_pwm_profile(self):
+        path = (
+            Path(__file__).resolve().parents[1]
+            / 'config'
+            / 'hnuter_direct_hardware_tuning.json'
+        )
+        config = json.loads(path.read_text(encoding='utf-8'))
+        self.assertEqual(
+            config['hardware_firmware_profile'],
+            '3131ddd4_500_2500_gear2',
+        )
+        self.assertEqual(
+            [
+                config['servo_pwm_min_us'],
+                config['servo_pwm_trim_us'],
+                config['servo_pwm_max_us'],
+            ],
+            [500, 1500, 2500],
+        )
+        self.assertEqual(config['primary_servo_angle_max_deg'], 180.0)
+        self.assertEqual(config['secondary_servo_angle_max_deg'], 180.0)
+        self.assertEqual(config['HNTR_S2_GEAR'], 2.0)
 
 
 class HardwareIntegralSafetyTest(unittest.TestCase):

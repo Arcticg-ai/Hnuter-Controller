@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
-"""Standalone hardware direct-actuator controller for Hnuter.
+"""Standalone Hnuter Hardware Offboard controller using the OK baseline law.
 
 The transmitter and PX4 retain exclusive Arm, Disarm, and Offboard mode
-authority. The node starts control only while PX4 reports Armed + Offboard,
-holds the measured position instead of taking off automatically, and converts
-physical RC sticks to the established body-velocity and yaw-rate references.
+authority. The node runs continuously while Position mode performs the manual
+takeoff, starts control only while PX4 reports Armed + Offboard, captures the
+measured pose at the mode transition, and converts physical RC sticks to the
+established body-velocity and yaw-rate references.
 
 This file intentionally contains its controller helpers, RC parser, logging
 paths, and task restart state machine so it can run without importing another
 repository-local Python module.
+
+The outer Hardware state machine and current servo calibration come from
+origin/hardware. The cascaded controller, geometric attitude law, direct
+allocation, and real-motor calibration are ported from PX4 tag
+hnuter-ok-144bd9fe and its log-48 parameter snapshot.
 """
 
 import sys
@@ -683,6 +689,7 @@ class HnuterController(Node):
         # State variables
         self.position = np.zeros(3)       # ENU: x East, y North, z Up
         self.velocity = np.zeros(3)       # ENU
+        self.measured_acceleration_ned = np.zeros(3)
         self.attitude_q = np.array([1.0, 0.0, 0.0, 0.0])
         self.angular_velocity = np.zeros(3)  # FLU body angular velocity
         self.angular_velocity_frd = np.zeros(3)
@@ -809,8 +816,8 @@ class HnuterController(Node):
             1.0,
         ))
 
-        # Current hardware firmware: normalized servo control spans 500--2500 us
-        # and represents the full +/-180 deg servo-shaft travel.
+        # Match the current hardware firmware servo calibration. PX4 converts
+        # normalized ActuatorServos commands to the configured PWM endpoints.
         self.hardware_firmware_profile = os.environ.get(
             'HNUTER_HARDWARE_FIRMWARE_PROFILE',
             '3131ddd4_500_2500_gear2',
@@ -912,6 +919,8 @@ class HnuterController(Node):
         ).strip().lower() in ('1', 'true', 'yes', 'on')
         self.direct_takeoff_vertical_only_time_s = self.takeoff_tilt_suppress_time_s
         self.direct_takeoff_vertical_only_height_m = 0.0
+        self.direct_takeoff_vertical_only_height_enabled = True
+        self.direct_takeoff_thrust_floor_enabled = True
 
         self.max_acc_xy = 20.0
         self.max_acc_z = 20.0
@@ -1064,6 +1073,9 @@ class HnuterController(Node):
         self.tuning_path = os.path.expanduser(os.environ.get(
             'HNUTER_TUNING_FILE', str(default_tuning_path)
         ))
+        self.tuning_status_path = Path(self.tuning_path).with_suffix(
+            '.applied.json'
+        )
         self._last_tuning_mtime_ns = None
         self._last_tuning_log_time = 0.0
         self._write_tuning_file_if_missing()
@@ -1254,6 +1266,15 @@ class HnuterController(Node):
                 self.gamepad_filter_tau_body_xy_s.tolist(),
             "gamepad_max_acc_body_xy_mps2":
                 self.gamepad_max_acc_body_xy_mps2.tolist(),
+            "rc_attitude_rate_deg_s": np.degrees(getattr(
+                self, 'rc_attitude_rate_rad_s', np.radians([20.0, 20.0])
+            )).tolist(),
+            "rc_attitude_angle_limit_deg": float(math.degrees(getattr(
+                self, 'rc_attitude_angle_limit_rad', math.radians(45.0)
+            ))),
+            "rc_attitude_sign": np.asarray(getattr(
+                self, 'rc_attitude_sign', np.array([-1.0, -1.0])
+            ), dtype=float).tolist(),
             "max_acc_xy": float(self.max_acc_xy),
             "max_acc_z": float(self.max_acc_z),
             "xy_lock_max_acc_xy": float(self.xy_lock_max_acc_xy),
@@ -1733,6 +1754,8 @@ class HnuterController(Node):
                 self._last_tuning_log_time = now
             return
 
+        self._write_tuning_apply_status(data, stat.st_mtime_ns)
+
         now = time.time()
         if force or now - self._last_tuning_log_time > 1.0:
             self.get_logger().info(
@@ -1765,6 +1788,45 @@ class HnuterController(Node):
                 f'pos_Ki_ned={np.round(self.direct_pos_Ki_ned, 3).tolist()}'
             )
             self._last_tuning_log_time = now
+
+    def _write_tuning_apply_status(
+        self,
+        tuning_data: dict,
+        source_mtime_ns: int,
+    ) -> None:
+        """Atomically acknowledge a successfully applied live-tuning file."""
+        status = {
+            'ok': True,
+            'node': self._node_name(),
+            'pid': os.getpid(),
+            'source_path': str(Path(self.tuning_path).resolve()),
+            'source_mtime_ns': int(source_mtime_ns),
+            'revision': tuning_data.get('_web_revision'),
+            'applied_at_unix_s': time.time(),
+        }
+        path = self.tuning_status_path
+        temporary = path.with_name(
+            f'.{path.name}.{os.getpid()}.{time.time_ns()}.tmp'
+        )
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with temporary.open('x', encoding='utf-8') as stream:
+                json.dump(status, stream, indent=2, sort_keys=True)
+                stream.write('\n')
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        except OSError as exc:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
+            now = time.time()
+            if now - self._last_tuning_log_time > 2.0:
+                self.get_logger().warn(
+                    f'无法写入在线调参加载回执 {path}: {exc}'
+                )
+                self._last_tuning_log_time = now
 
     # ============================================================
     # PX4 callbacks
@@ -1848,6 +1910,15 @@ class HnuterController(Node):
         self.position = np.array([msg.y, msg.x, -msg.z], dtype=float)
         if bool(msg.v_xy_valid) and bool(msg.v_z_valid):
             self.velocity = np.array([msg.vy, msg.vx, -msg.vz], dtype=float)
+        measured_acceleration = np.array([
+            getattr(msg, 'ax', math.nan),
+            getattr(msg, 'ay', math.nan),
+            getattr(msg, 'az', math.nan),
+        ], dtype=float)
+        if np.all(np.isfinite(measured_acceleration)):
+            self.measured_acceleration_ned = measured_acceleration
+        else:
+            self.measured_acceleration_ned[:] = 0.0
 
         self.local_position_received = True
         self.data_received = self.local_position_received and self.attitude_received
@@ -2140,6 +2211,29 @@ class HnuterController(Node):
         )
 
     def publish_direct_actuator_setpoint(self, motor_controls, alpha1, alpha2, theta1, theta2):
+        servo_controls = [
+            self._primary_joint_angle_to_normalized(alpha2),
+            self._primary_joint_angle_to_normalized(alpha1),
+            self._secondary_joint_angle_to_normalized(theta2),
+            self._secondary_joint_angle_to_normalized(theta1),
+        ]
+        self._publish_normalized_direct_actuator_setpoint(
+            motor_controls,
+            servo_controls,
+        )
+
+    def _publish_normalized_direct_actuator_setpoint(
+        self,
+        motor_controls,
+        servo_controls,
+    ):
+        """Publish already-normalized actuator commands.
+
+        Keeping this final publication step separate lets the hardware path
+        blend the last PX4 Position-mode outputs into the first external
+        controller outputs without converting normalized servo commands back
+        and forth through angles.
+        """
         timestamp = self.timestamp_now_us()
 
         motor_msg = ActuatorMotors()
@@ -2160,10 +2254,8 @@ class HnuterController(Node):
         if hasattr(servo_msg, 'timestamp_sample'):
             servo_msg.timestamp_sample = timestamp
         servo_msg.control = [float('nan')] * 8
-        servo_msg.control[0] = self._primary_joint_angle_to_normalized(alpha2)
-        servo_msg.control[1] = self._primary_joint_angle_to_normalized(alpha1)
-        servo_msg.control[2] = self._secondary_joint_angle_to_normalized(theta2)
-        servo_msg.control[3] = self._secondary_joint_angle_to_normalized(theta1)
+        for index, value in enumerate(servo_controls[:8]):
+            servo_msg.control[index] = float(np.clip(value, -1.0, 1.0))
         self.last_servo_cmd = np.array(servo_msg.control)
         self.actuator_servos_pub.publish(servo_msg)
 
@@ -2739,7 +2831,11 @@ class HnuterController(Node):
             if self._update_auto_trajectory(current_time):
                 return
 
-        cmds = self.gamepad.get_velocity_commands(dt) if self.manual_enabled else self._zero_manual_cmd()
+        cmds = (
+            self.gamepad.get_velocity_commands(dt)
+            if self._manual_command_input_enabled()
+            else self._zero_manual_cmd()
+        )
         self._last_manual_cmd = cmds.copy()
 
         yaw_rate = float(cmds['yaw_rate'])
@@ -2751,6 +2847,11 @@ class HnuterController(Node):
         vy_w = cmds['vx_b'] * math.sin(yaw_ref) + cmds['vy_b'] * math.cos(yaw_ref)
         roll_rate = cmds.get('roll_rate', 0.0)
         pitch_rate = cmds.get('pitch_rate', 0.0)
+        command_attitude_limit = max(
+            float(cmds.get('attitude_limit_rad', float('inf'))), 0.0
+        )
+        roll_limit = min(self.manual_roll_limit_rad, command_attitude_limit)
+        pitch_limit = min(self.manual_pitch_limit_rad, command_attitude_limit)
         prev_xy = self.manual_des_pos[:2].copy()
         manual_xy_active = abs(cmds['vx_b']) > 1e-5 or abs(cmds['vy_b']) > 1e-5
 
@@ -2794,15 +2895,15 @@ class HnuterController(Node):
         previous_roll = self.manual_des_roll
         self.manual_des_roll = float(np.clip(
             previous_roll + roll_rate * dt,
-            -self.manual_roll_limit_rad,
-            self.manual_roll_limit_rad
+            -roll_limit,
+            roll_limit,
         ))
         realized_roll_rate = (self.manual_des_roll - previous_roll) / max(dt, 1e-3)
         previous_pitch = self.manual_des_pitch
         self.manual_des_pitch = float(np.clip(
             previous_pitch + pitch_rate * dt,
-            -self.manual_pitch_limit_rad,
-            self.manual_pitch_limit_rad,
+            -pitch_limit,
+            pitch_limit,
         ))
         realized_pitch_rate = (
             self.manual_des_pitch - previous_pitch
@@ -2827,6 +2928,9 @@ class HnuterController(Node):
             yaw_rate,
         ], dtype=float)
         self.target_R_des_ned_frd = None
+
+    def _manual_command_input_enabled(self) -> bool:
+        return bool(self.manual_enabled)
 
     def control_loop(self):
         if not self.data_received or self.px4_timestamp <= 0:
@@ -2977,6 +3081,19 @@ class HnuterController(Node):
         control = math.sqrt(abs(thrust) / max_thrust)
         return float(np.clip(control if thrust > 0.0 else -control, -1.0, 1.0))
 
+    def _allocator_thrust_limits(self) -> tuple[float, float]:
+        return 100.0, 50.0
+
+    def _front_motor_control(self, thrust: float, max_thrust: float) -> float:
+        return self._thrust_to_normalized_motor_control(thrust, max_thrust)
+
+    def _tail_motor_control(self, thrust: float, max_thrust: float) -> float:
+        if self.allow_tail_reverse:
+            return self._thrust_to_normalized_bidirectional_motor_control(
+                thrust, max_thrust
+            )
+        return self._thrust_to_normalized_motor_control(thrust, max_thrust)
+
     def _allocator_wrench_from_body_force_torque(self, f_body: np.ndarray, tau_c: np.ndarray) -> np.ndarray:
         """Map PX4 FRD body force/torque to the Hnuter allocator wrench.
 
@@ -3063,6 +3180,29 @@ class HnuterController(Node):
             return f'xy speed={speed_xy:.1f}m/s exceeds direct safety limit'
         return ''
 
+    def _direct_vertical_only_active(
+        self,
+        takeoff_elapsed_s: float,
+        pos_rel_z: float,
+    ) -> bool:
+        """Return whether the direct controller must suppress horizontal force.
+
+        The height condition is useful for the ground-takeoff debug path, but
+        must be explicitly disabled when Hardware mode takes over in flight:
+        its relative-Z origin is the handover altitude, so even millimetres of
+        descent must not re-enable a takeoff-only vertical-force guard.
+        """
+        time_guard_active = (
+            float(takeoff_elapsed_s)
+            < float(self.direct_takeoff_vertical_only_time_s)
+        )
+        height_guard_active = bool(
+            self.direct_takeoff_vertical_only_height_enabled
+            and float(pos_rel_z)
+            < float(self.direct_takeoff_vertical_only_height_m)
+        )
+        return bool(time_guard_active or height_guard_active)
+
     def _publish_direct_safety_cutoff(self, current_time: float):
         if not self.direct_safety_cutoff:
             reason = self._direct_safety_violation_reason()
@@ -3117,9 +3257,9 @@ class HnuterController(Node):
         )
         self._xy_lock_active = bool(xy_lock_active)
         pos_rel_z = self.position[2] - self._z0 if self._z0_initialized else self.position[2]
-        vertical_only_active = (
-            takeoff_elapsed_s < self.direct_takeoff_vertical_only_time_s
-            or pos_rel_z < self.direct_takeoff_vertical_only_height_m
+        vertical_only_active = self._direct_vertical_only_active(
+            takeoff_elapsed_s,
+            pos_rel_z,
         )
 
         auto_attitude_active = self.auto_traj_mode == 'attitude'
@@ -3330,8 +3470,7 @@ class HnuterController(Node):
 
         # Physical allocator limits. F1/F2 are the total thrust of the two
         # motors on each front arm; F3 is the single tail-motor thrust.
-        max_thrust_per_arm = 100.0
-        max_tail_thrust = 50.0
+        max_thrust_per_arm, max_tail_thrust = self._allocator_thrust_limits()
         r_x = 0.105
         r_z = -0.013
 
@@ -3346,7 +3485,7 @@ class HnuterController(Node):
             self.pitch_torque_bias,
             self.tail_torque_sign,
         )
-        if takeoff_elapsed_s < 12.0:
+        if self.direct_takeoff_thrust_floor_enabled and takeoff_elapsed_s < 12.0:
             W[2] = max(float(W[2]), self.mass * self.gravity * 0.70)
 
         if self.publish_land_detector_thrust_setpoint or self.publish_allocator_setpoints_in_direct:
@@ -3405,8 +3544,8 @@ class HnuterController(Node):
         eps = 1e-8
         alpha1 = math.atan2(u1, u2)
         alpha2 = math.atan2(u4, u5)
-        theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -0.99, 0.99)))
-        theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -0.99, 0.99)))
+        theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -1.0, 1.0)))
+        theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -1.0, 1.0)))
 
         F1 = float(np.clip(F1, 0.0, max_thrust_per_arm))
         F2 = float(np.clip(F2, 0.0, max_thrust_per_arm))
@@ -3436,27 +3575,11 @@ class HnuterController(Node):
         left_single = 0.5 * F1
         max_front_motor_thrust = 0.5 * max_thrust_per_arm
         motor_controls = [
-            self._thrust_to_normalized_motor_control(
-                right_single, max_front_motor_thrust
-            ),
-            self._thrust_to_normalized_motor_control(
-                right_single, max_front_motor_thrust
-            ),
-            self._thrust_to_normalized_motor_control(
-                left_single, max_front_motor_thrust
-            ),
-            self._thrust_to_normalized_motor_control(
-                left_single, max_front_motor_thrust
-            ),
-            (
-                self._thrust_to_normalized_bidirectional_motor_control(
-                    F3, max_tail_thrust
-                )
-                if self.allow_tail_reverse
-                else self._thrust_to_normalized_motor_control(
-                    F3, max_tail_thrust
-                )
-            ),
+            self._front_motor_control(right_single, max_front_motor_thrust),
+            self._front_motor_control(right_single, max_front_motor_thrust),
+            self._front_motor_control(left_single, max_front_motor_thrust),
+            self._front_motor_control(left_single, max_front_motor_thrust),
+            self._tail_motor_control(F3, max_tail_thrust),
         ]
 
         dt_slew = float(np.clip(dt, 0.0, 0.2))
@@ -3708,6 +3831,8 @@ class _StickSample:
     pitch: float = 0.0
     yaw: float = 0.0
     throttle: float = 0.0
+    aux1: float = 0.0
+    aux2: float = 0.0
 
 
 class RCCommandManager:
@@ -3718,6 +3843,9 @@ class RCCommandManager:
         max_vxy_body_mps,
         max_vz: float,
         max_yaw_rate: float,
+        max_attitude_rate_rad_s,
+        max_attitude_angle_rad: float,
+        attitude_sign,
         deadzone: float,
         expo: float,
         filter_tau: float,
@@ -3733,6 +3861,13 @@ class RCCommandManager:
         ).reshape(2)
         self.max_vz = float(max_vz)
         self.max_yaw_rate = float(max_yaw_rate)
+        self.max_attitude_rate_rad_s = np.asarray(
+            max_attitude_rate_rad_s, dtype=float
+        ).reshape(2)
+        self.max_attitude_angle_rad = max(float(max_attitude_angle_rad), 0.0)
+        self.attitude_sign = np.sign(
+            np.asarray(attitude_sign, dtype=float).reshape(2)
+        )
         self.deadzone = float(deadzone)
         self.expo = float(expo)
         self.filter_tau = float(filter_tau)
@@ -3743,7 +3878,7 @@ class RCCommandManager:
             max_acc_body_xy_mps2, dtype=float
         ).reshape(2)
         self.timeout_s = max(float(timeout_s), 0.05)
-        self.attitude_control_axis = 'roll'
+        self.attitude_control_axis = 'roll+pitch'
 
         self.pitch_sign = env_float('HNUTER_RC_PITCH_SIGN', 1.0)
         self.roll_sign = env_float('HNUTER_RC_ROLL_SIGN', -1.0)
@@ -3773,6 +3908,7 @@ class RCCommandManager:
             'rt': 0.0,
             'rb_pressed': False,
             'attitude_axis': self.attitude_control_axis,
+            'attitude_limit_rad': self.max_attitude_angle_rad,
         }
 
     @staticmethod
@@ -3786,6 +3922,8 @@ class RCCommandManager:
             pitch=float(getattr(message, 'pitch', math.nan)),
             yaw=float(getattr(message, 'yaw', math.nan)),
             throttle=float(getattr(message, 'throttle', math.nan)),
+            aux1=float(getattr(message, 'aux1', 0.0)),
+            aux2=float(getattr(message, 'aux2', 0.0)),
         )
         source = int(getattr(
             message, 'data_source', ManualControlSetpoint.SOURCE_RC
@@ -3794,7 +3932,8 @@ class RCCommandManager:
             bool(getattr(message, 'valid', False))
             and source == ManualControlSetpoint.SOURCE_RC
             and self._finite_sticks(
-                sample.roll, sample.pitch, sample.yaw, sample.throttle
+                sample.roll, sample.pitch, sample.yaw, sample.throttle,
+                sample.aux1, sample.aux2,
             )
         )
         if self._manual_valid:
@@ -3822,6 +3961,8 @@ class RCCommandManager:
         pitch = self._mapped_channel(message, RcChannels.FUNCTION_PITCH)
         yaw = self._mapped_channel(message, RcChannels.FUNCTION_YAW)
         throttle = self._mapped_channel(message, RcChannels.FUNCTION_THROTTLE)
+        aux1 = self._mapped_channel(message, RcChannels.FUNCTION_AUX_1)
+        aux2 = self._mapped_channel(message, RcChannels.FUNCTION_AUX_2)
         values = (roll, pitch, yaw, throttle)
         self._channels_valid = (
             not bool(getattr(message, 'signal_lost', True))
@@ -3835,6 +3976,8 @@ class RCCommandManager:
                 pitch=float(pitch),
                 yaw=float(yaw),
                 throttle=2.0 * float(throttle) - 1.0,
+                aux1=0.0 if aux1 is None else float(aux1),
+                aux2=0.0 if aux2 is None else float(aux2),
             )
         self._channels_received_s = now
 
@@ -3870,11 +4013,19 @@ class RCCommandManager:
         roll = self._shape(sample.roll)
         throttle = self._shape(sample.throttle)
         yaw = self._shape(sample.yaw)
+        aux1 = self._shape(sample.aux1)
+        aux2 = self._shape(sample.aux2)
 
         target_vx_b = self.pitch_sign * pitch * self.max_vxy_body_mps[0]
         target_vy_b = self.roll_sign * roll * self.max_vxy_body_mps[1]
         target_vz = self.throttle_sign * throttle * self.max_vz
         target_yaw_rate = self.yaw_sign * yaw * self.max_yaw_rate
+        target_roll_rate = (
+            self.attitude_sign[0] * aux1 * self.max_attitude_rate_rad_s[0]
+        )
+        target_pitch_rate = (
+            self.attitude_sign[1] * aux2 * self.max_attitude_rate_rad_s[1]
+        )
 
         self.filtered_cmds['raw_vx_b'] = float(target_vx_b)
         self.filtered_cmds['raw_vy_b'] = float(target_vy_b)
@@ -3893,6 +4044,15 @@ class RCCommandManager:
             self.filtered_cmds['yaw_rate'], target_yaw_rate, dt,
             self.filter_tau,
         )
+        self.filtered_cmds['roll_rate'] = GamepadManager._filter_command(
+            self.filtered_cmds['roll_rate'], target_roll_rate, dt,
+            self.filter_tau,
+        )
+        self.filtered_cmds['pitch_rate'] = GamepadManager._filter_command(
+            self.filtered_cmds['pitch_rate'], target_pitch_rate, dt,
+            self.filter_tau,
+        )
+        self.filtered_cmds['attitude_limit_rad'] = self.max_attitude_angle_rad
         return self.filtered_cmds.copy()
 
     @property
@@ -3961,6 +4121,9 @@ class HnuterHardwareController(HnuterController):
             max_vxy_body_mps=self.gamepad_max_vxy_body_mps,
             max_vz=env_float('HNUTER_RC_MAX_VZ_MPS', 0.30),
             max_yaw_rate=env_float('HNUTER_RC_MAX_YAW_RATE_RPS', 0.40),
+            max_attitude_rate_rad_s=self.rc_attitude_rate_rad_s,
+            max_attitude_angle_rad=self.rc_attitude_angle_limit_rad,
+            attitude_sign=self.rc_attitude_sign,
             deadzone=self.gamepad_deadzone,
             expo=self.gamepad_expo,
             filter_tau=self.gamepad_filter_tau_s,
@@ -3976,28 +4139,21 @@ class HnuterHardwareController(HnuterController):
         self._restart_tracker = OffboardTaskRestartTracker()
         super().__init__()
 
-        self.hardware_takeoff_gate_enabled = os.environ.get(
-            'HNUTER_HARDWARE_TAKEOFF_GATE', '1'
-        ).strip().lower() in ('1', 'true', 'yes', 'on')
-        self.hardware_takeoff_low_threshold = float(np.clip(
-            env_float('HNUTER_HARDWARE_TAKEOFF_LOW', -0.70),
-            -0.95,
-            -0.10,
-        ))
-        self.hardware_takeoff_trigger_threshold = float(np.clip(
-            env_float('HNUTER_HARDWARE_TAKEOFF_TRIGGER', 0.10),
-            self.hardware_takeoff_low_threshold + 0.20,
-            0.80,
-        ))
-        self.hardware_spool_ramp_s = max(
-            0.5, env_float('HNUTER_HARDWARE_SPOOL_RAMP_S', 3.0)
+        # Position mode is responsible for takeoff. When the pilot switches to
+        # Offboard in the air, blend the final PX4 actuator command into the
+        # external controller command while holding the measured pose.
+        self.hardware_handover_duration_s = max(
+            0.0, env_float('HNUTER_HARDWARE_HANDOVER_S', 0.80)
         )
-        self._hardware_takeoff_permitted = False
-        self._hardware_takeoff_low_seen = False
-        self._hardware_flight_started_once = False
-        self._hardware_spool_start_timestamp_us = 0
-        self._hardware_spool_scale = 0.0
-        self._hardware_takeoff_gate_state = 'inactive'
+        self.hardware_handover_snapshot_max_age_s = max(
+            0.05, env_float('HNUTER_HARDWARE_HANDOVER_MAX_AGE_S', 0.30)
+        )
+        self._hardware_handover_start_timestamp_us = 0
+        self._hardware_handover_motor_start = np.full(5, np.nan)
+        self._hardware_handover_servo_start = np.full(4, np.nan)
+        self._hardware_handover_snapshot_valid = False
+        self._hardware_handover_blend = 0.0
+        self._hardware_handover_state = 'inactive'
 
         qos_rc = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -4025,10 +4181,13 @@ class HnuterHardwareController(HnuterController):
         self.takeoff_tilt_suppress_time_s = 0.0
         self.takeoff_xy_lock_time_s = 0.0
         self.direct_takeoff_vertical_only_time_s = 0.0
+        self.direct_takeoff_vertical_only_height_enabled = False
+        self.direct_takeoff_thrust_floor_enabled = False
         self.preflight_tilt_test_enabled = False
         self.get_logger().warn(
             'HARDWARE MODE: 本节点不会 Arm/Disarm，也不会切换 Offboard。'
-            '请使用遥控器完成解锁和模式切换；Arm 与 Offboard 同时有效后在当前位置接管。'
+            '请在 Position 模式手动解锁并起飞，再在空中切换 Offboard；'
+            '节点常驻发送心跳，检测到 Armed + Offboard 后在当前位置无扰接管。'
         )
         self.get_logger().warn(
             '实机舵机映射要求 PX4 MAIN8--11 参数与控制器一致: '
@@ -4042,16 +4201,43 @@ class HnuterHardwareController(HnuterController):
             '以上 PWM 范围仅用于四路倾转舵机输入；电机仍通过 '
             'ActuatorMotors.control 发布归一化推力并保留独立推力限幅。'
         )
-        if self.hardware_takeoff_gate_enabled:
-            self.get_logger().warn(
-                '实机起飞门控已启用：Armed + Offboard 后电机先保持最小输出；'
-                f'油门需先低于 {self.hardware_takeoff_low_threshold:+.2f}，'
-                f'再推过 {self.hardware_takeoff_trigger_threshold:+.2f} 才启动控制；'
-                f'电机将在 {self.hardware_spool_ramp_s:.1f}s 内软启动。'
-            )
+        self.get_logger().info(
+            f'空中接管过渡时间 {self.hardware_handover_duration_s:.2f}s；'
+            '过渡期间保持切换瞬间的位置和航向，并暂时忽略遥控运动指令。'
+        )
 
     def _apply_tuning(self, data: dict):
         super()._apply_tuning(data)
+        current_rate_deg_s = np.degrees(getattr(
+            self, 'rc_attitude_rate_rad_s', np.radians([20.0, 20.0])
+        ))
+        self.rc_attitude_rate_rad_s = np.radians(np.clip(
+            self._tuning_array(
+                data, 'rc_attitude_rate_deg_s', current_rate_deg_s
+            ),
+            0.0,
+            90.0,
+        ))
+        self.rc_attitude_angle_limit_rad = math.radians(float(np.clip(
+            self._tuning_float(
+                data,
+                'rc_attitude_angle_limit_deg',
+                math.degrees(getattr(
+                    self, 'rc_attitude_angle_limit_rad', math.radians(45.0)
+                )),
+            ),
+            0.0,
+            90.0,
+        )))
+        self.rc_attitude_sign = np.sign(self._tuning_array(
+            data,
+            'rc_attitude_sign',
+            getattr(self, 'rc_attitude_sign', np.array([-1.0, -1.0])),
+        ))
+        if hasattr(self, 'rc_input'):
+            self.rc_input.max_attitude_rate_rad_s = self.rc_attitude_rate_rad_s.copy()
+            self.rc_input.max_attitude_angle_rad = self.rc_attitude_angle_limit_rad
+            self.rc_input.attitude_sign = self.rc_attitude_sign.copy()
         # A task may change attitude or position, but hardware startup must
         # never inject an altitude step merely because the node started.
         self.attitude_test_altitude_m = 0.0
@@ -4077,58 +4263,69 @@ class HnuterHardwareController(HnuterController):
         self._update_hardware_control_gate()
 
     def _begin_hardware_control(self) -> None:
-        require_takeoff_gate = bool(
-            self.hardware_takeoff_gate_enabled
-            and not self._hardware_flight_started_once
-        )
         self._hardware_control_active = True
-        self.takeoff_requested = not require_takeoff_gate
-        self.manual_pos_initialized = False
+        # This flag only enables the shared direct-control path. Hardware mode
+        # never uses it to request takeoff or Arm.
+        self.takeoff_requested = True
         self.pending_auto_traj_mode = self._restart_tracker.consume()
         self.auto_traj_mode = 'hover'
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
+        self._attitude_error_quaternion = None
         self._takeoff_lock_start_time_s = None
         self._takeoff_start_z_rel = 0.0
         self._xy_lock_active = False
         self.manual_des_roll = 0.0
         self.manual_des_pitch = 0.0
-        self.sim_start_time_s = 0.0
-        self._last_timestamp_s = 0.0
-        self._hardware_takeoff_permitted = not require_takeoff_gate
-        self._hardware_takeoff_low_seen = False
-        self._hardware_spool_start_timestamp_us = 0
-        self._hardware_spool_scale = 1.0 if not require_takeoff_gate else 0.0
-        self._hardware_takeoff_gate_state = (
-            'active' if not require_takeoff_gate else 'waiting_low'
-        )
+
+        # Capture the actual state at the Offboard rising edge. Relative Z is
+        # reset to zero here, so a mode change never injects the old ground
+        # takeoff height or a stale target from an earlier control session.
+        current_yaw = self._current_yaw_enu()
+        self._z0 = float(self.position[2])
+        self._z0_initialized = True
+        self.manual_des_pos = np.array([
+            float(self.position[0]),
+            float(self.position[1]),
+            0.0,
+        ])
+        self.manual_des_yaw = current_yaw
+        self.initial_yaw = current_yaw
+        self.target_position = self.manual_des_pos.copy()
+        self.target_velocity = np.zeros(3)
+        self.target_acceleration = np.zeros(3)
+        self.target_attitude = np.array([0.0, 0.0, current_yaw])
+        self.target_attitude_rate = np.zeros(3)
+        self.target_R_des_ned_frd = None
+        self.manual_pos_initialized = True
+        self._xy_lock_position = self.position[:2].copy()
+        self._xy_lock_initialized = True
+        self._last_manual_cmd = self._zero_manual_cmd()
+
+        now_s = float(self.px4_timestamp) / 1_000_000.0
+        self.sim_start_time_s = now_s
+        self._last_timestamp_s = now_s
+        self._capture_hardware_handover_snapshot()
         restart_text = (
             f'，将从当前位置重新开始任务 {self.pending_auto_traj_mode}'
             if self.pending_auto_traj_mode else ''
         )
-        if require_takeoff_gate:
-            self.get_logger().info(
-                '检测到 Armed + Offboard：电机保持最小输出。'
-                f'请先将油门拉低至 {self.hardware_takeoff_low_threshold:+.2f} 以下。'
-            )
-        else:
-            self.get_logger().info(
-                f'检测到 Armed + Offboard，实机外部控制已接管{restart_text}。'
-            )
+        snapshot_text = (
+            '已捕获 Position 模式执行器输出并开始平滑混合'
+            if self._hardware_handover_snapshot_valid
+            else '未取得新鲜的 Position 执行器输出，仅执行目标点无扰初始化'
+        )
+        self.get_logger().warn(
+            f'检测到 Armed + Offboard：锁定当前位置 '
+            f'[{self.position[0]:.2f}, {self.position[1]:.2f}, {self.position[2]:.2f}]m '
+            f'和当前航向 {math.degrees(current_yaw):.1f}deg；{snapshot_text}{restart_text}。'
+        )
 
     def _end_hardware_control(self) -> None:
         if self._hardware_control_active:
             self.get_logger().warn(
                 'Armed 或 Offboard 条件失效，外部执行会话已停止。'
             )
-        if (
-            not self.armed
-            and (
-                self.land_detected.get('landed', False)
-                or self.land_detected.get('ground_contact', False)
-            )
-        ):
-            self._hardware_flight_started_once = False
         self._hardware_control_active = False
         self.takeoff_requested = False
         self.manual_pos_initialized = False
@@ -4136,103 +4333,117 @@ class HnuterHardwareController(HnuterController):
         self.auto_traj_mode = 'hover'
         self.integral_pos_error[:] = 0.0
         self.integral_e_R[:] = 0.0
+        self._attitude_error_quaternion = None
         self._last_manual_cmd = self._zero_manual_cmd()
-        self._hardware_takeoff_permitted = False
-        self._hardware_takeoff_low_seen = False
-        self._hardware_spool_start_timestamp_us = 0
-        self._hardware_spool_scale = 0.0
-        self._hardware_takeoff_gate_state = 'inactive'
+        self._hardware_handover_start_timestamp_us = 0
+        self._hardware_handover_snapshot_valid = False
+        self._hardware_handover_blend = 0.0
+        self._hardware_handover_state = 'inactive'
 
-    def _open_hardware_takeoff_gate(self) -> None:
-        self._hardware_takeoff_permitted = True
-        self._hardware_flight_started_once = True
-        self.takeoff_requested = True
-        self.manual_pos_initialized = False
-        self.integral_pos_error[:] = 0.0
-        self.integral_e_R[:] = 0.0
-        self._takeoff_lock_start_time_s = None
-        self._takeoff_start_z_rel = 0.0
-        self._xy_lock_active = False
-        self.sim_start_time_s = 0.0
-        self._last_timestamp_s = 0.0
-        self._hardware_spool_start_timestamp_us = int(self.px4_timestamp)
-        self._hardware_spool_scale = 0.0
-        self._hardware_takeoff_gate_state = 'spooling'
-        self.get_logger().warn(
-            '油门起飞许可已触发：闭环控制开始，'
-            f'电机将在 {self.hardware_spool_ramp_s:.1f}s 内平滑升至完整命令。'
+    def _capture_hardware_handover_snapshot(self) -> None:
+        motor_age = self._px4_topic_age_s(self.px4_out_motor_timestamp)
+        servo_age = self._px4_topic_age_s(self.px4_out_servo_timestamp)
+        motors = np.asarray(self.px4_out_motor_cmd[:5], dtype=float)
+        servos = np.asarray(self.px4_out_servo_cmd[:4], dtype=float)
+        fresh = bool(
+            np.all(np.isfinite(motors))
+            and np.all(np.isfinite(servos))
+            and math.isfinite(motor_age)
+            and math.isfinite(servo_age)
+            # These callbacks are asynchronous. A few milliseconds of negative
+            # age only means the actuator sample arrived after the latest local
+            # position sample, while both still use the same PX4 clock.
+            and abs(motor_age) <= self.hardware_handover_snapshot_max_age_s
+            and abs(servo_age) <= self.hardware_handover_snapshot_max_age_s
         )
-
-    def _update_hardware_takeoff_gate(self) -> None:
-        throttle, source = self.rc_input.takeoff_throttle()
-        if source == 'stale':
-            # Require a fresh low-stick observation after any RC dropout; a
-            # reconnect with a high throttle must never unlock the gate.
-            self._hardware_takeoff_low_seen = False
-            if self._hardware_takeoff_gate_state != 'waiting_rc':
-                self._hardware_takeoff_gate_state = 'waiting_rc'
-                self.get_logger().warn(
-                    '起飞门控等待有效 RC 油门数据；电机保持最小输出。'
-                )
-            return
-
-        if throttle <= self.hardware_takeoff_low_threshold:
-            if not self._hardware_takeoff_low_seen:
-                self._hardware_takeoff_low_seen = True
-                self._hardware_takeoff_gate_state = 'ready'
-                self.get_logger().info(
-                    '已确认油门低位；向上推油门越过 '
-                    f'{self.hardware_takeoff_trigger_threshold:+.2f} 可启动电机。'
-                )
-            return
-
-        if (
-            self._hardware_takeoff_low_seen
-            and throttle >= self.hardware_takeoff_trigger_threshold
-        ):
-            self._open_hardware_takeoff_gate()
-            return
-
-        self._hardware_takeoff_gate_state = (
-            'ready' if self._hardware_takeoff_low_seen else 'waiting_low'
+        self._hardware_handover_snapshot_valid = fresh
+        self._hardware_handover_start_timestamp_us = int(self.px4_timestamp)
+        self._hardware_handover_blend = (
+            1.0 if self.hardware_handover_duration_s <= 0.0 else 0.0
         )
+        self._hardware_handover_state = (
+            'active' if self._hardware_handover_blend >= 1.0 else 'blending'
+        )
+        if not fresh:
+            self._hardware_handover_motor_start[:] = np.nan
+            self._hardware_handover_servo_start[:] = np.nan
+            return
 
-    def _current_hardware_spool_scale(self) -> float:
-        if not self._hardware_takeoff_permitted:
-            return 0.0
-        if self._hardware_spool_start_timestamp_us <= 0:
+        self._hardware_handover_motor_start = motors.copy()
+        self._hardware_handover_servo_start = servos.copy()
+
+        # Start the allocator's servo slew limiter at the actual Position-mode
+        # command instead of at zero or a command left by an older session.
+        self._alpha2_cmd = float(servos[0]) * self.primary_servo_angle_max_rad
+        self._alpha1_cmd = float(servos[1]) * self.primary_servo_angle_max_rad
+        secondary_scale = (
+            self.secondary_servo_angle_max_rad
+            / max(self.secondary_servo_gear_ratio, 1e-8)
+        )
+        self._theta2_cmd = float(servos[2]) * secondary_scale
+        self._theta1_cmd = float(servos[3]) * secondary_scale
+
+        # Publish the captured command immediately after the mode rising edge;
+        # the first controller callback then continues from the same values.
+        self._publish_normalized_direct_actuator_setpoint(motors, servos)
+
+    def _current_hardware_handover_blend(self) -> float:
+        if self.hardware_handover_duration_s <= 0.0:
+            return 1.0
+        if self._hardware_handover_start_timestamp_us <= 0:
             return 1.0
         elapsed = max(
             0.0,
             (
                 int(self.px4_timestamp)
-                - self._hardware_spool_start_timestamp_us
+                - self._hardware_handover_start_timestamp_us
             ) / 1_000_000.0,
         )
-        phase = float(np.clip(elapsed / self.hardware_spool_ramp_s, 0.0, 1.0))
+        phase = float(np.clip(
+            elapsed / self.hardware_handover_duration_s,
+            0.0,
+            1.0,
+        ))
         # Smoothstep avoids a step in both command and command slope.
-        scale = phase * phase * (3.0 - 2.0 * phase)
-        if phase >= 1.0 and self._hardware_takeoff_gate_state != 'active':
-            self._hardware_takeoff_gate_state = 'active'
-            self.get_logger().info('电机软启动完成，已进入完整闭环控制。')
-        return float(scale)
+        blend = phase * phase * (3.0 - 2.0 * phase)
+        if phase >= 1.0 and self._hardware_handover_state != 'active':
+            self._hardware_handover_state = 'active'
+            self.get_logger().info('Position -> Offboard 无扰接管完成。')
+        self._hardware_handover_blend = float(blend)
+        return float(blend)
 
     def publish_direct_actuator_setpoint(
         self, motor_controls, alpha1, alpha2, theta1, theta2
     ):
-        scale = 1.0
-        if getattr(self, '_hardware_control_active', False):
-            scale = self._current_hardware_spool_scale()
-        self._hardware_spool_scale = float(scale)
-        scaled_motor_controls = [
-            float(value) * scale for value in motor_controls
-        ]
-        super().publish_direct_actuator_setpoint(
-            motor_controls=scaled_motor_controls,
-            alpha1=alpha1,
-            alpha2=alpha2,
-            theta1=theta1,
-            theta2=theta2,
+        target_motors = np.asarray(motor_controls[:5], dtype=float)
+        target_servos = np.array([
+            self._primary_joint_angle_to_normalized(alpha2),
+            self._primary_joint_angle_to_normalized(alpha1),
+            self._secondary_joint_angle_to_normalized(theta2),
+            self._secondary_joint_angle_to_normalized(theta1),
+        ], dtype=float)
+        blend = self._current_hardware_handover_blend()
+        if self._hardware_handover_snapshot_valid and blend < 1.0:
+            target_motors = (
+                (1.0 - blend) * self._hardware_handover_motor_start
+                + blend * target_motors
+            )
+            target_servos = (
+                (1.0 - blend) * self._hardware_handover_servo_start
+                + blend * target_servos
+            )
+        self._publish_normalized_direct_actuator_setpoint(
+            target_motors,
+            target_servos,
+        )
+
+    def _manual_command_input_enabled(self) -> bool:
+        # Suppress motion references during the short actuator blend so RC
+        # switch transients cannot move the captured hold point.
+        return bool(
+            super()._manual_command_input_enabled()
+            and self._hardware_control_active
+            and self._hardware_handover_blend >= 1.0
         )
 
     def _update_hardware_control_gate(self) -> None:
@@ -4304,10 +4515,6 @@ class HnuterHardwareController(HnuterController):
         self._update_hardware_control_gate()
         if not self._hardware_control_active:
             return
-        if not self._hardware_takeoff_permitted:
-            self._update_hardware_takeoff_gate()
-            self.publish_idle_direct_actuator_setpoint()
-            return
         super().control_loop()
 
     def _diagnostic_file_prefix(self):
@@ -4319,9 +4526,9 @@ class HnuterHardwareController(HnuterController):
             'rc_age_s',
             'rc_valid',
             'hardware_control_active',
-            'hardware_takeoff_gate_state',
-            'hardware_takeoff_permitted',
-            'hardware_spool_scale',
+            'hardware_handover_state',
+            'hardware_handover_snapshot_valid',
+            'hardware_handover_blend',
         ]
 
     def _diagnostic_extra_values(self):
@@ -4329,7 +4536,7 @@ class HnuterHardwareController(HnuterController):
         if rc_input is None:
             return [
                 'none', math.inf, 0, 0,
-                getattr(self, '_hardware_takeoff_gate_state', 'uninitialized'),
+                getattr(self, '_hardware_handover_state', 'uninitialized'),
                 0,
                 0.0,
             ]
@@ -4338,9 +4545,9 @@ class HnuterHardwareController(HnuterController):
             rc_input.age_s,
             int(rc_input.valid),
             int(self._hardware_control_active),
-            self._hardware_takeoff_gate_state,
-            int(self._hardware_takeoff_permitted),
-            self._hardware_spool_scale,
+            self._hardware_handover_state,
+            int(self._hardware_handover_snapshot_valid),
+            self._hardware_handover_blend,
         ]
 
     def print_status(self):
@@ -4351,15 +4558,419 @@ class HnuterHardwareController(HnuterController):
                 f'Hardware gate={self._hardware_control_active} | '
                 f'RC source={rc_input.source} | age={rc_input.age_s:.3f}s | '
                 f'valid={rc_input.valid} | '
-                f'takeoff_gate={self._hardware_takeoff_gate_state} | '
-                f'permitted={self._hardware_takeoff_permitted} | '
-                f'spool={self._hardware_spool_scale:.2f}'
+                f'handover={self._hardware_handover_state} | '
+                f'snapshot={self._hardware_handover_snapshot_valid} | '
+                f'blend={self._hardware_handover_blend:.2f}'
             )
+
+
+class HnuterOkHardwareController(HnuterHardwareController):
+    """Current Hardware Offboard shell with the flight-tested OK control law."""
+
+    OK_SOURCE_TAG = 'hnuter-ok-144bd9fe'
+    OK_SOURCE_COMMIT = '144bd9fea6bf7a2b55f9d530809e488292e0d615'
+    OK_PARAMETER_SNAPSHOT = 'log_48_2026-07-30_parameters.params'
+
+    def __init__(self) -> None:
+        self.ok_position_p_ned = np.array([3.75, 3.75, 3.50])
+        self.ok_velocity_p_ned = np.array([9.05, 9.05, 4.00])
+        self.ok_velocity_i_ned = np.array([0.39, 0.39, 0.20])
+        self.ok_velocity_d_ned = np.array([0.36, 0.36, 0.40])
+        self.ok_velocity_integral_limit_ned = np.array([1.50, 1.50, 2.50])
+        self.ok_velocity_integral_ned = np.zeros(3)
+        self.ok_velocity_xy_mps = 3.0
+        self.ok_velocity_up_mps = 1.5
+        self.ok_velocity_down_mps = 1.0
+        self.ok_acceleration_xy_mps2 = 3.0
+        self.ok_acceleration_z_mps2 = 45.6
+        self.ok_lock_acceleration_xy_mps2 = 1.0
+        self.ok_max_thrust_per_arm_n = 170.96
+        self.ok_max_tail_thrust_n = 85.48
+        self.ok_motor_hover_control = 0.50
+        self.ok_motor_thrust_exponent = 0.50
+        super().__init__()
+        self._reset_ok_controller_state()
+        self.get_logger().warn(
+            'OK BASELINE PORT: controller/allocation/parameters are from '
+            f'{self.OK_SOURCE_TAG}; Hardware gate and servo calibration remain '
+            'on the current 3131ddd4_500_2500_gear2 framework. This combination '
+            'has not yet been flight validated.'
+        )
+
+    def _node_name(self):
+        return 'hnuter_controller_direct_ok_hardware'
+
+    def _default_tuning_filename(self):
+        return 'hnuter_direct_ok_hardware_tuning.json'
+
+    def _diagnostic_file_prefix(self):
+        return 'hnuter_direct_ok_hardware'
+
+    @staticmethod
+    def _limit_xy_norm(vector_xy: np.ndarray, limit: float) -> np.ndarray:
+        limited = np.asarray(vector_xy, dtype=float).copy()
+        norm = float(np.linalg.norm(limited))
+        limit = max(float(limit), 0.0)
+        if norm > limit and norm > 1e-8:
+            limited *= limit / norm
+        return limited
+
+    def _reset_ok_controller_state(self) -> None:
+        self.ok_velocity_integral_ned[:] = 0.0
+        self.integral_pos_error[:] = 0.0
+
+    def _tuning_snapshot(self) -> dict:
+        snapshot = super()._tuning_snapshot()
+        snapshot.update({
+            'ok_source_tag': self.OK_SOURCE_TAG,
+            'ok_source_commit': self.OK_SOURCE_COMMIT,
+            'ok_parameter_snapshot': self.OK_PARAMETER_SNAPSHOT,
+            'HNTR_MASS': float(self.mass),
+            'HNTR_L1': float(self.l1),
+            'HNTR_L2': float(self.l2),
+            'HNTR_MAX_ARM_T': float(self.ok_max_thrust_per_arm_n),
+            'HNTR_MAX_TAIL_T': float(self.ok_max_tail_thrust_n),
+            'HNTR_MOT_HOV': float(self.ok_motor_hover_control),
+            'HNTR_MOT_EXPO': float(self.ok_motor_thrust_exponent),
+            'HNTR_PITCH_BIAS': 0.09,
+            'HNTR_TAIL_SIGN': 1.0,
+            'HNTR_TAIL_COMP': 0.0,
+            'HNTR_POS_P_XY': float(self.ok_position_p_ned[0]),
+            'HNTR_POS_P_Z': float(self.ok_position_p_ned[2]),
+            'HNTR_VEL_P_XY': float(self.ok_velocity_p_ned[0]),
+            'HNTR_VEL_P_Z': float(self.ok_velocity_p_ned[2]),
+            'HNTR_VEL_I_XY': float(self.ok_velocity_i_ned[0]),
+            'HNTR_VEL_I_Z': float(self.ok_velocity_i_ned[2]),
+            'HNTR_VEL_D_XY': float(self.ok_velocity_d_ned[0]),
+            'HNTR_VEL_D_Z': float(self.ok_velocity_d_ned[2]),
+            'HNTR_VEL_ILIM_XY': float(self.ok_velocity_integral_limit_ned[0]),
+            'HNTR_VEL_ILIM_Z': float(self.ok_velocity_integral_limit_ned[2]),
+            'HNTR_VEL_XY': float(self.ok_velocity_xy_mps),
+            'HNTR_VEL_UP': float(self.ok_velocity_up_mps),
+            'HNTR_VEL_DN': float(self.ok_velocity_down_mps),
+            'HNTR_ACC_XY': float(self.ok_acceleration_xy_mps2),
+            'HNTR_ACC_Z': float(self.ok_acceleration_z_mps2),
+            'HNTR_LOCK_ACC': float(self.ok_lock_acceleration_xy_mps2),
+            'direct_KR': [18.2, 20.0, 6.0],
+            'direct_Domega': [9.6, 8.0, 2.3],
+            'direct_attitude_Ki': [0.0, 0.06, 0.0],
+            'direct_attitude_integral_limit': [0.0, 1.5, 0.0],
+            'direct_attitude_integral_activation_error_deg': 180.0,
+            'direct_quaternion_error_enabled': False,
+            'direct_attitude_gyro_compensation_enabled': False,
+            'direct_reduced_tilt_error_enabled': False,
+            'direct_large_tilt_yaw_scheduling_enabled': False,
+            'direct_tau_limit': [56.3, 10.0, 0.8],
+            # The inherited position integral must stay disabled because this
+            # port maintains the OK velocity-loop integral separately.
+            'direct_pos_Kp_ned': [3.75, 3.75, 3.5],
+            'direct_pos_Kd_ned': [9.05, 9.05, 4.0],
+            'direct_pos_Ki_ned': [0.0, 0.0, 0.0],
+            'direct_pos_integral_limit_ned': [1.5, 1.5, 2.5],
+            'max_acc_xy': 3.0,
+            'max_acc_z': 45.6,
+        })
+        return snapshot
+
+    def _apply_tuning(self, data: dict):
+        merged = dict(data)
+        ok_direct_defaults = {
+            'direct_KR': [18.2, 20.0, 6.0],
+            'direct_Domega': [9.6, 8.0, 2.3],
+            'direct_attitude_Ki': [0.0, 0.06, 0.0],
+            'direct_attitude_integral_limit': [0.0, 1.5, 0.0],
+            'direct_attitude_integral_activation_error_deg': 180.0,
+            'direct_quaternion_error_enabled': False,
+            'direct_attitude_gyro_compensation_enabled': False,
+            'direct_reduced_tilt_error_enabled': False,
+            'direct_large_tilt_yaw_scheduling_enabled': False,
+            'direct_tau_limit': [56.3, 10.0, 0.8],
+            'direct_pos_Kp_ned': [3.75, 3.75, 3.5],
+            'direct_pos_Kd_ned': [9.05, 9.05, 4.0],
+            'direct_pos_Ki_ned': [0.0, 0.0, 0.0],
+            'direct_pos_integral_limit_ned': [1.5, 1.5, 2.5],
+            'max_acc_xy': 3.0,
+            'max_acc_z': 45.6,
+            'HNTR_PITCH_BIAS': 0.09,
+            'HNTR_TAIL_SIGN': 1.0,
+            'HNTR_TAIL_COMP': 0.0,
+        }
+        for key, value in ok_direct_defaults.items():
+            merged.setdefault(key, value)
+
+        direct_kr = self._tuning_array(
+            data, 'direct_KR', np.array(ok_direct_defaults['direct_KR'])
+        )
+        direct_domega = self._tuning_array(
+            data, 'direct_Domega', np.array(ok_direct_defaults['direct_Domega'])
+        )
+        direct_tau = self._tuning_array(
+            data, 'direct_tau_limit', np.array(ok_direct_defaults['direct_tau_limit'])
+        )
+        merged['direct_KR'] = [
+            self._tuning_float(data, 'HNTR_ATT_KR_R', direct_kr[0]),
+            self._tuning_float(data, 'HNTR_ATT_KR_P', direct_kr[1]),
+            self._tuning_float(data, 'HNTR_ATT_KR_Y', direct_kr[2]),
+        ]
+        merged['direct_Domega'] = [
+            self._tuning_float(data, 'HNTR_ATT_D_R', direct_domega[0]),
+            self._tuning_float(data, 'HNTR_ATT_D_P', direct_domega[1]),
+            self._tuning_float(data, 'HNTR_ATT_D_Y', direct_domega[2]),
+        ]
+        merged['direct_attitude_Ki'] = [
+            0.0,
+            self._tuning_float(data, 'HNTR_ATT_I_P', 0.06),
+            0.0,
+        ]
+        merged['direct_tau_limit'] = [
+            self._tuning_float(data, 'HNTR_TAU_R', direct_tau[0]),
+            self._tuning_float(data, 'HNTR_TAU_P', direct_tau[1]),
+            self._tuning_float(data, 'HNTR_TAU_Y', direct_tau[2]),
+        ]
+        merged['direct_pos_Kp_ned'] = [
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_Z', 3.5),
+        ]
+        merged['direct_pos_Kd_ned'] = [
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_Z', 4.0),
+        ]
+        merged['direct_pos_integral_limit_ned'] = [
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.5),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.5),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_Z', 2.5),
+        ]
+        merged['max_acc_xy'] = self._tuning_float(data, 'HNTR_ACC_XY', 3.0)
+        merged['max_acc_z'] = self._tuning_float(data, 'HNTR_ACC_Z', 45.6)
+        super()._apply_tuning(merged)
+
+        self.mass = max(self._tuning_float(data, 'HNTR_MASS', 4.5), 0.1)
+        self.l1 = max(self._tuning_float(data, 'HNTR_L1', 0.33), 0.01)
+        self.l2 = max(self._tuning_float(data, 'HNTR_L2', 0.664), 0.01)
+        self.ok_max_thrust_per_arm_n = max(
+            self._tuning_float(data, 'HNTR_MAX_ARM_T', 170.96), 1.0
+        )
+        self.ok_max_tail_thrust_n = max(
+            self._tuning_float(data, 'HNTR_MAX_TAIL_T', 85.48), 1.0
+        )
+        self.ok_motor_hover_control = float(np.clip(
+            self._tuning_float(data, 'HNTR_MOT_HOV', 0.50), 0.05, 0.95
+        ))
+        self.ok_motor_thrust_exponent = float(np.clip(
+            self._tuning_float(data, 'HNTR_MOT_EXPO', 0.50), 0.2, 1.5
+        ))
+        self.ok_position_p_ned = np.array([
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_Z', 3.50),
+        ])
+        self.ok_velocity_p_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_Z', 4.00),
+        ])
+        self.ok_velocity_i_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_I_XY', 0.39),
+            self._tuning_float(data, 'HNTR_VEL_I_XY', 0.39),
+            self._tuning_float(data, 'HNTR_VEL_I_Z', 0.20),
+        ])
+        self.ok_velocity_d_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_D_XY', 0.36),
+            self._tuning_float(data, 'HNTR_VEL_D_XY', 0.36),
+            self._tuning_float(data, 'HNTR_VEL_D_Z', 0.40),
+        ])
+        self.ok_velocity_integral_limit_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.50),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.50),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_Z', 2.50),
+        ])
+        self.ok_velocity_xy_mps = max(
+            self._tuning_float(data, 'HNTR_VEL_XY', 3.0), 0.0
+        )
+        self.ok_velocity_up_mps = max(
+            self._tuning_float(data, 'HNTR_VEL_UP', 1.5), 0.0
+        )
+        self.ok_velocity_down_mps = max(
+            self._tuning_float(data, 'HNTR_VEL_DN', 1.0), 0.0
+        )
+        self.ok_acceleration_xy_mps2 = max(
+            self._tuning_float(data, 'HNTR_ACC_XY', 3.0), 0.1
+        )
+        self.ok_acceleration_z_mps2 = max(
+            self._tuning_float(data, 'HNTR_ACC_Z', 45.6), 0.1
+        )
+        self.ok_lock_acceleration_xy_mps2 = max(
+            self._tuning_float(data, 'HNTR_LOCK_ACC', 1.0), 0.1
+        )
+
+    def _direct_position_acceleration_ned(
+        self,
+        acc_ff_ned: np.ndarray,
+        pos_error_ned: np.ndarray,
+        vel_error_ned: np.ndarray,
+        xy_lock_active: bool,
+    ) -> np.ndarray:
+        current_velocity_ned = np.array([
+            self.velocity[1], self.velocity[0], -self.velocity[2]
+        ], dtype=float)
+        velocity_setpoint_ned = (
+            current_velocity_ned
+            + np.asarray(vel_error_ned, dtype=float)
+            + self.ok_position_p_ned * np.asarray(pos_error_ned, dtype=float)
+        )
+        velocity_setpoint_ned[:2] = self._limit_xy_norm(
+            velocity_setpoint_ned[:2], self.ok_velocity_xy_mps
+        )
+        velocity_setpoint_ned[2] = float(np.clip(
+            velocity_setpoint_ned[2],
+            -self.ok_velocity_up_mps,
+            self.ok_velocity_down_mps,
+        ))
+        cascaded_velocity_error = velocity_setpoint_ned - current_velocity_ned
+        acceleration_unsaturated = (
+            np.asarray(acc_ff_ned, dtype=float)
+            + self.ok_velocity_p_ned * cascaded_velocity_error
+            + self.ok_velocity_integral_ned
+            - self.ok_velocity_d_ned * self.measured_acceleration_ned
+        )
+        acceleration_desired = acceleration_unsaturated.copy()
+        acceleration_desired[:2] = self._limit_xy_norm(
+            acceleration_desired[:2],
+            self.ok_lock_acceleration_xy_mps2
+            if xy_lock_active else self.ok_acceleration_xy_mps2,
+        )
+        physical_acceleration_up = max(
+            2.0 * self.ok_max_thrust_per_arm_n / self.mass - self.gravity,
+            0.1,
+        )
+        max_acceleration_up = min(
+            self.ok_acceleration_z_mps2, physical_acceleration_up
+        )
+        max_acceleration_down = min(
+            self.ok_acceleration_z_mps2, self.gravity
+        )
+        acceleration_desired[2] = float(np.clip(
+            acceleration_desired[2],
+            -max_acceleration_up,
+            max_acceleration_down,
+        ))
+
+        landed = bool(self.land_detected.get('landed', False))
+        maybe_landed = bool(self.land_detected.get('maybe_landed', False))
+        if landed or maybe_landed:
+            self.ok_velocity_integral_ned[:] = 0.0
+        else:
+            saturation_residual = acceleration_unsaturated - acceleration_desired
+            dt = float(np.clip(self._last_control_dt_s, 0.0, 0.02))
+            for axis in range(3):
+                drives_further_into_saturation = (
+                    saturation_residual[axis] * cascaded_velocity_error[axis]
+                    > 0.0
+                )
+                if not drives_further_into_saturation:
+                    self.ok_velocity_integral_ned[axis] += (
+                        self.ok_velocity_i_ned[axis]
+                        * cascaded_velocity_error[axis]
+                        * dt
+                    )
+            self.ok_velocity_integral_ned[:2] = self._limit_xy_norm(
+                self.ok_velocity_integral_ned[:2],
+                self.ok_velocity_integral_limit_ned[0],
+            )
+            self.ok_velocity_integral_ned[2] = float(np.clip(
+                self.ok_velocity_integral_ned[2],
+                -self.ok_velocity_integral_limit_ned[2],
+                self.ok_velocity_integral_limit_ned[2],
+            ))
+        self.integral_pos_error[:] = self.ok_velocity_integral_ned
+        return acceleration_desired
+
+    def _update_attitude_integral(
+        self,
+        attitude_error: np.ndarray,
+        attitude_error_angle: float,
+        attitude_ki: np.ndarray,
+        dt: float,
+    ) -> np.ndarray:
+        del attitude_error_angle
+        previous = self.integral_e_R.copy()
+        enabled = np.asarray(attitude_ki, dtype=float) > 1e-8
+        self.integral_e_R[~enabled] = 0.0
+        self.integral_e_R[enabled] += (
+            np.asarray(attitude_error, dtype=float)[enabled] * dt
+        )
+        self.integral_e_R = np.clip(
+            self.integral_e_R,
+            -self.direct_attitude_integral_limit,
+            self.direct_attitude_integral_limit,
+        )
+        return previous
+
+    def _reject_saturating_attitude_integration(self, *args, **kwargs) -> bool:
+        del args, kwargs
+        return False
+
+    def _allocator_thrust_limits(self) -> tuple[float, float]:
+        return self.ok_max_thrust_per_arm_n, self.ok_max_tail_thrust_n
+
+    def _front_motor_control(self, thrust: float, max_thrust: float) -> float:
+        del max_thrust
+        if thrust <= 0.0:
+            return 0.0
+        hover_force_per_motor = self.mass * self.gravity * 0.25
+        control = self.ok_motor_hover_control * math.pow(
+            thrust / max(hover_force_per_motor, 1e-8),
+            self.ok_motor_thrust_exponent,
+        )
+        return float(np.clip(control, 0.0, 1.0))
+
+    def _tail_motor_control(self, thrust: float, max_thrust: float) -> float:
+        if abs(thrust) <= 1e-8:
+            return 0.0
+        if thrust < 0.0 and not self.allow_tail_reverse:
+            return 0.0
+        control = math.pow(
+            abs(thrust) / max(float(max_thrust), 1e-8),
+            self.ok_motor_thrust_exponent,
+        )
+        return float(np.clip(
+            control if thrust > 0.0 else -control,
+            -1.0 if self.allow_tail_reverse else 0.0,
+            1.0,
+        ))
+
+    def _begin_hardware_control(self) -> None:
+        self._reset_ok_controller_state()
+        super()._begin_hardware_control()
+
+    def _end_hardware_control(self) -> None:
+        super()._end_hardware_control()
+        self._reset_ok_controller_state()
+
+    def _publish_direct_safety_cutoff(self, current_time: float):
+        self._reset_ok_controller_state()
+        super()._publish_direct_safety_cutoff(current_time)
+
+    def _diagnostic_extra_header(self):
+        return super()._diagnostic_extra_header() + [
+            'ok_source_tag',
+            'ok_velocity_integral_n',
+            'ok_velocity_integral_e',
+            'ok_velocity_integral_d',
+        ]
+
+    def _diagnostic_extra_values(self):
+        return super()._diagnostic_extra_values() + [
+            self.OK_SOURCE_TAG,
+            *self.ok_velocity_integral_ned.tolist(),
+        ]
 
 
 def main(args=None):
     rclpy.init(args=args)
-    controller = HnuterHardwareController()
+    controller = HnuterOkHardwareController()
     try:
         rclpy.spin(controller)
     except KeyboardInterrupt:

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Standalone hardware direct-actuator controller for Hnuter.
+"""Standalone hardware DRCDA direct-actuator controller for Hnuter.
 
 The transmitter and PX4 retain exclusive Arm, Disarm, and Offboard mode
 authority. The node starts control only while PX4 reports Armed + Offboard,
 holds the measured position instead of taking off automatically, and converts
 physical RC sticks to the established body-velocity and yaw-rate references.
 
-This file intentionally contains its controller helpers, RC parser, logging
-paths, and task restart state machine so it can run without importing another
-repository-local Python module.
+This file intentionally contains the direct controller, DRCDA model and
+solver, RC parser, logging paths, and task restart state machine so it can run
+without importing another repository-local Python module.
 """
 
 import sys
@@ -22,8 +22,9 @@ import select
 import termios
 import threading
 import tty
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 
@@ -782,12 +783,11 @@ class HnuterController(Node):
         self.allocator_force_y_sign = env_float('HNUTER_ALLOCATOR_FORCE_Y_SIGN', -1.0)
         # Match the no-delay PX4 main-branch Hnuter allocator parameters.
         # Pitch bias is normalized torque, not a raw Motor5 command offset.
-        # The 2026-08-04 hardware flight used 0.09. Airframe observation shows
-        # that a smaller value lowers the tail, so start the next test at 0.10.
+        # The latest CUAV flight logs consistently use HNTR_PITCH_BIAS=0.09.
         self.pitch_torque_bias = float(np.clip(
             env_float(
                 'HNUTER_PITCH_BIAS',
-                env_float('HNTR_PITCH_BIAS', 0.10),
+                env_float('HNTR_PITCH_BIAS', 0.09),
             ),
             -1.0,
             1.0,
@@ -809,8 +809,9 @@ class HnuterController(Node):
             1.0,
         ))
 
-        # Current hardware firmware: normalized servo control spans 500--2500 us
-        # and represents the full +/-180 deg servo-shaft travel.
+        # Match firmware 3131ddd4: the normalized servo range represents the
+        # full +/-180 deg servo-shaft travel. Secondary joints are downstream
+        # of HNTR_S2_GEAR, so their reachable joint angle and rate are smaller.
         self.hardware_firmware_profile = os.environ.get(
             'HNUTER_HARDWARE_FIRMWARE_PROFILE',
             '3131ddd4_500_2500_gear2',
@@ -892,9 +893,9 @@ class HnuterController(Node):
         self.direct_takeoff_Domega = np.array([1.2, 1.2, 1.2])
         self.direct_xy_lock_KR = np.array([1.5, 1.5, 1.5])
         self.direct_xy_lock_Domega = np.array([1.2, 1.2, 1.2])
-        self.direct_KR = np.array([2.1, 2.1, env_float('HNUTER_DIRECT_KR_YAW', 4.2)])
-        self.direct_Domega = np.array([1.4, 1.4, env_float('HNUTER_DIRECT_DOMEGA_YAW', 2.6)])
-        self.direct_attitude_Ki = np.array([0.15, 0.18, 0.50])
+        self.direct_KR = np.array([1.5, 1.5, env_float('HNUTER_DIRECT_KR_YAW', 3.2)])
+        self.direct_Domega = np.array([1.2, 1.2, env_float('HNUTER_DIRECT_DOMEGA_YAW', 2.2)])
+        self.direct_attitude_Ki = np.zeros(3)
         self.direct_attitude_integral_limit = np.array([0.6, 0.6, 0.4])
         self.direct_attitude_integral_activation_error_rad = math.radians(35.0)
         self.direct_quaternion_error_enabled = True
@@ -916,8 +917,8 @@ class HnuterController(Node):
         self.max_acc_xy = 20.0
         self.max_acc_z = 20.0
         # Position-loop arrays use NED axis order: north, east, down.
-        self.direct_pos_Kp_ned = np.array([3.0, 3.0, 8.0])
-        self.direct_pos_Kd_ned = np.array([2.1, 2.1, 4.0])
+        self.direct_pos_Kp_ned = np.array([2.5, 2.5, 8.0])
+        self.direct_pos_Kd_ned = np.array([1.8, 1.8, 4.0])
         self.direct_pos_Ki_ned = np.array([0.0, 0.0, 3.0])
         self.direct_pos_integral_limit_ned = np.array([1.0, 1.0, 2.0])
         self.max_climb_rate = 0.35
@@ -932,7 +933,7 @@ class HnuterController(Node):
         )
         self.gamepad_expo = env_float('HNUTER_PAD_EXPO', 0.40)
         self.gamepad_filter_tau_s = env_float(
-            'HNUTER_PAD_FILTER_TAU_S', 0.25
+            'HNUTER_PAD_FILTER_TAU_S', 0.35
         )
         self.gamepad_max_vxy_body_mps = np.full(
             2, self.gamepad_max_vxy_mps, dtype=float
@@ -940,7 +941,7 @@ class HnuterController(Node):
         self.gamepad_filter_tau_body_xy_s = np.full(
             2, self.gamepad_filter_tau_s, dtype=float
         )
-        self.gamepad_max_acc_body_xy_mps2 = np.array([1.0, 0.70])
+        self.gamepad_max_acc_body_xy_mps2 = np.array([1.0, 0.55])
         # Direct debug: 按 o 后不交给 PX4 位置控制器，而是直接发布 actuator_motors/servos。
         # 若要用同一份日志结构记录 PX4 position baseline，启动前设置 HNUTER_CONTROL_MODE=px4。
         control_mode_env = os.environ.get('HNUTER_CONTROL_MODE', 'direct').strip().lower()
@@ -1183,9 +1184,9 @@ class HnuterController(Node):
             "attitude_test_altitude_only": bool(self.attitude_test_altitude_only),
             "attitude_test_altitude_m": float(self.attitude_test_altitude_m),
             "attitude_test_max_acc_xy": float(self.attitude_test_max_acc_xy),
+            "hardware_firmware_profile": self.hardware_firmware_profile,
             "alpha_limit_deg": float(math.degrees(self.alpha_limit_rad)),
             "theta_limit_deg": float(math.degrees(self.theta_limit_rad)),
-            "hardware_firmware_profile": self.hardware_firmware_profile,
             "primary_servo_angle_max_deg": float(
                 math.degrees(self.primary_servo_angle_max_rad)
             ),
@@ -1298,75 +1299,6 @@ class HnuterController(Node):
             return value.strip().lower() in ('1', 'true', 'yes', 'on')
         return bool(value)
 
-    @staticmethod
-    def _tuning_string(data: dict, key: str, current: str) -> str:
-        value = data.get(key)
-        if value is None:
-            return str(current)
-        value = str(value).strip()
-        return value if value else str(current)
-
-    @staticmethod
-    def _bumpless_integral_gain_change(
-        integral_state: np.ndarray,
-        previous_gain: np.ndarray,
-        new_gain: np.ndarray,
-        integral_limit: np.ndarray,
-    ) -> np.ndarray:
-        state = np.asarray(integral_state, dtype=float).copy()
-        previous_gain = np.asarray(previous_gain, dtype=float)
-        new_gain = np.asarray(new_gain, dtype=float)
-        enabled = new_gain > 1e-8
-        retained = enabled & (previous_gain > 1e-8)
-        state[~enabled] = 0.0
-        state[enabled & ~retained] = 0.0
-        state[retained] *= previous_gain[retained] / new_gain[retained]
-        return np.clip(state, -integral_limit, integral_limit)
-
-    def _update_attitude_integral(
-        self,
-        attitude_error: np.ndarray,
-        attitude_error_angle: float,
-        attitude_ki: np.ndarray,
-        dt: float,
-    ) -> np.ndarray:
-        previous = self.integral_e_R.copy()
-        enabled = np.asarray(attitude_ki) > 1e-8
-        self.integral_e_R[~enabled] = 0.0
-        previous[~enabled] = 0.0
-        if attitude_error_angle <= self.direct_attitude_integral_activation_error_rad:
-            self.integral_e_R[enabled] += np.asarray(attitude_error)[enabled] * dt
-        else:
-            self.integral_e_R[enabled] *= math.exp(-dt / 0.5)
-        self.integral_e_R = np.clip(
-            self.integral_e_R,
-            -self.direct_attitude_integral_limit,
-            self.direct_attitude_integral_limit,
-        )
-        return previous
-
-    def _reject_saturating_attitude_integration(
-        self,
-        previous_integral: np.ndarray,
-        attitude_ki: np.ndarray,
-        unconstrained_torque: np.ndarray,
-        torque_limit: np.ndarray,
-    ) -> bool:
-        integral_torque_change = -np.asarray(attitude_ki) * (
-            self.integral_e_R - np.asarray(previous_integral)
-        )
-        pushing_positive = (
-            unconstrained_torque > torque_limit
-        ) & (integral_torque_change > 0.0)
-        pushing_negative = (
-            unconstrained_torque < -torque_limit
-        ) & (integral_torque_change < 0.0)
-        reject = pushing_positive | pushing_negative
-        if np.any(reject):
-            self.integral_e_R[reject] = np.asarray(previous_integral)[reject]
-            return True
-        return False
-
     def _apply_tuning(self, data: dict):
         self.attitude_step_angle_rad = math.radians(
             self._tuning_float(data, 'attitude_step_angle_deg', math.degrees(self.attitude_step_angle_rad))
@@ -1398,11 +1330,9 @@ class HnuterController(Node):
             data, 'attitude_test_altitude_m', self.attitude_test_altitude_m
         )
         self.attitude_test_max_acc_xy = self._tuning_float(data, 'attitude_test_max_acc_xy', self.attitude_test_max_acc_xy)
-        self.hardware_firmware_profile = self._tuning_string(
-            data,
-            'hardware_firmware_profile',
-            self.hardware_firmware_profile,
-        )
+        self.hardware_firmware_profile = str(data.get(
+            'hardware_firmware_profile', self.hardware_firmware_profile
+        )).strip()
         self.primary_servo_angle_max_rad = math.radians(max(
             1.0,
             self._tuning_float(
@@ -1514,7 +1444,6 @@ class HnuterController(Node):
 
         self.direct_KR = self._tuning_array(data, 'direct_KR', self.direct_KR)
         self.direct_Domega = self._tuning_array(data, 'direct_Domega', self.direct_Domega)
-        previous_attitude_ki = self.direct_attitude_Ki.copy()
         self.direct_attitude_Ki = np.maximum(
             self._tuning_array(data, 'direct_attitude_Ki', self.direct_attitude_Ki),
             0.0,
@@ -1526,12 +1455,6 @@ class HnuterController(Node):
                 self.direct_attitude_integral_limit,
             ),
             0.0,
-        )
-        self.integral_e_R = self._bumpless_integral_gain_change(
-            self.integral_e_R,
-            previous_attitude_ki,
-            self.direct_attitude_Ki,
-            self.direct_attitude_integral_limit,
         )
         self.direct_attitude_integral_activation_error_rad = math.radians(max(
             0.0,
@@ -1601,7 +1524,6 @@ class HnuterController(Node):
             self._tuning_array(data, 'direct_pos_Kd_ned', self.direct_pos_Kd_ned),
             0.0,
         )
-        previous_pos_ki = self.direct_pos_Ki_ned.copy()
         self.direct_pos_Ki_ned = np.maximum(
             self._tuning_array(data, 'direct_pos_Ki_ned', self.direct_pos_Ki_ned),
             0.0,
@@ -1613,12 +1535,6 @@ class HnuterController(Node):
                 self.direct_pos_integral_limit_ned,
             ),
             0.0,
-        )
-        self.integral_pos_error = self._bumpless_integral_gain_change(
-            self.integral_pos_error,
-            previous_pos_ki,
-            self.direct_pos_Ki_ned,
-            self.direct_pos_integral_limit_ned,
         )
         self.manual_max_position_lead_xy = float(np.clip(
             self._tuning_float(
@@ -1745,8 +1661,7 @@ class HnuterController(Node):
                 f'manual_pitch_lim={math.degrees(self.manual_pitch_limit_rad):.1f}deg, '
                 f'att_safety={self.direct_safety_attitude_check_enabled}, '
                 f'theta_lim={math.degrees(self.theta_limit_rad):.1f}deg, '
-                f'servo_cal=[profile={self.hardware_firmware_profile}, '
-                f'primary={math.degrees(self.primary_servo_angle_max_rad):.1f}deg, '
+                f'servo_cal=[primary={math.degrees(self.primary_servo_angle_max_rad):.1f}deg, '
                 f'secondary={math.degrees(self.secondary_servo_angle_max_rad):.1f}deg, '
                 f'gear={self.secondary_servo_gear_ratio:.3f}, '
                 f'pwm={self.servo_pwm_min_us}/{self.servo_pwm_trim_us}/{self.servo_pwm_max_us}us], '
@@ -1758,8 +1673,6 @@ class HnuterController(Node):
                 f'D={np.round(self.direct_Domega, 3).tolist()}, '
                 f'att_Ki={np.round(self.direct_attitude_Ki, 3).tolist()}, '
                 f'tau_lim={np.round(self.direct_tau_limit, 3).tolist()}, '
-                f'rc_filter={np.round(self.gamepad_filter_tau_body_xy_s, 3).tolist()}s, '
-                f'rc_acc={np.round(self.gamepad_max_acc_body_xy_mps2, 3).tolist()}m/s2, '
                 f'pos_Kp_ned={np.round(self.direct_pos_Kp_ned, 3).tolist()}, '
                 f'pos_Kd_ned={np.round(self.direct_pos_Kd_ned, 3).tolist()}, '
                 f'pos_Ki_ned={np.round(self.direct_pos_Ki_ned, 3).tolist()}'
@@ -3146,11 +3059,7 @@ class HnuterController(Node):
             self.integral_pos_error[0] = 0.0
             self.integral_pos_error[1] = 0.0
 
-        position_integral_enabled = self.direct_pos_Ki_ned > 1e-8
-        self.integral_pos_error[~position_integral_enabled] = 0.0
-        self.integral_pos_error[position_integral_enabled] += (
-            pos_error[position_integral_enabled] * dt
-        )
+        self.integral_pos_error += pos_error * dt
         self.integral_pos_error = np.clip(
             self.integral_pos_error,
             -self.direct_pos_integral_limit_ned,
@@ -3263,8 +3172,6 @@ class HnuterController(Node):
             Domega = self.direct_Domega.copy()
             attitude_Ki = self.direct_attitude_Ki.copy()
             tau_limit = self.direct_tau_limit.copy()
-        if not self.direct_yaw_control_enabled:
-            attitude_Ki[2] = 0.0
 
         yaw_authority_scale = 1.0
         if (
@@ -3287,41 +3194,27 @@ class HnuterController(Node):
             self.integral_e_R[2] *= math.exp(-dt * (1.0 - yaw_authority_scale) / 0.3)
         self.last_yaw_authority_scale = yaw_authority_scale
 
-        previous_integral = self._update_attitude_integral(
-            e_R,
-            attitude_error_angle,
-            attitude_Ki,
-            dt,
+        if attitude_error_angle <= self.direct_attitude_integral_activation_error_rad:
+            self.integral_e_R += e_R * dt
+        else:
+            # Keep the integrator out of large-error recovery and unwind any
+            # bias accumulated before a half-turn transition.
+            decay = math.exp(-dt / 0.5)
+            self.integral_e_R *= decay
+        self.integral_e_R = np.clip(
+            self.integral_e_R,
+            -self.direct_attitude_integral_limit,
+            self.direct_attitude_integral_limit,
         )
 
-        gyro_torque = np.zeros(3)
+        tau_c = -KR * e_R - Domega * omega_error - attitude_Ki * self.integral_e_R
         if self.direct_attitude_gyro_compensation_enabled:
-            gyro_torque = np.cross(
+            tau_c += np.cross(
                 self.angular_velocity_frd,
                 self.J @ self.angular_velocity_frd,
             )
-        tau_c = (
-            -KR * e_R
-            - Domega * omega_error
-            - attitude_Ki * self.integral_e_R
-            + gyro_torque
-        )
         if not self.direct_yaw_control_enabled:
             tau_c[2] = 0.0
-        if self._reject_saturating_attitude_integration(
-            previous_integral,
-            attitude_Ki,
-            tau_c,
-            tau_limit,
-        ):
-            tau_c = (
-                -KR * e_R
-                - Domega * omega_error
-                - attitude_Ki * self.integral_e_R
-                + gyro_torque
-            )
-            if not self.direct_yaw_control_enabled:
-                tau_c[2] = 0.0
         tau_c = np.clip(tau_c, -tau_limit, tau_limit)
         self.last_attitude_error = e_R.copy()
         self.last_attitude_error_angle_rad = float(attitude_error_angle)
@@ -4357,13 +4250,1303 @@ class HnuterHardwareController(HnuterController):
             )
 
 
+# DRCDA_CORE_INSERTION_POINT
+ANGLE_COUNT = 4
+THRUST_COUNT = 5
+ACTUATOR_COUNT = ANGLE_COUNT + THRUST_COUNT
+ALLOCATOR_VARIANTS = (
+    'full',
+    'basic_da',
+    'no_delay',
+    'no_horizon',
+    'no_rate_limits',
+)
+
+
+def _array(values: Iterable[float], count: int, name: str) -> np.ndarray:
+    result = np.asarray(tuple(values), dtype=float)
+    if result.shape != (count,):
+        raise ValueError(f'{name} must contain {count} values')
+    return result
+
+
+@dataclass
+class DRCDAConfig:
+    prediction_dt_s: float = 0.01
+    horizon_s: float = 0.18
+    gauss_newton_iterations: int = 2
+    wrench_error_gain: float = 8.0
+    wrench_ff_tau_s: float = 0.04
+    wrench_rate_weight: float = 0.15
+    wrench_scale: np.ndarray = field(default_factory=lambda: np.array(
+        [80.0, 80.0, 100.0, 12.0, 12.0, 12.0], dtype=float
+    ))
+    wrench_weight: np.ndarray = field(default_factory=lambda: np.array(
+        [1.0, 1.0, 2.0, 3.0, 3.0, 2.0], dtype=float
+    ))
+    command_move_weight: np.ndarray = field(default_factory=lambda: np.array(
+        [0.020, 0.030, 0.020, 0.030, 0.004, 0.004, 0.004, 0.004, 0.006],
+        dtype=float,
+    ))
+    command_preference_weight: np.ndarray = field(default_factory=lambda: np.array(
+        [0.002, 0.003, 0.002, 0.003, 0.001, 0.001, 0.001, 0.001, 0.002],
+        dtype=float,
+    ))
+    command_scale: np.ndarray = field(default_factory=lambda: np.array(
+        [math.pi, math.pi, math.pi, math.pi, 25.0, 25.0, 25.0, 25.0, 50.0],
+        dtype=float,
+    ))
+    servo_gain_positive: np.ndarray = field(default_factory=lambda: np.array(
+        [1.404, 0.705, 1.404, 0.705], dtype=float
+    ))
+    servo_gain_negative: np.ndarray = field(default_factory=lambda: np.array(
+        [1.423, 0.695, 1.423, 0.695], dtype=float
+    ))
+    servo_tau_positive_s: np.ndarray = field(default_factory=lambda: np.array(
+        [0.076, 0.153, 0.076, 0.153], dtype=float
+    ))
+    servo_tau_negative_s: np.ndarray = field(default_factory=lambda: np.array(
+        [0.065, 0.149, 0.065, 0.149], dtype=float
+    ))
+    servo_delay_positive_s: np.ndarray = field(default_factory=lambda: np.array(
+        [0.110, 0.156, 0.110, 0.156], dtype=float
+    ))
+    servo_delay_negative_s: np.ndarray = field(default_factory=lambda: np.array(
+        [0.106, 0.137, 0.106, 0.137], dtype=float
+    ))
+    servo_rate_positive_rad_s: np.ndarray = field(default_factory=lambda: np.array(
+        [6.082, 3.252, 6.082, 3.252], dtype=float
+    ))
+    servo_rate_negative_rad_s: np.ndarray = field(default_factory=lambda: np.array(
+        [5.419, 2.886, 5.419, 2.886], dtype=float
+    ))
+    servo_state_limit_rad: np.ndarray = field(default_factory=lambda: np.array(
+        [math.pi, math.pi, math.pi, math.pi],
+        dtype=float,
+    ))
+    servo_command_limit_rad: np.ndarray = field(default_factory=lambda: np.array(
+        [math.pi, math.pi, math.pi, math.pi],
+        dtype=float,
+    ))
+    servo_command_rate_rad_s: np.ndarray = field(default_factory=lambda: np.array(
+        [8.0, 4.0, 8.0, 4.0], dtype=float
+    ))
+    thrust_min_n: np.ndarray = field(default_factory=lambda: np.array(
+        [0.0, 0.0, 0.0, 0.0, -50.0], dtype=float
+    ))
+    thrust_max_n: np.ndarray = field(default_factory=lambda: np.array(
+        [25.0, 25.0, 25.0, 25.0, 50.0], dtype=float
+    ))
+    thrust_command_rate_n_s: np.ndarray = field(default_factory=lambda: np.array(
+        [2500.0, 2500.0, 2500.0, 2500.0, 3500.0], dtype=float
+    ))
+    motor_tau_up_s: np.ndarray = field(default_factory=lambda: np.full(5, 0.001))
+    motor_tau_down_s: np.ndarray = field(default_factory=lambda: np.full(5, 0.002))
+    motor_force_rate_floor_n_s: float = 50.0
+    motor_force_rate_cap_n_s: float = 6000.0
+    antiwindup_gain: float = 0.35
+
+    def __post_init__(self) -> None:
+        for name in (
+            'wrench_scale', 'wrench_weight',
+        ):
+            setattr(self, name, _array(getattr(self, name), 6, name))
+        for name in (
+            'command_move_weight', 'command_preference_weight', 'command_scale',
+        ):
+            setattr(self, name, _array(getattr(self, name), ACTUATOR_COUNT, name))
+        for name in (
+            'servo_gain_positive', 'servo_gain_negative',
+            'servo_tau_positive_s', 'servo_tau_negative_s',
+            'servo_delay_positive_s', 'servo_delay_negative_s',
+            'servo_rate_positive_rad_s', 'servo_rate_negative_rad_s',
+            'servo_state_limit_rad', 'servo_command_limit_rad',
+            'servo_command_rate_rad_s',
+        ):
+            setattr(self, name, _array(getattr(self, name), ANGLE_COUNT, name))
+        for name in (
+            'thrust_min_n', 'thrust_max_n', 'thrust_command_rate_n_s',
+            'motor_tau_up_s', 'motor_tau_down_s',
+        ):
+            setattr(self, name, _array(getattr(self, name), THRUST_COUNT, name))
+
+        self.prediction_dt_s = max(float(self.prediction_dt_s), 0.001)
+        self.horizon_s = max(float(self.horizon_s), self.prediction_dt_s)
+        self.gauss_newton_iterations = max(int(self.gauss_newton_iterations), 1)
+        if np.any(self.wrench_scale <= 0.0) or np.any(self.command_scale <= 0.0):
+            raise ValueError('normalization scales must be positive')
+
+    @classmethod
+    def ideal_servos(cls, **kwargs) -> 'DRCDAConfig':
+        config = cls(**kwargs)
+        config.servo_gain_positive[:] = 1.0
+        config.servo_gain_negative[:] = 1.0
+        config.servo_tau_positive_s[:] = config.prediction_dt_s * 0.25
+        config.servo_tau_negative_s[:] = config.prediction_dt_s * 0.25
+        config.servo_delay_positive_s[:] = 0.0
+        config.servo_delay_negative_s[:] = 0.0
+        config.servo_rate_positive_rad_s[:] = 50.0
+        config.servo_rate_negative_rad_s[:] = 50.0
+        return config
+
+
+def configure_allocator_variant(config: DRCDAConfig, variant: str) -> DRCDAConfig:
+    """Apply one isolated allocator ablation to an existing configuration."""
+    variant = variant.strip().lower()
+    if variant not in ALLOCATOR_VARIANTS:
+        choices = ', '.join(ALLOCATOR_VARIANTS)
+        raise ValueError(f'unknown allocator variant {variant!r}; choose from {choices}')
+
+    if variant == 'no_delay':
+        config.servo_delay_positive_s[:] = 0.0
+        config.servo_delay_negative_s[:] = 0.0
+    elif variant == 'no_horizon':
+        config.horizon_s = config.prediction_dt_s
+    elif variant == 'no_rate_limits':
+        config.servo_rate_positive_rad_s[:] = 1.0e6
+        config.servo_rate_negative_rad_s[:] = 1.0e6
+        config.servo_command_rate_rad_s[:] = 1.0e6
+        config.thrust_command_rate_n_s[:] = 1.0e6
+        config.motor_force_rate_floor_n_s = 1.0e6
+        config.motor_force_rate_cap_n_s = 1.0e6
+    return config
+
+
+class HnuterWrenchModel:
+    """Nonlinear 6D wrench model for four coaxial and one tail rotor."""
+
+    def __init__(
+        self,
+        arm_half_span_m: float = 0.33,
+        front_x_m: float = 0.105,
+        front_z_m: float = -0.013,
+        coaxial_half_separation_m: float = 0.045,
+        tail_x_m: float = -0.664,
+        reaction_torque_ratio_m: float = 0.016,
+    ) -> None:
+        upper_z = front_z_m + coaxial_half_separation_m
+        lower_z = front_z_m - coaxial_half_separation_m
+        # Logical force order is L1, L2, R1, R2, tail.
+        self.positions = np.array([
+            [front_x_m, arm_half_span_m, upper_z],
+            [front_x_m, arm_half_span_m, lower_z],
+            [front_x_m, -arm_half_span_m, upper_z],
+            [front_x_m, -arm_half_span_m, lower_z],
+            [tail_x_m, 0.0, 0.0],
+        ], dtype=float)
+        self.spin_sign = np.array([-1.0, 1.0, -1.0, 1.0, -1.0])
+        self.reaction_torque_ratio_m = float(reaction_torque_ratio_m)
+
+    @staticmethod
+    def _direction(alpha: float, beta: float) -> np.ndarray:
+        ca, sa = math.cos(alpha), math.sin(alpha)
+        cb, sb = math.cos(beta), math.sin(beta)
+        return np.array([cb * sa, -sb, cb * ca], dtype=float)
+
+    @staticmethod
+    def _direction_derivatives(alpha: float, beta: float) -> tuple[np.ndarray, np.ndarray]:
+        ca, sa = math.cos(alpha), math.sin(alpha)
+        cb, sb = math.cos(beta), math.sin(beta)
+        d_alpha = np.array([cb * ca, 0.0, -cb * sa], dtype=float)
+        d_beta = np.array([-sb * sa, -cb, -sb * ca], dtype=float)
+        return d_alpha, d_beta
+
+    def _rotor_directions(self, angles: np.ndarray) -> np.ndarray:
+        left = self._direction(float(angles[0]), float(angles[1]))
+        right = self._direction(float(angles[2]), float(angles[3]))
+        return np.vstack((left, left, right, right, np.array([0.0, 0.0, 1.0])))
+
+    def wrench(self, q: np.ndarray) -> np.ndarray:
+        q = _array(q, ACTUATOR_COUNT, 'q')
+        directions = self._rotor_directions(q[:ANGLE_COUNT])
+        force = np.sum(q[ANGLE_COUNT:, None] * directions, axis=0)
+        moment = np.zeros(3)
+        for index in range(THRUST_COUNT):
+            effectiveness = (
+                np.cross(self.positions[index], directions[index])
+                + self.spin_sign[index] * self.reaction_torque_ratio_m * directions[index]
+            )
+            moment += q[ANGLE_COUNT + index] * effectiveness
+        return np.concatenate((force, moment))
+
+    def jacobian(self, q: np.ndarray) -> np.ndarray:
+        q = _array(q, ACTUATOR_COUNT, 'q')
+        angles = q[:ANGLE_COUNT]
+        thrust = q[ANGLE_COUNT:]
+        directions = self._rotor_directions(angles)
+        jacobian = np.zeros((6, ACTUATOR_COUNT))
+
+        for index in range(THRUST_COUNT):
+            direction = directions[index]
+            jacobian[:3, ANGLE_COUNT + index] = direction
+            jacobian[3:, ANGLE_COUNT + index] = (
+                np.cross(self.positions[index], direction)
+                + self.spin_sign[index] * self.reaction_torque_ratio_m * direction
+            )
+
+        left_da, left_db = self._direction_derivatives(float(angles[0]), float(angles[1]))
+        right_da, right_db = self._direction_derivatives(float(angles[2]), float(angles[3]))
+        angle_groups = (
+            ((0, 1), left_da),
+            ((0, 1), left_db),
+            ((2, 3), right_da),
+            ((2, 3), right_db),
+        )
+        for column, (rotor_indices, derivative) in enumerate(angle_groups):
+            for rotor_index in rotor_indices:
+                rotor_thrust = thrust[rotor_index]
+                jacobian[:3, column] += rotor_thrust * derivative
+                jacobian[3:, column] += rotor_thrust * (
+                    np.cross(self.positions[rotor_index], derivative)
+                    + self.spin_sign[rotor_index] * self.reaction_torque_ratio_m * derivative
+                )
+        return jacobian
+
+    def jacobian_error(self, q: np.ndarray, epsilon: float = 1e-6) -> float:
+        analytical = self.jacobian(q)
+        numerical = np.empty_like(analytical)
+        for index in range(ACTUATOR_COUNT):
+            offset = np.zeros(ACTUATOR_COUNT)
+            offset[index] = epsilon
+            numerical[:, index] = (
+                self.wrench(q + offset) - self.wrench(q - offset)
+            ) / (2.0 * epsilon)
+        return float(np.max(np.abs(analytical - numerical)))
+
+
+@dataclass
+class DRCDAResult:
+    command: np.ndarray
+    predicted_state: np.ndarray
+    estimated_wrench: np.ndarray
+    predicted_wrench: np.ndarray
+    desired_wrench: np.ndarray
+    jerk_reference: np.ndarray
+    wrench_rate_residual: np.ndarray
+    wrench_residual: np.ndarray
+    solve_time_ms: float
+    iterations: int
+    status: str
+
+
+class DRCDAAllocator:
+    """Move-blocked short-horizon DRCDA allocator."""
+
+    def __init__(self, model: HnuterWrenchModel, config: DRCDAConfig | None = None) -> None:
+        self.model = model
+        self.config = config or DRCDAConfig()
+        self.state = np.zeros(ACTUATOR_COUNT)
+        self.command = np.zeros(ACTUATOR_COUNT)
+        self._delayed_servo_command = np.zeros(ANGLE_COUNT)
+        self._pending_servo_commands: list[list[tuple[float, float]]] = [
+            [] for _ in range(ANGLE_COUNT)
+        ]
+        self._previous_desired_wrench = np.zeros(6)
+        self._filtered_wrench_ff = np.zeros(6)
+        self.last_result: DRCDAResult | None = None
+
+    def reset(
+        self,
+        angle_state: Iterable[float] | None = None,
+        thrust_state: Iterable[float] | None = None,
+    ) -> None:
+        self.state[:] = 0.0
+        if angle_state is not None:
+            self.state[:ANGLE_COUNT] = _array(angle_state, ANGLE_COUNT, 'angle_state')
+        if thrust_state is not None:
+            self.state[ANGLE_COUNT:] = _array(thrust_state, THRUST_COUNT, 'thrust_state')
+        self.command[:] = self.state
+        self._delayed_servo_command[:] = self.command[:ANGLE_COUNT]
+        self._pending_servo_commands = [[] for _ in range(ANGLE_COUNT)]
+        self._previous_desired_wrench[:] = 0.0
+        self._filtered_wrench_ff[:] = 0.0
+        self.last_result = None
+
+    def synchronize_wrench_reference(self, desired_wrench: Iterable[float]) -> None:
+        """Drop derivative history after an estimator reference-frame reset."""
+        self._previous_desired_wrench = _array(
+            desired_wrench, 6, 'desired_wrench'
+        ).copy()
+        self._filtered_wrench_ff[:] = 0.0
+        self.last_result = None
+
+    def _servo_parameters(self, index: int, command: float) -> tuple[float, float, float, float]:
+        cfg = self.config
+        if command >= 0.0:
+            return (
+                cfg.servo_gain_positive[index],
+                cfg.servo_tau_positive_s[index],
+                cfg.servo_delay_positive_s[index],
+                cfg.servo_rate_positive_rad_s[index],
+            )
+        return (
+            cfg.servo_gain_negative[index],
+            cfg.servo_tau_negative_s[index],
+            cfg.servo_delay_negative_s[index],
+            cfg.servo_rate_negative_rad_s[index],
+        )
+
+    def _servo_step(
+        self,
+        index: int,
+        state: float,
+        delayed_command: float,
+        dt: float,
+        sensitivity: float = 0.0,
+        delayed_command_sensitivity: float = 0.0,
+        state_limit: float | None = None,
+    ) -> tuple[float, float]:
+        cfg = self.config
+        gain, tau_s, _, _ = self._servo_parameters(index, delayed_command)
+        alpha = 1.0 if tau_s <= 1e-6 else 1.0 - math.exp(-dt / tau_s)
+        requested_delta = alpha * (gain * delayed_command - state)
+        max_positive = cfg.servo_rate_positive_rad_s[index] * dt
+        max_negative = cfg.servo_rate_negative_rad_s[index] * dt
+        applied_delta = float(np.clip(requested_delta, -max_negative, max_positive))
+
+        if -max_negative < requested_delta < max_positive:
+            sensitivity += alpha * (
+                gain * delayed_command_sensitivity - sensitivity
+            )
+
+        limit = (
+            cfg.servo_state_limit_rad[index]
+            if state_limit is None else min(cfg.servo_state_limit_rad[index], state_limit)
+        )
+        next_state_unclipped = state + applied_delta
+        next_state = float(np.clip(next_state_unclipped, -limit, limit))
+        if next_state != next_state_unclipped:
+            sensitivity = 0.0
+        return next_state, sensitivity
+
+    def _motor_rate_bounds(self, index: int, state: float, command: float) -> tuple[float, float]:
+        cfg = self.config
+        span = max(cfg.thrust_max_n[index] - cfg.thrust_min_n[index], 1.0)
+        upper_margin = max(cfg.thrust_max_n[index] - state, 0.0) / span
+        lower_margin = max(state - cfg.thrust_min_n[index], 0.0) / span
+        rate_up = cfg.motor_force_rate_floor_n_s + (
+            cfg.motor_force_rate_cap_n_s - cfg.motor_force_rate_floor_n_s
+        ) * math.sqrt(upper_margin)
+        rate_down = cfg.motor_force_rate_floor_n_s + (
+            cfg.motor_force_rate_cap_n_s - cfg.motor_force_rate_floor_n_s
+        ) * math.sqrt(lower_margin)
+        if command < state:
+            rate_up = min(rate_up, cfg.motor_force_rate_cap_n_s * 0.5)
+        return rate_down, rate_up
+
+    def _motor_step(
+        self,
+        index: int,
+        state: float,
+        command: float,
+        dt: float,
+        sensitivity: float = 0.0,
+        command_sensitivity: float = 0.0,
+    ) -> tuple[float, float]:
+        cfg = self.config
+        tau_s = cfg.motor_tau_up_s[index] if command >= state else cfg.motor_tau_down_s[index]
+        alpha = 1.0 if tau_s <= 1e-6 else 1.0 - math.exp(-dt / tau_s)
+        requested_delta = alpha * (command - state)
+        rate_down, rate_up = self._motor_rate_bounds(index, state, command)
+        lower_delta = -rate_down * dt
+        upper_delta = rate_up * dt
+        applied_delta = float(np.clip(requested_delta, lower_delta, upper_delta))
+        if lower_delta < requested_delta < upper_delta:
+            sensitivity += alpha * (command_sensitivity - sensitivity)
+
+        lower = cfg.thrust_min_n[index]
+        upper = cfg.thrust_max_n[index]
+        next_state_unclipped = state + applied_delta
+        next_state = float(np.clip(next_state_unclipped, lower, upper))
+        if next_state != next_state_unclipped:
+            sensitivity = 0.0
+        return next_state, sensitivity
+
+    def _advance_state(self, dt: float) -> None:
+        for index in range(ANGLE_COUNT):
+            pending = []
+            for remaining_s, command in self._pending_servo_commands[index]:
+                remaining_s -= dt
+                if remaining_s <= 0.0:
+                    self._delayed_servo_command[index] = command
+                else:
+                    pending.append((remaining_s, command))
+            self._pending_servo_commands[index] = pending
+            self.state[index], _ = self._servo_step(
+                index,
+                float(self.state[index]),
+                float(self._delayed_servo_command[index]),
+                dt,
+            )
+
+        for index in range(THRUST_COUNT):
+            state_index = ANGLE_COUNT + index
+            self.state[state_index], _ = self._motor_step(
+                index,
+                float(self.state[state_index]),
+                float(self.command[state_index]),
+                dt,
+            )
+
+    def _predict_terminal(
+        self,
+        candidate_command: np.ndarray,
+        active_angle_limits: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        cfg = self.config
+        prediction_dt = cfg.prediction_dt_s
+        steps = max(1, int(math.ceil(cfg.horizon_s / prediction_dt)))
+        state = self.state.copy()
+        sensitivity = np.zeros(ACTUATOR_COUNT)
+        delayed = self._delayed_servo_command.copy()
+        prediction_events: list[list[tuple[float, float, float]]] = []
+        for index in range(ANGLE_COUNT):
+            _, _, delay_s, _ = self._servo_parameters(index, candidate_command[index])
+            events = [
+                (remaining_s, command, 0.0)
+                for remaining_s, command in self._pending_servo_commands[index]
+            ]
+            events.append((delay_s, float(candidate_command[index]), 1.0))
+            prediction_events.append(events)
+
+        elapsed_s = 0.0
+        delayed_sensitivity = np.zeros(ANGLE_COUNT)
+        for _ in range(steps):
+            elapsed_s += prediction_dt
+            for index in range(ANGLE_COUNT):
+                while (
+                    prediction_events[index]
+                    and prediction_events[index][0][0] <= elapsed_s
+                ):
+                    _, delayed[index], delayed_sensitivity[index] = (
+                        prediction_events[index].pop(0)
+                    )
+                state[index], sensitivity[index] = self._servo_step(
+                    index,
+                    float(state[index]),
+                    float(delayed[index]),
+                    prediction_dt,
+                    float(sensitivity[index]),
+                    float(delayed_sensitivity[index]),
+                    float(active_angle_limits[index]),
+                )
+
+            for index in range(THRUST_COUNT):
+                state_index = ANGLE_COUNT + index
+                state[state_index], sensitivity[state_index] = self._motor_step(
+                    index,
+                    float(state[state_index]),
+                    float(candidate_command[state_index]),
+                    prediction_dt,
+                    float(sensitivity[state_index]),
+                    1.0,
+                )
+        return state, np.diag(sensitivity)
+
+    def predict_terminal(
+        self,
+        candidate_command: Iterable[float],
+        active_angle_limits: Iterable[float] | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        command = _array(candidate_command, ACTUATOR_COUNT, 'candidate_command')
+        limits = (
+            self.config.servo_state_limit_rad
+            if active_angle_limits is None
+            else _array(active_angle_limits, ANGLE_COUNT, 'active_angle_limits')
+        )
+        return self._predict_terminal(command, limits)
+
+    def _project_command(
+        self,
+        command: np.ndarray,
+        previous: np.ndarray,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> np.ndarray:
+        cfg = self.config
+        projected = command.copy()
+        servo_limit = np.minimum(cfg.servo_command_limit_rad, active_angle_limits)
+        projected[:ANGLE_COUNT] = np.clip(
+            projected[:ANGLE_COUNT], -servo_limit, servo_limit
+        )
+        servo_delta = cfg.servo_command_rate_rad_s * dt
+        projected[:ANGLE_COUNT] = np.clip(
+            projected[:ANGLE_COUNT],
+            previous[:ANGLE_COUNT] - servo_delta,
+            previous[:ANGLE_COUNT] + servo_delta,
+        )
+        projected[ANGLE_COUNT:] = np.clip(
+            projected[ANGLE_COUNT:], cfg.thrust_min_n, cfg.thrust_max_n
+        )
+        thrust_delta = cfg.thrust_command_rate_n_s * dt
+        projected[ANGLE_COUNT:] = np.clip(
+            projected[ANGLE_COUNT:],
+            previous[ANGLE_COUNT:] - thrust_delta,
+            previous[ANGLE_COUNT:] + thrust_delta,
+        )
+        return projected
+
+    def _motor_only_fallback(
+        self,
+        desired_wrench: np.ndarray,
+        previous: np.ndarray,
+        dt: float,
+        active_angle_limits: np.ndarray,
+    ) -> np.ndarray:
+        cfg = self.config
+        command = previous.copy()
+        fixed_state = self.state.copy()
+        jacobian = self.model.jacobian(fixed_state)[:, ANGLE_COUNT:]
+        fixed_state[ANGLE_COUNT:] = 0.0
+        fixed_wrench = self.model.wrench(fixed_state)
+        weighting = np.diag(np.sqrt(cfg.wrench_weight) / cfg.wrench_scale)
+        matrix = weighting @ jacobian
+        target = weighting @ (desired_wrench - fixed_wrench)
+        regularization = 1e-4 * np.eye(THRUST_COUNT)
+        try:
+            thrust = np.linalg.solve(
+                matrix.T @ matrix + regularization,
+                matrix.T @ target,
+            )
+        except np.linalg.LinAlgError:
+            thrust = previous[ANGLE_COUNT:]
+        command[ANGLE_COUNT:] = thrust
+        return self._project_command(command, previous, dt, active_angle_limits)
+
+    def allocate(
+        self,
+        desired_wrench: Iterable[float],
+        dt: float,
+        preferred_command: Iterable[float] | None = None,
+        active_angle_limits: Iterable[float] | None = None,
+    ) -> DRCDAResult:
+        start_time = time.perf_counter()
+        cfg = self.config
+        desired = _array(desired_wrench, 6, 'desired_wrench')
+        dt = float(np.clip(dt, 0.0005, 0.05))
+        limits = (
+            cfg.servo_state_limit_rad.copy()
+            if active_angle_limits is None
+            else _array(active_angle_limits, ANGLE_COUNT, 'active_angle_limits')
+        )
+        limits = np.minimum(limits, cfg.servo_state_limit_rad)
+        preferred = (
+            self.command.copy()
+            if preferred_command is None
+            else _array(preferred_command, ACTUATOR_COUNT, 'preferred_command')
+        )
+
+        self._advance_state(dt)
+        estimated_wrench = self.model.wrench(self.state)
+        raw_ff = (desired - self._previous_desired_wrench) / dt
+        ff_alpha = dt / (max(cfg.wrench_ff_tau_s, 0.0) + dt)
+        self._filtered_wrench_ff += ff_alpha * (raw_ff - self._filtered_wrench_ff)
+        jerk_reference = (
+            self._filtered_wrench_ff
+            + cfg.wrench_error_gain * (desired - estimated_wrench)
+        )
+        self._previous_desired_wrench = desired.copy()
+
+        previous = self.command.copy()
+        command = self._project_command(
+            0.75 * previous + 0.25 * preferred,
+            previous,
+            dt,
+            limits,
+        )
+        normalizer = cfg.command_scale
+        sqrt_weight = np.sqrt(cfg.wrench_weight) / cfg.wrench_scale
+        status = 'solved'
+        completed_iterations = 0
+
+        try:
+            for iteration in range(cfg.gauss_newton_iterations):
+                predicted_state, state_sensitivity = self._predict_terminal(command, limits)
+                predicted_wrench = self.model.wrench(predicted_state)
+                command_jacobian = (
+                    self.model.jacobian(predicted_state)
+                    @ state_sensitivity
+                    @ np.diag(normalizer)
+                )
+                weighted_jacobian_base = sqrt_weight[:, None] * command_jacobian
+                weighted_wrench_error = sqrt_weight * (predicted_wrench - desired)
+                weighted_rate_error = (
+                    math.sqrt(cfg.wrench_rate_weight)
+                    * sqrt_weight
+                    * (
+                        predicted_wrench
+                        - estimated_wrench
+                        - cfg.horizon_s * jerk_reference
+                    )
+                )
+                weighted_jacobian = np.vstack((
+                    weighted_jacobian_base,
+                    math.sqrt(cfg.wrench_rate_weight) * weighted_jacobian_base,
+                ))
+                weighted_error = np.concatenate((
+                    weighted_wrench_error,
+                    weighted_rate_error,
+                ))
+                command_normalized = command / normalizer
+                previous_normalized = previous / normalizer
+                preferred_normalized = preferred / normalizer
+                hessian = (
+                    weighted_jacobian.T @ weighted_jacobian
+                    + np.diag(cfg.command_move_weight + cfg.command_preference_weight)
+                    + 1e-8 * np.eye(ACTUATOR_COUNT)
+                )
+                gradient = (
+                    weighted_jacobian.T @ weighted_error
+                    + cfg.command_move_weight * (command_normalized - previous_normalized)
+                    + cfg.command_preference_weight * (
+                        command_normalized - preferred_normalized
+                    )
+                )
+                step = np.linalg.solve(hessian, -gradient)
+                if not np.all(np.isfinite(step)):
+                    raise np.linalg.LinAlgError('non-finite DRCDA step')
+                next_command = self._project_command(
+                    command + normalizer * step,
+                    previous,
+                    dt,
+                    limits,
+                )
+                completed_iterations = iteration + 1
+                if np.linalg.norm((next_command - command) / normalizer) < 1e-5:
+                    command = next_command
+                    break
+                command = next_command
+        except (np.linalg.LinAlgError, FloatingPointError, ValueError):
+            status = 'motor_only_fallback'
+            command = self._motor_only_fallback(desired, previous, dt, limits)
+
+        predicted_state, state_sensitivity = self._predict_terminal(command, limits)
+        predicted_wrench = self.model.wrench(predicted_state)
+        predicted_rate = (
+            predicted_wrench - estimated_wrench
+        ) / max(cfg.horizon_s, cfg.prediction_dt_s)
+        wrench_rate_residual = jerk_reference - predicted_rate
+        wrench_residual = predicted_wrench - desired
+
+        self.command = command
+        for index in range(ANGLE_COUNT):
+            _, _, delay_s, _ = self._servo_parameters(index, command[index])
+            self._pending_servo_commands[index].append((delay_s, float(command[index])))
+
+        solve_time_ms = (time.perf_counter() - start_time) * 1000.0
+        result = DRCDAResult(
+            command=command.copy(),
+            predicted_state=predicted_state,
+            estimated_wrench=estimated_wrench,
+            predicted_wrench=predicted_wrench,
+            desired_wrench=desired,
+            jerk_reference=jerk_reference,
+            wrench_rate_residual=wrench_rate_residual,
+            wrench_residual=wrench_residual,
+            solve_time_ms=solve_time_ms,
+            iterations=completed_iterations,
+            status=status,
+        )
+        self.last_result = result
+        return result
+
+
+class BasicDifferentialAllocator(DRCDAAllocator):
+    """One-step differential allocator with fixed actuator-rate bounds.
+
+    This baseline uses the current nominal command as actuator state. It has no
+    actuator delay queue, lag model, or reachable-set prediction.
+    """
+
+    def allocate(
+        self,
+        desired_wrench: Iterable[float],
+        dt: float,
+        preferred_command: Iterable[float] | None = None,
+        active_angle_limits: Iterable[float] | None = None,
+    ) -> DRCDAResult:
+        start_time = time.perf_counter()
+        cfg = self.config
+        desired = _array(desired_wrench, 6, 'desired_wrench')
+        dt = float(np.clip(dt, 0.0005, 0.05))
+        limits = (
+            cfg.servo_state_limit_rad.copy()
+            if active_angle_limits is None
+            else _array(active_angle_limits, ANGLE_COUNT, 'active_angle_limits')
+        )
+        limits = np.minimum(limits, cfg.servo_state_limit_rad)
+        preferred = (
+            self.command.copy()
+            if preferred_command is None
+            else _array(preferred_command, ACTUATOR_COUNT, 'preferred_command')
+        )
+
+        self.state = self.command.copy()
+        estimated_wrench = self.model.wrench(self.state)
+        raw_ff = (desired - self._previous_desired_wrench) / dt
+        ff_alpha = dt / (max(cfg.wrench_ff_tau_s, 0.0) + dt)
+        self._filtered_wrench_ff += ff_alpha * (raw_ff - self._filtered_wrench_ff)
+        jerk_reference = (
+            self._filtered_wrench_ff
+            + cfg.wrench_error_gain * (desired - estimated_wrench)
+        )
+        self._previous_desired_wrench = desired.copy()
+
+        rate_scale = np.concatenate((
+            cfg.servo_command_rate_rad_s,
+            cfg.thrust_command_rate_n_s,
+        ))
+        sqrt_weight = np.sqrt(cfg.wrench_weight) / cfg.wrench_scale
+        weighted_jacobian = (
+            sqrt_weight[:, None]
+            * self.model.jacobian(self.state)
+            * rate_scale[None, :]
+        )
+        weighted_target = sqrt_weight * jerk_reference
+        preferred_rate = np.clip(
+            (preferred - self.command) / (dt * rate_scale),
+            -1.0,
+            1.0,
+        )
+        regularization = (
+            cfg.command_move_weight + cfg.command_preference_weight + 1e-4
+        )
+        hessian = weighted_jacobian.T @ weighted_jacobian + np.diag(regularization)
+        gradient = (
+            weighted_jacobian.T @ weighted_target
+            + cfg.command_preference_weight * preferred_rate
+        )
+        status = 'basic_da'
+        try:
+            normalized_rate = np.linalg.solve(hessian, gradient)
+            if not np.all(np.isfinite(normalized_rate)):
+                raise np.linalg.LinAlgError('non-finite basic DA step')
+            normalized_rate = np.clip(normalized_rate, -1.0, 1.0)
+            command = self._project_command(
+                self.command + dt * rate_scale * normalized_rate,
+                self.command,
+                dt,
+                limits,
+            )
+        except (np.linalg.LinAlgError, FloatingPointError, ValueError):
+            status = 'basic_da_motor_only_fallback'
+            command = self._motor_only_fallback(
+                desired, self.command, dt, limits
+            )
+
+        self.command = command
+        self.state = command.copy()
+        predicted_wrench = self.model.wrench(self.state)
+        predicted_rate = (predicted_wrench - estimated_wrench) / dt
+        result = DRCDAResult(
+            command=command.copy(),
+            predicted_state=self.state.copy(),
+            estimated_wrench=estimated_wrench,
+            predicted_wrench=predicted_wrench,
+            desired_wrench=desired,
+            jerk_reference=jerk_reference,
+            wrench_rate_residual=jerk_reference - predicted_rate,
+            wrench_residual=predicted_wrench - desired,
+            solve_time_ms=(time.perf_counter() - start_time) * 1000.0,
+            iterations=1,
+            status=status,
+        )
+        self.last_result = result
+        return result
+
+
+class HnuterHardwareDRCDAController(HnuterHardwareController):
+    """Hardware safety state machine with rate-limited DRCDA allocation."""
+
+    def _node_name(self):
+        variant = getattr(self, '_drcda_variant', 'full')
+        return f'hnuter_hardware_drcda_{variant}'
+
+    def _default_tuning_filename(self):
+        return 'hnuter_drcda_hardware_tuning.json'
+
+    def _gamepad_attitude_axis_toggle_enabled(self):
+        return True
+
+    def __init__(self) -> None:
+        self._drcda_variant = os.environ.get(
+            'HNUTER_DRCDA_VARIANT', 'full'
+        ).strip().lower()
+        if self._drcda_variant not in ALLOCATOR_VARIANTS:
+            choices = ', '.join(ALLOCATOR_VARIANTS)
+            raise ValueError(
+                f'unknown HNUTER_DRCDA_VARIANT={self._drcda_variant!r}; '
+                f'choose from {choices}'
+            )
+        self._drcda_ready = False
+        self._drcda_active_call = False
+        self._drcda_current_time_s = 0.0
+        self._drcda_current_dt_s = 0.01
+        self._drcda_accumulated_dt_s = 0.0
+        super().__init__()
+
+        model_name = os.environ.get(
+            'HNUTER_DRCDA_SERVO_MODEL', 'hardware_rate_limited'
+        ).strip().lower()
+        config_kwargs = {
+            'prediction_dt_s': env_float(
+                'HNUTER_DRCDA_PREDICTION_DT_S', 0.01
+            ),
+            'horizon_s': env_float('HNUTER_DRCDA_HORIZON_S', 0.10),
+            'gauss_newton_iterations': int(env_float(
+                'HNUTER_DRCDA_ITERATIONS', 2
+            )),
+            'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 6.0),
+        }
+        self._drcda_primary_rate_rad_s = max(
+            0.1, env_float('HNUTER_DRCDA_PRIMARY_RATE_RAD_S', 6.0)
+        )
+        self._drcda_secondary_servo_rate_rad_s = max(
+            0.1,
+            env_float(
+                'HNUTER_DRCDA_SECONDARY_SERVO_RATE_RAD_S',
+                self._drcda_primary_rate_rad_s,
+            ),
+        )
+        if model_name in ('ideal', 'instant'):
+            config = DRCDAConfig.ideal_servos(**config_kwargs)
+        elif model_name in ('hardware', 'hardware_rate_limited'):
+            config = DRCDAConfig.ideal_servos(**config_kwargs)
+            secondary_joint_rate = (
+                self._drcda_secondary_servo_rate_rad_s
+                / self.secondary_servo_gear_ratio
+            )
+            joint_rates = np.array([
+                self._drcda_primary_rate_rad_s,
+                secondary_joint_rate,
+                self._drcda_primary_rate_rad_s,
+                secondary_joint_rate,
+            ])
+            config.servo_rate_positive_rad_s[:] = joint_rates
+            config.servo_rate_negative_rad_s[:] = joint_rates
+            config.servo_command_rate_rad_s[:] = joint_rates
+        else:
+            raise ValueError(
+                'unknown HNUTER_DRCDA_SERVO_MODEL='
+                f'{model_name!r}; choose hardware_rate_limited or ideal'
+            )
+        configure_allocator_variant(config, self._drcda_variant)
+
+        front_thrust_max = env_float(
+            'HNUTER_DRCDA_FRONT_MOTOR_MAX_N', 50.0
+        )
+        tail_thrust_max = env_float(
+            'HNUTER_DRCDA_TAIL_MOTOR_MAX_N', 50.0
+        )
+        config.thrust_max_n[:4] = front_thrust_max
+        config.thrust_max_n[4] = tail_thrust_max
+        config.thrust_min_n[4] = (
+            -tail_thrust_max if self.allow_tail_reverse else 0.0
+        )
+        angle_limits = np.array([
+            self.primary_servo_angle_max_rad,
+            self.secondary_servo_angle_max_rad
+            / self.secondary_servo_gear_ratio,
+            self.primary_servo_angle_max_rad,
+            self.secondary_servo_angle_max_rad
+            / self.secondary_servo_gear_ratio,
+        ])
+        config.servo_state_limit_rad[:] = angle_limits
+        config.servo_command_limit_rad[:] = angle_limits
+        config.command_scale[:ANGLE_COUNT] = angle_limits
+        config.command_scale[ANGLE_COUNT:8] = front_thrust_max
+        config.command_scale[8] = tail_thrust_max
+        config.antiwindup_gain = env_float(
+            'HNUTER_DRCDA_ANTIWINDUP_GAIN', 0.20
+        )
+
+        wrench_model = HnuterWrenchModel(
+            arm_half_span_m=self.l1,
+            tail_x_m=-self.l2,
+            reaction_torque_ratio_m=env_float(
+                'HNUTER_DRCDA_REACTION_RATIO_M', 0.016
+            ),
+        )
+        allocator_type = (
+            BasicDifferentialAllocator
+            if self._drcda_variant == 'basic_da'
+            else DRCDAAllocator
+        )
+        self.drcda = allocator_type(wrench_model, config)
+        self._drcda_update_period_s = float(np.clip(
+            env_float('HNUTER_DRCDA_UPDATE_PERIOD_S', 0.01),
+            0.002,
+            0.05,
+        ))
+        self._drcda_model_name = model_name
+        self._drcda_front_motor_max_n = float(front_thrust_max)
+        self._drcda_tail_motor_max_n = float(tail_thrust_max)
+        self._drcda_ready = True
+        self._synchronize_drcda_hardware_limits()
+        self._load_tuning_file(force=True)
+        self.get_logger().warn(
+            'EXPERIMENTAL HARDWARE DRCDA: 首次验证必须拆桨。'
+            f'variant={self._drcda_variant}, model={model_name}, '
+            f'horizon={config.horizon_s:.3f}s, '
+            f'joint_limits={np.round(np.degrees(angle_limits), 1).tolist()}deg, '
+            f'gear={self.secondary_servo_gear_ratio:.3f}, '
+            f'log={self.diagnostic_path}'
+        )
+
+    def _apply_tuning(self, data: dict):
+        super()._apply_tuning(data)
+        if not getattr(self, '_drcda_ready', False):
+            return
+        config = self.drcda.config
+        config.horizon_s = max(
+            self._tuning_float(data, 'drcda_horizon_s', config.horizon_s),
+            config.prediction_dt_s,
+        )
+        config.wrench_error_gain = max(self._tuning_float(
+            data, 'drcda_wrench_error_gain', config.wrench_error_gain
+        ), 0.0)
+        config.wrench_ff_tau_s = max(self._tuning_float(
+            data, 'drcda_wrench_ff_tau_s', config.wrench_ff_tau_s
+        ), 0.0)
+        config.wrench_rate_weight = max(self._tuning_float(
+            data, 'drcda_wrench_rate_weight', config.wrench_rate_weight
+        ), 0.0)
+        config.wrench_weight = np.maximum(self._tuning_array(
+            data, 'drcda_wrench_weight', config.wrench_weight
+        ), 0.0)
+        config.command_move_weight = np.maximum(self._tuning_array(
+            data, 'drcda_command_move_weight', config.command_move_weight
+        ), 0.0)
+        config.command_preference_weight = np.maximum(self._tuning_array(
+            data,
+            'drcda_command_preference_weight',
+            config.command_preference_weight,
+        ), 0.0)
+        config.antiwindup_gain = max(self._tuning_float(
+            data, 'drcda_antiwindup_gain', config.antiwindup_gain
+        ), 0.0)
+        self._synchronize_drcda_hardware_limits()
+
+    def _synchronize_drcda_hardware_limits(self) -> None:
+        config = self.drcda.config
+        limits = np.array([
+            self.primary_servo_angle_max_rad,
+            self.secondary_servo_angle_max_rad
+            / self.secondary_servo_gear_ratio,
+            self.primary_servo_angle_max_rad,
+            self.secondary_servo_angle_max_rad
+            / self.secondary_servo_gear_ratio,
+        ])
+        config.servo_state_limit_rad[:] = limits
+        config.servo_command_limit_rad[:] = limits
+        config.command_scale[:ANGLE_COUNT] = limits
+        if self._drcda_model_name in ('hardware', 'hardware_rate_limited'):
+            secondary_joint_rate = (
+                self._drcda_secondary_servo_rate_rad_s
+                / self.secondary_servo_gear_ratio
+            )
+            rates = np.array([
+                self._drcda_primary_rate_rad_s,
+                secondary_joint_rate,
+                self._drcda_primary_rate_rad_s,
+                secondary_joint_rate,
+            ])
+            config.servo_rate_positive_rad_s[:] = rates
+            config.servo_rate_negative_rad_s[:] = rates
+            config.servo_command_rate_rad_s[:] = rates
+        self.drcda.state[:ANGLE_COUNT] = np.clip(
+            self.drcda.state[:ANGLE_COUNT], -limits, limits
+        )
+        self.drcda.command[:ANGLE_COUNT] = np.clip(
+            self.drcda.command[:ANGLE_COUNT], -limits, limits
+        )
+
+    def _tuning_snapshot(self) -> dict:
+        snapshot = super()._tuning_snapshot()
+        if not getattr(self, '_drcda_ready', False):
+            return snapshot
+        config = self.drcda.config
+        snapshot.update({
+            'drcda_variant': self._drcda_variant,
+            'drcda_servo_model': self._drcda_model_name,
+            'drcda_horizon_s': float(config.horizon_s),
+            'drcda_prediction_dt_s': float(config.prediction_dt_s),
+            'drcda_wrench_error_gain': float(config.wrench_error_gain),
+            'drcda_wrench_ff_tau_s': float(config.wrench_ff_tau_s),
+            'drcda_wrench_rate_weight': float(config.wrench_rate_weight),
+            'drcda_wrench_weight': config.wrench_weight.tolist(),
+            'drcda_command_move_weight': config.command_move_weight.tolist(),
+            'drcda_command_preference_weight': (
+                config.command_preference_weight.tolist()
+            ),
+            'drcda_antiwindup_gain': float(config.antiwindup_gain),
+            'drcda_servo_state_limit_deg': np.degrees(
+                config.servo_state_limit_rad
+            ).tolist(),
+        })
+        return snapshot
+
+    def _diagnostic_file_prefix(self):
+        return (
+            f'hardware/drcda/{self._drcda_variant}/'
+            f'hnuter_hardware_{self._drcda_variant}'
+        )
+
+    def _diagnostic_extra_header(self):
+        columns = list(super()._diagnostic_extra_header())
+        columns += ['drcda_status', 'drcda_solve_ms', 'drcda_iterations']
+        columns += [
+            'drcda_q_alpha_left_rad', 'drcda_q_beta_left_rad',
+            'drcda_q_alpha_right_rad', 'drcda_q_beta_right_rad',
+            'drcda_q_f_left_1_n', 'drcda_q_f_left_2_n',
+            'drcda_q_f_right_1_n', 'drcda_q_f_right_2_n',
+            'drcda_q_f_tail_n',
+        ]
+        columns += [f'drcda_predicted_wrench_{name}' for name in (
+            'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
+        )]
+        columns += [f'drcda_wrench_residual_{name}' for name in (
+            'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
+        )]
+        columns += ['drcda_wrench_rate_residual_norm']
+        return columns
+
+    def _diagnostic_extra_values(self):
+        values = list(super()._diagnostic_extra_values())
+        if not self._drcda_ready or self.drcda.last_result is None:
+            return values + ['', float('nan'), 0] + [float('nan')] * 22
+        result = self.drcda.last_result
+        return values + [
+            result.status,
+            float(result.solve_time_ms),
+            int(result.iterations),
+            *[float(value) for value in result.predicted_state],
+            *[float(value) for value in result.predicted_wrench],
+            *[float(value) for value in result.wrench_residual],
+            float(np.linalg.norm(result.wrench_rate_residual)),
+        ]
+
+    @staticmethod
+    def _motor_control_to_thrust(
+        control: float,
+        max_thrust: float,
+        bidirectional: bool = False,
+        motor_constant: float = 8.54858e-05,
+        min_velocity: float = 10.0,
+    ) -> float:
+        if (
+            not np.isfinite(control)
+            or abs(control) <= 1e-9
+            or max_thrust <= 0.0
+        ):
+            return 0.0
+        if bidirectional:
+            thrust = float(control) * abs(float(control)) * max_thrust
+            return float(np.clip(thrust, -max_thrust, max_thrust))
+        max_velocity = math.sqrt(max_thrust / motor_constant)
+        velocity = min_velocity + float(np.clip(control, 0.0, 1.0)) * (
+            max_velocity - min_velocity
+        )
+        return float(np.clip(
+            motor_constant * velocity * velocity, 0.0, max_thrust
+        ))
+
+    def _preferred_drcda_command(
+        self,
+        motor_controls,
+        alpha1: float,
+        alpha2: float,
+        theta1: float,
+        theta2: float,
+    ) -> np.ndarray:
+        controls = np.asarray(motor_controls, dtype=float)
+        if controls.size < 5:
+            controls = np.pad(controls, (0, 5 - controls.size))
+        front_max = self._drcda_front_motor_max_n
+        tail_max = self._drcda_tail_motor_max_n
+        return np.array([
+            alpha1,
+            theta1,
+            alpha2,
+            theta2,
+            self._motor_control_to_thrust(controls[2], front_max),
+            self._motor_control_to_thrust(controls[3], front_max),
+            self._motor_control_to_thrust(controls[0], front_max),
+            self._motor_control_to_thrust(controls[1], front_max),
+            self._motor_control_to_thrust(
+                controls[4], tail_max, self.allow_tail_reverse
+            ),
+        ], dtype=float)
+
+    def _active_drcda_angle_limits(self) -> np.ndarray:
+        elapsed_s = (
+            self._drcda_current_time_s - self._takeoff_lock_start_time_s
+            if self._takeoff_lock_start_time_s is not None else 100.0
+        )
+        if elapsed_s < self.takeoff_tilt_suppress_time_s:
+            alpha_limit = self.takeoff_tilt_limit_rad
+            beta_limit = min(
+                self.takeoff_tilt_limit_rad, self.theta_limit_rad
+            )
+        elif elapsed_s < self.takeoff_xy_lock_time_s:
+            alpha_limit = self.xy_lock_tilt_limit_rad
+            beta_limit = min(self.xy_lock_tilt_limit_rad, self.theta_limit_rad)
+        else:
+            alpha_limit = self.alpha_limit_rad
+            beta_limit = self.theta_limit_rad
+        return np.array([
+            alpha_limit, beta_limit, alpha_limit, beta_limit
+        ], dtype=float)
+
+    def _apply_drcda_antiwindup(
+        self, wrench_residual: np.ndarray, dt: float
+    ) -> None:
+        config = self.drcda.config
+        normalized_error = wrench_residual / config.wrench_scale
+        if np.linalg.norm(normalized_error) < 0.02:
+            return
+        delta_force_body = np.array([
+            wrench_residual[0] / max(abs(self.allocator_force_x_sign), 1e-6),
+            wrench_residual[1] / (
+                self.allocator_force_y_sign
+                if abs(self.allocator_force_y_sign) > 1e-6 else 1.0
+            ),
+            -wrench_residual[2],
+        ])
+        delta_acceleration_ned = (
+            self.R_ned_frd @ delta_force_body / self.mass
+        )
+        active = self.direct_pos_Ki_ned > 1e-6
+        correction = np.zeros(3)
+        correction[active] = (
+            -config.antiwindup_gain
+            * delta_acceleration_ned[active]
+            / self.direct_pos_Ki_ned[active]
+            * dt
+        )
+        self.integral_pos_error += correction
+        self.integral_pos_error = np.clip(
+            self.integral_pos_error,
+            -self.direct_pos_integral_limit_ned,
+            self.direct_pos_integral_limit_ned,
+        )
+
+    def publish_px4_equivalent_direct_commands(
+        self, current_time: float, dt: float
+    ):
+        self._drcda_active_call = True
+        self._drcda_current_time_s = float(current_time)
+        self._drcda_current_dt_s = float(dt)
+        try:
+            return super().publish_px4_equivalent_direct_commands(
+                current_time, dt
+            )
+        finally:
+            self._drcda_active_call = False
+
+    def publish_idle_direct_actuator_setpoint(self):
+        if self._drcda_ready:
+            self.drcda.reset()
+            self._drcda_accumulated_dt_s = 0.0
+        return super().publish_idle_direct_actuator_setpoint()
+
+    def publish_direct_actuator_setpoint(
+        self,
+        motor_controls,
+        alpha1,
+        alpha2,
+        theta1,
+        theta2,
+    ):
+        drcda_active = (
+            self._drcda_ready
+            and self._drcda_active_call
+            and self.armed
+            and self.takeoff_requested
+            and self._hardware_takeoff_permitted
+        )
+        if not drcda_active:
+            if self._drcda_ready:
+                self.drcda.reset(
+                    angle_state=[alpha1, theta1, alpha2, theta2],
+                    thrust_state=[0.0] * 5,
+                )
+            return super().publish_direct_actuator_setpoint(
+                motor_controls, alpha1, alpha2, theta1, theta2
+            )
+
+        preferred = self._preferred_drcda_command(
+            motor_controls, alpha1, alpha2, theta1, theta2
+        )
+        self._drcda_accumulated_dt_s += self._drcda_current_dt_s
+        solve_due = (
+            self.drcda.last_result is None
+            or self._drcda_accumulated_dt_s >= self._drcda_update_period_s
+        )
+        if solve_due:
+            allocation_dt = max(
+                self._drcda_accumulated_dt_s, self._drcda_current_dt_s
+            )
+            result = self.drcda.allocate(
+                desired_wrench=self.last_W,
+                dt=allocation_dt,
+                preferred_command=preferred,
+                active_angle_limits=self._active_drcda_angle_limits(),
+            )
+            self._drcda_accumulated_dt_s = 0.0
+            self._apply_drcda_antiwindup(
+                result.wrench_residual, allocation_dt
+            )
+        command = self.drcda.command
+        logical_thrust = command[ANGLE_COUNT:]
+        front_max = self._drcda_front_motor_max_n
+        tail_max = self._drcda_tail_motor_max_n
+        output_motor_controls = [
+            self._thrust_to_normalized_motor_control(
+                logical_thrust[2], front_max
+            ),
+            self._thrust_to_normalized_motor_control(
+                logical_thrust[3], front_max
+            ),
+            self._thrust_to_normalized_motor_control(
+                logical_thrust[0], front_max
+            ),
+            self._thrust_to_normalized_motor_control(
+                logical_thrust[1], front_max
+            ),
+            (
+                self._thrust_to_normalized_bidirectional_motor_control(
+                    logical_thrust[4], tail_max
+                )
+                if self.allow_tail_reverse
+                else self._thrust_to_normalized_motor_control(
+                    logical_thrust[4], tail_max
+                )
+            ),
+        ]
+        self._alpha1_cmd = float(command[0])
+        self._theta1_cmd = float(command[1])
+        self._alpha2_cmd = float(command[2])
+        self._theta2_cmd = float(command[3])
+        self.last_F1 = float(logical_thrust[0] + logical_thrust[1])
+        self.last_F2 = float(logical_thrust[2] + logical_thrust[3])
+        self.last_F3 = float(logical_thrust[4])
+        return super().publish_direct_actuator_setpoint(
+            output_motor_controls,
+            self._alpha1_cmd,
+            self._alpha2_cmd,
+            self._theta1_cmd,
+            self._theta2_cmd,
+        )
+
+
 def main(args=None):
     rclpy.init(args=args)
-    controller = HnuterHardwareController()
+    controller = HnuterHardwareDRCDAController()
     try:
         rclpy.spin(controller)
     except KeyboardInterrupt:
-        controller.get_logger().info('实机外部控制节点已停止。')
+        controller.get_logger().info('实机 DRCDA 外部控制节点已停止。')
     finally:
         controller.destroy_node()
         if rclpy.ok():

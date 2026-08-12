@@ -4,8 +4,8 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 
 ## Main Files
 
-- `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
-- `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
+- `hnuter_external_controller_px4_position.py`: PX4 position-offboard controller with gamepad, hover, and trajectory modes. It publishes no motor or servo commands.
+- `hnuter_external_controller_px4_position_hardware.py`: RC-driven real-aircraft PX4 position-offboard controller. Arm and Offboard stay under transmitter control, and every task starts relative to the current position.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
 - `hnuter_external_direct_controller_hardware.py`: standalone RC-driven hardware direct controller. It does not import another local controller module and leaves Arm/Offboard authority with PX4 and the transmitter.
 - `hnuter_external_direct_drcda.py`: delay-aware, reachability-constrained differential allocator for direct actuator control.
@@ -38,8 +38,25 @@ Run the stable PX4 offboard controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_controller.py
+python3 hnuter_external_controller_px4_position.py
 ```
+
+Run the real-aircraft PX4 position controller:
+
+```bash
+cd ~/px4_ws_ros2
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+source px4-venv/bin/activate
+python3 hnuter_external_controller_px4_position_hardware.py
+```
+
+The hardware position controller never publishes `VehicleCommand`; Arm and
+Offboard must be selected on the transmitter. It has no automatic climb. RC
+sticks command body-frame horizontal velocity, vertical velocity, and yaw
+rate. Keyboard `1`, `2`, and `3` start rectangle, Lissajous, and attitude
+tasks from the measured position at trigger time. If Offboard is closed during
+a task, reopening it restarts that task from the new current position.
 
 Run the direct actuator debug controller:
 
@@ -87,6 +104,37 @@ without propellers. Direction signs can be adjusted with
 `HNUTER_RC_PITCH_SIGN`, `HNUTER_RC_ROLL_SIGN`,
 `HNUTER_RC_THROTTLE_SIGN`, and `HNUTER_RC_YAW_SIGN`.
 
+All hardware entry points target no-delay firmware profile
+`3131ddd4_500_2500_gear2`. The direct-actuator controllers require:
+the four tilt-servo outputs MAIN8--11 must use `500/2500/1500 us`
+min/max/center, primary joints use the full `+/-180 deg` servo range, and
+secondary joints use
+`HNTR_S2_GEAR=2.0`. The secondary physical joint limit is therefore
+`+/-90 deg`. The standalone controller loads
+`config/hnuter_direct_hardware_tuning.json` by default.
+This PWM range is only the tilt-servo electrical input range. Motors continue
+to use normalized `ActuatorMotors.control` values and their independent thrust
+limits; they are not mapped through `500--2500 us` by these controllers. The
+PX4-position hardware entry point publishes no actuator commands, so PX4 owns
+both mappings internally.
+
+Run the standalone experimental hardware DRCDA controller with:
+
+```bash
+cd ~/px4_ws_ros2
+source /opt/ros/jazzy/setup.bash
+source ~/px4_ros2_ws/install/setup.bash
+source px4-venv/bin/activate
+HNUTER_LOG_DIR=$PWD/hnuter_logs/hardware_drcda \
+python3 hnuter_external_direct_drcda_hardware.py
+```
+
+It retains the same transmitter-owned Arm/Offboard gate, low-throttle takeoff
+interlock, RC behavior, and spool ramp. Its default actuator predictor has no
+pure delay or first-order lag, but retains conservative joint-rate limits. Set
+`HNUTER_DRCDA_SERVO_MODEL=ideal` only for a deliberate near-instantaneous-state
+bench comparison. The first validation must be performed without propellers.
+
 Run the experimental DRCDA direct controller:
 
 ```bash
@@ -94,41 +142,38 @@ cd ~/px4_ws_ros2
 python3 hnuter_external_direct_drcda.py
 ```
 
+This entrypoint loads `config/no_delay_drcda_tuning.json` and defaults to a 7 s
+3D Lissajous period. Its fixed `identified_gain_no_delay` servo predictor keeps
+only the identified directional static gains. All four pure-delay terms are
+zero and the old first-order lag fit is not applied; independent command slew
+limits remain active. The former environment switch to the delayed model has
+been removed.
+
+Because the stock Gazebo joint-position controllers do not contain those servo
+dynamics, the SITL DRCDA entrypoint publishes its estimated physical servo
+state to the four simulated joints. This avoids predicting a non-unity static
+gain while commanding an instantaneous unity-gain plant. The standalone hardware
+controller continues to publish actuator input commands directly.
+Physical preferred angles and active physical-angle limits are converted back
+to actuator-input units through the direction-dependent gain. This prevents a
+gain above one from driving the predicted joint into a zero-sensitivity hard
+limit.
+
 In this DRCDA controller, LT/RT adjust the currently selected manual attitude
 axis. The initial axis is roll; each rising-edge press of `RB` toggles between
 pitch and roll without resetting the angle already commanded on the other axis.
 Override the default Xbox/XInput RB button index `5` with
 `HNUTER_PAD_RB_BUTTON`.
 
-For the identified-delay SITL plant, load the damped lateral-position tuning
-that was validated with hover and the 3D Lissajous trajectory:
-
-```bash
-HNUTER_TUNING_FILE=$PWD/config/identified_delay_damped_xy.json \
-HNUTER_DRCDA_VARIANT=full \
-python3 hnuter_external_direct_drcda.py
-```
-
-The position gains use NED axis order. The slower North actuator path therefore
-uses `Kp=1.6`, `Kd=3.2`, and `Ki=0.35`; the East path uses `Kp=2.0`,
-`Kd=2.8`, and `Ki=0.2`. The small horizontal integral gains remove static
-offset, while the increased derivative gains damp the identified actuator lag.
-
-DRCDA defaults to the identified primary/secondary servo gain, pure delay,
-first-order lag, and directional rate limits. The current `gz_hnuter` model must
-contain the corresponding plant-side servo dynamics for a meaningful comparison.
-When intentionally testing against an ideal instantaneous-servo SITL model, use:
-
-```bash
-HNUTER_DRCDA_SERVO_MODEL=ideal python3 hnuter_external_direct_drcda.py
-```
+The direct DRCDA SITL entrypoint cannot select the old identified model with
+pure delay. The fitted tail-motor limits and motor time constant remain active;
+only the unsupported primary/secondary servo pure delay is removed.
 
 For the no-delay `main` firmware model, use the separately validated tuning
 file. It also overrides the DRCDA horizon and optimization weights, and is
 reloaded while the controller is running whenever the JSON file changes:
 
 ```bash
-HNUTER_DRCDA_SERVO_MODEL=ideal \
 HNUTER_DRCDA_VARIANT=full \
 HNUTER_TUNING_FILE=$PWD/config/no_delay_drcda_tuning.json \
 python3 hnuter_external_direct_drcda.py
