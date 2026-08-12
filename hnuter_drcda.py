@@ -155,6 +155,15 @@ class DRCDAConfig:
         config.servo_rate_negative_rad_s[:] = 50.0
         return config
 
+    @classmethod
+    def identified_gain_no_delay(cls, **kwargs) -> 'DRCDAConfig':
+        """Use identified static gains without the unverified delay/lag fit."""
+        config = cls.ideal_servos(**kwargs)
+        identified = cls()
+        config.servo_gain_positive[:] = identified.servo_gain_positive
+        config.servo_gain_negative[:] = identified.servo_gain_negative
+        return config
+
 
 def configure_allocator_variant(config: DRCDAConfig, variant: str) -> DRCDAConfig:
     """Apply one isolated allocator ablation to an existing configuration."""
@@ -531,9 +540,17 @@ class DRCDAAllocator:
     ) -> np.ndarray:
         cfg = self.config
         projected = command.copy()
-        servo_limit = np.minimum(cfg.servo_command_limit_rad, active_angle_limits)
+        physical_limit = np.minimum(cfg.servo_state_limit_rad, active_angle_limits)
+        positive_input_limit = np.minimum(
+            cfg.servo_command_limit_rad,
+            physical_limit / np.maximum(cfg.servo_gain_positive, 1e-6),
+        )
+        negative_input_limit = np.minimum(
+            cfg.servo_command_limit_rad,
+            physical_limit / np.maximum(cfg.servo_gain_negative, 1e-6),
+        )
         projected[:ANGLE_COUNT] = np.clip(
-            projected[:ANGLE_COUNT], -servo_limit, servo_limit
+            projected[:ANGLE_COUNT], -negative_input_limit, positive_input_limit
         )
         servo_delta = cfg.servo_command_rate_rad_s * dt
         projected[:ANGLE_COUNT] = np.clip(

@@ -539,6 +539,13 @@ class HnuterController(Node):
         self.allow_tail_reverse = os.environ.get('HNUTER_ALLOW_TAIL_REVERSE', '1').strip().lower() in (
             '1', 'true', 'yes', 'on'
         )
+        # 2026-08-11 1405 / 3-inch / 30 A reversible tail bench fit.
+        self.tail_thrust_max_forward_n = env_float(
+            'HNUTER_TAIL_FORWARD_MAX_N', 12.777084
+        )
+        self.tail_thrust_max_reverse_n = env_float(
+            'HNUTER_TAIL_REVERSE_MAX_N', 6.019910
+        )
         self.allocator_force_x_sign = env_float('HNUTER_ALLOCATOR_FORCE_X_SIGN', 1.0)
         self.allocator_force_y_sign = env_float('HNUTER_ALLOCATOR_FORCE_Y_SIGN', -1.0)
 
@@ -713,7 +720,7 @@ class HnuterController(Node):
         self.lissajous_b = max(1, int(env_float('HNUTER_LISSAJOUS_FREQ_Y', 3)))
         self.lissajous_c = max(1, int(env_float('HNUTER_LISSAJOUS_FREQ_Z', 1)))
         self.lissajous_period_s = max(
-            8.0, env_float('HNUTER_LISSAJOUS_PERIOD_S', 24.0)
+            4.0, env_float('HNUTER_LISSAJOUS_PERIOD_S', 7.0)
         )
         # Trajectory 3 validates large-attitude holding: roll +/-90 deg, pitch +/-180 deg, no yaw step.
         # Per-axis environment variables and the live tuning JSON can still override these defaults.
@@ -730,6 +737,7 @@ class HnuterController(Node):
         ))
         self.attitude_segment_time_s = env_float('HNUTER_ATTITUDE_SEGMENT_S', 5.0)
         self.attitude_peak_hold_s = env_float('HNUTER_ATTITUDE_PEAK_HOLD_S', 1.0)
+        self.attitude_level_settle_s = env_float('HNUTER_ATTITUDE_LEVEL_SETTLE_S', 0.0)
         self.attitude_test_bidirectional = True
         self.attitude_test_altitude_only = os.environ.get(
             'HNUTER_ATTITUDE_TEST_ALTITUDE_ONLY', '0'
@@ -817,6 +825,7 @@ class HnuterController(Node):
             "attitude_step_yaw_deg": float(math.degrees(self.attitude_step_axis_rad[2])),
             "attitude_segment_time_s": float(self.attitude_segment_time_s),
             "attitude_peak_hold_s": float(self.attitude_peak_hold_s),
+            "attitude_level_settle_s": float(self.attitude_level_settle_s),
             "attitude_test_bidirectional": bool(self.attitude_test_bidirectional),
             "attitude_test_altitude_only": bool(self.attitude_test_altitude_only),
             "attitude_test_altitude_m": float(self.attitude_test_altitude_m),
@@ -928,6 +937,12 @@ class HnuterController(Node):
         self.attitude_peak_hold_s = max(
             0.0,
             self._tuning_float(data, 'attitude_peak_hold_s', self.attitude_peak_hold_s),
+        )
+        self.attitude_level_settle_s = max(
+            0.0,
+            self._tuning_float(
+                data, 'attitude_level_settle_s', self.attitude_level_settle_s
+            ),
         )
         self.attitude_test_bidirectional = self._tuning_bool(
             data,
@@ -1108,7 +1123,9 @@ class HnuterController(Node):
             self.get_logger().info(
                 '在线调参已加载: '
                 f'att_step={np.round(np.degrees(self.attitude_step_axis_rad), 1).tolist()}deg, '
+                f'att_move={self.attitude_segment_time_s:.1f}s, '
                 f'peak_hold={self.attitude_peak_hold_s:.1f}s, '
+                f'level_settle={self.attitude_level_settle_s:.1f}s, '
                 f'att_z={self.attitude_test_altitude_m:.1f}m, '
                 f'alpha_lim={math.degrees(self.alpha_limit_rad):.1f}deg, '
                 f'manual_roll_lim={math.degrees(self.manual_roll_limit_rad):.1f}deg, '
@@ -1908,7 +1925,8 @@ class HnuterController(Node):
     def _attitude_reference(self, elapsed: float):
         segment_time = float(self.attitude_segment_time_s)
         peak_hold_time = float(self.attitude_peak_hold_s)
-        cycle_time = 2.0 * segment_time + peak_hold_time
+        level_settle_time = float(self.attitude_level_settle_s)
+        cycle_time = 2.0 * segment_time + peak_hold_time + level_settle_time
         active_axes = np.flatnonzero(np.abs(self.attitude_step_axis_rad) > math.radians(0.01))
         if active_axes.size == 0:
             return self.auto_traj_start_attitude.copy(), np.zeros(3), None, True
@@ -1949,13 +1967,18 @@ class HnuterController(Node):
         elif cycle_elapsed < segment_time + peak_hold_time:
             offset = step_rad
             offset_rate = 0.0
-        else:
+        elif cycle_elapsed < 2.0 * segment_time + peak_hold_time:
             segment_elapsed = cycle_elapsed - segment_time - peak_hold_time
             u = float(np.clip(segment_elapsed / segment_time, 0.0, 1.0))
             smooth_u = 3.0 * u ** 2 - 2.0 * u ** 3
             smooth_du = (6.0 * u * (1.0 - u)) / segment_time
             offset = step_rad * (1.0 - smooth_u)
             offset_rate = -step_rad * smooth_du
+        else:
+            # Hold the level rotation explicitly before starting the next
+            # axis. This lets both position and attitude transients settle.
+            offset = 0.0
+            offset_rate = 0.0
 
         attitude = self.auto_traj_start_attitude.copy()
         attitude_rate = np.zeros(3)
@@ -2347,6 +2370,18 @@ class HnuterController(Node):
         control = velocity / max_velocity
         return float(np.clip(control if thrust > 0.0 else -control, -1.0, 1.0))
 
+    def _tail_thrust_to_normalized_bidirectional_motor_control(self, thrust):
+        if not np.isfinite(thrust) or abs(thrust) <= 1e-8:
+            return 0.0
+        # Gazebo's Motor 5 plugin has one symmetric k*w^2 constant. The
+        # asymmetric reverse force limit is enforced before this conversion;
+        # -6.02 N must therefore map to about -sqrt(6.02 / 12.78)=-0.686,
+        # not -1.0 (which would physically produce -12.78 N in Gazebo).
+        normalized = math.sqrt(
+            abs(float(thrust)) / max(self.tail_thrust_max_forward_n, 1e-6)
+        )
+        return math.copysign(float(np.clip(normalized, 0.0, 1.0)), thrust)
+
     def _allocator_wrench_from_body_force_torque(self, f_body: np.ndarray, tau_c: np.ndarray) -> np.ndarray:
         """Map PX4 FRD body force/torque to the Hnuter allocator wrench.
 
@@ -2723,7 +2758,11 @@ class HnuterController(Node):
 
         F1 = float(np.clip(F1, 0.0, 50.0))
         F2 = float(np.clip(F2, 0.0, 50.0))
-        F3 = float(np.clip(F3, -50.0 if self.allow_tail_reverse else 0.0, 50.0))
+        F3 = float(np.clip(
+            F3,
+            -self.tail_thrust_max_reverse_n if self.allow_tail_reverse else 0.0,
+            self.tail_thrust_max_forward_n,
+        ))
         alpha_limit = self.alpha_limit_rad
         theta_limit = self.theta_limit_rad
         if tilt_suppress_active:
@@ -2749,7 +2788,7 @@ class HnuterController(Node):
             self._thrust_to_normalized_motor_control(left_single),
             self._thrust_to_normalized_motor_control(left_single),
             (
-                self._thrust_to_normalized_bidirectional_motor_control(F3)
+                self._tail_thrust_to_normalized_bidirectional_motor_control(F3)
                 if self.allow_tail_reverse
                 else self._thrust_to_normalized_motor_control(F3)
             ),

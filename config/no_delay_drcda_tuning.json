@@ -1,15 +1,25 @@
 {
+  "attitude_step_roll_deg": 80.0,
+  "attitude_step_pitch_deg": 180.0,
+  "attitude_step_yaw_deg": 0.0,
+  "attitude_segment_time_s": 15.0,
+  "attitude_peak_hold_s": 5.0,
+  "attitude_level_settle_s": 10.0,
+  "attitude_test_bidirectional": true,
+  "attitude_test_altitude_m": 3.0,
+  "attitude_test_altitude_only": false,
+  "attitude_test_max_acc_xy": 8.0,
   "alpha_limit_deg": 185.0,
   "theta_limit_deg": 180.0,
   "direct_KR": [
-    3.5,
-    4.2,
-    10.0
+    5.0,
+    5.5,
+    14.0
   ],
   "direct_Domega": [
-    2.5,
-    2.8,
-    5.0
+    3.0,
+    3.2,
+    5.9
   ],
   "direct_attitude_Ki": [
     0.03,
@@ -22,9 +32,9 @@
     0.2
   ],
   "direct_tau_limit": [
-    2.0,
-    2.2,
-    4.0
+    2.5,
+    2.8,
+    5.0
   ],
   "direct_takeoff_KR": [
     1.5,
@@ -57,13 +67,13 @@
     0.5
   ],
   "direct_pos_Kp_ned": [
-    2.5,
-    2.8,
+    4.0,
+    3.5,
     8.0
   ],
   "direct_pos_Kd_ned": [
-    2.8,
-    2.6,
+    3.8,
+    3.2,
     4.0
   ],
   "direct_pos_Ki_ned": [
@@ -80,6 +90,7 @@
   "max_acc_z": 8.0,
   "xy_lock_max_acc_xy": 3.0,
   "direct_yaw_control_enabled": true,
+  "direct_large_tilt_yaw_min_scale": 0.55,
   "drcda_horizon_s": 0.1,
   "drcda_wrench_error_gain": 6.0,
   "drcda_wrench_ff_tau_s": 0.08,

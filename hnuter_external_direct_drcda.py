@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import math
 import os
+from pathlib import Path
 
 import numpy as np
 
@@ -40,6 +41,10 @@ class HnuterDRCDAController(DirectController):
         return True
 
     def __init__(self) -> None:
+        os.environ.setdefault(
+            'HNUTER_TUNING_FILE',
+            str(Path(__file__).resolve().parent / 'config/no_delay_drcda_tuning.json'),
+        )
         self._drcda_variant = os.environ.get(
             'HNUTER_DRCDA_VARIANT', 'full'
         ).strip().lower()
@@ -57,28 +62,38 @@ class HnuterDRCDAController(DirectController):
         self._drcda_estimator_reset_pending = False
         super().__init__()
 
-        model_name = os.environ.get(
-            'HNUTER_DRCDA_SERVO_MODEL', 'identified'
-        ).strip().lower()
+        # Retain only the identified directional static gains. The old pure
+        # delay and first-order lag fit are not used by the active model.
+        # Command slew limits remain active independently.
+        model_name = 'identified_gain_no_delay'
         config_kwargs = {
             'prediction_dt_s': env_float('HNUTER_DRCDA_PREDICTION_DT_S', 0.01),
             'horizon_s': env_float('HNUTER_DRCDA_HORIZON_S', 0.18),
             'gauss_newton_iterations': int(env_float('HNUTER_DRCDA_ITERATIONS', 2)),
             'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 8.0),
         }
-        if model_name in ('ideal', 'instant', 'sitl_ideal'):
-            config = DRCDAConfig.ideal_servos(**config_kwargs)
-        else:
-            config = DRCDAConfig(**config_kwargs)
+        config = DRCDAConfig.identified_gain_no_delay(**config_kwargs)
         configure_allocator_variant(config, self._drcda_variant)
 
         front_thrust_max = env_float('HNUTER_DRCDA_FRONT_MOTOR_MAX_N', 25.0)
-        tail_thrust_max = env_float('HNUTER_DRCDA_TAIL_MOTOR_MAX_N', 50.0)
+        tail_forward_max = env_float(
+            'HNUTER_DRCDA_TAIL_FORWARD_MAX_N', self.tail_thrust_max_forward_n
+        )
+        tail_reverse_max = env_float(
+            'HNUTER_DRCDA_TAIL_REVERSE_MAX_N', self.tail_thrust_max_reverse_n
+        )
         config.thrust_max_n[:4] = front_thrust_max
-        config.thrust_max_n[4] = tail_thrust_max
-        config.thrust_min_n[4] = -tail_thrust_max if self.allow_tail_reverse else 0.0
+        config.thrust_max_n[4] = tail_forward_max
+        config.thrust_min_n[4] = -tail_reverse_max if self.allow_tail_reverse else 0.0
         config.command_scale[ANGLE_COUNT:8] = front_thrust_max
-        config.command_scale[8] = tail_thrust_max
+        config.command_scale[8] = max(tail_forward_max, tail_reverse_max)
+        config.motor_tau_up_s[4] = env_float('HNUTER_DRCDA_TAIL_TAU_UP_S', 0.05)
+        config.motor_tau_down_s[4] = env_float('HNUTER_DRCDA_TAIL_TAU_DOWN_S', 0.05)
+        # The optimizer's tail move penalty suppresses brief sign chatter;
+        # retain enough rate here to establish takeoff pitch authority quickly.
+        config.thrust_command_rate_n_s[4] = env_float(
+            'HNUTER_DRCDA_TAIL_COMMAND_RATE_N_S', 100.0
+        )
         config.antiwindup_gain = env_float('HNUTER_DRCDA_ANTIWINDUP_GAIN', 0.35)
 
         wrench_model = HnuterWrenchModel(
@@ -158,6 +173,10 @@ class HnuterDRCDAController(DirectController):
             ),
             0.0,
         )
+        # Tuning files contain the full-controller horizon.  Reapply the
+        # selected ablation last so a reload cannot silently turn a removed
+        # reachability term back on.
+        configure_allocator_variant(config, self._drcda_variant)
         self.get_logger().info(
             'DRCDA 在线参数已加载: '
             f'horizon={config.horizon_s:.3f}s, '
@@ -204,15 +223,19 @@ class HnuterDRCDAController(DirectController):
             float(np.linalg.norm(result.wrench_rate_residual)),
         ]
 
-    @staticmethod
-    def _motor_control_to_thrust(control: float, bidirectional: bool = False) -> float:
+    def _motor_control_to_thrust(self, control: float, bidirectional: bool = False) -> float:
         if not np.isfinite(control) or abs(control) <= 1e-9:
             return 0.0
-        motor_constant = 8.54858e-05
         if bidirectional:
-            velocity = abs(float(control)) * 1000.0
-            thrust = motor_constant * velocity * velocity
+            # This reconstructs the force produced by the symmetric Gazebo
+            # motor constant. Directional command limits are applied in the
+            # allocator, not by changing the motor constant per sign.
+            thrust = (
+                self.tail_thrust_max_forward_n
+                * min(abs(float(control)), 1.0) ** 2
+            )
             return math.copysign(thrust, float(control))
+        motor_constant = 8.54858e-05
         velocity = 10.0 + float(np.clip(control, 0.0, 1.0)) * 990.0
         return motor_constant * velocity * velocity
 
@@ -227,12 +250,24 @@ class HnuterDRCDAController(DirectController):
         controls = np.asarray(motor_controls, dtype=float)
         if controls.size < 5:
             controls = np.pad(controls, (0, 5 - controls.size))
-        # Logical thrust order in DRCDA is left pair, right pair, tail.
+        physical_angles = np.array([alpha1, theta1, alpha2, theta2], dtype=float)
+        if getattr(self, '_drcda_ready', False):
+            config = self.drcda.config
+            gains = np.where(
+                physical_angles >= 0.0,
+                config.servo_gain_positive,
+                config.servo_gain_negative,
+            )
+            servo_inputs = physical_angles / np.maximum(gains, 1e-6)
+        else:
+            servo_inputs = physical_angles
+        # Logical thrust order in DRCDA is left pair, right pair, tail. The
+        # first four preferred values are actuator inputs, not physical angles.
         return np.array([
-            alpha1,
-            theta1,
-            alpha2,
-            theta2,
+            servo_inputs[0],
+            servo_inputs[1],
+            servo_inputs[2],
+            servo_inputs[3],
             self._motor_control_to_thrust(controls[2]),
             self._motor_control_to_thrust(controls[3]),
             self._motor_control_to_thrust(controls[0]),
@@ -364,6 +399,13 @@ class HnuterDRCDAController(DirectController):
         else:
             result = self.drcda.last_result
         command = self.drcda.command
+        # Gazebo's four JointPositionController instances follow their input
+        # almost instantaneously and do not implement the identified static
+        # gain. Drive them with the allocator's current physical servo state so
+        # the simulated plant matches identified_gain_no_delay.
+        # The standalone hardware controller still publishes actuator input
+        # commands and is intentionally unaffected by this SITL-only emulation.
+        servo_state = self.drcda.state[:ANGLE_COUNT]
         logical_thrust = command[ANGLE_COUNT:]
         output_motor_controls = [
             self._thrust_to_normalized_motor_control(logical_thrust[2]),
@@ -371,16 +413,16 @@ class HnuterDRCDAController(DirectController):
             self._thrust_to_normalized_motor_control(logical_thrust[0]),
             self._thrust_to_normalized_motor_control(logical_thrust[1]),
             (
-                self._thrust_to_normalized_bidirectional_motor_control(logical_thrust[4])
+                self._tail_thrust_to_normalized_bidirectional_motor_control(logical_thrust[4])
                 if self.allow_tail_reverse
                 else self._thrust_to_normalized_motor_control(logical_thrust[4])
             ),
         ]
 
-        self._alpha1_cmd = float(command[0])
-        self._theta1_cmd = float(command[1])
-        self._alpha2_cmd = float(command[2])
-        self._theta2_cmd = float(command[3])
+        self._alpha1_cmd = float(servo_state[0])
+        self._theta1_cmd = float(servo_state[1])
+        self._alpha2_cmd = float(servo_state[2])
+        self._theta2_cmd = float(servo_state[3])
         self.last_F1 = float(logical_thrust[0] + logical_thrust[1])
         self.last_F2 = float(logical_thrust[2] + logical_thrust[3])
         self.last_F3 = float(logical_thrust[4])

@@ -28,6 +28,43 @@ class HnuterWrenchModelTest(unittest.TestCase):
 
 
 class DRCDAAllocatorTest(unittest.TestCase):
+    def test_identified_gain_no_delay_keeps_only_static_gain(self):
+        identified = DRCDAConfig()
+        config = DRCDAConfig.identified_gain_no_delay(prediction_dt_s=0.01)
+        np.testing.assert_array_equal(
+            config.servo_gain_positive, identified.servo_gain_positive
+        )
+        np.testing.assert_array_equal(
+            config.servo_gain_negative, identified.servo_gain_negative
+        )
+        np.testing.assert_array_equal(config.servo_delay_positive_s, 0.0)
+        np.testing.assert_array_equal(config.servo_delay_negative_s, 0.0)
+        np.testing.assert_allclose(config.servo_tau_positive_s, 0.0025)
+        np.testing.assert_allclose(config.servo_tau_negative_s, 0.0025)
+        np.testing.assert_array_equal(config.servo_rate_positive_rad_s, 50.0)
+        np.testing.assert_array_equal(config.servo_rate_negative_rad_s, 50.0)
+
+    def test_command_projection_respects_physical_limit_after_gain(self):
+        config = DRCDAConfig.identified_gain_no_delay(prediction_dt_s=0.01)
+        allocator = DRCDAAllocator(HnuterWrenchModel(), config)
+        previous = np.zeros(ACTUATOR_COUNT)
+        requested = np.array([
+            3.0, 3.0, -3.0, -3.0,
+            0.0, 0.0, 0.0, 0.0, 0.0,
+        ])
+        projected = allocator._project_command(
+            requested,
+            previous,
+            1.0,
+            np.ones(4),
+        )
+        physical = np.where(
+            projected[:4] >= 0.0,
+            config.servo_gain_positive * projected[:4],
+            config.servo_gain_negative * projected[:4],
+        )
+        self.assertTrue(np.all(np.abs(physical) <= 1.0 + 1e-12))
+
     def test_servo_is_unreachable_inside_pure_delay(self):
         config = DRCDAConfig(horizon_s=0.08)
         allocator = DRCDAAllocator(HnuterWrenchModel(), config)
@@ -94,9 +131,30 @@ class DRCDAAllocatorTest(unittest.TestCase):
         )
 
     def test_ablation_variants_change_only_the_intended_reachability_term(self):
+        identified = DRCDAConfig()
         no_delay = configure_allocator_variant(DRCDAConfig(), 'no_delay')
         np.testing.assert_array_equal(no_delay.servo_delay_positive_s, 0.0)
         np.testing.assert_array_equal(no_delay.servo_delay_negative_s, 0.0)
+        np.testing.assert_array_equal(
+            no_delay.servo_gain_positive, identified.servo_gain_positive
+        )
+        np.testing.assert_array_equal(
+            no_delay.servo_gain_negative, identified.servo_gain_negative
+        )
+        np.testing.assert_array_equal(
+            no_delay.servo_tau_positive_s, identified.servo_tau_positive_s
+        )
+        np.testing.assert_array_equal(
+            no_delay.servo_tau_negative_s, identified.servo_tau_negative_s
+        )
+        np.testing.assert_array_equal(
+            no_delay.servo_rate_positive_rad_s,
+            identified.servo_rate_positive_rad_s,
+        )
+        np.testing.assert_array_equal(
+            no_delay.servo_rate_negative_rad_s,
+            identified.servo_rate_negative_rad_s,
+        )
 
         no_horizon = configure_allocator_variant(DRCDAConfig(), 'no_horizon')
         self.assertEqual(no_horizon.horizon_s, no_horizon.prediction_dt_s)
@@ -106,6 +164,17 @@ class DRCDAAllocatorTest(unittest.TestCase):
         self.assertTrue(np.all(no_rates.servo_rate_positive_rad_s == 1.0e6))
         self.assertTrue(np.all(no_rates.servo_command_rate_rad_s == 1.0e6))
         self.assertEqual(no_rates.motor_force_rate_cap_n_s, 1.0e6)
+
+    def test_ablation_can_be_reapplied_after_online_tuning(self):
+        no_horizon = configure_allocator_variant(DRCDAConfig(), 'no_horizon')
+        no_horizon.horizon_s = 0.1
+        configure_allocator_variant(no_horizon, 'no_horizon')
+        self.assertEqual(no_horizon.horizon_s, no_horizon.prediction_dt_s)
+
+        no_rates = configure_allocator_variant(DRCDAConfig(), 'no_rate_limits')
+        no_rates.servo_command_rate_rad_s[:] = 4.0
+        configure_allocator_variant(no_rates, 'no_rate_limits')
+        self.assertTrue(np.all(no_rates.servo_command_rate_rad_s == 1.0e6))
 
     def test_basic_differential_allocator_tracks_hover(self):
         config = DRCDAConfig()
