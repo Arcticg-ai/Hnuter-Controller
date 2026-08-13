@@ -810,8 +810,8 @@ class HnuterController(Node):
             1.0,
         ))
 
-        # Default to the firmware/profile actually used by flight log 113.
-        # The newer 3131ddd4 mapping remains available in a separate config.
+        # Match the current hardware firmware servo calibration. PX4 converts
+        # normalized ActuatorServos commands to the configured PWM endpoints.
         self.hardware_firmware_profile = os.environ.get(
             'HNUTER_HARDWARE_FIRMWARE_PROFILE',
             '3131ddd4_500_2500_gear2',
