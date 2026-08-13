@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Standalone hardware direct-actuator controller for Hnuter.
+"""Standalone Hnuter Hardware Offboard controller using the OK baseline law.
 
 The transmitter and PX4 retain exclusive Arm, Disarm, and Offboard mode
 authority. The node runs continuously while Position mode performs the manual
@@ -10,6 +10,11 @@ established body-velocity and yaw-rate references.
 This file intentionally contains its controller helpers, RC parser, logging
 paths, and task restart state machine so it can run without importing another
 repository-local Python module.
+
+The outer Hardware state machine and current servo calibration come from
+origin/hardware. The cascaded controller, geometric attitude law, direct
+allocation, and real-motor calibration are ported from PX4 tag
+hnuter-ok-144bd9fe and its log-48 parameter snapshot.
 """
 
 import sys
@@ -684,6 +689,7 @@ class HnuterController(Node):
         # State variables
         self.position = np.zeros(3)       # ENU: x East, y North, z Up
         self.velocity = np.zeros(3)       # ENU
+        self.measured_acceleration_ned = np.zeros(3)
         self.attitude_q = np.array([1.0, 0.0, 0.0, 0.0])
         self.angular_velocity = np.zeros(3)  # FLU body angular velocity
         self.angular_velocity_frd = np.zeros(3)
@@ -810,8 +816,8 @@ class HnuterController(Node):
             1.0,
         ))
 
-        # Default to the firmware/profile actually used by flight log 113.
-        # The newer 3131ddd4 mapping remains available in a separate config.
+        # Match the current hardware firmware servo calibration. PX4 converts
+        # normalized ActuatorServos commands to the configured PWM endpoints.
         self.hardware_firmware_profile = os.environ.get(
             'HNUTER_HARDWARE_FIRMWARE_PROFILE',
             '3131ddd4_500_2500_gear2',
@@ -893,8 +899,8 @@ class HnuterController(Node):
         self.direct_takeoff_Domega = np.array([1.2, 1.2, 1.2])
         self.direct_xy_lock_KR = np.array([1.5, 1.5, 1.5])
         self.direct_xy_lock_Domega = np.array([1.2, 1.2, 1.2])
-        self.direct_KR = np.array([3.2, 3.4, env_float('HNUTER_DIRECT_KR_YAW', 5.0)])
-        self.direct_Domega = np.array([1.8, 1.9, env_float('HNUTER_DIRECT_DOMEGA_YAW', 3.0)])
+        self.direct_KR = np.array([2.1, 2.1, env_float('HNUTER_DIRECT_KR_YAW', 4.2)])
+        self.direct_Domega = np.array([1.4, 1.4, env_float('HNUTER_DIRECT_DOMEGA_YAW', 2.6)])
         self.direct_attitude_Ki = np.array([0.15, 0.18, 0.50])
         self.direct_attitude_integral_limit = np.array([0.6, 0.6, 0.4])
         self.direct_attitude_integral_activation_error_rad = math.radians(35.0)
@@ -907,7 +913,7 @@ class HnuterController(Node):
         self.direct_large_tilt_yaw_min_scale = 0.10
         self.direct_takeoff_tau_limit = np.array([0.90, 0.90, 0.50])
         self.direct_xy_lock_tau_limit = np.array([0.90, 0.90, 0.50])
-        self.direct_tau_limit = np.array([1.30, 1.30, env_float('HNUTER_DIRECT_TAU_YAW_LIMIT', 2.00)])
+        self.direct_tau_limit = np.array([0.90, 0.90, env_float('HNUTER_DIRECT_TAU_YAW_LIMIT', 1.80)])
         self.direct_yaw_control_enabled = os.environ.get(
             'HNUTER_DIRECT_YAW_CONTROL', '1'
         ).strip().lower() in ('1', 'true', 'yes', 'on')
@@ -935,7 +941,7 @@ class HnuterController(Node):
         )
         self.gamepad_expo = env_float('HNUTER_PAD_EXPO', 0.40)
         self.gamepad_filter_tau_s = env_float(
-            'HNUTER_PAD_FILTER_TAU_S', 0.15
+            'HNUTER_PAD_FILTER_TAU_S', 0.25
         )
         self.gamepad_max_vxy_body_mps = np.full(
             2, self.gamepad_max_vxy_mps, dtype=float
@@ -943,7 +949,7 @@ class HnuterController(Node):
         self.gamepad_filter_tau_body_xy_s = np.full(
             2, self.gamepad_filter_tau_s, dtype=float
         )
-        self.gamepad_max_acc_body_xy_mps2 = np.array([1.50, 1.10])
+        self.gamepad_max_acc_body_xy_mps2 = np.array([1.0, 0.70])
         # Direct debug: 按 o 后不交给 PX4 位置控制器，而是直接发布 actuator_motors/servos。
         # 若要用同一份日志结构记录 PX4 position baseline，启动前设置 HNUTER_CONTROL_MODE=px4。
         control_mode_env = os.environ.get('HNUTER_CONTROL_MODE', 'direct').strip().lower()
@@ -1261,7 +1267,7 @@ class HnuterController(Node):
             "gamepad_max_acc_body_xy_mps2":
                 self.gamepad_max_acc_body_xy_mps2.tolist(),
             "rc_attitude_rate_deg_s": np.degrees(getattr(
-                self, 'rc_attitude_rate_rad_s', np.radians([35.0, 35.0])
+                self, 'rc_attitude_rate_rad_s', np.radians([20.0, 20.0])
             )).tolist(),
             "rc_attitude_angle_limit_deg": float(math.degrees(getattr(
                 self, 'rc_attitude_angle_limit_rad', math.radians(45.0)
@@ -1904,6 +1910,15 @@ class HnuterController(Node):
         self.position = np.array([msg.y, msg.x, -msg.z], dtype=float)
         if bool(msg.v_xy_valid) and bool(msg.v_z_valid):
             self.velocity = np.array([msg.vy, msg.vx, -msg.vz], dtype=float)
+        measured_acceleration = np.array([
+            getattr(msg, 'ax', math.nan),
+            getattr(msg, 'ay', math.nan),
+            getattr(msg, 'az', math.nan),
+        ], dtype=float)
+        if np.all(np.isfinite(measured_acceleration)):
+            self.measured_acceleration_ned = measured_acceleration
+        else:
+            self.measured_acceleration_ned[:] = 0.0
 
         self.local_position_received = True
         self.data_received = self.local_position_received and self.attitude_received
@@ -3066,6 +3081,19 @@ class HnuterController(Node):
         control = math.sqrt(abs(thrust) / max_thrust)
         return float(np.clip(control if thrust > 0.0 else -control, -1.0, 1.0))
 
+    def _allocator_thrust_limits(self) -> tuple[float, float]:
+        return 100.0, 50.0
+
+    def _front_motor_control(self, thrust: float, max_thrust: float) -> float:
+        return self._thrust_to_normalized_motor_control(thrust, max_thrust)
+
+    def _tail_motor_control(self, thrust: float, max_thrust: float) -> float:
+        if self.allow_tail_reverse:
+            return self._thrust_to_normalized_bidirectional_motor_control(
+                thrust, max_thrust
+            )
+        return self._thrust_to_normalized_motor_control(thrust, max_thrust)
+
     def _allocator_wrench_from_body_force_torque(self, f_body: np.ndarray, tau_c: np.ndarray) -> np.ndarray:
         """Map PX4 FRD body force/torque to the Hnuter allocator wrench.
 
@@ -3442,8 +3470,7 @@ class HnuterController(Node):
 
         # Physical allocator limits. F1/F2 are the total thrust of the two
         # motors on each front arm; F3 is the single tail-motor thrust.
-        max_thrust_per_arm = 100.0
-        max_tail_thrust = 50.0
+        max_thrust_per_arm, max_tail_thrust = self._allocator_thrust_limits()
         r_x = 0.105
         r_z = -0.013
 
@@ -3517,8 +3544,8 @@ class HnuterController(Node):
         eps = 1e-8
         alpha1 = math.atan2(u1, u2)
         alpha2 = math.atan2(u4, u5)
-        theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -0.99, 0.99)))
-        theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -0.99, 0.99)))
+        theta1 = math.asin(float(np.clip(u3 / max(F1, eps), -1.0, 1.0)))
+        theta2 = math.asin(float(np.clip(u6 / max(F2, eps), -1.0, 1.0)))
 
         F1 = float(np.clip(F1, 0.0, max_thrust_per_arm))
         F2 = float(np.clip(F2, 0.0, max_thrust_per_arm))
@@ -3548,27 +3575,11 @@ class HnuterController(Node):
         left_single = 0.5 * F1
         max_front_motor_thrust = 0.5 * max_thrust_per_arm
         motor_controls = [
-            self._thrust_to_normalized_motor_control(
-                right_single, max_front_motor_thrust
-            ),
-            self._thrust_to_normalized_motor_control(
-                right_single, max_front_motor_thrust
-            ),
-            self._thrust_to_normalized_motor_control(
-                left_single, max_front_motor_thrust
-            ),
-            self._thrust_to_normalized_motor_control(
-                left_single, max_front_motor_thrust
-            ),
-            (
-                self._thrust_to_normalized_bidirectional_motor_control(
-                    F3, max_tail_thrust
-                )
-                if self.allow_tail_reverse
-                else self._thrust_to_normalized_motor_control(
-                    F3, max_tail_thrust
-                )
-            ),
+            self._front_motor_control(right_single, max_front_motor_thrust),
+            self._front_motor_control(right_single, max_front_motor_thrust),
+            self._front_motor_control(left_single, max_front_motor_thrust),
+            self._front_motor_control(left_single, max_front_motor_thrust),
+            self._tail_motor_control(F3, max_tail_thrust),
         ]
 
         dt_slew = float(np.clip(dt, 0.0, 0.2))
@@ -4181,12 +4192,14 @@ class HnuterHardwareController(HnuterController):
         self.get_logger().warn(
             '实机舵机映射要求 PX4 MAIN8--11 参数与控制器一致: '
             f'profile={self.hardware_firmware_profile}, '
-            f'PWM={self.servo_pwm_min_us}/{self.servo_pwm_trim_us}/'
+            f'servo_PWM_only={self.servo_pwm_min_us}/{self.servo_pwm_trim_us}/'
             f'{self.servo_pwm_max_us}us, '
             f'primary=+/-{math.degrees(self.primary_servo_angle_max_rad):.1f}deg, '
             f'secondary_servo=+/-{math.degrees(self.secondary_servo_angle_max_rad):.1f}deg, '
             f'HNTR_S2_GEAR={self.secondary_servo_gear_ratio:.3f}, '
             f'secondary_joint=+/-{math.degrees(self.theta_limit_rad):.1f}deg。'
+            '以上 PWM 范围仅用于四路倾转舵机输入；电机仍通过 '
+            'ActuatorMotors.control 发布归一化推力并保留独立推力限幅。'
         )
         self.get_logger().info(
             f'空中接管过渡时间 {self.hardware_handover_duration_s:.2f}s；'
@@ -4196,7 +4209,7 @@ class HnuterHardwareController(HnuterController):
     def _apply_tuning(self, data: dict):
         super()._apply_tuning(data)
         current_rate_deg_s = np.degrees(getattr(
-            self, 'rc_attitude_rate_rad_s', np.radians([35.0, 35.0])
+            self, 'rc_attitude_rate_rad_s', np.radians([20.0, 20.0])
         ))
         self.rc_attitude_rate_rad_s = np.radians(np.clip(
             self._tuning_array(
@@ -4551,9 +4564,413 @@ class HnuterHardwareController(HnuterController):
             )
 
 
+class HnuterOkHardwareController(HnuterHardwareController):
+    """Current Hardware Offboard shell with the flight-tested OK control law."""
+
+    OK_SOURCE_TAG = 'hnuter-ok-144bd9fe'
+    OK_SOURCE_COMMIT = '144bd9fea6bf7a2b55f9d530809e488292e0d615'
+    OK_PARAMETER_SNAPSHOT = 'log_48_2026-07-30_parameters.params'
+
+    def __init__(self) -> None:
+        self.ok_position_p_ned = np.array([3.75, 3.75, 3.50])
+        self.ok_velocity_p_ned = np.array([9.05, 9.05, 4.00])
+        self.ok_velocity_i_ned = np.array([0.39, 0.39, 0.20])
+        self.ok_velocity_d_ned = np.array([0.36, 0.36, 0.40])
+        self.ok_velocity_integral_limit_ned = np.array([1.50, 1.50, 2.50])
+        self.ok_velocity_integral_ned = np.zeros(3)
+        self.ok_velocity_xy_mps = 3.0
+        self.ok_velocity_up_mps = 1.5
+        self.ok_velocity_down_mps = 1.0
+        self.ok_acceleration_xy_mps2 = 3.0
+        self.ok_acceleration_z_mps2 = 45.6
+        self.ok_lock_acceleration_xy_mps2 = 1.0
+        self.ok_max_thrust_per_arm_n = 170.96
+        self.ok_max_tail_thrust_n = 85.48
+        self.ok_motor_hover_control = 0.50
+        self.ok_motor_thrust_exponent = 0.50
+        super().__init__()
+        self._reset_ok_controller_state()
+        self.get_logger().warn(
+            'OK BASELINE PORT: controller/allocation/parameters are from '
+            f'{self.OK_SOURCE_TAG}; Hardware gate and servo calibration remain '
+            'on the current 3131ddd4_500_2500_gear2 framework. This combination '
+            'has not yet been flight validated.'
+        )
+
+    def _node_name(self):
+        return 'hnuter_controller_direct_ok_hardware'
+
+    def _default_tuning_filename(self):
+        return 'hnuter_direct_ok_hardware_tuning.json'
+
+    def _diagnostic_file_prefix(self):
+        return 'hnuter_direct_ok_hardware'
+
+    @staticmethod
+    def _limit_xy_norm(vector_xy: np.ndarray, limit: float) -> np.ndarray:
+        limited = np.asarray(vector_xy, dtype=float).copy()
+        norm = float(np.linalg.norm(limited))
+        limit = max(float(limit), 0.0)
+        if norm > limit and norm > 1e-8:
+            limited *= limit / norm
+        return limited
+
+    def _reset_ok_controller_state(self) -> None:
+        self.ok_velocity_integral_ned[:] = 0.0
+        self.integral_pos_error[:] = 0.0
+
+    def _tuning_snapshot(self) -> dict:
+        snapshot = super()._tuning_snapshot()
+        snapshot.update({
+            'ok_source_tag': self.OK_SOURCE_TAG,
+            'ok_source_commit': self.OK_SOURCE_COMMIT,
+            'ok_parameter_snapshot': self.OK_PARAMETER_SNAPSHOT,
+            'HNTR_MASS': float(self.mass),
+            'HNTR_L1': float(self.l1),
+            'HNTR_L2': float(self.l2),
+            'HNTR_MAX_ARM_T': float(self.ok_max_thrust_per_arm_n),
+            'HNTR_MAX_TAIL_T': float(self.ok_max_tail_thrust_n),
+            'HNTR_MOT_HOV': float(self.ok_motor_hover_control),
+            'HNTR_MOT_EXPO': float(self.ok_motor_thrust_exponent),
+            'HNTR_PITCH_BIAS': 0.09,
+            'HNTR_TAIL_SIGN': 1.0,
+            'HNTR_TAIL_COMP': 0.0,
+            'HNTR_POS_P_XY': float(self.ok_position_p_ned[0]),
+            'HNTR_POS_P_Z': float(self.ok_position_p_ned[2]),
+            'HNTR_VEL_P_XY': float(self.ok_velocity_p_ned[0]),
+            'HNTR_VEL_P_Z': float(self.ok_velocity_p_ned[2]),
+            'HNTR_VEL_I_XY': float(self.ok_velocity_i_ned[0]),
+            'HNTR_VEL_I_Z': float(self.ok_velocity_i_ned[2]),
+            'HNTR_VEL_D_XY': float(self.ok_velocity_d_ned[0]),
+            'HNTR_VEL_D_Z': float(self.ok_velocity_d_ned[2]),
+            'HNTR_VEL_ILIM_XY': float(self.ok_velocity_integral_limit_ned[0]),
+            'HNTR_VEL_ILIM_Z': float(self.ok_velocity_integral_limit_ned[2]),
+            'HNTR_VEL_XY': float(self.ok_velocity_xy_mps),
+            'HNTR_VEL_UP': float(self.ok_velocity_up_mps),
+            'HNTR_VEL_DN': float(self.ok_velocity_down_mps),
+            'HNTR_ACC_XY': float(self.ok_acceleration_xy_mps2),
+            'HNTR_ACC_Z': float(self.ok_acceleration_z_mps2),
+            'HNTR_LOCK_ACC': float(self.ok_lock_acceleration_xy_mps2),
+            'direct_KR': [5.0, 5.5, 5.0],
+            'direct_Domega': [2.5, 2.7, 3.0],
+            'direct_attitude_Ki': [0.0, 0.06, 0.0],
+            'direct_attitude_integral_limit': [0.0, 1.5, 0.0],
+            'direct_attitude_integral_activation_error_deg': 180.0,
+            'direct_quaternion_error_enabled': False,
+            'direct_attitude_gyro_compensation_enabled': False,
+            'direct_reduced_tilt_error_enabled': False,
+            'direct_large_tilt_yaw_scheduling_enabled': False,
+            'direct_tau_limit': [2.0, 2.0, 1.5],
+            # The inherited position integral must stay disabled because this
+            # port maintains the OK velocity-loop integral separately.
+            'direct_pos_Kp_ned': [3.75, 3.75, 3.5],
+            'direct_pos_Kd_ned': [9.05, 9.05, 4.0],
+            'direct_pos_Ki_ned': [0.0, 0.0, 0.0],
+            'direct_pos_integral_limit_ned': [1.5, 1.5, 2.5],
+            'max_acc_xy': 3.0,
+            'max_acc_z': 45.6,
+        })
+        return snapshot
+
+    def _apply_tuning(self, data: dict):
+        merged = dict(data)
+        ok_direct_defaults = {
+            'direct_KR': [5.0, 5.5, 5.0],
+            'direct_Domega': [2.5, 2.7, 3.0],
+            'direct_attitude_Ki': [0.0, 0.06, 0.0],
+            'direct_attitude_integral_limit': [0.0, 1.5, 0.0],
+            'direct_attitude_integral_activation_error_deg': 180.0,
+            'direct_quaternion_error_enabled': False,
+            'direct_attitude_gyro_compensation_enabled': False,
+            'direct_reduced_tilt_error_enabled': False,
+            'direct_large_tilt_yaw_scheduling_enabled': False,
+            'direct_tau_limit': [2.0, 2.0, 1.5],
+            'direct_pos_Kp_ned': [3.75, 3.75, 3.5],
+            'direct_pos_Kd_ned': [9.05, 9.05, 4.0],
+            'direct_pos_Ki_ned': [0.0, 0.0, 0.0],
+            'direct_pos_integral_limit_ned': [1.5, 1.5, 2.5],
+            'max_acc_xy': 3.0,
+            'max_acc_z': 45.6,
+            'HNTR_PITCH_BIAS': 0.09,
+            'HNTR_TAIL_SIGN': 1.0,
+            'HNTR_TAIL_COMP': 0.0,
+        }
+        for key, value in ok_direct_defaults.items():
+            merged.setdefault(key, value)
+
+        direct_kr = self._tuning_array(
+            data, 'direct_KR', np.array(ok_direct_defaults['direct_KR'])
+        )
+        direct_domega = self._tuning_array(
+            data, 'direct_Domega', np.array(ok_direct_defaults['direct_Domega'])
+        )
+        direct_tau = self._tuning_array(
+            data, 'direct_tau_limit', np.array(ok_direct_defaults['direct_tau_limit'])
+        )
+        merged['direct_KR'] = [
+            self._tuning_float(data, 'HNTR_ATT_KR_R', direct_kr[0]),
+            self._tuning_float(data, 'HNTR_ATT_KR_P', direct_kr[1]),
+            self._tuning_float(data, 'HNTR_ATT_KR_Y', direct_kr[2]),
+        ]
+        merged['direct_Domega'] = [
+            self._tuning_float(data, 'HNTR_ATT_D_R', direct_domega[0]),
+            self._tuning_float(data, 'HNTR_ATT_D_P', direct_domega[1]),
+            self._tuning_float(data, 'HNTR_ATT_D_Y', direct_domega[2]),
+        ]
+        merged['direct_attitude_Ki'] = [
+            0.0,
+            self._tuning_float(data, 'HNTR_ATT_I_P', 0.06),
+            0.0,
+        ]
+        merged['direct_tau_limit'] = [
+            self._tuning_float(data, 'HNTR_TAU_R', direct_tau[0]),
+            self._tuning_float(data, 'HNTR_TAU_P', direct_tau[1]),
+            self._tuning_float(data, 'HNTR_TAU_Y', direct_tau[2]),
+        ]
+        merged['direct_pos_Kp_ned'] = [
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_Z', 3.5),
+        ]
+        merged['direct_pos_Kd_ned'] = [
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_Z', 4.0),
+        ]
+        merged['direct_pos_integral_limit_ned'] = [
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.5),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.5),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_Z', 2.5),
+        ]
+        merged['max_acc_xy'] = self._tuning_float(data, 'HNTR_ACC_XY', 3.0)
+        merged['max_acc_z'] = self._tuning_float(data, 'HNTR_ACC_Z', 45.6)
+        super()._apply_tuning(merged)
+
+        self.mass = max(self._tuning_float(data, 'HNTR_MASS', 4.5), 0.1)
+        self.l1 = max(self._tuning_float(data, 'HNTR_L1', 0.33), 0.01)
+        self.l2 = max(self._tuning_float(data, 'HNTR_L2', 0.664), 0.01)
+        self.ok_max_thrust_per_arm_n = max(
+            self._tuning_float(data, 'HNTR_MAX_ARM_T', 170.96), 1.0
+        )
+        self.ok_max_tail_thrust_n = max(
+            self._tuning_float(data, 'HNTR_MAX_TAIL_T', 85.48), 1.0
+        )
+        self.ok_motor_hover_control = float(np.clip(
+            self._tuning_float(data, 'HNTR_MOT_HOV', 0.50), 0.05, 0.95
+        ))
+        self.ok_motor_thrust_exponent = float(np.clip(
+            self._tuning_float(data, 'HNTR_MOT_EXPO', 0.50), 0.2, 1.5
+        ))
+        self.ok_position_p_ned = np.array([
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_XY', 3.75),
+            self._tuning_float(data, 'HNTR_POS_P_Z', 3.50),
+        ])
+        self.ok_velocity_p_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_XY', 9.05),
+            self._tuning_float(data, 'HNTR_VEL_P_Z', 4.00),
+        ])
+        self.ok_velocity_i_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_I_XY', 0.39),
+            self._tuning_float(data, 'HNTR_VEL_I_XY', 0.39),
+            self._tuning_float(data, 'HNTR_VEL_I_Z', 0.20),
+        ])
+        self.ok_velocity_d_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_D_XY', 0.36),
+            self._tuning_float(data, 'HNTR_VEL_D_XY', 0.36),
+            self._tuning_float(data, 'HNTR_VEL_D_Z', 0.40),
+        ])
+        self.ok_velocity_integral_limit_ned = np.array([
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.50),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_XY', 1.50),
+            self._tuning_float(data, 'HNTR_VEL_ILIM_Z', 2.50),
+        ])
+        self.ok_velocity_xy_mps = max(
+            self._tuning_float(data, 'HNTR_VEL_XY', 3.0), 0.0
+        )
+        self.ok_velocity_up_mps = max(
+            self._tuning_float(data, 'HNTR_VEL_UP', 1.5), 0.0
+        )
+        self.ok_velocity_down_mps = max(
+            self._tuning_float(data, 'HNTR_VEL_DN', 1.0), 0.0
+        )
+        self.ok_acceleration_xy_mps2 = max(
+            self._tuning_float(data, 'HNTR_ACC_XY', 3.0), 0.1
+        )
+        self.ok_acceleration_z_mps2 = max(
+            self._tuning_float(data, 'HNTR_ACC_Z', 45.6), 0.1
+        )
+        self.ok_lock_acceleration_xy_mps2 = max(
+            self._tuning_float(data, 'HNTR_LOCK_ACC', 1.0), 0.1
+        )
+
+    def _direct_position_acceleration_ned(
+        self,
+        acc_ff_ned: np.ndarray,
+        pos_error_ned: np.ndarray,
+        vel_error_ned: np.ndarray,
+        xy_lock_active: bool,
+    ) -> np.ndarray:
+        current_velocity_ned = np.array([
+            self.velocity[1], self.velocity[0], -self.velocity[2]
+        ], dtype=float)
+        velocity_setpoint_ned = (
+            current_velocity_ned
+            + np.asarray(vel_error_ned, dtype=float)
+            + self.ok_position_p_ned * np.asarray(pos_error_ned, dtype=float)
+        )
+        velocity_setpoint_ned[:2] = self._limit_xy_norm(
+            velocity_setpoint_ned[:2], self.ok_velocity_xy_mps
+        )
+        velocity_setpoint_ned[2] = float(np.clip(
+            velocity_setpoint_ned[2],
+            -self.ok_velocity_up_mps,
+            self.ok_velocity_down_mps,
+        ))
+        cascaded_velocity_error = velocity_setpoint_ned - current_velocity_ned
+        acceleration_unsaturated = (
+            np.asarray(acc_ff_ned, dtype=float)
+            + self.ok_velocity_p_ned * cascaded_velocity_error
+            + self.ok_velocity_integral_ned
+            - self.ok_velocity_d_ned * self.measured_acceleration_ned
+        )
+        acceleration_desired = acceleration_unsaturated.copy()
+        acceleration_desired[:2] = self._limit_xy_norm(
+            acceleration_desired[:2],
+            self.ok_lock_acceleration_xy_mps2
+            if xy_lock_active else self.ok_acceleration_xy_mps2,
+        )
+        physical_acceleration_up = max(
+            2.0 * self.ok_max_thrust_per_arm_n / self.mass - self.gravity,
+            0.1,
+        )
+        max_acceleration_up = min(
+            self.ok_acceleration_z_mps2, physical_acceleration_up
+        )
+        max_acceleration_down = min(
+            self.ok_acceleration_z_mps2, self.gravity
+        )
+        acceleration_desired[2] = float(np.clip(
+            acceleration_desired[2],
+            -max_acceleration_up,
+            max_acceleration_down,
+        ))
+
+        landed = bool(self.land_detected.get('landed', False))
+        maybe_landed = bool(self.land_detected.get('maybe_landed', False))
+        if landed or maybe_landed:
+            self.ok_velocity_integral_ned[:] = 0.0
+        else:
+            saturation_residual = acceleration_unsaturated - acceleration_desired
+            dt = float(np.clip(self._last_control_dt_s, 0.0, 0.02))
+            for axis in range(3):
+                drives_further_into_saturation = (
+                    saturation_residual[axis] * cascaded_velocity_error[axis]
+                    > 0.0
+                )
+                if not drives_further_into_saturation:
+                    self.ok_velocity_integral_ned[axis] += (
+                        self.ok_velocity_i_ned[axis]
+                        * cascaded_velocity_error[axis]
+                        * dt
+                    )
+            self.ok_velocity_integral_ned[:2] = self._limit_xy_norm(
+                self.ok_velocity_integral_ned[:2],
+                self.ok_velocity_integral_limit_ned[0],
+            )
+            self.ok_velocity_integral_ned[2] = float(np.clip(
+                self.ok_velocity_integral_ned[2],
+                -self.ok_velocity_integral_limit_ned[2],
+                self.ok_velocity_integral_limit_ned[2],
+            ))
+        self.integral_pos_error[:] = self.ok_velocity_integral_ned
+        return acceleration_desired
+
+    def _update_attitude_integral(
+        self,
+        attitude_error: np.ndarray,
+        attitude_error_angle: float,
+        attitude_ki: np.ndarray,
+        dt: float,
+    ) -> np.ndarray:
+        del attitude_error_angle
+        previous = self.integral_e_R.copy()
+        enabled = np.asarray(attitude_ki, dtype=float) > 1e-8
+        self.integral_e_R[~enabled] = 0.0
+        self.integral_e_R[enabled] += (
+            np.asarray(attitude_error, dtype=float)[enabled] * dt
+        )
+        self.integral_e_R = np.clip(
+            self.integral_e_R,
+            -self.direct_attitude_integral_limit,
+            self.direct_attitude_integral_limit,
+        )
+        return previous
+
+    def _reject_saturating_attitude_integration(self, *args, **kwargs) -> bool:
+        del args, kwargs
+        return False
+
+    def _allocator_thrust_limits(self) -> tuple[float, float]:
+        return self.ok_max_thrust_per_arm_n, self.ok_max_tail_thrust_n
+
+    def _front_motor_control(self, thrust: float, max_thrust: float) -> float:
+        del max_thrust
+        if thrust <= 0.0:
+            return 0.0
+        hover_force_per_motor = self.mass * self.gravity * 0.25
+        control = self.ok_motor_hover_control * math.pow(
+            thrust / max(hover_force_per_motor, 1e-8),
+            self.ok_motor_thrust_exponent,
+        )
+        return float(np.clip(control, 0.0, 1.0))
+
+    def _tail_motor_control(self, thrust: float, max_thrust: float) -> float:
+        if abs(thrust) <= 1e-8:
+            return 0.0
+        if thrust < 0.0 and not self.allow_tail_reverse:
+            return 0.0
+        control = math.pow(
+            abs(thrust) / max(float(max_thrust), 1e-8),
+            self.ok_motor_thrust_exponent,
+        )
+        return float(np.clip(
+            control if thrust > 0.0 else -control,
+            -1.0 if self.allow_tail_reverse else 0.0,
+            1.0,
+        ))
+
+    def _begin_hardware_control(self) -> None:
+        self._reset_ok_controller_state()
+        super()._begin_hardware_control()
+
+    def _end_hardware_control(self) -> None:
+        super()._end_hardware_control()
+        self._reset_ok_controller_state()
+
+    def _publish_direct_safety_cutoff(self, current_time: float):
+        self._reset_ok_controller_state()
+        super()._publish_direct_safety_cutoff(current_time)
+
+    def _diagnostic_extra_header(self):
+        return super()._diagnostic_extra_header() + [
+            'ok_source_tag',
+            'ok_velocity_integral_n',
+            'ok_velocity_integral_e',
+            'ok_velocity_integral_d',
+        ]
+
+    def _diagnostic_extra_values(self):
+        return super()._diagnostic_extra_values() + [
+            self.OK_SOURCE_TAG,
+            *self.ok_velocity_integral_ned.tolist(),
+        ]
+
+
 def main(args=None):
     rclpy.init(args=args)
-    controller = HnuterHardwareController()
+    controller = HnuterOkHardwareController()
     try:
         rclpy.spin(controller)
     except KeyboardInterrupt:
