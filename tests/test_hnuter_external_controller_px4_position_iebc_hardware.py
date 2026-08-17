@@ -5,10 +5,11 @@ import types
 import numpy as np
 import pytest
 
-import hnuter_iebc_offboard_hardware as module
+import hnuter_external_controller_px4_position_iebc_hardware as module
 from hnuter_external_controller_px4_position_hardware import HnuterController
-from hnuter_iebc_offboard_hardware import (
+from hnuter_external_controller_px4_position_iebc_hardware import (
     HnuterIebcOffboardController,
+    InteractionEnergyBarrierFilter,
     NominalReference,
     Px4TrajectoryCodec,
 )
@@ -35,6 +36,15 @@ def test_hardware_gateway_has_no_vehicle_command_or_direct_actuator_path():
     assert "'/fmu/in/vehicle_command'" not in source
     assert "'/fmu/in/actuator_motors'" not in source
     assert "'/fmu/in/actuator_servos'" not in source
+
+
+def test_simulation_and_hardware_embed_the_same_iebc_core():
+    from hnuter_external_controller_px4_position_iebc_simulation import (
+        InteractionEnergyBarrierFilter as SimulationEnergyBarrierFilter,
+    )
+
+    assert inspect.getsource(InteractionEnergyBarrierFilter) == inspect.getsource(
+        SimulationEnergyBarrierFilter)
 
 
 def test_topic_contract_separates_nominal_reference_and_actual_wrench():

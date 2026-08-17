@@ -1,10 +1,11 @@
 # Hnuter IEBC hardware Offboard gateway
 
-`hnuter_iebc_offboard_hardware.py` inserts the closed-loop IEBC reference
+`hnuter_external_controller_px4_position_iebc_hardware.py` inserts the closed-loop IEBC reference
 filter into the `hardware` branch's validated PX4 position-Offboard controller.
 It inherits `hnuter_external_controller_px4_position_hardware.HnuterController`;
 there is no copied Arm/Offboard gate, PX4 state conversion, RC handling or
-PX4 setpoint publisher.
+PX4 setpoint publisher. The IEBC filter itself is embedded in this file, so a
+real-aircraft deployment never imports or executes the Gazebo simulation code.
 
 ## Boundary and authority
 
@@ -136,7 +137,7 @@ colcon build --packages-select px4_msgs --symlink-install \
   --allow-overriding px4_msgs
 source install/local_setup.bash
 
-python3 hnuter_iebc_offboard_hardware.py
+python3 hnuter_external_controller_px4_position_iebc_hardware.py
 ```
 
 Start the node while disarmed, confirm PX4 topics and the JSON status topic,

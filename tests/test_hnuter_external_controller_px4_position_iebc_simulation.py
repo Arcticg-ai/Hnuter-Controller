@@ -1,11 +1,127 @@
 import math
+
+import pytest
+
+from hnuter_external_controller_px4_position_iebc_simulation import (
+    ContactForceFilter,
+    SustainedForceThreshold,
+    smoothstep01,
+    wrap_pi,
+)
+
+
+@pytest.mark.parametrize(
+    ('u', 'position', 'slope'),
+    [(-1.0, 0.0, 0.0), (0.0, 0.0, 0.0), (0.5, 0.5, 1.5),
+     (1.0, 1.0, 0.0), (2.0, 1.0, 0.0)],
+)
+def test_smoothstep_is_bounded_and_stops_at_endpoints(u, position, slope):
+    actual_position, actual_slope, _ = smoothstep01(u)
+    assert actual_position == pytest.approx(position)
+    assert actual_slope == pytest.approx(slope)
+
+
+def test_wrap_pi_uses_shortest_signed_angle():
+    assert wrap_pi(0.0) == pytest.approx(0.0)
+    assert wrap_pi(2.0 * math.pi + 0.2) == pytest.approx(0.2)
+    assert wrap_pi(-2.0 * math.pi - 0.2) == pytest.approx(-0.2)
+
+
+def test_contact_filter_decays_after_sample_timeout():
+    force_filter = ContactForceFilter(tau_s=0.08, timeout_s=0.15)
+    force_filter.feed(4.0, received_s=10.0)
+
+    assert force_filter.update(0.08, now_s=10.05) == pytest.approx(2.0)
+    stale_value = force_filter.update(0.08, now_s=10.30)
+
+    assert stale_value == pytest.approx(1.0)
+    assert math.isfinite(stale_value)
+
+
+def test_contact_filter_rejects_negative_force_magnitude():
+    force_filter = ContactForceFilter(tau_s=0.0)
+    force_filter.feed(-3.0, received_s=1.0)
+    assert force_filter.update(0.01, now_s=1.0) == 0.0
+
+
+def test_force_threshold_requires_continuous_filtered_force():
+    latch = SustainedForceThreshold(threshold_n=10.0, hold_s=0.04)
+
+    assert not latch.update(9.9, now_s=1.00)
+    assert not latch.update(10.0, now_s=1.02)
+    assert not latch.update(9.9, now_s=1.04)
+    assert not latch.update(10.1, now_s=1.06)
+    assert latch.update(10.1, now_s=1.10)
+
+
+def test_force_threshold_reset_and_zero_hold():
+    latch = SustainedForceThreshold(threshold_n=4.0, hold_s=0.0)
+    assert latch.update(4.0, now_s=2.0)
+    latch.reset()
+    assert latch.since_s is None
+    assert not latch.update(float('nan'), now_s=2.1)
+
+
+def test_time_release_does_not_depend_on_contact_force():
+    from hnuter_external_controller_px4_position_iebc_simulation import (
+        HnuterIebcSimulation,
+    )
+
+    node = object.__new__(HnuterIebcSimulation)
+    node.release_mode = 'time'
+    node.release_time_s = 85.0
+    node.force_release_latch = SustainedForceThreshold(54.0, 0.04)
+
+    assert not node._should_release(84.99, 500.0, 100.0)
+    assert node._should_release(85.0, 0.0, 100.02)
+
+
+def test_force_release_mode_remains_backward_compatible():
+    from hnuter_external_controller_px4_position_iebc_simulation import (
+        HnuterIebcSimulation,
+    )
+
+    node = object.__new__(HnuterIebcSimulation)
+    node.release_mode = 'force'
+    node.release_time_s = 1.0
+    node.force_release_latch = SustainedForceThreshold(54.0, 0.04)
+
+    assert not node._should_release(100.0, 53.9, 1.0)
+    assert not node._should_release(100.0, 54.1, 1.02)
+    assert node._should_release(100.0, 54.1, 1.07)
+
+
+def test_recovery_log_columns_are_present_and_aligned():
+    from pathlib import Path
+
+    source = Path(__file__).parents[1] / 'hnuter_external_controller_px4_position_iebc_simulation.py'
+    text = source.read_text(encoding='utf-8')
+
+    for column in (
+            'iebc_mode', 'iebc_recoverable_energy_j',
+            'iebc_release_excursion_m', 'iebc_stop_distance_barrier_m',
+            'iebc_reserved_stop_distance_m', 'iebc_rho',
+            'iebc_release_position_m',
+            'iebc_recovery_dissipation_slack_w',
+            'iebc_recovery_phase',
+            'iebc_recovery_reference_velocity_mps',
+            'iebc_recovery_rate_infeasible',
+            'iebc_recovery_terminal_position_m',
+            'iebc_recovery_stop_candidate_s',
+            'iebc_recovery_stop_latched',
+            'release_position_change_m',
+            'release_settled',
+            'release_settle_time_s',
+            'iebc_recovery_rebase_energy_j'):
+        assert column in text
+import math
 import threading
 from types import SimpleNamespace
 
 import numpy as np
 import pytest
 
-from hnuter_external_controller_px4_position_hardware_iebc_closed_loop import (
+from hnuter_external_controller_px4_position_iebc_simulation import (
     InteractionEnergyBarrierFilter,
 )
 
@@ -481,20 +597,20 @@ def test_jerk_limited_rate_target_converges_without_large_limit_cycle(monkeypatc
     assert history[-1] == pytest.approx(0.2, abs=2e-3)
 
 
-def test_closed_loop_cube_experiment_imports_closed_loop_controller():
-    import hnuter_iebc_cube_contact_experiment_closed_loop as experiment
+def test_simulation_contains_closed_loop_controller():
+    import hnuter_external_controller_px4_position_iebc_simulation as experiment
 
-    assert experiment.HnuterController.__module__.endswith(
-        'hnuter_external_controller_px4_position_hardware_iebc_closed_loop')
+    assert experiment.HnuterIebcSimulationController.__module__ == (
+        'hnuter_external_controller_px4_position_iebc_simulation')
     assert float(experiment.os.environ['HNUTER_IEBC_KC_NPM']) > 0.0
     assert float(experiment.os.environ['HNUTER_IEBC_DC_NSPM']) >= 0.0
 
 
 def test_pose_callback_uses_vehicle_model_not_scoped_probe_link():
     """The +90 deg probe link must not masquerade as vehicle yaw."""
-    import hnuter_iebc_cube_contact_experiment_closed_loop as experiment
+    import hnuter_external_controller_px4_position_iebc_simulation as experiment
 
-    node = object.__new__(experiment.HnuterIebcClosedLoopCubeContactExperiment)
+    node = object.__new__(experiment.HnuterIebcSimulation)
     node._transport_lock = threading.Lock()
     node.cube_x_m = math.nan
     node.cube_y_m = math.nan
@@ -522,9 +638,9 @@ def test_pose_callback_uses_vehicle_model_not_scoped_probe_link():
 
 
 def test_alignment_calibrates_controller_frame_then_can_be_latched():
-    import hnuter_iebc_cube_contact_experiment_closed_loop as experiment
+    import hnuter_external_controller_px4_position_iebc_simulation as experiment
 
-    node = object.__new__(experiment.HnuterIebcClosedLoopCubeContactExperiment)
+    node = object.__new__(experiment.HnuterIebcSimulation)
     node.desired_controller_yaw = math.radians(20.0)
     node.yaw_align_gain = 2.0
     node.yaw_align_max_rate_rad_s = math.radians(15.0)
@@ -536,9 +652,9 @@ def test_alignment_calibrates_controller_frame_then_can_be_latched():
 
 
 def test_virtual_force_marker_points_toward_aircraft_and_scales_with_force():
-    import hnuter_iebc_cube_contact_experiment_closed_loop as experiment
+    import hnuter_external_controller_px4_position_iebc_simulation as experiment
 
-    shaft, head = experiment.HnuterIebcClosedLoopCubeContactExperiment._virtual_force_markers(
+    shaft, head = experiment.HnuterIebcSimulation._virtual_force_markers(
         force_n=17.0, cube_x=3.0, cube_y=0.0)
 
     assert shaft.type == experiment.Marker.LINE_LIST
