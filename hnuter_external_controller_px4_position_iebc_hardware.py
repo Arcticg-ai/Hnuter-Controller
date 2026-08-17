@@ -17,9 +17,12 @@ Inputs:
 
 * ``/hnuter/iebc/in/trajectory_setpoint`` (px4_msgs/TrajectorySetpoint):
   absolute NED position, velocity and acceleration nominal reference.
-* ``/hnuter/iebc/in/actuator_wrench`` (geometry_msgs/WrenchStamped): actual
-  actuator force estimate in the ENU world frame.  This is not contact force
-  and not a commanded wrench.
+* ``/fmu/out/actuator_motors`` (px4_msgs/ActuatorMotors) and
+  ``/fmu/out/actuator_servos`` (px4_msgs/ActuatorServos): PX4 actuator
+  commands used by the default hardware model to estimate propulsive force.
+* ``/hnuter/iebc/in/actuator_wrench`` (geometry_msgs/WrenchStamped): optional
+  external actuator-force estimate in the ENU world frame.  This is not
+  contact force and is selected explicitly instead of the command model.
 * ``/hnuter/iebc/in/recovery`` (std_msgs/Bool): a rising ``True`` edge marks
   physical load release and enters the certified stopping controller.
 * ``/hnuter/iebc/in/reset`` (std_msgs/Empty): reset IEBC storage and reference
@@ -28,9 +31,11 @@ Inputs:
 Outputs are the inherited PX4 Offboard heartbeat and trajectory-setpoint
 topics plus ``/hnuter/iebc/out/status`` (std_msgs/String, JSON).
 
-For hardware, IEBC requires external wrench reconstruction.  The Gazebo-only
-software proxy is rejected whenever IEBC is enabled.  Stale nominal commands
-or stale force estimates latch a zero-velocity hold instead of failing open.
+The default hardware source reconstructs force from PX4's post-allocation
+motor and servo commands.  It is a command/model estimate, not measured motor
+RPM, thrust or servo position.  A true external estimator can be selected when
+available.  Stale nominal commands or stale force estimates latch a
+zero-velocity hold instead of failing open.
 """
 
 import json
@@ -44,7 +49,7 @@ import numpy as np
 
 import rclpy
 from geometry_msgs.msg import WrenchStamped
-from px4_msgs.msg import RcChannels, TrajectorySetpoint
+from px4_msgs.msg import ActuatorMotors, ActuatorServos, RcChannels, TrajectorySetpoint
 from rclpy.executors import ExternalShutdownException
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool, Empty, String
@@ -851,6 +856,124 @@ class InteractionEnergyBarrierFilter:
         return safe_position, safe_velocity, safe_acceleration
 
 
+class HnuterActuatorForceEstimator:
+    """Reconstruct propulsive force from PX4 post-allocation commands.
+
+    This mirrors the hardware branch of ``ActuatorEffectivenessHnuter``.  The
+    result is deliberately called an estimate: PX4 actuator outputs are
+    commands and the aircraft currently has no rotor-thrust/RPM or servo-angle
+    feedback.  The estimate is expressed in the controller's body-FLU frame;
+    the node rotates it into world ENU using the measured attitude.
+    """
+
+    MOTOR_COUNT = 5
+    SERVO_COUNT = 4
+
+    def __init__(
+            self,
+            mass_kg: float = 4.5,
+            gravity_mps2: float = 9.81,
+            hover_control: float = 0.40,
+            thrust_exponent: float = 0.50,
+            max_arm_thrust_n: float = 170.96,
+            max_tail_thrust_n: float = 85.48,
+            primary_servo_max_rad: float = math.pi,
+            secondary_servo_max_rad: float = math.pi,
+            secondary_gear_ratio: float = 2.0,
+    ):
+        self.mass_kg = max(float(mass_kg), 0.1)
+        self.gravity_mps2 = max(float(gravity_mps2), 1.0)
+        self.hover_control = float(np.clip(hover_control, 0.05, 0.95))
+        self.thrust_exponent = float(np.clip(thrust_exponent, 0.2, 1.5))
+        self.max_arm_thrust_n = max(float(max_arm_thrust_n), 1.0)
+        self.max_tail_thrust_n = max(float(max_tail_thrust_n), 1.0)
+        self.primary_servo_max_rad = max(abs(float(primary_servo_max_rad)), 1e-3)
+        self.secondary_servo_max_rad = max(abs(float(secondary_servo_max_rad)), 1e-3)
+        self.secondary_gear_ratio = max(abs(float(secondary_gear_ratio)), 1e-3)
+
+    @classmethod
+    def from_environment(cls):
+        return cls(
+            mass_kg=env_float('HNUTER_IEBC_ACT_MASS_KG', 4.5),
+            gravity_mps2=env_float('HNUTER_IEBC_ACT_GRAVITY_MPS2', 9.81),
+            hover_control=env_float('HNUTER_IEBC_ACT_MOT_HOV', 0.40),
+            thrust_exponent=env_float('HNUTER_IEBC_ACT_MOT_EXPO', 0.50),
+            max_arm_thrust_n=env_float('HNUTER_IEBC_ACT_MAX_ARM_T_N', 170.96),
+            max_tail_thrust_n=env_float('HNUTER_IEBC_ACT_MAX_TAIL_T_N', 85.48),
+            primary_servo_max_rad=math.radians(
+                env_float('HNUTER_IEBC_ACT_S1_MAX_DEG', 180.0)),
+            secondary_servo_max_rad=math.radians(
+                env_float('HNUTER_IEBC_ACT_S2_SERVO_MAX_DEG', 180.0)),
+            secondary_gear_ratio=env_float('HNUTER_IEBC_ACT_S2_GEAR', 2.0),
+        )
+
+    @staticmethod
+    def _required_controls(values, count: int, field: str) -> np.ndarray:
+        controls = np.asarray(values, dtype=float).reshape(-1)
+        if controls.size < count:
+            raise ValueError(f'{field} must contain at least {count} controls')
+        controls = controls[:count]
+        if not np.all(np.isfinite(controls)):
+            raise ValueError(f'{field} required controls must be finite')
+        return controls
+
+    def _front_motor_force_n(self, control: float) -> float:
+        control = float(np.clip(control, 0.0, 1.0))
+        hover_force_per_motor = self.mass_kg * self.gravity_mps2 * 0.25
+        force = hover_force_per_motor * (
+            control / self.hover_control) ** (1.0 / self.thrust_exponent)
+        return float(np.clip(force, 0.0, 0.5 * self.max_arm_thrust_n))
+
+    def _tail_force_n(self, control: float) -> float:
+        control = float(np.clip(control, -1.0, 1.0))
+        return float(
+            math.copysign(
+                self.max_tail_thrust_n
+                * abs(control) ** (1.0 / self.thrust_exponent),
+                control,
+            ) if control != 0.0 else 0.0)
+
+    @staticmethod
+    def _arm_direction(alpha_rad: float, theta_rad: float) -> np.ndarray:
+        return np.array([
+            math.cos(theta_rad) * math.sin(alpha_rad),
+            -math.sin(theta_rad),
+            math.cos(theta_rad) * math.cos(alpha_rad),
+        ], dtype=float)
+
+    def estimate_body_force_flu(self, motor_controls, servo_controls) -> np.ndarray:
+        motors = self._required_controls(
+            motor_controls, self.MOTOR_COUNT, 'actuator_motors.control')
+        servos = self._required_controls(
+            servo_controls, self.SERVO_COUNT, 'actuator_servos.control')
+
+        # Firmware channel order:
+        # M0/M1 right arm, M2/M3 left arm, M4 signed tail motor;
+        # S0 alpha2 right, S1 alpha1 left, S2 theta2 right shaft,
+        # S3 theta1 left shaft.  Secondary physical angle is after gear ratio.
+        right_thrust_n = (
+            self._front_motor_force_n(motors[0])
+            + self._front_motor_force_n(motors[1]))
+        left_thrust_n = (
+            self._front_motor_force_n(motors[2])
+            + self._front_motor_force_n(motors[3]))
+        tail_thrust_n = self._tail_force_n(motors[4])
+
+        alpha2 = float(np.clip(servos[0], -1.0, 1.0)) * self.primary_servo_max_rad
+        alpha1 = float(np.clip(servos[1], -1.0, 1.0)) * self.primary_servo_max_rad
+        theta2 = (
+            float(np.clip(servos[2], -1.0, 1.0))
+            * self.secondary_servo_max_rad / self.secondary_gear_ratio)
+        theta1 = (
+            float(np.clip(servos[3], -1.0, 1.0))
+            * self.secondary_servo_max_rad / self.secondary_gear_ratio)
+
+        return (
+            left_thrust_n * self._arm_direction(alpha1, theta1)
+            + right_thrust_n * self._arm_direction(alpha2, theta2)
+            + np.array([0.0, 0.0, tail_thrust_n], dtype=float))
+
+
 @dataclass
 class NominalReference:
     """Coherent absolute-ENU reference decoded from one PX4 message."""
@@ -912,6 +1035,8 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
     """IEBC reference filter integrated into the validated hardware controller."""
 
     DEFAULT_NOMINAL_TOPIC = '/hnuter/iebc/in/trajectory_setpoint'
+    DEFAULT_MOTORS_TOPIC = '/fmu/out/actuator_motors'
+    DEFAULT_SERVOS_TOPIC = '/fmu/out/actuator_servos'
     DEFAULT_WRENCH_TOPIC = '/hnuter/iebc/in/actuator_wrench'
     DEFAULT_RECOVERY_TOPIC = '/hnuter/iebc/in/recovery'
     DEFAULT_RESET_TOPIC = '/hnuter/iebc/in/reset'
@@ -932,6 +1057,12 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             raise ValueError(
                 'HNUTER_IEBC_NOMINAL_SOURCE must be topic, baseline or rc_task')
 
+        self.actuator_source = os.environ.get(
+            'HNUTER_IEBC_ACTUATOR_SOURCE', 'px4_outputs').strip().lower()
+        if self.actuator_source not in ('px4_outputs', 'external_wrench'):
+            raise ValueError(
+                'HNUTER_IEBC_ACTUATOR_SOURCE must be px4_outputs or external_wrench')
+
         self.command_timeout_s = max(
             env_float('HNUTER_IEBC_COMMAND_TIMEOUT_S', 0.30), 0.05)
         self.initial_command_radius_m = max(
@@ -940,6 +1071,10 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             'HNUTER_IEBC_REQUIRE_WRENCH_FRAME', True)
         self.nominal_topic = os.environ.get(
             'HNUTER_IEBC_NOMINAL_TOPIC', self.DEFAULT_NOMINAL_TOPIC)
+        self.motors_topic = os.environ.get(
+            'HNUTER_IEBC_MOTORS_TOPIC', self.DEFAULT_MOTORS_TOPIC)
+        self.servos_topic = os.environ.get(
+            'HNUTER_IEBC_SERVOS_TOPIC', self.DEFAULT_SERVOS_TOPIC)
         self.wrench_topic = os.environ.get(
             'HNUTER_IEBC_WRENCH_TOPIC', self.DEFAULT_WRENCH_TOPIC)
         self.recovery_topic = os.environ.get(
@@ -958,6 +1093,13 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
                 'Hardware IEBC requires HNUTER_IEBC_WRENCH_SOURCE=external')
 
         self._nominal_reference: Optional[NominalReference] = None
+        self.actuator_force_estimator = HnuterActuatorForceEstimator.from_environment()
+        self._motor_controls = np.full(
+            HnuterActuatorForceEstimator.MOTOR_COUNT, np.nan, dtype=float)
+        self._servo_controls = np.full(
+            HnuterActuatorForceEstimator.SERVO_COUNT, np.nan, dtype=float)
+        self._motor_received_s = -math.inf
+        self._servo_received_s = -math.inf
         self._external_force_enu = np.zeros(3, dtype=float)
         self._external_force_received_s = -math.inf
         self._topic_reference_active = False
@@ -968,6 +1110,8 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self._failsafe_hold_attitude_enu = np.zeros(3, dtype=float)
         self._recovery_input_high = False
         self._rejected_commands = 0
+        self._rejected_actuator_outputs = 0
+        self._last_actuator_output_warn_s = -math.inf
         self._rejected_wrenches = 0
 
         # RC-triggered hardware task.  AUX3 is deliberately separate from the
@@ -1031,6 +1175,12 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self.nominal_reference_sub = self.create_subscription(
             TrajectorySetpoint, self.nominal_topic,
             self.nominal_reference_callback, live_qos)
+        self.actuator_motors_sub = self.create_subscription(
+            ActuatorMotors, self.motors_topic,
+            self.actuator_motors_callback, sensor_qos)
+        self.actuator_servos_sub = self.create_subscription(
+            ActuatorServos, self.servos_topic,
+            self.actuator_servos_callback, sensor_qos)
         self.wrench_sub = self.create_subscription(
             WrenchStamped, self.wrench_topic,
             self.actuator_wrench_callback, sensor_qos)
@@ -1051,7 +1201,9 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self.get_logger().info(
             'Reusable hardware IEBC Offboard gateway initialized: '
             f'nominal_source={self.nominal_source}, nominal={self.nominal_topic}, '
-            f'wrench={self.wrench_topic}, recovery={self.recovery_topic}, '
+            f'actuator_source={self.actuator_source}, motors={self.motors_topic}, '
+            f'servos={self.servos_topic}, external_wrench={self.wrench_topic}, '
+            f'recovery={self.recovery_topic}, '
             f'task_rc_function={self.task_rc_function}, '
             f'IEBC enabled={self.iebc.enabled}. Arm/Offboard remain transmitter-owned.')
 
@@ -1083,6 +1235,35 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             return
         self._external_force_enu = value
         self._external_force_received_s = time.monotonic()
+
+    def actuator_motors_callback(self, message: ActuatorMotors) -> None:
+        try:
+            controls = HnuterActuatorForceEstimator._required_controls(
+                message.control, HnuterActuatorForceEstimator.MOTOR_COUNT,
+                'actuator_motors.control')
+        except (TypeError, ValueError) as exc:
+            self._reject_actuator_output(f'motor output: {exc}')
+            return
+        self._motor_controls = controls
+        self._motor_received_s = time.monotonic()
+
+    def actuator_servos_callback(self, message: ActuatorServos) -> None:
+        try:
+            controls = HnuterActuatorForceEstimator._required_controls(
+                message.control, HnuterActuatorForceEstimator.SERVO_COUNT,
+                'actuator_servos.control')
+        except (TypeError, ValueError) as exc:
+            self._reject_actuator_output(f'servo output: {exc}')
+            return
+        self._servo_controls = controls
+        self._servo_received_s = time.monotonic()
+
+    def _reject_actuator_output(self, detail: str) -> None:
+        self._rejected_actuator_outputs += 1
+        now_s = time.monotonic()
+        if now_s - self._last_actuator_output_warn_s >= 1.0:
+            self._last_actuator_output_warn_s = now_s
+            self.get_logger().warn(f'Rejected PX4 actuator {detail}')
 
     def rc_channels_callback(self, message: RcChannels) -> None:
         """Keep validated manual RC handling and sample the task switch."""
@@ -1159,9 +1340,24 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         now_s = time.monotonic() if now_s is None else float(now_s)
         return now_s - self._nominal_reference.received_monotonic_s
 
-    def _wrench_age_s(self, now_s: Optional[float] = None) -> float:
+    def _external_wrench_age_s(self, now_s: Optional[float] = None) -> float:
         now_s = time.monotonic() if now_s is None else float(now_s)
         return now_s - self._external_force_received_s
+
+    def _motor_age_s(self, now_s: Optional[float] = None) -> float:
+        now_s = time.monotonic() if now_s is None else float(now_s)
+        return now_s - self._motor_received_s
+
+    def _servo_age_s(self, now_s: Optional[float] = None) -> float:
+        now_s = time.monotonic() if now_s is None else float(now_s)
+        return now_s - self._servo_received_s
+
+    def _wrench_age_s(self, now_s: Optional[float] = None) -> float:
+        """Age of the selected actuator-force source (legacy status name)."""
+        now_s = time.monotonic() if now_s is None else float(now_s)
+        if self.actuator_source == 'external_wrench':
+            return self._external_wrench_age_s(now_s)
+        return max(self._motor_age_s(now_s), self._servo_age_s(now_s))
 
     def _task_switch_age_s(self, now_s: Optional[float] = None) -> float:
         now_s = time.monotonic() if now_s is None else float(now_s)
@@ -1191,9 +1387,9 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             return False
         if self._fresh_external_force() is None:
             self._task_switch_armed = False
-            self._failsafe_reason = 'task_start_rejected_actuator_wrench_stale'
+            self._failsafe_reason = 'task_start_rejected_actuator_force_stale'
             self.get_logger().warn(
-                'Task switch ignored: actual actuator wrench is missing or stale')
+                'Task switch ignored: selected actuator-force input is missing or stale')
             return False
 
         self._task_start_position_abs_enu = self.position.copy()
@@ -1330,7 +1526,7 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             self._begin_task_return('task_switch_low')
 
         if self.iebc.enabled and self._fresh_external_force() is None:
-            self._latch_current_hold('actuator_wrench_stale_during_task')
+            self._latch_current_hold('actuator_force_stale_during_task')
             return
 
         self._failsafe_hold_latched = False
@@ -1414,16 +1610,32 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self.manual_des_yaw = reference.yaw_enu
 
     def _fresh_external_force(self) -> Optional[np.ndarray]:
+        """Return selected actuator-force estimate in world ENU.
+
+        The method name is retained for compatibility with the tested IEBC
+        integration seam.  ``px4_outputs`` is a command/model estimate;
+        ``external_wrench`` is supplied already in ENU by an external estimator.
+        """
         if self._wrench_age_s() > self.iebc.wrench_timeout_s:
             return None
-        return self._external_force_enu.copy()
+        if self.actuator_source == 'external_wrench':
+            return self._external_force_enu.copy()
+        try:
+            force_body_flu = self.actuator_force_estimator.estimate_body_force_flu(
+                self._motor_controls, self._servo_controls)
+            rotation_body_to_enu = np.asarray(self.R, dtype=float).reshape(3, 3)
+        except (TypeError, ValueError):
+            return None
+        if not np.all(np.isfinite(rotation_body_to_enu)):
+            return None
+        return rotation_body_to_enu @ force_body_flu
 
     def _filter_current_reference(self, dt: float) -> bool:
         if not self.iebc.enabled:
             return True
         actuator_force = self._fresh_external_force()
         if actuator_force is None:
-            self._latch_current_hold('actuator_wrench_stale')
+            self._latch_current_hold('actuator_force_stale')
             return False
 
         nominal_position_abs = self.target_position.copy()
@@ -1465,7 +1677,7 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             self._latch_current_hold('nominal_reference_stale')
             return
         if self.iebc.enabled and self._fresh_external_force() is None:
-            self._latch_current_hold('actuator_wrench_stale')
+            self._latch_current_hold('actuator_force_stale')
             return
         if not self._activate_topic_reference(self._nominal_reference):
             return
@@ -1477,11 +1689,34 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
 
     def publish_iebc_status(self) -> None:
         debug = self.iebc.debug
+        actuator_force_enu = self._fresh_external_force()
         payload = {
             'hardware_gate_active': bool(self._hardware_control_active),
             'nominal_source': self.nominal_source,
             'nominal_age_s': self._reference_age_s(),
+            'actuator_source': self.actuator_source,
+            'actuator_force_quality': (
+                'command_model' if self.actuator_source == 'px4_outputs'
+                else 'external_estimate'),
+            'actuator_model': {
+                'mass_kg': self.actuator_force_estimator.mass_kg,
+                'hover_control': self.actuator_force_estimator.hover_control,
+                'thrust_exponent': self.actuator_force_estimator.thrust_exponent,
+                'max_arm_thrust_n': self.actuator_force_estimator.max_arm_thrust_n,
+                'max_tail_thrust_n': self.actuator_force_estimator.max_tail_thrust_n,
+                'primary_servo_max_deg': math.degrees(
+                    self.actuator_force_estimator.primary_servo_max_rad),
+                'secondary_servo_max_deg': math.degrees(
+                    self.actuator_force_estimator.secondary_servo_max_rad),
+                'secondary_gear_ratio': (
+                    self.actuator_force_estimator.secondary_gear_ratio),
+            },
             'wrench_age_s': self._wrench_age_s(),
+            'actuator_motors_age_s': self._motor_age_s(),
+            'actuator_servos_age_s': self._servo_age_s(),
+            'external_wrench_age_s': self._external_wrench_age_s(),
+            'actuator_force_enu_n': (
+                None if actuator_force_enu is None else actuator_force_enu.tolist()),
             'failsafe_reason': self._failsafe_reason,
             'topic_reference_active': self._topic_reference_active,
             'task_state': self.task_state,
@@ -1504,6 +1739,7 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             'barrier_j': float(debug.get('h_i', 0.0)),
             'qp_slack_w': float(debug.get('qp_slack_w', 0.0)),
             'rejected_commands': self._rejected_commands,
+            'rejected_actuator_outputs': self._rejected_actuator_outputs,
             'rejected_wrenches': self._rejected_wrenches,
         }
         message = String()

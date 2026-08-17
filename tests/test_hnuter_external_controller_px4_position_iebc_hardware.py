@@ -8,6 +8,7 @@ import pytest
 import hnuter_external_controller_px4_position_iebc_hardware as module
 from hnuter_external_controller_px4_position_hardware import HnuterController
 from hnuter_external_controller_px4_position_iebc_hardware import (
+    HnuterActuatorForceEstimator,
     HnuterIebcOffboardController,
     InteractionEnergyBarrierFilter,
     NominalReference,
@@ -50,10 +51,17 @@ def test_simulation_and_hardware_embed_the_same_iebc_core():
 def test_topic_contract_separates_nominal_reference_and_actual_wrench():
     assert HnuterIebcOffboardController.DEFAULT_NOMINAL_TOPIC.endswith(
         '/trajectory_setpoint')
+    assert HnuterIebcOffboardController.DEFAULT_MOTORS_TOPIC == (
+        '/fmu/out/actuator_motors')
+    assert HnuterIebcOffboardController.DEFAULT_SERVOS_TOPIC == (
+        '/fmu/out/actuator_servos')
     assert HnuterIebcOffboardController.DEFAULT_WRENCH_TOPIC.endswith(
         '/actuator_wrench')
     assert HnuterIebcOffboardController.DEFAULT_RECOVERY_TOPIC.endswith(
         '/recovery')
+    init_source = inspect.getsource(HnuterIebcOffboardController.__init__)
+    assert 'ActuatorMotors, self.motors_topic' in init_source
+    assert 'ActuatorServos, self.servos_topic' in init_source
 
 
 def test_px4_trajectory_codec_converts_absolute_ned_to_enu():
@@ -97,6 +105,90 @@ def test_actuator_wrench_contract_rejects_ambiguous_or_body_frames(frame_id):
     assert not HnuterIebcOffboardController._wrench_frame_is_enu(frame_id)
 
 
+def test_actuator_command_model_reconstructs_hover_force_in_body_flu():
+    estimator = HnuterActuatorForceEstimator()
+
+    force = estimator.estimate_body_force_flu(
+        [0.4, 0.4, 0.4, 0.4, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+    )
+
+    np.testing.assert_allclose(force, [0.0, 0.0, 4.5 * 9.81], atol=1e-9)
+
+
+def test_actuator_command_model_applies_primary_tilt_and_secondary_gear():
+    estimator = HnuterActuatorForceEstimator()
+
+    primary_force = estimator.estimate_body_force_flu(
+        [0.4, 0.4, 0.4, 0.4, 0.0],
+        [0.5, 0.5, 0.0, 0.0],
+    )
+    secondary_force = estimator.estimate_body_force_flu(
+        [0.4, 0.4, 0.4, 0.4, 0.0],
+        [0.0, 0.0, 1.0, 1.0],
+    )
+
+    np.testing.assert_allclose(primary_force, [4.5 * 9.81, 0.0, 0.0], atol=1e-9)
+    np.testing.assert_allclose(secondary_force, [0.0, -4.5 * 9.81, 0.0], atol=1e-9)
+
+
+def test_actuator_command_model_reconstructs_signed_tail_force():
+    estimator = HnuterActuatorForceEstimator()
+
+    force = estimator.estimate_body_force_flu(
+        [0.0, 0.0, 0.0, 0.0, -0.5],
+        [0.0, 0.0, 0.0, 0.0],
+    )
+
+    np.testing.assert_allclose(force, [0.0, 0.0, -85.48 * 0.25], atol=1e-9)
+
+
+def test_actuator_command_model_rejects_missing_or_nonfinite_required_channels():
+    estimator = HnuterActuatorForceEstimator()
+    with pytest.raises(ValueError):
+        estimator.estimate_body_force_flu(
+            [0.4, 0.4, 0.4, 0.4], [0.0, 0.0, 0.0, 0.0])
+    with pytest.raises(ValueError):
+        estimator.estimate_body_force_flu(
+            [0.4, 0.4, 0.4, 0.4, math.nan], [0.0, 0.0, 0.0, 0.0])
+
+
+def test_selected_px4_output_force_is_rotated_from_body_flu_to_world_enu():
+    yaw = math.pi / 2.0
+    node = types.SimpleNamespace(
+        actuator_source='px4_outputs',
+        iebc=types.SimpleNamespace(wrench_timeout_s=0.2),
+        _wrench_age_s=lambda: 0.01,
+        actuator_force_estimator=HnuterActuatorForceEstimator(),
+        _motor_controls=np.array([0.4, 0.4, 0.4, 0.4, 0.0]),
+        _servo_controls=np.array([0.5, 0.5, 0.0, 0.0]),
+        R=np.array([
+            [math.cos(yaw), -math.sin(yaw), 0.0],
+            [math.sin(yaw), math.cos(yaw), 0.0],
+            [0.0, 0.0, 1.0],
+        ]),
+    )
+
+    force = HnuterIebcOffboardController._fresh_external_force(node)
+
+    np.testing.assert_allclose(force, [0.0, 4.5 * 9.81, 0.0], atol=1e-9)
+
+
+def test_selected_external_wrench_is_already_world_enu():
+    expected = np.array([3.0, -2.0, 1.0])
+    node = types.SimpleNamespace(
+        actuator_source='external_wrench',
+        iebc=types.SimpleNamespace(wrench_timeout_s=0.2),
+        _wrench_age_s=lambda: 0.01,
+        _external_force_enu=expected,
+    )
+
+    force = HnuterIebcOffboardController._fresh_external_force(node)
+
+    np.testing.assert_allclose(force, expected)
+    assert force is not expected
+
+
 def test_initial_topic_reference_must_start_near_measured_position():
     reasons = []
     node = types.SimpleNamespace(
@@ -136,7 +228,7 @@ def test_enabled_iebc_holds_instead_of_failing_open_on_stale_wrench():
         node, dt=0.02)
 
     assert not result
-    assert reasons == ['actuator_wrench_stale']
+    assert reasons == ['actuator_force_stale']
 
 
 def test_latched_hold_is_reapplied_after_baseline_overwrites_target():
