@@ -6,6 +6,12 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 
 - `hnuter_external_controller.py`: PX4 position-offboard controller with hover and trajectory modes.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
+- `hnuter_external_controller_px4_position_hardware.py`: transmitter-gated,
+  real-aircraft PX4 position-Offboard controller.
+- `hnuter_iebc_offboard_hardware.py`: reusable IEBC gateway that inherits the
+  hardware controller, keeps manual RC flight in Offboard, and runs an
+  AUX-triggered push/return task using actual actuator-wrench feedback. See
+  [`docs/iebc_offboard_hardware.md`](docs/iebc_offboard_hardware.md).
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
 
 ## Dependencies

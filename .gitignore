@@ -4,6 +4,9 @@ __pycache__/
 build/
 install/
 log/
+hnuter_logs/
+px4-venv/
+hnuter_iebc.patch
 
 *.csv
 hnuter_saved_plots/
