@@ -5,9 +5,11 @@ build/
 install/
 log/
 hnuter_logs/
+hnuter_iebc.patch
 
 *.csv
 hnuter_saved_plots/
+config/*.applied.json
 
 .agents/
 .codex/
