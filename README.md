@@ -5,6 +5,7 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 ## Main Files
 
 - `hnuter_external_controller_px4_position.py`: PX4 position-offboard controller with gamepad, hover, and trajectory modes. It publishes no motor or servo commands.
+- `hnuter_external_controller_px4_position_iebc_simulation.py`: self-contained Gazebo IEBC contact simulation with resistance, release, recovery, and CSV logging. It is guarded against real-aircraft use.
 - `hnuter_external_controller_px4_position_hardware.py`: RC-driven real-aircraft PX4 position-offboard controller. Arm and Offboard stay under transmitter control, and every task starts relative to the current position.
 - `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
 - `hnuter_external_direct_controller_hardware.py`: standalone RC-driven hardware direct controller. It does not import another local controller module and leaves Arm/Offboard authority with PX4 and the transmitter.
@@ -40,6 +41,19 @@ Run the stable PX4 offboard controller:
 cd ~/px4_ws_ros2
 python3 hnuter_external_controller_px4_position.py
 ```
+
+Run the Gazebo-only IEBC contact simulation:
+
+```bash
+cd ~/px4_ws_ros2
+HNUTER_IEBC_CUBE_SIM=1 \
+HNUTER_GZ_WORLD=hnuter_cube_contact \
+python3 hnuter_external_controller_px4_position_iebc_simulation.py
+```
+
+This entry point may Arm and enter Offboard automatically. It refuses to run
+unless both the simulation guard and expected Gazebo world are configured, and
+must never be used on a real aircraft.
 
 Run the real-aircraft PX4 position controller:
 
