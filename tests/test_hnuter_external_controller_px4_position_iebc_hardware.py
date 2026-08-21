@@ -64,6 +64,13 @@ def test_topic_contract_separates_nominal_reference_and_actual_wrench():
     assert 'ActuatorServos, self.servos_topic' in init_source
 
 
+def test_task_switch_default_does_not_conflict_with_firmware_aux3():
+    assert (
+        HnuterIebcOffboardController.DEFAULT_TASK_RC_FUNCTION
+        == module.RcChannels.FUNCTION_AUX_4
+    )
+
+
 def test_px4_trajectory_codec_converts_absolute_ned_to_enu():
     reference = Px4TrajectoryCodec.decode(
         _trajectory_message(), received_monotonic_s=10.0)
@@ -109,7 +116,7 @@ def test_actuator_command_model_reconstructs_hover_force_in_body_flu():
     estimator = HnuterActuatorForceEstimator()
 
     force = estimator.estimate_body_force_flu(
-        [0.4, 0.4, 0.4, 0.4, 0.0],
+        [0.5, 0.5, 0.5, 0.5, 0.0],
         [0.0, 0.0, 0.0, 0.0],
     )
 
@@ -120,11 +127,11 @@ def test_actuator_command_model_applies_primary_tilt_and_secondary_gear():
     estimator = HnuterActuatorForceEstimator()
 
     primary_force = estimator.estimate_body_force_flu(
-        [0.4, 0.4, 0.4, 0.4, 0.0],
+        [0.5, 0.5, 0.5, 0.5, 0.0],
         [0.5, 0.5, 0.0, 0.0],
     )
     secondary_force = estimator.estimate_body_force_flu(
-        [0.4, 0.4, 0.4, 0.4, 0.0],
+        [0.5, 0.5, 0.5, 0.5, 0.0],
         [0.0, 0.0, 1.0, 1.0],
     )
 
@@ -160,7 +167,7 @@ def test_selected_px4_output_force_is_rotated_from_body_flu_to_world_enu():
         iebc=types.SimpleNamespace(wrench_timeout_s=0.2),
         _wrench_age_s=lambda: 0.01,
         actuator_force_estimator=HnuterActuatorForceEstimator(),
-        _motor_controls=np.array([0.4, 0.4, 0.4, 0.4, 0.0]),
+        _motor_controls=np.array([0.5, 0.5, 0.5, 0.5, 0.0]),
         _servo_controls=np.array([0.5, 0.5, 0.0, 0.0]),
         R=np.array([
             [math.cos(yaw), -math.sin(yaw), 0.0],

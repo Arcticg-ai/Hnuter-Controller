@@ -873,7 +873,7 @@ class HnuterActuatorForceEstimator:
             self,
             mass_kg: float = 4.5,
             gravity_mps2: float = 9.81,
-            hover_control: float = 0.40,
+            hover_control: float = 0.50,
             thrust_exponent: float = 0.50,
             max_arm_thrust_n: float = 170.96,
             max_tail_thrust_n: float = 85.48,
@@ -896,7 +896,7 @@ class HnuterActuatorForceEstimator:
         return cls(
             mass_kg=env_float('HNUTER_IEBC_ACT_MASS_KG', 4.5),
             gravity_mps2=env_float('HNUTER_IEBC_ACT_GRAVITY_MPS2', 9.81),
-            hover_control=env_float('HNUTER_IEBC_ACT_MOT_HOV', 0.40),
+            hover_control=env_float('HNUTER_IEBC_ACT_MOT_HOV', 0.50),
             thrust_exponent=env_float('HNUTER_IEBC_ACT_MOT_EXPO', 0.50),
             max_arm_thrust_n=env_float('HNUTER_IEBC_ACT_MAX_ARM_T_N', 170.96),
             max_tail_thrust_n=env_float('HNUTER_IEBC_ACT_MAX_TAIL_T_N', 85.48),
@@ -1041,6 +1041,7 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
     DEFAULT_RECOVERY_TOPIC = '/hnuter/iebc/in/recovery'
     DEFAULT_RESET_TOPIC = '/hnuter/iebc/in/reset'
     DEFAULT_STATUS_TOPIC = '/hnuter/iebc/out/status'
+    DEFAULT_TASK_RC_FUNCTION = RcChannels.FUNCTION_AUX_4
 
     TASK_MANUAL = 'manual'
     TASK_PUSH = 'push'
@@ -1114,10 +1115,10 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self._last_actuator_output_warn_s = -math.inf
         self._rejected_wrenches = 0
 
-        # RC-triggered hardware task.  AUX3 is deliberately separate from the
-        # AUX1/AUX2 attitude channels used by the validated manual controller.
+        # RC-triggered hardware task. AUX4 is separate from AUX1/AUX2 manual
+        # attitude inputs and from the firmware's AUX3 attitude-level switch.
         self.task_rc_function = int(env_float(
-            'HNUTER_IEBC_TASK_RC_FUNCTION', RcChannels.FUNCTION_AUX_3))
+            'HNUTER_IEBC_TASK_RC_FUNCTION', self.DEFAULT_TASK_RC_FUNCTION))
         self.task_switch_high_threshold = env_float(
             'HNUTER_IEBC_TASK_SWITCH_HIGH', 0.50)
         self.task_switch_low_threshold = env_float(

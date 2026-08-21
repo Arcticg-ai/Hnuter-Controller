@@ -21,6 +21,33 @@ def test_hardware_controller_has_no_vehicle_command_path():
     assert 'publish_vehicle_command' not in source
 
 
+def test_pre_offboard_startup_tick_publishes_heartbeat_only():
+    calls = []
+    controller = types.SimpleNamespace(
+        publish_offboard_control_mode=lambda: calls.append('heartbeat'),
+        _update_hardware_control_gate=lambda: calls.append('gate'),
+        publish_px4_trajectory_setpoint=lambda: calls.append('trajectory'),
+    )
+
+    HnuterController.offboard_startup_tick(controller)
+
+    assert calls == ['heartbeat', 'gate']
+
+
+def test_pre_offboard_control_loop_does_not_publish_trajectory():
+    calls = []
+    controller = types.SimpleNamespace(
+        data_received=True,
+        px4_timestamp=1_000_000,
+        _hardware_control_active=False,
+        publish_px4_trajectory_setpoint=lambda: calls.append('trajectory'),
+    )
+
+    HnuterController.control_loop(controller)
+
+    assert calls == []
+
+
 def test_position_controller_declares_current_firmware_profile():
     assert (
         HnuterController.HARDWARE_FIRMWARE_PROFILE

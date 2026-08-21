@@ -61,13 +61,14 @@ entering Offboard and adds an AUX-triggered push task:
 5. Manual RC control is restored after position and velocity remain inside the
    return tolerances. The switch must be observed low again before another run.
 
-The task switch defaults to PX4 logical `AUX3`, leaving `AUX1/AUX2` available
-for the validated manual Roll/Pitch attitude inputs. Map the desired physical
-receiver channel in PX4 and verify it before installing propellers:
+The task switch defaults to PX4 logical `AUX4`. This leaves `AUX1/AUX2` for
+the validated manual Roll/Pitch attitude inputs and avoids the firmware's
+existing `AUX3` attitude-level switch. Map the desired physical receiver
+channel in PX4 and verify it before installing propellers:
 
 ```text
-param show RC_MAP_AUX3
-param set RC_MAP_AUX3 <receiver-channel-number>
+param show RC_MAP_AUX4
+param set RC_MAP_AUX4 <receiver-channel-number>
 param save
 ```
 
@@ -123,7 +124,7 @@ The command model defaults mirror the current hardware firmware parameters:
 
 ```bash
 export HNUTER_IEBC_ACT_MASS_KG=4.5
-export HNUTER_IEBC_ACT_MOT_HOV=0.40
+export HNUTER_IEBC_ACT_MOT_HOV=0.50
 export HNUTER_IEBC_ACT_MOT_EXPO=0.50
 export HNUTER_IEBC_ACT_MAX_ARM_T_N=170.96
 export HNUTER_IEBC_ACT_MAX_TAIL_T_N=85.48
@@ -142,7 +143,7 @@ RC push-task settings:
 
 ```bash
 export HNUTER_IEBC_NOMINAL_SOURCE=rc_task
-export HNUTER_IEBC_TASK_RC_FUNCTION=10    # RcChannels.FUNCTION_AUX_3
+export HNUTER_IEBC_TASK_RC_FUNCTION=11    # RcChannels.FUNCTION_AUX_4
 export HNUTER_IEBC_TASK_SWITCH_HIGH=0.50
 export HNUTER_IEBC_TASK_SWITCH_LOW=0.00
 export HNUTER_IEBC_TASK_SWITCH_TIMEOUT_S=0.50

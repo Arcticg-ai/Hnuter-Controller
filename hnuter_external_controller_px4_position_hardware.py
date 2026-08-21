@@ -521,11 +521,11 @@ class HnuterController(Node):
         self.publish_offboard_control_mode()
         self._update_hardware_control_gate()
 
-        if not self.data_received or self.px4_timestamp <= 0:
-            return
-        if not self._hardware_control_active:
-            self._hold_current_position()
-            self.publish_px4_trajectory_setpoint()
+        # Do not publish a TrajectorySetpoint until PX4 has actually enabled
+        # Offboard control. HnuterControl also consumes this shared topic in
+        # Position mode, so a pre-Offboard hold setpoint would silently replace
+        # the pilot's manual Position reference while the node is only meant to
+        # provide the Offboard proof-of-life heartbeat.
 
     def _hold_current_position(self):
         self._z0 = float(self.position[2])
@@ -969,6 +969,12 @@ class HnuterController(Node):
 
     def control_loop(self):
         if not self.data_received or self.px4_timestamp <= 0:
+            return
+
+        # OffboardControlMode is the only pre-Offboard proof-of-life message.
+        # Never write the shared trajectory_setpoint topic while PX4 is still
+        # in manual Position mode.
+        if not self._hardware_control_active:
             return
 
         now_s = self.px4_timestamp / 1_000_000.0
