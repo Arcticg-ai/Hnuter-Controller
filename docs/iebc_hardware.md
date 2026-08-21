@@ -127,7 +127,10 @@ export HNUTER_IEBC_ACT_MASS_KG=4.5
 export HNUTER_IEBC_ACT_MOT_HOV=0.50
 export HNUTER_IEBC_ACT_MOT_EXPO=0.50
 export HNUTER_IEBC_ACT_MAX_ARM_T_N=170.96
-export HNUTER_IEBC_ACT_MAX_TAIL_T_N=85.48
+export HNUTER_IEBC_ACT_TAIL_T_POS_N=12.78
+export HNUTER_IEBC_ACT_TAIL_T_NEG_N=6.04
+export HNUTER_IEBC_ACT_TAIL_EXP_P=0.55
+export HNUTER_IEBC_ACT_TAIL_EXP_N=0.68
 export HNUTER_IEBC_ACT_S1_MAX_DEG=180
 export HNUTER_IEBC_ACT_S2_SERVO_MAX_DEG=180
 export HNUTER_IEBC_ACT_S2_GEAR=2.0
@@ -135,9 +138,10 @@ export HNUTER_IEBC_ACT_S2_GEAR=2.0
 
 These values must match the parameters actually saved on the flight
 controller. Persisted PX4 parameters override firmware defaults. In
-particular, `HNTR_MOT_HOV`, `HNTR_MOT_EXPO`, `HNTR_MAX_ARM_T`,
-`HNTR_MAX_TAIL_T`, the tilt angle ranges and `HNTR_S2_GEAR` must be recorded
-with each hardware run.
+particular, `HNTR_MOT_HOV`, `HNTR_MOT_EXPO`, `HNTR_MAX_ARM_T`, the four
+`HNTR_TAIL_T_POS/NEG` and `HNTR_TAIL_EXP_P/N` values, the tilt angle ranges
+and `HNTR_S2_GEAR` must be recorded with each hardware run. The obsolete
+`HNUTER_IEBC_ACT_MAX_TAIL_T_N` symmetric setting is rejected at startup.
 
 RC push-task settings:
 

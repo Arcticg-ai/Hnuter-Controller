@@ -139,15 +139,38 @@ def test_actuator_command_model_applies_primary_tilt_and_secondary_gear():
     np.testing.assert_allclose(secondary_force, [0.0, -4.5 * 9.81, 0.0], atol=1e-9)
 
 
-def test_actuator_command_model_reconstructs_signed_tail_force():
+def test_actuator_command_model_reconstructs_asymmetric_tail_force():
     estimator = HnuterActuatorForceEstimator()
 
-    force = estimator.estimate_body_force_flu(
+    positive_force = estimator.estimate_body_force_flu(
+        [0.0, 0.0, 0.0, 0.0, 0.5],
+        [0.0, 0.0, 0.0, 0.0],
+    )
+    negative_force = estimator.estimate_body_force_flu(
         [0.0, 0.0, 0.0, 0.0, -0.5],
         [0.0, 0.0, 0.0, 0.0],
     )
 
-    np.testing.assert_allclose(force, [0.0, 0.0, -85.48 * 0.25], atol=1e-9)
+    np.testing.assert_allclose(
+        positive_force,
+        [0.0, 0.0, 12.78 * 0.5 ** (1.0 / 0.55)], atol=1e-9)
+    np.testing.assert_allclose(
+        negative_force,
+        [0.0, 0.0, -6.04 * 0.5 ** (1.0 / 0.68)], atol=1e-9)
+
+
+def test_actuator_command_model_reaches_direction_specific_tail_limits():
+    estimator = HnuterActuatorForceEstimator()
+
+    assert estimator._tail_force_n(1.0) == pytest.approx(12.78)
+    assert estimator._tail_force_n(-1.0) == pytest.approx(-6.04)
+
+
+def test_obsolete_symmetric_tail_environment_parameter_is_rejected(monkeypatch):
+    monkeypatch.setenv('HNUTER_IEBC_ACT_MAX_TAIL_T_N', '85.48')
+
+    with pytest.raises(ValueError, match='obsolete'):
+        HnuterActuatorForceEstimator.from_environment()
 
 
 def test_actuator_command_model_rejects_missing_or_nonfinite_required_channels():

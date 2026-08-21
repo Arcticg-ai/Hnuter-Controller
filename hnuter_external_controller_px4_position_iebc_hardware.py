@@ -876,7 +876,10 @@ class HnuterActuatorForceEstimator:
             hover_control: float = 0.50,
             thrust_exponent: float = 0.50,
             max_arm_thrust_n: float = 170.96,
-            max_tail_thrust_n: float = 85.48,
+            max_tail_thrust_positive_n: float = 12.78,
+            max_tail_thrust_negative_n: float = 6.04,
+            tail_force_exponent_positive: float = 0.55,
+            tail_force_exponent_negative: float = 0.68,
             primary_servo_max_rad: float = math.pi,
             secondary_servo_max_rad: float = math.pi,
             secondary_gear_ratio: float = 2.0,
@@ -886,20 +889,38 @@ class HnuterActuatorForceEstimator:
         self.hover_control = float(np.clip(hover_control, 0.05, 0.95))
         self.thrust_exponent = float(np.clip(thrust_exponent, 0.2, 1.5))
         self.max_arm_thrust_n = max(float(max_arm_thrust_n), 1.0)
-        self.max_tail_thrust_n = max(float(max_tail_thrust_n), 1.0)
+        self.max_tail_thrust_positive_n = max(
+            float(max_tail_thrust_positive_n), 0.1)
+        self.max_tail_thrust_negative_n = max(
+            float(max_tail_thrust_negative_n), 0.1)
+        self.tail_force_exponent_positive = float(np.clip(
+            tail_force_exponent_positive, 0.1, 2.0))
+        self.tail_force_exponent_negative = float(np.clip(
+            tail_force_exponent_negative, 0.1, 2.0))
         self.primary_servo_max_rad = max(abs(float(primary_servo_max_rad)), 1e-3)
         self.secondary_servo_max_rad = max(abs(float(secondary_servo_max_rad)), 1e-3)
         self.secondary_gear_ratio = max(abs(float(secondary_gear_ratio)), 1e-3)
 
     @classmethod
     def from_environment(cls):
+        if 'HNUTER_IEBC_ACT_MAX_TAIL_T_N' in os.environ:
+            raise ValueError(
+                'HNUTER_IEBC_ACT_MAX_TAIL_T_N is obsolete; set the independent '
+                'TAIL_T_POS/NEG and TAIL_EXP_P/N actuator-model parameters')
         return cls(
             mass_kg=env_float('HNUTER_IEBC_ACT_MASS_KG', 4.5),
             gravity_mps2=env_float('HNUTER_IEBC_ACT_GRAVITY_MPS2', 9.81),
             hover_control=env_float('HNUTER_IEBC_ACT_MOT_HOV', 0.50),
             thrust_exponent=env_float('HNUTER_IEBC_ACT_MOT_EXPO', 0.50),
             max_arm_thrust_n=env_float('HNUTER_IEBC_ACT_MAX_ARM_T_N', 170.96),
-            max_tail_thrust_n=env_float('HNUTER_IEBC_ACT_MAX_TAIL_T_N', 85.48),
+            max_tail_thrust_positive_n=env_float(
+                'HNUTER_IEBC_ACT_TAIL_T_POS_N', 12.78),
+            max_tail_thrust_negative_n=env_float(
+                'HNUTER_IEBC_ACT_TAIL_T_NEG_N', 6.04),
+            tail_force_exponent_positive=env_float(
+                'HNUTER_IEBC_ACT_TAIL_EXP_P', 0.55),
+            tail_force_exponent_negative=env_float(
+                'HNUTER_IEBC_ACT_TAIL_EXP_N', 0.68),
             primary_servo_max_rad=math.radians(
                 env_float('HNUTER_IEBC_ACT_S1_MAX_DEG', 180.0)),
             secondary_servo_max_rad=math.radians(
@@ -926,12 +947,15 @@ class HnuterActuatorForceEstimator:
 
     def _tail_force_n(self, control: float) -> float:
         control = float(np.clip(control, -1.0, 1.0))
-        return float(
-            math.copysign(
-                self.max_tail_thrust_n
-                * abs(control) ** (1.0 / self.thrust_exponent),
-                control,
-            ) if control != 0.0 else 0.0)
+        if control > 0.0:
+            return float(
+                self.max_tail_thrust_positive_n
+                * control ** (1.0 / self.tail_force_exponent_positive))
+        if control < 0.0:
+            return float(
+                -self.max_tail_thrust_negative_n
+                * abs(control) ** (1.0 / self.tail_force_exponent_negative))
+        return 0.0
 
     @staticmethod
     def _arm_direction(alpha_rad: float, theta_rad: float) -> np.ndarray:
@@ -1704,7 +1728,14 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
                 'hover_control': self.actuator_force_estimator.hover_control,
                 'thrust_exponent': self.actuator_force_estimator.thrust_exponent,
                 'max_arm_thrust_n': self.actuator_force_estimator.max_arm_thrust_n,
-                'max_tail_thrust_n': self.actuator_force_estimator.max_tail_thrust_n,
+                'max_tail_thrust_positive_n': (
+                    self.actuator_force_estimator.max_tail_thrust_positive_n),
+                'max_tail_thrust_negative_n': (
+                    self.actuator_force_estimator.max_tail_thrust_negative_n),
+                'tail_force_exponent_positive': (
+                    self.actuator_force_estimator.tail_force_exponent_positive),
+                'tail_force_exponent_negative': (
+                    self.actuator_force_estimator.tail_force_exponent_negative),
                 'primary_servo_max_deg': math.degrees(
                     self.actuator_force_estimator.primary_servo_max_rad),
                 'secondary_servo_max_deg': math.degrees(
