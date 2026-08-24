@@ -49,7 +49,13 @@ import numpy as np
 
 import rclpy
 from geometry_msgs.msg import WrenchStamped
-from px4_msgs.msg import ActuatorMotors, ActuatorServos, RcChannels, TrajectorySetpoint
+from px4_msgs.msg import (
+    ActuatorMotors,
+    ActuatorServos,
+    ManualControlSetpoint,
+    RcChannels,
+    TrajectorySetpoint,
+)
 from rclpy.executors import ExternalShutdownException
 from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Bool, Empty, String
@@ -78,6 +84,25 @@ def env_vec3(prefix: str, default) -> np.ndarray:
         env_float(f'{prefix}_Y', default[1]),
         env_float(f'{prefix}_Z', default[2]),
     ], dtype=float)
+
+
+HARDWARE_IEBC_DEFAULTS = {
+    # Conservative initial hardware profile estimated from log_140/141/143/
+    # 144/146. Environment variables remain authoritative overrides.
+    'HNUTER_IEBC_ENABLE': '1',
+    'HNUTER_IEBC_MASS_KG': '4.5',
+    'HNUTER_IEBC_LAMBDA_BAR_KG': '6.0',
+    'HNUTER_IEBC_E_MAX_J': '2.5',
+    'HNUTER_IEBC_ENERGY_RESERVE_J': '0.5',
+    'HNUTER_IEBC_KC_NPM': '11.25',
+    'HNUTER_IEBC_DC_NSPM': '16.5',
+}
+
+
+def apply_hardware_iebc_defaults() -> None:
+    """Install the log-derived hardware profile without overriding operators."""
+    for name, value in HARDWARE_IEBC_DEFAULTS.items():
+        os.environ.setdefault(name, value)
 
 
 class InteractionEnergyBarrierFilter:
@@ -1072,9 +1097,17 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
     TASK_RETURN = 'return'
 
     def __init__(self):
+        # Real hardware uses a conservative log-derived initial profile. Every
+        # item remains explicitly overridable by the launch environment.
+        apply_hardware_iebc_defaults()
         # Real hardware must never silently fall back to the Gazebo proxy.
         os.environ.setdefault('HNUTER_IEBC_WRENCH_SOURCE', 'external')
         super().__init__()
+
+        # The inherited controller prints both a multi-line status block and a
+        # second one-line debug message every second.  Hardware IEBC replaces
+        # both with one compact status line below; transition warnings remain.
+        self.debug_print_period_s = math.inf
 
         self.nominal_source = os.environ.get(
             'HNUTER_IEBC_NOMINAL_SOURCE', 'rc_task').strip().lower()
@@ -1173,6 +1206,7 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self.task_state = self.TASK_MANUAL
         self._task_switch_value = math.nan
         self._task_switch_received_s = -math.inf
+        self._task_switch_source = 'none'
         self._task_switch_high = False
         self._task_switch_armed = False
         self._task_start_position_abs_enu: Optional[np.ndarray] = None
@@ -1231,6 +1265,11 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             f'recovery={self.recovery_topic}, '
             f'task_rc_function={self.task_rc_function}, '
             f'IEBC enabled={self.iebc.enabled}. Arm/Offboard remain transmitter-owned.')
+        if self.nominal_source == 'rc_task' and not self.iebc.enabled:
+            self.get_logger().error(
+                'RC push task is disabled because HNUTER_IEBC_ENABLE is false. '
+                'Set the certified hardware IEBC parameters before flight and '
+                'confirm the startup line reports IEBC enabled=True.')
 
     @staticmethod
     def _wrench_frame_is_enu(frame_id: str) -> bool:
@@ -1290,22 +1329,66 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             self._last_actuator_output_warn_s = now_s
             self.get_logger().warn(f'Rejected PX4 actuator {detail}')
 
+    @staticmethod
+    def _manual_control_task_switch_value(message, function_id: int):
+        """Read a logical AUX function from ManualControlSetpoint.
+
+        Current Hnuter PX4 DDS exports ManualControlSetpoint but does not export
+        RcChannels.  AUX fields in ManualControlSetpoint are already logical
+        functions after RC_MAP_AUXx, so AUX4 maps directly to ``aux4``.
+        """
+        first = int(RcChannels.FUNCTION_AUX_1)
+        last = int(RcChannels.FUNCTION_AUX_6)
+        function_id = int(function_id)
+        if not first <= function_id <= last:
+            return None
+        if not bool(getattr(message, 'valid', False)):
+            return None
+        source = int(getattr(
+            message, 'data_source', ManualControlSetpoint.SOURCE_RC))
+        if source != int(ManualControlSetpoint.SOURCE_RC):
+            return None
+        value = float(getattr(message, f'aux{function_id - first + 1}', math.nan))
+        return value if math.isfinite(value) else None
+
+    def manual_control_callback(self, message: ManualControlSetpoint) -> None:
+        """Keep manual flight handling and sample AUX from the exported topic."""
+        super().manual_control_callback(message)
+        value = self._manual_control_task_switch_value(
+            message, self.task_rc_function)
+        if value is not None:
+            self._update_task_switch_sample(
+                float(value), time.monotonic(), 'manual_control_setpoint')
+
     def rc_channels_callback(self, message: RcChannels) -> None:
-        """Keep validated manual RC handling and sample the task switch."""
+        """Keep validated manual RC handling and retain RcChannels fallback."""
         super().rc_channels_callback(message)
         value = self.rc_input._mapped_channel(message, self.task_rc_function)
         valid = bool(not getattr(message, 'signal_lost', True) and value is not None)
         if not valid:
             return
-        self._update_task_switch_sample(float(value), time.monotonic())
+        self._update_task_switch_sample(
+            float(value), time.monotonic(), 'rc_channels')
 
-    def _update_task_switch_sample(self, value: float, received_s: float) -> None:
+    def _update_task_switch_sample(
+            self, value: float, received_s: float,
+            source: str = 'unknown') -> None:
+        previous_high = self._task_switch_high
+        previous_source = self._task_switch_source
         self._task_switch_value = float(value)
         self._task_switch_received_s = float(received_s)
+        self._task_switch_source = str(source)
         if self._task_switch_value >= self.task_switch_high_threshold:
             self._task_switch_high = True
         elif self._task_switch_value <= self.task_switch_low_threshold:
             self._task_switch_high = False
+        if (self._task_switch_high != previous_high
+                or self._task_switch_source != previous_source):
+            state = 'HIGH' if self._task_switch_high else 'LOW'
+            self.get_logger().info(
+                'IEBC task switch: '
+                f'source={self._task_switch_source}, '
+                f'value={self._task_switch_value:+.3f}, state={state}')
 
     def recovery_callback(self, message: Bool) -> None:
         high = bool(message.data)
@@ -1712,6 +1795,68 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self._set_topic_nominal_reference(self._nominal_reference)
         self._filter_current_reference(dt)
 
+    def print_status(self) -> None:
+        """Print one compact hardware/IEBC state line per second."""
+        control_hz = self.control_loop_count
+        self.control_loop_count = 0
+
+        if not self.data_received:
+            self.get_logger().info(
+                'IEBC [WAIT_PX4] | waiting for odometry/attitude/status')
+            return
+
+        if not self.iebc.enabled:
+            state = 'IEBC_OFF'
+        elif self._failsafe_hold_latched:
+            state = 'HOLD'
+        elif not self.is_offboard():
+            state = 'WAIT_OFFBOARD'
+        elif not self.armed:
+            state = 'WAIT_ARM'
+        elif not self._hardware_control_active:
+            state = 'WAIT_GATE'
+        elif self.task_state == self.TASK_PUSH:
+            state = 'PUSH'
+        elif self.task_state == self.TASK_RETURN:
+            state = 'RETURN'
+        elif self._task_switch_armed:
+            state = 'HOVER_READY'
+        else:
+            state = 'HOVER_WAIT_LOW'
+
+        switch = 'HIGH' if self._task_switch_high else 'LOW'
+        switch_age = self._task_switch_age_s()
+        switch_age_text = (
+            f'{switch_age:.2f}s' if math.isfinite(switch_age) else 'none')
+        wrench_age = self._wrench_age_s()
+        wrench_text = (
+            f'OK/{wrench_age:.2f}s'
+            if wrench_age <= self.iebc.wrench_timeout_s
+            else 'STALE')
+        forward_speed = float(np.dot(self._task_axis_enu, self.velocity))
+        relative_z = (
+            self.position[2] - self._z0
+            if self._z0_initialized else self.position[2])
+        debug = self.iebc.debug
+        energy = float(debug.get('e_i', 0.0))
+        barrier = float(debug.get('h_i', self.iebc.e_max - energy))
+
+        normal_reasons = {
+            '', 'hardware_gate_inactive', 'waiting_for_hardware_gate',
+            'manual_rc_ready_task_switch_low_required',
+        }
+        reason = (
+            f' | reason={self._failsafe_reason}'
+            if self._failsafe_reason not in normal_reasons else '')
+        self.get_logger().info(
+            f'IEBC [{state}] | PX4={"OK" if self.data_received else "WAIT"} '
+            f'OFFB={int(self.is_offboard())} ARM={int(self.armed)} loop={control_hz}Hz | '
+            f'AUX4={switch}/{switch_age_text} ready={int(self._task_switch_armed)} | '
+            f'z={relative_z:+.2f}m s={self._task_reference_distance_m:.2f}m '
+            f'v={forward_speed:+.2f}/{self._task_reference_speed_mps:+.2f}m/s | '
+            f'E={energy:.2f}/{self.iebc.e_max:.2f}J h={barrier:.2f}J '
+            f'wrench={wrench_text}{reason}')
+
     def publish_iebc_status(self) -> None:
         debug = self.iebc.debug
         actuator_force_enu = self._fresh_external_force()
@@ -1754,6 +1899,7 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             'task_state': self.task_state,
             'task_switch_function': self.task_rc_function,
             'task_switch_value': self._task_switch_value,
+            'task_switch_source': self._task_switch_source,
             'task_switch_age_s': self._task_switch_age_s(),
             'task_switch_high': self._task_switch_high,
             'task_switch_armed': self._task_switch_armed,

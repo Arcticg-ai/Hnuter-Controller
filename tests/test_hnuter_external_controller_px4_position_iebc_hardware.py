@@ -8,11 +8,13 @@ import pytest
 import hnuter_external_controller_px4_position_iebc_hardware as module
 from hnuter_external_controller_px4_position_hardware import HnuterController
 from hnuter_external_controller_px4_position_iebc_hardware import (
+    HARDWARE_IEBC_DEFAULTS,
     HnuterActuatorForceEstimator,
     HnuterIebcOffboardController,
     InteractionEnergyBarrierFilter,
     NominalReference,
     Px4TrajectoryCodec,
+    apply_hardware_iebc_defaults,
 )
 
 
@@ -69,6 +71,108 @@ def test_task_switch_default_does_not_conflict_with_firmware_aux3():
         HnuterIebcOffboardController.DEFAULT_TASK_RC_FUNCTION
         == module.RcChannels.FUNCTION_AUX_4
     )
+
+
+def test_hardware_iebc_defaults_are_enabled_and_valid(monkeypatch):
+    for name in HARDWARE_IEBC_DEFAULTS:
+        monkeypatch.delenv(name, raising=False)
+
+    apply_hardware_iebc_defaults()
+    barrier = InteractionEnergyBarrierFilter()
+
+    assert barrier.enabled
+    assert barrier.valid_configuration
+    assert barrier.mass == pytest.approx(4.5)
+    assert barrier.lambda_bar == pytest.approx(6.0)
+    assert barrier.e_max == pytest.approx(2.5)
+    assert barrier.energy_reserve_j == pytest.approx(0.5)
+    assert barrier.k_c == pytest.approx(11.25)
+    assert barrier.d_c == pytest.approx(16.5)
+
+
+def test_hardware_iebc_defaults_do_not_override_operator(monkeypatch):
+    monkeypatch.setenv('HNUTER_IEBC_ENABLE', '0')
+    monkeypatch.setenv('HNUTER_IEBC_E_MAX_J', '1.75')
+
+    apply_hardware_iebc_defaults()
+
+    assert module.os.environ['HNUTER_IEBC_ENABLE'] == '0'
+    assert module.os.environ['HNUTER_IEBC_E_MAX_J'] == '1.75'
+
+
+def test_task_switch_reads_aux4_from_exported_manual_control_topic():
+    message = types.SimpleNamespace(
+        valid=True,
+        data_source=module.ManualControlSetpoint.SOURCE_RC,
+        aux1=-1.0,
+        aux2=-1.0,
+        aux3=-1.0,
+        aux4=0.89,
+        aux5=-1.0,
+        aux6=-1.0,
+    )
+
+    value = HnuterIebcOffboardController._manual_control_task_switch_value(
+        message, module.RcChannels.FUNCTION_AUX_4)
+
+    assert value == pytest.approx(0.89)
+
+
+def test_task_switch_rejects_invalid_manual_control_sample():
+    message = types.SimpleNamespace(
+        valid=False,
+        data_source=module.ManualControlSetpoint.SOURCE_RC,
+        aux4=0.89,
+    )
+
+    assert HnuterIebcOffboardController._manual_control_task_switch_value(
+        message, module.RcChannels.FUNCTION_AUX_4) is None
+
+
+def test_compact_status_reports_hover_readiness_without_multiline_noise():
+    messages = []
+    logger = types.SimpleNamespace(info=messages.append)
+    controller = types.SimpleNamespace(
+        control_loop_count=193,
+        data_received=True,
+        iebc=types.SimpleNamespace(
+            enabled=True,
+            e_max=2.5,
+            wrench_timeout_s=0.2,
+            debug={'e_i': 0.4, 'h_i': 2.1},
+        ),
+        _failsafe_hold_latched=False,
+        is_offboard=lambda: True,
+        armed=True,
+        _hardware_control_active=True,
+        task_state='manual',
+        TASK_PUSH='push',
+        TASK_RETURN='return',
+        _task_switch_armed=True,
+        _task_switch_high=False,
+        _task_switch_age_s=lambda: 0.03,
+        _wrench_age_s=lambda: 0.02,
+        _task_axis_enu=np.array([1.0, 0.0, 0.0]),
+        velocity=np.array([0.01, 0.0, 0.0]),
+        position=np.array([0.0, 0.0, 1.2]),
+        _z0_initialized=True,
+        _z0=0.2,
+        _task_reference_distance_m=0.0,
+        _task_reference_speed_mps=0.0,
+        _failsafe_reason='',
+        get_logger=lambda: logger,
+    )
+
+    HnuterIebcOffboardController.print_status(controller)
+
+    assert controller.control_loop_count == 0
+    assert len(messages) == 1
+    assert 'IEBC [HOVER_READY]' in messages[0]
+    assert 'AUX4=LOW/0.03s ready=1' in messages[0]
+    assert 'E=0.40/2.50J h=2.10J' in messages[0]
+    assert 'wrench=OK/0.02s' in messages[0]
+    assert '\n' not in messages[0]
+    assert 'Target ENU' not in messages[0]
 
 
 def test_px4_trajectory_codec_converts_absolute_ned_to_enu():
@@ -303,21 +407,27 @@ def test_disabled_iebc_is_explicit_pass_through():
 
 
 def test_task_switch_uses_hysteresis():
+    messages = []
     node = types.SimpleNamespace(
         _task_switch_value=math.nan,
         _task_switch_received_s=-math.inf,
+        _task_switch_source='none',
         _task_switch_high=False,
         task_switch_high_threshold=0.5,
         task_switch_low_threshold=0.0,
+        get_logger=lambda: types.SimpleNamespace(info=messages.append),
     )
 
-    HnuterIebcOffboardController._update_task_switch_sample(node, 0.8, 1.0)
+    HnuterIebcOffboardController._update_task_switch_sample(
+        node, 0.8, 1.0, 'manual_control_setpoint')
     assert node._task_switch_high
     HnuterIebcOffboardController._update_task_switch_sample(node, 0.2, 2.0)
     assert node._task_switch_high
     HnuterIebcOffboardController._update_task_switch_sample(node, -0.5, 3.0)
     assert not node._task_switch_high
     assert node._task_switch_received_s == 3.0
+    assert node._task_switch_source == 'unknown'
+    assert len(messages) == 3
 
 
 def test_push_start_latches_position_and_current_heading():

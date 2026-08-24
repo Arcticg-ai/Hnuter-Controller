@@ -72,6 +72,15 @@ param set RC_MAP_AUX4 <receiver-channel-number>
 param save
 ```
 
+The current Hnuter PX4 DDS bridge exports logical AUX values through
+`/fmu/out/manual_control_setpoint`, but does not export
+`/fmu/out/rc_channels`. The hardware gateway therefore reads `aux4` from
+`ManualControlSetpoint` and retains `RcChannels` only as a fallback for future
+bridge configurations. The status JSON reports `task_switch_source`; verify
+that it is `manual_control_setpoint` and that `task_switch_value` changes from
+low to high before installing propellers. Each detected source or HIGH/LOW
+transition is also printed once in the node console.
+
 `HNUTER_IEBC_NOMINAL_SOURCE=topic` accepts the private
 `TrajectorySetpoint` input. This is the reusable composition mode: a door,
 surface, trajectory or experiment task can be a separate ROS 2 node.
@@ -80,24 +89,41 @@ surface, trajectory or experiment task can be a separate ROS 2 node.
 generator and inserts IEBC directly before the inherited PX4 publisher. It is
 useful for regression checks against the validated hardware controller.
 
-## Required configuration
+## Hardware default profile
 
-IEBC is disabled unless explicitly enabled. Before a quantitative hardware
-experiment, configure values certified for the actual vehicle:
+The hardware entrypoint enables a conservative initial profile estimated from
+the repeated manual-contact flights in log_140, log_141, log_143, log_144 and
+log_146. Environment variables remain authoritative overrides:
 
 ```bash
 export HNUTER_IEBC_ENABLE=1
 export HNUTER_IEBC_WRENCH_SOURCE=external
 export HNUTER_IEBC_ACTUATOR_SOURCE=px4_outputs
-export HNUTER_IEBC_MASS_KG=...
-export HNUTER_IEBC_LAMBDA_BAR_KG=...
-export HNUTER_IEBC_E_MAX_J=...
-export HNUTER_IEBC_KC_NPM=...
-export HNUTER_IEBC_DC_NSPM=...
-export HNUTER_IEBC_AXIS_X=...
-export HNUTER_IEBC_AXIS_Y=...
-export HNUTER_IEBC_AXIS_Z=...
+export HNUTER_IEBC_MASS_KG=4.5
+export HNUTER_IEBC_LAMBDA_BAR_KG=6.0
+export HNUTER_IEBC_E_MAX_J=2.5
+export HNUTER_IEBC_ENERGY_RESERVE_J=0.5
+export HNUTER_IEBC_KC_NPM=11.25
+export HNUTER_IEBC_DC_NSPM=16.5
 ```
+
+Evidence and rationale:
+
+- all five logs record a 4.5 kg vehicle mass;
+- the largest credible contact-related forward speed is about 0.527 m/s in
+  log_143, equivalent to 0.625 J at 4.5 kg;
+- log_146 reconstructs at most about 0.607 J of environment-storage proxy in
+  its valid contact trials;
+- 2.5 J is approximately twice the sum of those two observed proxies, while
+  remaining far below the 80--110 J budgets used in high-force Gazebo runs;
+- 6.0 kg gives the translational inertia bound about 33 percent margin;
+- 11.25 N/m lies in the lower part of the noisy quasi-static stiffness range;
+  16.5 N s/m is approximately critical damping, `2*sqrt(6.0*11.25)`.
+
+These are initial experiment defaults, not a force-sensor-backed safety
+certificate. The ULogs do not contain measured contact force, servo angle or
+motor RPM. Keep the first validation propellers-off, then restrained/tethered,
+and preserve the status JSON with each run.
 
 Relevant interface gates:
 
@@ -165,6 +191,16 @@ receiving a fresh selected actuator-force input. In default `px4_outputs`
 mode, both motor and servo output topics must be fresh. A stale task switch
 during `PUSH` is treated as a cancel and starts `RETURN`; stale actuator input
 holds the current position instead of failing open.
+
+At startup, confirm both of these conditions in the console/status output:
+
+```text
+IEBC enabled=True
+task_switch_source=manual_control_setpoint
+```
+
+Set `HNUTER_IEBC_ENABLE=0` explicitly when only the manual Offboard gateway is
+required and the AUX push task must remain disabled.
 
 The upstream task must first publish a nominal position close to the measured
 vehicle position. A new topic command farther than the configured initial

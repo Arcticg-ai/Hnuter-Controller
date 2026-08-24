@@ -8,9 +8,6 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 - `hnuter_external_controller_px4_position.py`: preserved PX4 position-control baseline.
 - `hnuter_external_controller_px4_position_hardware.py`: transmitter-gated,
   real-aircraft PX4 position-Offboard controller.
-- `hnuter_external_controller_px4_position_iebc_simulation.py`: the single
-  self-contained Gazebo IEBC contact simulation, including virtual resistance,
-  release, recovery and CSV logging.
 - `hnuter_external_controller_px4_position_iebc_hardware.py`: reusable IEBC
   gateway that inherits the hardware controller, keeps manual RC flight in
   Offboard, and runs an AUX-triggered push/return task using actual
@@ -20,22 +17,17 @@ ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 
 ## IEBC Entrypoints
 
-There are exactly two IEBC programs. Each embeds the complete closed-loop
-energy-barrier filter and neither imports the other:
+This checkout keeps the real-aircraft IEBC entrypoint:
 
 ```bash
-# Gazebo only: may Arm and enter Offboard automatically.
-HNUTER_IEBC_CUBE_SIM=1 \
-HNUTER_GZ_WORLD=hnuter_cube_contact \
-python3 hnuter_external_controller_px4_position_iebc_simulation.py
-
-# Real aircraft: Arm and Offboard remain transmitter-owned.
+# Real aircraft: Arm and Offboard remain transmitter-owned. The log-derived
+# conservative hardware IEBC profile is enabled by default; see the hardware
+# document before changing its energy/impedance values.
 python3 hnuter_external_controller_px4_position_iebc_hardware.py
 ```
 
-The simulation entrypoint refuses to run unless the Gazebo-only guard and
-expected world name are set. Hardware configuration and RC task-switch details
-are documented in [`docs/iebc_hardware.md`](docs/iebc_hardware.md).
+Hardware configuration and RC task-switch details are documented in
+[`docs/iebc_hardware.md`](docs/iebc_hardware.md).
 
 ## Dependencies
 
