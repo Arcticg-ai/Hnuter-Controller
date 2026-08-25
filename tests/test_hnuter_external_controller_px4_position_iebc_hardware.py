@@ -595,3 +595,70 @@ def test_return_completion_restores_manual_reference_without_attitude_step():
     np.testing.assert_allclose(node.target_attitude, [0.1, -0.2, 0.3])
     assert node.rc_input.filtered_cmds == {'vx_b': 0.0}
     assert not node._task_switch_armed
+
+
+def test_push_completion_holds_measured_position_and_restores_manual_control():
+    messages = []
+    node = types.SimpleNamespace(
+        position=np.array([4.0, -2.0, 3.5]),
+        target_attitude=np.array([0.1, -0.2, 0.3]),
+        _task_start_roll_enu=0.1,
+        _task_start_pitch_enu=-0.2,
+        _current_yaw_enu=lambda: 0.3,
+        _z0=1.0,
+        iebc=types.SimpleNamespace(reset=lambda: None),
+        TASK_MANUAL=HnuterIebcOffboardController.TASK_MANUAL,
+        _task_switch_armed=True,
+        _task_reference_distance_m=0.8,
+        _task_reference_speed_mps=0.05,
+        _task_return_settle_s=0.0,
+        _task_transition_reason='',
+        _failsafe_hold_latched=True,
+        _failsafe_reason='old',
+        manual_pos_initialized=False,
+        rc_input=types.SimpleNamespace(
+            filtered_cmds={'vx_b': 0.05},
+            _zero_commands=lambda: {'vx_b': 0.0},
+        ),
+        _zero_manual_cmd=lambda: {'vx_b': 0.0},
+        get_logger=lambda: types.SimpleNamespace(info=messages.append),
+    )
+
+    HnuterIebcOffboardController._finish_rc_task_at_current_position(
+        node, 'push_complete_external_recovery')
+
+    assert node.task_state == HnuterIebcOffboardController.TASK_MANUAL
+    np.testing.assert_allclose(node.manual_des_pos, [4.0, -2.0, 2.5])
+    np.testing.assert_allclose(node.target_position, [4.0, -2.0, 2.5])
+    np.testing.assert_allclose(node.target_velocity, np.zeros(3))
+    np.testing.assert_allclose(node.target_acceleration, np.zeros(3))
+    np.testing.assert_allclose(node.target_attitude, [0.1, -0.2, 0.3])
+    np.testing.assert_allclose(node.target_attitude_rate, np.zeros(3))
+    assert node.rc_input.filtered_cmds == {'vx_b': 0.0}
+    assert node._last_manual_cmd == {'vx_b': 0.0}
+    assert node.manual_pos_initialized
+    assert not node._task_switch_armed
+    assert node._task_transition_reason == 'push_complete_external_recovery'
+    assert not node._failsafe_hold_latched
+    assert node._failsafe_reason == ''
+    assert 'holding measured completion position' in messages[-1]
+
+
+def test_rc_task_recovery_edge_finishes_in_place_instead_of_returning():
+    completions = []
+    returns = []
+    node = types.SimpleNamespace(
+        _recovery_input_high=False,
+        nominal_source='rc_task',
+        task_state=HnuterIebcOffboardController.TASK_PUSH,
+        TASK_MANUAL=HnuterIebcOffboardController.TASK_MANUAL,
+        _finish_rc_task_at_current_position=completions.append,
+        _begin_task_return=returns.append,
+    )
+
+    HnuterIebcOffboardController.recovery_callback(
+        node, types.SimpleNamespace(data=True))
+
+    assert completions == ['push_complete_external_recovery']
+    assert returns == []
+    assert node._recovery_input_high

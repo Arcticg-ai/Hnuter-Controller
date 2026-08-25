@@ -4,8 +4,11 @@
 The node deliberately inherits the hardware controller instead of copying it.
 PX4/RC retains Arm and Offboard authority and this file never publishes a
 ``VehicleCommand``.  The default hardware mode keeps the inherited manual RC
-flight path active in Offboard, then runs a latched-heading push/return task
-from a configurable logical RC channel.  A separate composition mode accepts
+flight path active in Offboard, then runs a latched-heading push task from a
+configurable logical RC channel.  A completed push stops at the measured
+completion position and immediately restores manual position/attitude control;
+the task switch must return low before another rising edge can start a task.
+A separate composition mode accepts
 an upstream nominal PX4 ``TrajectorySetpoint``.  IEBC filters the resulting
 position, velocity and acceleration references before the validated hardware
 base class publishes them on ``/fmu/in/trajectory_setpoint``.
@@ -24,7 +27,8 @@ Inputs:
   external actuator-force estimate in the ENU world frame.  This is not
   contact force and is selected explicitly instead of the command model.
 * ``/hnuter/iebc/in/recovery`` (std_msgs/Bool): a rising ``True`` edge marks
-  physical load release and enters the certified stopping controller.
+  push completion in RC-task mode; other modes enter the certified stopping
+  controller.
 * ``/hnuter/iebc/in/reset`` (std_msgs/Empty): reset IEBC storage and reference
   state at the current flight-session origin.
 
@@ -1395,7 +1399,8 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         if high and not self._recovery_input_high:
             if (self.nominal_source == 'rc_task'
                     and self.task_state != self.TASK_MANUAL):
-                self._begin_task_return('external_recovery_topic')
+                self._finish_rc_task_at_current_position(
+                    'push_complete_external_recovery')
                 self._recovery_input_high = high
                 return
             if (not self._hardware_control_active
@@ -1596,6 +1601,48 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self.get_logger().info(
             'IEBC task return complete; manual RC control restored. '
             'Task switch must be low before the next start.')
+
+    def _finish_rc_task_at_current_position(self, reason: str) -> None:
+        """End a completed push without retaining any forward task reference."""
+        hold_position = self.position.copy()
+        hold_attitude = self.target_attitude.copy()
+        if not np.all(np.isfinite(hold_attitude)):
+            hold_attitude = np.array([
+                self._task_start_roll_enu,
+                self._task_start_pitch_enu,
+                self._current_yaw_enu(),
+            ], dtype=float)
+
+        self.iebc.reset()
+        self.task_state = self.TASK_MANUAL
+        # Do not re-arm while AUX4 remains high. A fresh LOW sample is required
+        # before the next rising edge can start another push.
+        self._task_switch_armed = False
+        self._task_reference_distance_m = 0.0
+        self._task_reference_speed_mps = 0.0
+        self._task_return_settle_s = 0.0
+        self._task_transition_reason = str(reason)
+        self._failsafe_hold_latched = False
+        self._failsafe_reason = ''
+
+        self.manual_des_pos = hold_position.copy()
+        self.manual_des_pos[2] -= self._z0
+        self.manual_des_roll = float(hold_attitude[0])
+        self.manual_des_pitch = float(hold_attitude[1])
+        self.manual_des_yaw = float(hold_attitude[2])
+        self.manual_pos_initialized = True
+        self.rc_input.filtered_cmds = self.rc_input._zero_commands()
+        self._last_manual_cmd = self._zero_manual_cmd()
+
+        self.target_position = self.manual_des_pos.copy()
+        self.target_velocity = np.zeros(3, dtype=float)
+        self.target_acceleration = np.zeros(3, dtype=float)
+        self.target_attitude = hold_attitude
+        self.target_attitude_rate = np.zeros(3, dtype=float)
+        self.get_logger().info(
+            'IEBC push complete; holding measured completion position and '
+            'restoring manual position/attitude control. Task switch must be '
+            'low before the next start.')
 
     def _task_return_target_speed(self) -> float:
         measured_forward_excursion = float(np.dot(

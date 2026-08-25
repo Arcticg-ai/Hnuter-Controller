@@ -34,7 +34,7 @@ feedforward term consumed by the PX4 position-control path.
 | Input | `/fmu/out/actuator_motors` | `px4_msgs/ActuatorMotors` | Post-allocation normalized motor commands; default force-model input |
 | Input | `/fmu/out/actuator_servos` | `px4_msgs/ActuatorServos` | Post-allocation normalized tilt-servo commands; default force-model input |
 | Input | `/hnuter/iebc/in/actuator_wrench` | `geometry_msgs/WrenchStamped` | Optional external actuator-force estimate in ENU `map`/`world`; not contact force |
-| Input | `/hnuter/iebc/in/recovery` | `std_msgs/Bool` | Rising `true` edge means the physical load was released |
+| Input | `/hnuter/iebc/in/recovery` | `std_msgs/Bool` | In `rc_task`, rising `true` means push complete; other modes treat it as physical load release |
 | Input | `/hnuter/iebc/in/reset` | `std_msgs/Empty` | Reset IEBC storage/reference state |
 | Output | `/fmu/in/offboard_control_mode` | `px4_msgs/OffboardControlMode` | Inherited 20 Hz proof-of-life |
 | Output | `/fmu/in/trajectory_setpoint` | `px4_msgs/TrajectorySetpoint` | IEBC-filtered PX4 reference |
@@ -55,10 +55,19 @@ entering Offboard and adds an AUX-triggered push task:
 3. Raising the switch latches the measured position, measured yaw and the
    aircraft's horizontal forward axis. It then ramps the nominal reference
    forward with configured speed/acceleration limits while IEBC filters it.
-4. Lowering the switch at any time stops further forward-reference growth,
+4. A rising `true` on `/hnuter/iebc/in/recovery` marks a successful push as
+   complete. The controller immediately latches the measured completion
+   position, commands zero velocity/acceleration, clears residual filtered RC
+   commands, preserves the current attitude target, and restores manual
+   position/attitude control. It does not return to the task start.
+5. After successful completion, AUX4 may remain high without retriggering the
+   task. Lower it once to re-arm, then raise it to start the next push.
+6. Lowering the switch while a push is still active is an operator cancel. It
+   stops further forward-reference growth,
    acceleration-limits the reversal, and returns along the latched forward axis
    toward the position at which the switch was raised.
-5. Manual RC control is restored after position and velocity remain inside the
+7. After a cancelled return, manual RC control is restored once position and
+   velocity remain inside the
    return tolerances. The switch must be observed low again before another run.
 
 The task switch defaults to PX4 logical `AUX4`. This leaves `AUX1/AUX2` for
