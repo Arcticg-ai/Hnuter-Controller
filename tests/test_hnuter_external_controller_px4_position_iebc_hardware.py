@@ -644,21 +644,111 @@ def test_push_completion_holds_measured_position_and_restores_manual_control():
     assert 'holding measured completion position' in messages[-1]
 
 
-def test_rc_task_recovery_edge_finishes_in_place_instead_of_returning():
-    completions = []
-    returns = []
+def test_rc_task_recovery_edge_enters_braking_before_completion():
+    recovery_positions = []
+    warnings = []
     node = types.SimpleNamespace(
         _recovery_input_high=False,
         nominal_source='rc_task',
         task_state=HnuterIebcOffboardController.TASK_PUSH,
+        TASK_PUSH=HnuterIebcOffboardController.TASK_PUSH,
         TASK_MANUAL=HnuterIebcOffboardController.TASK_MANUAL,
-        _finish_rc_task_at_current_position=completions.append,
-        _begin_task_return=returns.append,
+        position=np.array([2.0, 3.0, 1.0]),
+        iebc=types.SimpleNamespace(
+            axis=np.array([0.0, 1.0, 0.0]),
+            enter_recovery=recovery_positions.append,
+        ),
+        _task_release_latched=False,
+        _task_transition_reason='',
+        get_logger=lambda: types.SimpleNamespace(warn=warnings.append),
     )
 
     HnuterIebcOffboardController.recovery_callback(
         node, types.SimpleNamespace(data=True))
 
-    assert completions == ['push_complete_external_recovery']
-    assert returns == []
+    assert recovery_positions == [pytest.approx(3.0)]
+    assert node._task_release_latched
+    assert node._task_transition_reason == 'external_release_detected'
     assert node._recovery_input_high
+    assert 'braking before ending' in warnings[-1]
+
+
+def _automatic_completion_node():
+    recoveries = []
+    completions = []
+    messages = []
+    node = types.SimpleNamespace(
+        task_state=HnuterIebcOffboardController.TASK_PUSH,
+        TASK_PUSH=HnuterIebcOffboardController.TASK_PUSH,
+        _task_start_position_abs_enu=np.zeros(3),
+        _task_axis_enu=np.array([1.0, 0.0, 0.0]),
+        position=np.zeros(3),
+        velocity=np.zeros(3),
+        _task_reference_distance_m=0.10,
+        task_contact_lag_m=0.06,
+        task_contact_max_speed_mps=0.03,
+        task_contact_hold_s=0.35,
+        task_release_travel_m=0.04,
+        _task_contact_candidate_s=0.0,
+        _task_contact_latched=False,
+        _task_contact_position_s=math.nan,
+        _task_release_latched=False,
+        _task_release_excursion_m=0.0,
+        _task_transition_reason='',
+        iebc=types.SimpleNamespace(
+            recovery_stop_latched=False,
+            enter_recovery=recoveries.append,
+        ),
+        _finish_rc_task_at_current_position=completions.append,
+        get_logger=lambda: types.SimpleNamespace(
+            info=messages.append, warn=messages.append),
+    )
+    return node, recoveries, completions, messages
+
+
+def test_push_completion_requires_contact_then_release_travel():
+    node, recoveries, completions, _messages = _automatic_completion_node()
+
+    assert not HnuterIebcOffboardController._update_push_completion_detector(
+        node, 0.20)
+    assert not node._task_contact_latched
+    assert not HnuterIebcOffboardController._update_push_completion_detector(
+        node, 0.20)
+    assert node._task_contact_latched
+    assert node._task_contact_position_s == pytest.approx(0.0)
+
+    # Remaining stopped against the object is not successful completion.
+    assert not HnuterIebcOffboardController._update_push_completion_detector(
+        node, 1.0)
+    assert recoveries == []
+    assert completions == []
+
+    node.position[0] = 0.041
+    node.velocity[0] = 0.05
+    assert not HnuterIebcOffboardController._update_push_completion_detector(
+        node, 0.02)
+    assert recoveries == [pytest.approx(0.041)]
+    assert node._task_release_latched
+    assert completions == []
+
+
+def test_recovery_stop_latch_terminates_task_push():
+    node, _recoveries, completions, _messages = _automatic_completion_node()
+    node.iebc.recovery_stop_latched = True
+
+    assert HnuterIebcOffboardController._update_push_completion_detector(
+        node, 0.02)
+    assert completions == ['automatic_recovery_stop_latched']
+
+
+def test_initial_hover_without_tracking_lag_cannot_complete_push():
+    node, recoveries, completions, _messages = _automatic_completion_node()
+    node._task_reference_distance_m = 0.0
+
+    for _ in range(10):
+        assert not HnuterIebcOffboardController._update_push_completion_detector(
+            node, 0.10)
+
+    assert not node._task_contact_latched
+    assert recoveries == []
+    assert completions == []

@@ -55,18 +55,23 @@ entering Offboard and adds an AUX-triggered push task:
 3. Raising the switch latches the measured position, measured yaw and the
    aircraft's horizontal forward axis. It then ramps the nominal reference
    forward with configured speed/acceleration limits while IEBC filters it.
-4. A rising `true` on `/hnuter/iebc/in/recovery` marks a successful push as
-   complete. The controller immediately latches the measured completion
+4. Completion is detected as a sequence, not from one zero-speed sample: a
+   sustained contact-like tracking lag is latched first; subsequent forward
+   release travel enters IEBC recovery; and the task ends only after IEBC has
+   confirmed a sustained physical stop. A rising `true` on
+   `/hnuter/iebc/in/recovery` may still provide the release event explicitly,
+   but it now uses the same braking and stop-confirmation path.
+5. At the confirmed stop, the controller latches the measured completion
    position, commands zero velocity/acceleration, clears residual filtered RC
-   commands, preserves the current attitude target, and restores manual
-   position/attitude control. It does not return to the task start.
-5. After successful completion, AUX4 may remain high without retriggering the
+   commands, preserves the current attitude target, changes `TASK_PUSH` to
+   manual control, and does not return to the task start.
+6. After successful completion, AUX4 may remain high without retriggering the
    task. Lower it once to re-arm, then raise it to start the next push.
-6. Lowering the switch while a push is still active is an operator cancel. It
+7. Lowering the switch while a push is still active is an operator cancel. It
    stops further forward-reference growth,
    acceleration-limits the reversal, and returns along the latched forward axis
    toward the position at which the switch was raised.
-7. After a cancelled return, manual RC control is restored once position and
+8. After a cancelled return, manual RC control is restored once position and
    velocity remain inside the
    return tolerances. The switch must be observed low again before another run.
 
@@ -189,6 +194,10 @@ export HNUTER_IEBC_TASK_SWITCH_TIMEOUT_S=0.50
 export HNUTER_IEBC_TASK_PUSH_SPEED_MPS=0.05
 export HNUTER_IEBC_TASK_PUSH_ACCEL_MPS2=0.15
 export HNUTER_IEBC_TASK_MAX_PUSH_M=3.0
+export HNUTER_IEBC_TASK_CONTACT_LAG_M=0.06
+export HNUTER_IEBC_TASK_CONTACT_MAX_SPEED_MPS=0.03
+export HNUTER_IEBC_TASK_CONTACT_HOLD_S=0.35
+export HNUTER_IEBC_TASK_RELEASE_TRAVEL_M=0.04
 export HNUTER_IEBC_TASK_RETURN_SPEED_MPS=0.25
 export HNUTER_IEBC_TASK_RETURN_ACCEL_MPS2=0.35
 export HNUTER_IEBC_TASK_RETURN_POS_TOL_M=0.12

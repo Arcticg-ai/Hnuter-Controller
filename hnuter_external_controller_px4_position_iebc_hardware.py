@@ -1206,6 +1206,18 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             'HNUTER_IEBC_TASK_RETURN_VEL_TOL_MPS', 0.08), 0.01)
         self.task_return_hold_s = max(env_float(
             'HNUTER_IEBC_TASK_RETURN_HOLD_S', 0.75), 0.0)
+        # Automatic push-completion detector.  A stopped vehicle alone is
+        # ambiguous: it can mean initial hover, a closed/blocked object, or a
+        # completed release.  Require a sustained contact-like tracking lag,
+        # then measurable forward travel, before entering certified recovery.
+        self.task_contact_lag_m = max(env_float(
+            'HNUTER_IEBC_TASK_CONTACT_LAG_M', 0.06), 0.01)
+        self.task_contact_max_speed_mps = max(env_float(
+            'HNUTER_IEBC_TASK_CONTACT_MAX_SPEED_MPS', 0.03), 0.005)
+        self.task_contact_hold_s = max(env_float(
+            'HNUTER_IEBC_TASK_CONTACT_HOLD_S', 0.35), 0.05)
+        self.task_release_travel_m = max(env_float(
+            'HNUTER_IEBC_TASK_RELEASE_TRAVEL_M', 0.04), 0.01)
 
         self.task_state = self.TASK_MANUAL
         self._task_switch_value = math.nan
@@ -1221,6 +1233,11 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self._task_reference_distance_m = 0.0
         self._task_reference_speed_mps = 0.0
         self._task_return_settle_s = 0.0
+        self._task_contact_candidate_s = 0.0
+        self._task_contact_latched = False
+        self._task_contact_position_s = math.nan
+        self._task_release_latched = False
+        self._task_release_excursion_m = 0.0
         self._task_transition_reason = 'startup'
 
         live_qos = QoSProfile(
@@ -1398,9 +1415,14 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         high = bool(message.data)
         if high and not self._recovery_input_high:
             if (self.nominal_source == 'rc_task'
-                    and self.task_state != self.TASK_MANUAL):
-                self._finish_rc_task_at_current_position(
-                    'push_complete_external_recovery')
+                    and self.task_state == self.TASK_PUSH):
+                measured_s = float(np.dot(self.iebc.axis, self.position))
+                self._task_release_latched = True
+                self._task_transition_reason = 'external_release_detected'
+                self.iebc.enter_recovery(measured_s)
+                self.get_logger().warn(
+                    'External IEBC release trigger received; braking before '
+                    'ending the RC push task.')
                 self._recovery_input_high = high
                 return
             if (not self._hardware_control_active
@@ -1486,6 +1508,11 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self._task_reference_distance_m = 0.0
         self._task_reference_speed_mps = 0.0
         self._task_return_settle_s = 0.0
+        self._task_contact_candidate_s = 0.0
+        self._task_contact_latched = False
+        self._task_contact_position_s = math.nan
+        self._task_release_latched = False
+        self._task_release_excursion_m = 0.0
         self._task_transition_reason = reason
 
     def _current_yaw_enu(self) -> float:
@@ -1520,6 +1547,11 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         self._task_reference_distance_m = 0.0
         self._task_reference_speed_mps = 0.0
         self._task_return_settle_s = 0.0
+        self._task_contact_candidate_s = 0.0
+        self._task_contact_latched = False
+        self._task_contact_position_s = math.nan
+        self._task_release_latched = False
+        self._task_release_excursion_m = 0.0
         self._task_switch_armed = False
         self._task_transition_reason = 'task_switch_rising_edge'
         self._failsafe_hold_latched = False
@@ -1644,6 +1676,59 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             'restoring manual position/attitude control. Task switch must be '
             'low before the next start.')
 
+    def _update_push_completion_detector(self, dt: float) -> bool:
+        """Detect contact release, brake, then terminate the RC push task."""
+        if (self.task_state != self.TASK_PUSH
+                or self._task_start_position_abs_enu is None):
+            return False
+
+        # RECOVERY owns the braking trajectory.  Its latched stop is the only
+        # terminal condition: once consumed, the growing PUSH reference can no
+        # longer resume and manual RC takes over at the measured stop point.
+        if self.iebc.recovery_stop_latched:
+            self._finish_rc_task_at_current_position(
+                'automatic_recovery_stop_latched')
+            return True
+
+        measured_s = float(np.dot(self._task_axis_enu, self.position))
+        start_s = float(np.dot(
+            self._task_axis_enu, self._task_start_position_abs_enu))
+        measured_forward_distance = measured_s - start_s
+        forward_speed = float(np.dot(self._task_axis_enu, self.velocity))
+        tracking_lag = max(
+            self._task_reference_distance_m - measured_forward_distance, 0.0)
+
+        if not self._task_contact_latched:
+            contact_like = (
+                tracking_lag >= self.task_contact_lag_m
+                and abs(forward_speed) <= self.task_contact_max_speed_mps)
+            if contact_like:
+                self._task_contact_candidate_s += max(dt, 0.0)
+            else:
+                self._task_contact_candidate_s = 0.0
+            if self._task_contact_candidate_s >= self.task_contact_hold_s:
+                self._task_contact_latched = True
+                self._task_contact_position_s = measured_s
+                self._task_transition_reason = 'automatic_contact_latched'
+                self.get_logger().info(
+                    'IEBC push contact latched; waiting for forward release '
+                    f'travel (lag={tracking_lag:.3f} m).')
+            return False
+
+        self._task_release_excursion_m = max(
+            measured_s - self._task_contact_position_s, 0.0)
+        if (not self._task_release_latched
+                and self._task_release_excursion_m
+                >= self.task_release_travel_m):
+            self._task_release_latched = True
+            self._task_transition_reason = 'automatic_release_detected'
+            self.iebc.enter_recovery(measured_s)
+            self.get_logger().warn(
+                'IEBC push release detected; braking to a certified stop '
+                f'(travel={self._task_release_excursion_m:.3f} m).')
+
+        return False
+
     def _task_return_target_speed(self) -> float:
         measured_forward_excursion = float(np.dot(
             self._task_axis_enu,
@@ -1710,7 +1795,10 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
                 self._finish_task_return()
                 return
 
-        self._filter_current_reference(dt)
+        reference_valid = self._filter_current_reference(dt)
+        if (reference_valid and self.task_state == self.TASK_PUSH
+                and self._update_push_completion_detector(dt)):
+            return
 
     def _latch_current_hold(self, reason: str) -> None:
         if not self._failsafe_hold_latched:
@@ -1863,7 +1951,12 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
         elif not self._hardware_control_active:
             state = 'WAIT_GATE'
         elif self.task_state == self.TASK_PUSH:
-            state = 'PUSH'
+            if self.iebc.mode == self.iebc.MODE_RECOVERY:
+                state = 'PUSH_BRAKE'
+            elif self._task_contact_latched:
+                state = 'PUSH_CONTACT'
+            else:
+                state = 'PUSH'
         elif self.task_state == self.TASK_RETURN:
             state = 'RETURN'
         elif self._task_switch_armed:
@@ -1953,6 +2046,11 @@ class HnuterIebcOffboardController(ValidatedHardwareController):
             'task_transition_reason': self._task_transition_reason,
             'task_reference_distance_m': self._task_reference_distance_m,
             'task_reference_speed_mps': self._task_reference_speed_mps,
+            'task_contact_latched': self._task_contact_latched,
+            'task_contact_candidate_s': self._task_contact_candidate_s,
+            'task_contact_position_s': self._task_contact_position_s,
+            'task_release_latched': self._task_release_latched,
+            'task_release_excursion_m': self._task_release_excursion_m,
             'task_start_position_enu': (
                 None if self._task_start_position_abs_enu is None
                 else self._task_start_position_abs_enu.tolist()),
