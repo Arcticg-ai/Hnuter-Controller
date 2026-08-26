@@ -267,6 +267,8 @@ class InteractionEnergyBarrierFilter:
         self.recovery_terminal_s = None
         self.recovery_stop_candidate_s = 0.0
         self.recovery_rebase_energy_j = 0.0
+        self.recovery_anchor_advance_m = 0.0
+        self.recovery_anchor_rebase_energy_j = 0.0
         self.recovery_phase = 'inactive'
         self.recovery_reference_velocity = 0.0
         self.recovery_rate_infeasible = False
@@ -322,6 +324,8 @@ class InteractionEnergyBarrierFilter:
             'recovery_stop_candidate_s': 0.0,
             'recovery_stop_latched': False,
             'recovery_rebase_energy_j': 0.0,
+            'recovery_anchor_advance_m': 0.0,
+            'recovery_anchor_rebase_energy_j': 0.0,
         }
 
     def freeze_environment_storage(self) -> None:
@@ -376,6 +380,8 @@ class InteractionEnergyBarrierFilter:
         self.recovery_terminal_s = None
         self.recovery_stop_candidate_s = 0.0
         self.recovery_rebase_energy_j = release_rebase_energy
+        self.recovery_anchor_advance_m = 0.0
+        self.recovery_anchor_rebase_energy_j = 0.0
         self.recovery_phase = 'brake'
         self.recovery_reference_velocity = float(self.safe_v)
         self.recovery_rate_infeasible = False
@@ -384,6 +390,38 @@ class InteractionEnergyBarrierFilter:
             'release_s': self.release_s,
             'storage_update_enabled': self.storage_update_enabled,
         })
+
+    def _advance_recovery_anchor_to_measurement(self, measured_s: float) -> float:
+        """Keep the braking position target from falling behind the vehicle.
+
+        After a load releases, PX4 can keep moving forward while the filtered
+        velocity is being brought to zero.  Holding ``safe_s`` at the release
+        point then creates a reverse position error; the position loop pulls
+        backward, crosses the old point, and can ring several times.  During
+        RECOVERY the stopping point therefore follows *forward* measured
+        excursion, but never follows rebound in the opposite direction.
+
+        Rebasing removes virtual-spring energy from ``0.5*Kc*e_ref^2``.  Move
+        exactly that amount into the conservative storage account so this
+        anti-windback coordinate change cannot make the IEBC certificate gain
+        energy.  The returned value is the transferred energy in joules.
+        """
+        if self.mode != self.MODE_RECOVERY or self.safe_s is None:
+            return 0.0
+
+        measured_s = float(measured_s)
+        forward_gap = self.release_direction * (measured_s - self.safe_s)
+        if forward_gap <= 0.0:
+            return 0.0
+
+        old_error = float(self.safe_s - measured_s)
+        transferred = 0.5 * self.k_c * old_error * old_error
+        self.storage_bound += transferred
+        self.recovery_rebase_energy_j += transferred
+        self.recovery_anchor_rebase_energy_j += transferred
+        self.recovery_anchor_advance_m += forward_gap
+        self.safe_s = measured_s
+        return transferred
 
     def _mechanical_energy(self, position_enu: np.ndarray, velocity_enu: np.ndarray) -> float:
         # The software proxy reconstructs only the interaction-axis actuator
@@ -692,6 +730,12 @@ class InteractionEnergyBarrierFilter:
         self._update_environment_storage(
             dt, measured_position_enu, measured_velocity_enu, actuator_force_enu)
 
+        # Do not leave the recovery position target behind a vehicle that is
+        # still coasting in the release direction.  Velocity feedback remains
+        # responsible for braking to zero; this only removes the reverse
+        # position step that caused the measured stop/rebound limit cycle.
+        self._advance_recovery_anchor_to_measurement(s_meas)
+
         # Revised certificate: robot kinetic + controller virtual + environment.
         e_ref = float(self.safe_s - s_meas)
         kinetic_i = 0.5 * self.lambda_bar * v_i * v_i
@@ -872,6 +916,9 @@ class InteractionEnergyBarrierFilter:
             'recovery_stop_candidate_s': self.recovery_stop_candidate_s,
             'recovery_stop_latched': self.recovery_stop_latched,
             'recovery_rebase_energy_j': self.recovery_rebase_energy_j,
+            'recovery_anchor_advance_m': self.recovery_anchor_advance_m,
+            'recovery_anchor_rebase_energy_j': (
+                self.recovery_anchor_rebase_energy_j),
         })
 
         # Rate-limit warnings to avoid flooding ROS logs during an infeasible test.
