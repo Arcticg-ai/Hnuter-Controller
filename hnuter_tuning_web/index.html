@@ -33,10 +33,13 @@
         <button id="clear" type="button">Clear</button>
         <span id="sample-rate">0 Hz</span>
       </div>
+      <p id="attitude-source-note" class="telemetry-note">
+        Dashed: PX4 standard vehicle_attitude_setpoint.
+      </p>
 
       <div class="plot-grid">
         <article class="plot-panel">
-          <div class="plot-title"><span>Attitude tracking</span><span>deg <select class="axis-filter" aria-label="Attitude axis"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
+          <div class="plot-title"><span>Attitude: actual vs PX4 standard setpoint</span><span>deg <select class="axis-filter" aria-label="Attitude axis"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="attitude-chart"></canvas>
         </article>
         <article class="plot-panel">
@@ -44,11 +47,11 @@
           <canvas id="position-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Attitude error</span><span>deg <select class="axis-filter" aria-label="Attitude error axis"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
+          <div class="plot-title"><span>PX4 standard setpoint - actual (Euler)</span><span>deg <select class="axis-filter" aria-label="Attitude error axis"><option value="all">All</option><option value="roll">Roll</option><option value="pitch">Pitch</option><option value="yaw">Yaw</option></select></span></div>
           <canvas id="error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Position error (setpoint - actual)</span><span>m <select class="axis-filter" aria-label="Position error axis"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
+          <div class="plot-title"><span>Position error (setpoint - actual; 3D = Euclidean norm)</span><span>m <select class="axis-filter" aria-label="Position error axis"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option><option value="3D">3D</option></select></span></div>
           <canvas id="position-error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
@@ -89,9 +92,9 @@
       <section class="snapshot">
         <h2>Live state</h2>
         <dl>
-          <dt>Roll</dt><dd id="roll-value">--</dd>
-          <dt>Pitch</dt><dd id="pitch-value">--</dd>
-          <dt>Yaw</dt><dd id="yaw-value">--</dd>
+          <dt>Roll actual / PX4 sp</dt><dd id="roll-value">--</dd>
+          <dt>Pitch actual / PX4 sp</dt><dd id="pitch-value">--</dd>
+          <dt>Yaw actual / PX4 sp</dt><dd id="yaw-value">--</dd>
           <dt>Position</dt><dd id="position-value">--</dd>
           <dt>Pos. error</dt><dd id="position-error-value">--</dd>
           <dt>Torque</dt><dd id="torque-value">--</dd>

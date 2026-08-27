@@ -700,6 +700,10 @@ class HnuterTelemetry(Node):
             if math.isfinite(sp) and math.isfinite(actual) else None
             for actual, sp in zip(position, position_setpoint)
         ]
+        position_error_3d = (
+            finite(math.sqrt(sum(error * error for error in position_errors)))
+            if all(error is not None for error in position_errors) else None
+        )
         ages = {
             name: finite(now - stamp) if stamp is not None else None
             for name, stamp in topic_time.items()
@@ -712,6 +716,7 @@ class HnuterTelemetry(Node):
             'position': position_values,
             'position_setpoint': position_setpoint_values,
             'position_error': position_errors,
+            'position_error_3d': position_error_3d,
             'torque': [finite(value) for value in torque],
             'motors': [finite(value) for value in motors],
             'mode': mode,
@@ -726,7 +731,7 @@ class CsvRecorder:
         'roll_err_deg', 'pitch_err_deg', 'yaw_err_deg',
         'north_m', 'east_m', 'down_m',
         'north_sp_m', 'east_sp_m', 'down_sp_m',
-        'north_err_m', 'east_err_m', 'down_err_m',
+        'north_err_m', 'east_err_m', 'down_err_m', 'position_err_3d_m',
         'tx', 'ty', 'tz', 'motor1', 'motor2', 'motor3', 'motor4', 'motor5',
         'armed', 'posctl', 'offboard',
     ]
@@ -769,6 +774,7 @@ class CsvRecorder:
                     'north_err_m': sample['position_error'][0],
                     'east_err_m': sample['position_error'][1],
                     'down_err_m': sample['position_error'][2],
+                    'position_err_3d_m': sample['position_error_3d'],
                     'tx': sample['torque'][0],
                     'ty': sample['torque'][1],
                     'tz': sample['torque'][2],
