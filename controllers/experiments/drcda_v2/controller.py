@@ -8,7 +8,7 @@ from pathlib import Path
 
 from controllers.experiments.drcda_v2.allocator import (
     PaperNormalizedDifferentialAllocator,
-    ReachabilityNormalizedDRCDAAllocator,
+    ReachabilityDRCDAAllocatorV2,
 )
 from controllers.simulation.hnuter_external_direct_drcda import (
     HnuterDRCDAController,
@@ -60,22 +60,12 @@ class HnuterDRCDAv2Controller(HnuterDRCDAController):
             allocator = PaperNormalizedDifferentialAllocator(
                 model,
                 config,
-                nullspace_gain=float(os.environ.get('HNUTER_PAPER_NDA_NULLSPACE_GAIN', '0.08')),
+                nullspace_gain=float(os.environ.get('HNUTER_PAPER_NDA_NULLSPACE_GAIN', '1.0')),
             )
             self._drcda_model_name = 'paper_rate_normalized_no_delay'
         else:
-            allocator = ReachabilityNormalizedDRCDAAllocator(
-                model,
-                config,
-                lm_damping=float(os.environ.get('HNUTER_DRCDA_V2_DAMPING', '0.0002')),
-                max_normalized_step=float(
-                    os.environ.get('HNUTER_DRCDA_V2_MAX_STEP', '0.65')
-                ),
-                line_search_steps=int(
-                    os.environ.get('HNUTER_DRCDA_V2_LINE_SEARCH_STEPS', '5')
-                ),
-            )
-            self._drcda_model_name = 'reachability_normalized_v2'
+            allocator = ReachabilityDRCDAAllocatorV2(model, config)
+            self._drcda_model_name = 'reachability_v2_validated_solver'
         allocator.reset(
             angle_state=self.drcda.state[:4],
             thrust_state=self.drcda.state[4:],
@@ -97,29 +87,6 @@ class HnuterDRCDAv2Controller(HnuterDRCDAController):
             finally:
                 self._drcda_variant = requested
             allocator = getattr(self, 'drcda', None)
-            if isinstance(allocator, ReachabilityNormalizedDRCDAAllocator):
-                allocator.lm_damping = max(
-                    self._tuning_float(
-                        data, 'drcda_v2_lm_damping', allocator.lm_damping
-                    ),
-                    1e-10,
-                )
-                allocator.max_normalized_step = self._tuning_float(
-                    data,
-                    'drcda_v2_max_normalized_step',
-                    allocator.max_normalized_step,
-                )
-                allocator.max_normalized_step = float(
-                    max(0.05, min(allocator.max_normalized_step, 2.0))
-                )
-                allocator.line_search_steps = max(
-                    int(self._tuning_float(
-                        data,
-                        'drcda_v2_line_search_steps',
-                        allocator.line_search_steps,
-                    )),
-                    1,
-                )
             if isinstance(allocator, PaperNormalizedDifferentialAllocator):
                 allocator.nullspace_gain = max(
                     self._tuning_float(

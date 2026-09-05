@@ -1,9 +1,9 @@
 """Second-generation DRCDA experiment."""
 
 from .allocator import PaperNormalizedDifferentialAllocator
-from .allocator import ReachabilityNormalizedDRCDAAllocator
+from .allocator import ReachabilityDRCDAAllocatorV2
 
 __all__ = [
     'PaperNormalizedDifferentialAllocator',
-    'ReachabilityNormalizedDRCDAAllocator',
+    'ReachabilityDRCDAAllocatorV2',
 ]

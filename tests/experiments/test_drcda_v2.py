@@ -5,7 +5,7 @@ import numpy as np
 from controllers.common.hnuter_drcda import DRCDAConfig, HnuterWrenchModel
 from controllers.experiments.drcda_v2.allocator import (
     PaperNormalizedDifferentialAllocator,
-    ReachabilityNormalizedDRCDAAllocator,
+    ReachabilityDRCDAAllocatorV2,
     uniform_saturate,
 )
 
@@ -54,13 +54,27 @@ def test_paper_nda_produces_finite_hover_solution():
     assert np.linalg.norm(result.wrench_residual) < 15.0
 
 
+def test_paper_nda_jerk_is_eq7_error_feedback_without_feedforward():
+    config = DRCDAConfig.ideal_servos(wrench_error_gain=4.0)
+    allocator = PaperNormalizedDifferentialAllocator(HnuterWrenchModel(), config)
+    allocator.reset(thrust_state=[5.0, 5.0, 5.0, 5.0, 0.0])
+    desired = np.array([5.0, -3.0, 30.0, 1.0, -0.5, 0.2])
+
+    result = allocator.allocate(desired, 0.01)
+
+    np.testing.assert_allclose(
+        result.jerk_reference,
+        config.wrench_error_gain * (desired - result.estimated_wrench),
+    )
+
+
 def test_drcda_v2_update_is_bounded_and_finite():
     config = DRCDAConfig.identified_gain_no_delay(
         horizon_s=0.1,
         gauss_newton_iterations=2,
         wrench_error_gain=6.0,
     )
-    allocator = ReachabilityNormalizedDRCDAAllocator(HnuterWrenchModel(), config)
+    allocator = ReachabilityDRCDAAllocatorV2(HnuterWrenchModel(), config)
     allocator.reset(thrust_state=[8.0, 8.0, 8.0, 8.0, 0.0])
     previous = allocator.command.copy()
 

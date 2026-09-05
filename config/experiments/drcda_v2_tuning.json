@@ -43,8 +43,5 @@
     0.003, 0.004, 0.003, 0.004, 0.001, 0.001, 0.001, 0.001, 0.002
   ],
   "drcda_antiwindup_gain": 0.2,
-  "paper_nda_nullspace_gain": 0.08,
-  "drcda_v2_lm_damping": 0.0002,
-  "drcda_v2_max_normalized_step": 0.65,
-  "drcda_v2_line_search_steps": 5
+  "paper_nda_nullspace_gain": 1.0
 }

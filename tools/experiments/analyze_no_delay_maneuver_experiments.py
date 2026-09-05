@@ -281,7 +281,8 @@ def plot_aggressive_trajectory(
     figures: Path,
     methods: tuple[str, ...],
 ) -> None:
-    reference = data["original_direct"]
+    reference_key = "original_direct" if "original_direct" in data else methods[0]
+    reference = data[reference_key]
     reference_origin = reference["target_position"][0]
     reference_path = reference["target_position"] - reference_origin
     aligned: dict[str, np.ndarray] = {}
