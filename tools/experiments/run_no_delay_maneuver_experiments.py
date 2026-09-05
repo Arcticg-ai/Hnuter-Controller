@@ -20,7 +20,18 @@ from pathlib import Path
 CONTROL_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_FIRMWARE = Path("/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter")
 DEFAULT_TUNING = CONTROL_ROOT / "config/simulation/no_delay_drcda_tuning.json"
-METHODS = ("original_direct", "basic_da", "full", "no_horizon", "no_rate_limits")
+DEFAULT_V2_TUNING = CONTROL_ROOT / "config/experiments/drcda_v2_tuning.json"
+METHODS = (
+    "original_direct",
+    "paper_nda",
+    "drcda_v1",
+    "drcda_v2",
+    "basic_da",
+    "full",
+    "no_horizon",
+    "no_rate_limits",
+)
+DEFAULT_METHODS = ("original_direct", "paper_nda", "drcda_v1", "drcda_v2")
 
 
 @dataclass(frozen=True)
@@ -199,7 +210,8 @@ def latest_ulog(firmware: Path, newer_than_ns: int) -> Path | None:
 
 
 def write_effective_tuning(result_root: Path, scenario: Scenario, method: str) -> Path:
-    data = json.loads(DEFAULT_TUNING.read_text(encoding="utf-8"))
+    source = DEFAULT_V2_TUNING if method in {"paper_nda", "drcda_v2"} else DEFAULT_TUNING
+    data = json.loads(source.read_text(encoding="utf-8"))
     data.update(scenario.tuning_overrides)
     path = result_root / "runs" / scenario.key / method / "effective_tuning.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -254,9 +266,14 @@ def run_case(
             "HNUTER_PREFLIGHT_TILT_TEST": "0",
         })
         controller_module = "controllers.simulation.hnuter_external_direct_controller_debug"
-        if method != "original_direct":
+        if method in {"paper_nda", "drcda_v2"}:
+            controller_module = "controllers.experiments.drcda_v2.controller"
+            controller_env["HNUTER_DRCDA_V2_VARIANT"] = method
+        elif method != "original_direct":
             controller_module = "controllers.simulation.hnuter_external_direct_drcda"
-            controller_env["HNUTER_DRCDA_VARIANT"] = method
+            controller_env["HNUTER_DRCDA_VARIANT"] = (
+                "full" if method == "drcda_v1" else method
+            )
         controller = PtyProcess(
             [sys.executable, "-m", controller_module],
             CONTROL_ROOT,
@@ -301,7 +318,13 @@ def run_case(
         "status": status,
         "error": error,
         "duration_wall_s": time.monotonic() - started_wall,
-        "controller": "original_direct" if method == "original_direct" else "drcda",
+        "controller": (
+            "original_direct"
+            if method == "original_direct"
+            else "drcda_v2_experiment"
+            if method in {"paper_nda", "drcda_v2"}
+            else "drcda"
+        ),
         "allocator_variant": None if method == "original_direct" else method,
         "servo_model": None if method == "original_direct" else "identified_gain_no_delay",
         "tuning_file": str(tuning_file),
@@ -332,7 +355,7 @@ def main() -> int:
     if metadata["dynamic_actuator_tokens_present"]:
         raise RuntimeError("firmware model contains delayed/dynamic actuator plugin tokens")
     scenarios = args.scenario or list(SCENARIOS)
-    methods = args.method or list(METHODS)
+    methods = args.method or list(DEFAULT_METHODS)
     manifest = {
         "created_at_unix_s": time.time(),
         "firmware": metadata,

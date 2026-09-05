@@ -26,9 +26,12 @@ import numpy as np
 from tools.plotting.trajectory_alignment import fit_planar_rotation, transform_points
 
 
-METHODS = ("original_direct", "basic_da", "full", "no_horizon", "no_rate_limits")
+METHODS = ("original_direct", "paper_nda", "drcda_v1", "drcda_v2")
 LABELS = {
     "original_direct": "Original direct",
+    "paper_nda": "Paper NDA",
+    "drcda_v1": "DRCDA v1",
+    "drcda_v2": "DRCDA v2",
     "basic_da": "Basic DA",
     "full": "Full DRCDA",
     "no_horizon": "No horizon",
@@ -36,6 +39,9 @@ LABELS = {
 }
 COLORS = {
     "original_direct": "#333333",
+    "paper_nda": "#D55E00",
+    "drcda_v1": "#0072B2",
+    "drcda_v2": "#009E73",
     "basic_da": "#D55E00",
     "full": "#0072B2",
     "no_horizon": "#CC79A7",
@@ -43,12 +49,15 @@ COLORS = {
 }
 LINESTYLES = {
     "original_direct": "-",
+    "paper_nda": "--",
+    "drcda_v1": "-.",
+    "drcda_v2": "-",
     "basic_da": "--",
     "full": "-",
     "no_horizon": "-.",
     "no_rate_limits": ":",
 }
-CORE = ("original_direct", "basic_da", "full")
+CORE = METHODS
 ABLATIONS = ("full", "no_horizon", "no_rate_limits")
 
 
@@ -267,12 +276,16 @@ def plot_aggressive(data: dict[str, dict[str, np.ndarray]], figures: Path, metho
     save_figure(figure, figures, stem)
 
 
-def plot_aggressive_trajectory(data: dict[str, dict[str, np.ndarray]], figures: Path) -> None:
+def plot_aggressive_trajectory(
+    data: dict[str, dict[str, np.ndarray]],
+    figures: Path,
+    methods: tuple[str, ...],
+) -> None:
     reference = data["original_direct"]
     reference_origin = reference["target_position"][0]
     reference_path = reference["target_position"] - reference_origin
     aligned: dict[str, np.ndarray] = {}
-    for method in METHODS:
+    for method in methods:
         item = data[method]
         rotation, _ = fit_planar_rotation(reference["target_position"], item["target_position"])
         aligned[method] = transform_points(
@@ -284,7 +297,7 @@ def plot_aggressive_trajectory(data: dict[str, dict[str, np.ndarray]], figures: 
     axis_3d = figure.add_subplot(1, 2, 2, projection="3d")
     axis_xy.plot(reference_path[:, 0], reference_path[:, 1], color="#777777", linestyle="--", label="Reference")
     axis_3d.plot(*reference_path.T, color="#777777", linestyle="--", label="Reference")
-    for method in METHODS:
+    for method in methods:
         path = aligned[method]
         style = {"color": COLORS[method], "linestyle": LINESTYLES[method], "label": LABELS[method]}
         axis_xy.plot(path[:, 0], path[:, 1], **style)
@@ -299,7 +312,13 @@ def plot_aggressive_trajectory(data: dict[str, dict[str, np.ndarray]], figures: 
     axis_3d.set_zlabel("Altitude (m)", labelpad=1)
     axis_3d.tick_params(pad=0)
     handles, labels = axis_xy.get_legend_handles_labels()
-    figure.legend(handles, labels, ncol=3, loc="upper center", bbox_to_anchor=(0.5, 1.01))
+    figure.legend(
+        handles,
+        labels,
+        ncol=min(len(methods) + 1, 5),
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.01),
+    )
     figure.subplots_adjust(left=0.085, right=0.97, bottom=0.13, top=0.84, wspace=0.18)
     save_figure(figure, figures, "aggressive_trajectory")
 
@@ -368,17 +387,27 @@ def plot_attitude_errors(
     save_figure(figure, figures, stem)
 
 
-def plot_summary(metrics: dict[str, dict[str, dict[str, object]]], figures: Path) -> None:
+def plot_summary(
+    metrics: dict[str, dict[str, dict[str, object]]],
+    figures: Path,
+    scenarios: tuple[str, ...],
+    methods: tuple[str, ...],
+) -> None:
     keys = ("position_rmse_m", "attitude_so3_rmse_deg", "servo_variation_rate_per_s")
     names = ("Position RMSE", "SO(3) attitude RMSE", "Servo activity rate")
-    scenarios = ("aggressive", "attitude_80_180")
-    figure, axes = plt.subplots(2, 3, figsize=(7.05, 3.75))
-    x = np.arange(len(METHODS))
+    figure, axes = plt.subplots(len(scenarios), 3, figsize=(7.05, 1.8 * len(scenarios) + 0.5))
+    axes = np.atleast_2d(axes)
+    x = np.arange(len(methods))
     for row, scenario in enumerate(scenarios):
         for column, (key, name) in enumerate(zip(keys, names)):
-            values = [float(metrics[scenario][method][key]) for method in METHODS]
-            axes[row, column].bar(x, values, color=[COLORS[method] for method in METHODS], width=0.72)
-            axes[row, column].set_xticks(x, ["Direct", "Basic", "Full", "No H", "No rate"], rotation=25, ha="right")
+            values = [float(metrics[scenario][method][key]) for method in methods]
+            axes[row, column].bar(x, values, color=[COLORS[method] for method in methods], width=0.72)
+            axes[row, column].set_xticks(
+                x,
+                [LABELS[method] for method in methods],
+                rotation=25,
+                ha="right",
+            )
             axes[row, column].set_title(name if row == 0 else "")
             if column == 0:
                 axes[row, column].set_ylabel("Aggressive" if row == 0 else "Attitude 80/180")
@@ -391,7 +420,12 @@ def percent_change(reference: float, value: float) -> float:
     return 100.0 * (value - reference) / reference if abs(reference) > 1e-12 else math.nan
 
 
-def write_report(root: Path, manifest: dict[str, object], metrics: dict[str, dict[str, dict[str, object]]]) -> None:
+def write_report(
+    root: Path,
+    manifest: dict[str, object],
+    metrics: dict[str, dict[str, dict[str, object]]],
+    methods: tuple[str, ...],
+) -> None:
     lines = [
         "# 无延迟固件 DRCDA 对比实验",
         "",
@@ -399,7 +433,9 @@ def write_report(root: Path, manifest: dict[str, object], metrics: dict[str, dic
         "",
         f"- 固件：`{manifest['firmware']['path']}`，提交 `{manifest['firmware']['commit']}`，分支 `{manifest['firmware']['branch']}`。",
         "- 模型检查未发现纯延迟或独立一阶执行器插件；DRCDA 使用 `ideal` 舵机预测模型。",
-        "- 所有方法加载相同的 `no_delay_drcda_tuning.json` 闭环参数，差别仅在执行器分配方法。",
+        "- 所有方法采用相同闭环参数，差别仅在执行器分配方法；v2 实验配置额外保存分配器自身参数。",
+        "- `Paper NDA` 按论文 Eq. 7-13 实现执行器速率归一化、伪逆/零空间分配和整向量统一饱和。",
+        "- `DRCDA v1` 来自优化前归档标签；`DRCDA v2` 位于独立实验副本，未覆盖原实现。",
         "- 姿态指标采用 SO(3) 几何误差；俯仰曲线采用连续角，避免 ±180° 欧拉角跳变。",
         "- 倒置悬停会触发 PX4 land detector 的低推力启发式；只有检测标志与实际高度接近地面同时出现时才判为物理接地。",
         "- 每组仅一次确定性 SITL 运行，结果不代表统计显著性。",
@@ -428,7 +464,7 @@ def write_report(root: Path, manifest: dict[str, object], metrics: dict[str, dic
             "| 方法 | 计时完成 | 跟踪有效 | 位置 RMSE (m) | P95 (m) | SO(3) RMSE (deg) | SO(3) P95 (deg) | 舵机活动率 (/s) |",
             "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |",
         ])
-        for method in METHODS:
+        for method in methods:
             item = metrics[scenario][method]
             lines.append(
                 f"| {LABELS[method]} | {'是' if item['completed_timed_segment'] else '否'} | "
@@ -437,29 +473,19 @@ def write_report(root: Path, manifest: dict[str, object], metrics: dict[str, dic
                 f"{item['attitude_so3_rmse_deg']:.3f} | {item['attitude_so3_p95_deg']:.3f} | "
                 f"{item['servo_variation_rate_per_s']:.3f} |"
             )
-        full = metrics[scenario]["full"]
-        direct = metrics[scenario]["original_direct"]
-        basic = metrics[scenario]["basic_da"]
         lines.append("")
-        if full["tracking_valid"] and direct["tracking_valid"]:
+        comparison = "drcda_v2" if "drcda_v2" in methods else methods[-1]
+        candidate = metrics[scenario][comparison]
+        for reference_name in methods:
+            if reference_name == comparison:
+                continue
+            reference = metrics[scenario][reference_name]
+            qualifier = "" if candidate["tracking_valid"] and reference["tracking_valid"] else "描述性"
             lines.append(
-                f"- Full DRCDA 相对 Original Direct 的位置 RMSE 变化为 `{percent_change(float(direct['position_rmse_m']), float(full['position_rmse_m'])):+.1f}%`，SO(3) 姿态 RMSE 变化为 `{percent_change(float(direct['attitude_so3_rmse_deg']), float(full['attitude_so3_rmse_deg'])):+.1f}%`。"
-            )
-        else:
-            lines.append(
-                f"- Full DRCDA 相对 Original Direct 的描述性变化为：位置 RMSE `{percent_change(float(direct['position_rmse_m']), float(full['position_rmse_m'])):+.1f}%`，SO(3) RMSE `{percent_change(float(direct['attitude_so3_rmse_deg']), float(full['attitude_so3_rmse_deg'])):+.1f}%`；因 Original Direct 未通过有效性判据，该百分比不作为两种有效方法间的统计改善。"
-            )
-        if full["tracking_valid"] and basic["tracking_valid"]:
-            lines.append(
-                f"- Full DRCDA 相对 Basic DA 的位置 RMSE 变化为 `{percent_change(float(basic['position_rmse_m']), float(full['position_rmse_m'])):+.1f}%`，SO(3) 姿态 RMSE 变化为 `{percent_change(float(basic['attitude_so3_rmse_deg']), float(full['attitude_so3_rmse_deg'])):+.1f}%`。"
-            )
-        else:
-            lines.append("- Full DRCDA 与 Basic DA 至少一项未通过跟踪有效性判据，不计算改善百分比。")
-        if scenario == "attitude_80_180":
-            lines.append(
-                f"- Full DRCDA 的舵机活动率相对 Original Direct 变化 "
-                f"`{percent_change(float(direct['servo_variation_rate_per_s']), float(full['servo_variation_rate_per_s'])):+.1f}%`；"
-                "本项仅描述同一参考下的命令平滑程度。"
+                f"- {LABELS[comparison]} 相对 {LABELS[reference_name]} 的{qualifier}变化："
+                f"位置 RMSE `{percent_change(float(reference['position_rmse_m']), float(candidate['position_rmse_m'])):+.1f}%`，"
+                f"SO(3) RMSE `{percent_change(float(reference['attitude_so3_rmse_deg']), float(candidate['attitude_so3_rmse_deg'])):+.1f}%`，"
+                f"舵机活动率 `{percent_change(float(reference['servo_variation_rate_per_s']), float(candidate['servo_variation_rate_per_s'])):+.1f}%`。"
             )
         lines.append("")
         if scenario == "attitude_80_180":
@@ -469,7 +495,7 @@ def write_report(root: Path, manifest: dict[str, object], metrics: dict[str, dic
                 "| 方法 | +80° roll | +180° pitch | -80° roll | -180° pitch |",
                 "| --- | ---: | ---: | ---: | ---: |",
             ])
-            for method in METHODS:
+            for method in methods:
                 item = metrics[scenario][method]
                 cells = []
                 for prefix in ("plus_roll", "plus_pitch", "minus_roll", "minus_pitch"):
@@ -485,12 +511,8 @@ def write_report(root: Path, manifest: dict[str, object], metrics: dict[str, dic
                 "",
             ])
     lines.extend([
-        "## 消融解释", "",
-        "`No horizon` 将预测时域缩短到单个离散步；`No rate limits` 去除执行器物理速率和命令斜率约束。无延迟对象上不再把 `No delay` 作为性能消融，因为它与 Full DRCDA 的理想舵机预测配置等价。应同时结合误差、舵机活动率和扳手残差判断，不能只按单一 RMSE 排名。",
-        "",
-        "本次慢速、无纯延迟的大姿态工况中，Full、No horizon 与 No rate limits 的位置和姿态指标非常接近，差异不足以支持预测时域或速率约束带来显著收益。该结果说明此工况主要验证旋转矩阵参考与大姿态稳定性；预测可达约束仍应在更高速、能触及执行器动态边界的工况中评价。Basic DA 在首个 +80° roll 到达保持段前失效，因此不能用其局部 RMSE 与完整方法作排名。",
-        "",
-        "此前采用 6 s 单程、2 s 峰值保持且无回正等待的极限姿态结果已由本轮测试取代，不再作为算法优劣依据。",
+        "## 判读说明", "",
+        "负百分比表示误差或舵机活动率下降。结果应同时结合位置、姿态、舵机活动率、扳手残差和有效性判据，不能只按单一 RMSE 排名。每组仅一次确定性仿真，调参结论需要复跑确认。",
         "",
         "## 文件", "",
         "- 原始 CSV、ULog 与控制台日志：`runs/`",
@@ -505,6 +527,10 @@ def main() -> None:
     parser.add_argument("root", type=Path)
     args = parser.parse_args()
     manifest = json.loads((args.root / "manifest.json").read_text(encoding="utf-8"))
+    methods = tuple(manifest.get("methods", METHODS))
+    unknown = [method for method in methods if method not in LABELS]
+    if unknown:
+        raise ValueError(f"unknown methods in manifest: {', '.join(unknown)}")
     figures = args.root / "figures"
     reports = args.root / "reports"
     figures.mkdir(parents=True, exist_ok=True)
@@ -516,14 +542,14 @@ def main() -> None:
     rows_by_case = {(case["scenario"], case["method"]): case for case in manifest["cases"]}
     available_scenarios = [
         scenario for scenario in ("aggressive", "attitude_80_180")
-        if all((scenario, method) in rows_by_case for method in METHODS)
+        if all((scenario, method) in rows_by_case for method in methods)
     ]
     if not available_scenarios:
         raise ValueError("manifest does not contain a complete method matrix")
     for scenario in available_scenarios:
         loaded[scenario] = {}
         metrics[scenario] = {}
-        for method in METHODS:
+        for method in methods:
             case = rows_by_case[(scenario, method)]
             if not case.get("csv"):
                 raise ValueError(f"missing CSV for {scenario}/{method}: {case.get('error', '')}")
@@ -534,16 +560,12 @@ def main() -> None:
             )
 
     if "aggressive" in loaded:
-        plot_aggressive(loaded["aggressive"], figures, CORE, "aggressive_core_tracking")
-        plot_aggressive(loaded["aggressive"], figures, ABLATIONS, "aggressive_ablation_tracking")
-        plot_aggressive_trajectory(loaded["aggressive"], figures)
+        plot_aggressive(loaded["aggressive"], figures, methods, "aggressive_tracking")
+        plot_aggressive_trajectory(loaded["aggressive"], figures, methods)
     if "attitude_80_180" in loaded:
-        plot_attitude(loaded["attitude_80_180"], figures, CORE, "attitude_core_tracking")
-        plot_attitude(loaded["attitude_80_180"], figures, ABLATIONS, "attitude_ablation_tracking")
-        plot_attitude_errors(loaded["attitude_80_180"], figures, CORE, "attitude_core_errors")
-        plot_attitude_errors(loaded["attitude_80_180"], figures, ABLATIONS, "attitude_ablation_errors")
-    if len(loaded) == 2:
-        plot_summary(metrics, figures)
+        plot_attitude(loaded["attitude_80_180"], figures, methods, "attitude_tracking")
+        plot_attitude_errors(loaded["attitude_80_180"], figures, methods, "attitude_errors")
+    plot_summary(metrics, figures, tuple(loaded), methods)
     (reports / "metrics.json").write_text(
         json.dumps(metrics, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
@@ -556,7 +578,7 @@ def main() -> None:
         for scenario, scenario_metrics in metrics.items():
             for method, item in scenario_metrics.items():
                 writer.writerow({"scenario": scenario, "method": method, **item})
-    write_report(args.root, manifest, metrics)
+    write_report(args.root, manifest, metrics, methods)
     print(f"report={args.root / 'reports/experiment_report_zh.md'}")
     print(f"figures={figures}")
 
