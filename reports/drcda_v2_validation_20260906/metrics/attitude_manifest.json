@@ -1,0 +1,102 @@
+{
+  "created_at_unix_s": 1788629628.5850763,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+    "branch": "codex/hnuter-sitl-identified-gain-tuned-20260812",
+    "describe": "hnuter-servo-pwm-gear-20260804-8-g49b60a5d",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "96afc1d1f0728edbf8ed2d76095af4fd99fe3dd6",
+  "controller_worktree_dirty": false,
+  "common_tuning": "/tmp/hnuter-controller-consolidation/config/simulation/no_delay_drcda_tuning.json",
+  "scenarios": [
+    "attitude_80_180"
+  ],
+  "scenario_definitions": {
+    "attitude_80_180": {
+      "trigger": "3",
+      "timeout_s": 215.0,
+      "environment": {},
+      "tuning_overrides": {
+        "attitude_step_roll_deg": 80.0,
+        "attitude_step_pitch_deg": 180.0,
+        "attitude_step_yaw_deg": 0.0,
+        "attitude_segment_time_s": 15.0,
+        "attitude_peak_hold_s": 5.0,
+        "attitude_level_settle_s": 10.0,
+        "attitude_test_bidirectional": true,
+        "attitude_test_altitude_m": 3.0,
+        "attitude_test_altitude_only": false,
+        "attitude_test_max_acc_xy": 8.0,
+        "direct_large_tilt_yaw_min_scale": 0.4
+      }
+    }
+  },
+  "methods": [
+    "original_direct",
+    "paper_nda",
+    "drcda_v1",
+    "drcda_v2"
+  ],
+  "servo_model": "identified_gain_no_delay",
+  "cases": [
+    {
+      "scenario": "attitude_80_180",
+      "method": "original_direct",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 217.74699653699645,
+      "controller": "original_direct",
+      "allocator_variant": null,
+      "servo_model": null,
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/original_direct/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/original_direct/logs/external_control/hnuter_direct_debug_1788629651.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/original_direct/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "paper_nda",
+      "status": "failed",
+      "error": "scenario did not finish before timeout",
+      "duration_wall_s": 245.70304623499396,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "paper_nda",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/paper_nda/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/paper_nda/logs/external_control/ablation/full/hnuter_full_debug_1788629869.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/paper_nda/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "drcda_v1",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 217.79255264499807,
+      "controller": "drcda",
+      "allocator_variant": "drcda_v1",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/drcda_v1/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/drcda_v1/logs/external_control/ablation/full/hnuter_full_debug_1788630115.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/drcda_v1/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "drcda_v2",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 216.5511209690012,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "drcda_v2",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/drcda_v2/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/drcda_v2/logs/external_control/ablation/full/hnuter_full_debug_1788630333.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_attitude_validation_20260906/runs/attitude_80_180/drcda_v2/px4.ulg"
+    }
+  ]
+}

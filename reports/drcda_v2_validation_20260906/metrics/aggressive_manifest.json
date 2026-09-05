@@ -1,0 +1,115 @@
+{
+  "created_at_unix_s": 1788629194.1468563,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+    "branch": "codex/hnuter-sitl-identified-gain-tuned-20260812",
+    "describe": "hnuter-servo-pwm-gear-20260804-8-g49b60a5d",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "833a58aa9fb298123f5e4fd7b7fcc230c32aed64",
+  "controller_worktree_dirty": false,
+  "common_tuning": "/tmp/hnuter-controller-consolidation/config/simulation/no_delay_drcda_tuning.json",
+  "scenarios": [
+    "aggressive"
+  ],
+  "scenario_definitions": {
+    "aggressive": {
+      "trigger": "2",
+      "timeout_s": 35.0,
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "tuning_overrides": {}
+    }
+  },
+  "methods": [
+    "original_direct",
+    "paper_nda",
+    "drcda_v1",
+    "drcda_v2"
+  ],
+  "servo_model": "identified_gain_no_delay",
+  "cases": [
+    {
+      "scenario": "aggressive",
+      "method": "original_direct",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.97882905500592,
+      "controller": "original_direct",
+      "allocator_variant": null,
+      "servo_model": null,
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/original_direct/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/original_direct/logs/external_control/hnuter_direct_debug_1788629217.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/original_direct/px4.ulg"
+    },
+    {
+      "scenario": "aggressive",
+      "method": "paper_nda",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.979542401008075,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "paper_nda",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/paper_nda/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/paper_nda/logs/external_control/ablation/full/hnuter_full_debug_1788629263.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/paper_nda/px4.ulg"
+    },
+    {
+      "scenario": "aggressive",
+      "method": "drcda_v1",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.98800656798994,
+      "controller": "drcda",
+      "allocator_variant": "drcda_v1",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/drcda_v1/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/drcda_v1/logs/external_control/ablation/full/hnuter_full_debug_1788629309.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/drcda_v1/px4.ulg"
+    },
+    {
+      "scenario": "aggressive",
+      "method": "drcda_v2",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.9153622899903,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "drcda_v2",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/drcda_v2/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/drcda_v2/logs/external_control/ablation/full/hnuter_full_debug_1788629355.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/drcda_v2_validation_20260906/runs/aggressive/drcda_v2/px4.ulg"
+    }
+  ]
+}
