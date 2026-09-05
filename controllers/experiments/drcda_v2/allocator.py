@@ -190,15 +190,8 @@ class PaperNormalizedDifferentialAllocator(_JerkReferenceMixin, DRCDAAllocator):
         self.last_result = result
         return result
 
-
 class ReachabilityDRCDAAllocatorV2(DRCDAAllocator):
-    """Independent v2 entry point based on the validated reachability solver.
-
-    The first optimization prototype used a model-cost line search that was
-    locally monotone but degraded the closed-loop SITL response. The active v2
-    intentionally returns to the validated solver while keeping a separate
-    class and tuning file for controlled optimization experiments.
-    """
+    """Independent v2 entry point using the validated reachability solver."""
 
     def allocate(
         self,
