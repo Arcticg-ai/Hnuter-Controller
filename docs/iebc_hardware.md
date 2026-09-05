@@ -1,0 +1,247 @@
+# Hnuter IEBC hardware Offboard gateway
+
+`controllers/hardware/hnuter_external_controller_px4_position_iebc_hardware.py`
+inserts the closed-loop IEBC reference filter into the real-aircraft PX4
+position-Offboard controller. It inherits
+`controllers.hardware.hnuter_external_controller_px4_position_hardware.HnuterController`;
+there is no copied Arm/Offboard gate, PX4 state conversion, RC handling or
+PX4 setpoint publisher. The IEBC filter itself is embedded in this file, so a
+real-aircraft deployment never imports or executes the Gazebo simulation code.
+
+## Boundary and authority
+
+- The transmitter and PX4 own Arm, Disarm, Offboard selection and failsafes.
+- The IEBC node never publishes `VehicleCommand` or direct actuator topics.
+- PX4 remains the low-level position/velocity/acceleration controller.
+- The upstream task publishes only a nominal reference; IEBC publishes the
+  filtered reference through the inherited `/fmu/in/trajectory_setpoint` path.
+- The default hardware IEBC path reconstructs propulsive force from PX4's
+  post-allocation motor and servo commands. This is a command/model estimate,
+  not measured thrust, RPM or servo position.
+- An external ENU actuator-force estimator can be selected explicitly when
+  real feedback becomes available. The Gazebo-only proxy remains rejected.
+
+Position Offboard and direct thrust/torque Offboard are mutually different PX4
+control paths. This gateway therefore does **not** send a second direct force
+command to PX4. The force topic is measured/estimated actuator force used by
+the energy certificate; acceleration in `TrajectorySetpoint` is the nominal
+feedforward term consumed by the PX4 position-control path.
+
+## Topics
+
+| Direction | Topic | Type | Frame/meaning |
+|---|---|---|---|
+| Input | `/hnuter/iebc/in/trajectory_setpoint` | `px4_msgs/TrajectorySetpoint` | Absolute NED position, velocity, acceleration and yaw |
+| Input | `/fmu/out/actuator_motors` | `px4_msgs/ActuatorMotors` | Post-allocation normalized motor commands; default force-model input |
+| Input | `/fmu/out/actuator_servos` | `px4_msgs/ActuatorServos` | Post-allocation normalized tilt-servo commands; default force-model input |
+| Input | `/hnuter/iebc/in/actuator_wrench` | `geometry_msgs/WrenchStamped` | Optional external actuator-force estimate in ENU `map`/`world`; not contact force |
+| Input | `/hnuter/iebc/in/recovery` | `std_msgs/Bool` | In `rc_task`, rising `true` means push complete; other modes treat it as physical load release |
+| Input | `/hnuter/iebc/in/reset` | `std_msgs/Empty` | Reset IEBC storage/reference state |
+| Output | `/fmu/in/offboard_control_mode` | `px4_msgs/OffboardControlMode` | Inherited 20 Hz proof-of-life |
+| Output | `/fmu/in/trajectory_setpoint` | `px4_msgs/TrajectorySetpoint` | IEBC-filtered PX4 reference |
+| Output | `/hnuter/iebc/out/status` | `std_msgs/String` | JSON health, energy, barrier and stale-input state |
+
+The node already subscribes, through the inherited hardware controller, to
+PX4 local position, attitude, vehicle status/control mode and RC topics.
+
+## Nominal-reference modes
+
+`HNUTER_IEBC_NOMINAL_SOURCE=rc_task` (default) keeps manual RC flight after
+entering Offboard and adds an AUX-triggered push task:
+
+1. Start the node, enter Offboard with the task switch low, and fly manually
+   to the task area using the existing hardware controller.
+2. The node must observe a fresh low task-switch value before it arms the task
+   trigger. A switch already high while entering Offboard cannot auto-start.
+3. Raising the switch latches the measured position, measured yaw and the
+   aircraft's horizontal forward axis. It then ramps the nominal reference
+   forward with configured speed/acceleration limits while IEBC filters it.
+4. Completion is detected as a sequence, not from one zero-speed sample: a
+   sustained contact-like tracking lag is latched first; subsequent forward
+   release travel enters IEBC recovery; and the task ends only after IEBC has
+   confirmed a sustained physical stop. A rising `true` on
+   `/hnuter/iebc/in/recovery` may still provide the release event explicitly,
+   but it now uses the same braking and stop-confirmation path.
+5. At the confirmed stop, the controller latches the measured completion
+   position, commands zero velocity/acceleration, clears residual filtered RC
+   commands, preserves the current attitude target, changes `TASK_PUSH` to
+   manual control, and does not return to the task start.
+6. After successful completion, AUX4 may remain high without retriggering the
+   task. Lower it once to re-arm, then raise it to start the next push.
+7. Lowering the switch while a push is still active is an operator cancel. It
+   stops further forward-reference growth,
+   acceleration-limits the reversal, and returns along the latched forward axis
+   toward the position at which the switch was raised.
+8. After a cancelled return, manual RC control is restored once position and
+   velocity remain inside the
+   return tolerances. The switch must be observed low again before another run.
+
+The task switch defaults to PX4 logical `AUX4`. This leaves `AUX1/AUX2` for
+the validated manual Roll/Pitch attitude inputs and avoids the firmware's
+existing `AUX3` attitude-level switch. Map the desired physical receiver
+channel in PX4 and verify it before installing propellers:
+
+```text
+param show RC_MAP_AUX4
+param set RC_MAP_AUX4 <receiver-channel-number>
+param save
+```
+
+The current Hnuter PX4 DDS bridge exports logical AUX values through
+`/fmu/out/manual_control_setpoint`, but does not export
+`/fmu/out/rc_channels`. The hardware gateway therefore reads `aux4` from
+`ManualControlSetpoint` and retains `RcChannels` only as a fallback for future
+bridge configurations. The status JSON reports `task_switch_source`; verify
+that it is `manual_control_setpoint` and that `task_switch_value` changes from
+low to high before installing propellers. Each detected source or HIGH/LOW
+transition is also printed once in the node console.
+
+`HNUTER_IEBC_NOMINAL_SOURCE=topic` accepts the private
+`TrajectorySetpoint` input. This is the reusable composition mode: a door,
+surface, trajectory or experiment task can be a separate ROS 2 node.
+
+`HNUTER_IEBC_NOMINAL_SOURCE=baseline` keeps the existing RC/keyboard reference
+generator and inserts IEBC directly before the inherited PX4 publisher. It is
+useful for regression checks against the validated hardware controller.
+
+## Hardware default profile
+
+The hardware entrypoint enables a conservative initial profile estimated from
+the repeated manual-contact flights in log_140, log_141, log_143, log_144 and
+log_146. Environment variables remain authoritative overrides:
+
+```bash
+export HNUTER_IEBC_ENABLE=1
+export HNUTER_IEBC_WRENCH_SOURCE=external
+export HNUTER_IEBC_ACTUATOR_SOURCE=px4_outputs
+export HNUTER_IEBC_MASS_KG=4.5
+export HNUTER_IEBC_LAMBDA_BAR_KG=6.0
+export HNUTER_IEBC_E_MAX_J=2.5
+export HNUTER_IEBC_ENERGY_RESERVE_J=0.5
+export HNUTER_IEBC_KC_NPM=11.25
+export HNUTER_IEBC_DC_NSPM=16.5
+```
+
+Evidence and rationale:
+
+- all five logs record a 4.5 kg vehicle mass;
+- the largest credible contact-related forward speed is about 0.527 m/s in
+  log_143, equivalent to 0.625 J at 4.5 kg;
+- log_146 reconstructs at most about 0.607 J of environment-storage proxy in
+  its valid contact trials;
+- 2.5 J is approximately twice the sum of those two observed proxies, while
+  remaining far below the 80--110 J budgets used in high-force Gazebo runs;
+- 6.0 kg gives the translational inertia bound about 33 percent margin;
+- 11.25 N/m lies in the lower part of the noisy quasi-static stiffness range;
+  16.5 N s/m is approximately critical damping, `2*sqrt(6.0*11.25)`.
+
+These are initial experiment defaults, not a force-sensor-backed safety
+certificate. The ULogs do not contain measured contact force, servo angle or
+motor RPM. Keep the first validation propellers-off, then restrained/tethered,
+and preserve the status JSON with each run.
+
+Relevant interface gates:
+
+```bash
+export HNUTER_IEBC_COMMAND_TIMEOUT_S=0.30
+export HNUTER_IEBC_WRENCH_TIMEOUT_S=0.20
+export HNUTER_IEBC_INITIAL_COMMAND_RADIUS_M=0.75
+export HNUTER_IEBC_REQUIRE_WRENCH_FRAME=1
+```
+
+`HNUTER_IEBC_WRENCH_SOURCE=external` is the internal IEBC-core setting: it
+means that the node supplies a complete ENU actuator force rather than using
+the Gazebo proxy. `HNUTER_IEBC_ACTUATOR_SOURCE` selects how the hardware node
+obtains that force:
+
+- `px4_outputs` (default): subscribe to `/fmu/out/actuator_motors` and
+  `/fmu/out/actuator_servos`, invert the firmware's Hnuter motor mapping, apply
+  the primary/secondary tilt geometry, and rotate body-FLU force to world ENU.
+- `external_wrench`: consume `/hnuter/iebc/in/actuator_wrench`. Use this only
+  with a separate estimator that publishes actuator force in an explicit ENU
+  `map`/`world` frame.
+
+The command model defaults mirror the current hardware firmware parameters:
+
+```bash
+export HNUTER_IEBC_ACT_MASS_KG=4.5
+export HNUTER_IEBC_ACT_MOT_HOV=0.50
+export HNUTER_IEBC_ACT_MOT_EXPO=0.50
+export HNUTER_IEBC_ACT_MAX_ARM_T_N=170.96
+export HNUTER_IEBC_ACT_TAIL_T_POS_N=12.78
+export HNUTER_IEBC_ACT_TAIL_T_NEG_N=6.04
+export HNUTER_IEBC_ACT_TAIL_EXP_P=0.55
+export HNUTER_IEBC_ACT_TAIL_EXP_N=0.68
+export HNUTER_IEBC_ACT_S1_MAX_DEG=180
+export HNUTER_IEBC_ACT_S2_SERVO_MAX_DEG=180
+export HNUTER_IEBC_ACT_S2_GEAR=2.0
+```
+
+These values must match the parameters actually saved on the flight
+controller. Persisted PX4 parameters override firmware defaults. In
+particular, `HNTR_MOT_HOV`, `HNTR_MOT_EXPO`, `HNTR_MAX_ARM_T`, the four
+`HNTR_TAIL_T_POS/NEG` and `HNTR_TAIL_EXP_P/N` values, the tilt angle ranges
+and `HNTR_S2_GEAR` must be recorded with each hardware run. The obsolete
+`HNUTER_IEBC_ACT_MAX_TAIL_T_N` symmetric setting is rejected at startup.
+
+RC push-task settings:
+
+```bash
+export HNUTER_IEBC_NOMINAL_SOURCE=rc_task
+export HNUTER_IEBC_TASK_RC_FUNCTION=11    # RcChannels.FUNCTION_AUX_4
+export HNUTER_IEBC_TASK_SWITCH_HIGH=0.50
+export HNUTER_IEBC_TASK_SWITCH_LOW=0.00
+export HNUTER_IEBC_TASK_SWITCH_TIMEOUT_S=0.50
+export HNUTER_IEBC_TASK_PUSH_SPEED_MPS=0.05
+export HNUTER_IEBC_TASK_PUSH_ACCEL_MPS2=0.15
+export HNUTER_IEBC_TASK_MAX_PUSH_M=3.0
+export HNUTER_IEBC_TASK_CONTACT_LAG_M=0.06
+export HNUTER_IEBC_TASK_CONTACT_MAX_SPEED_MPS=0.03
+export HNUTER_IEBC_TASK_CONTACT_HOLD_S=0.35
+export HNUTER_IEBC_TASK_RELEASE_TRAVEL_M=0.04
+export HNUTER_IEBC_TASK_RETURN_SPEED_MPS=0.25
+export HNUTER_IEBC_TASK_RETURN_ACCEL_MPS2=0.35
+export HNUTER_IEBC_TASK_RETURN_POS_TOL_M=0.12
+export HNUTER_IEBC_TASK_RETURN_VEL_TOL_MPS=0.08
+```
+
+The RC push task refuses to start unless IEBC is enabled, configured, and
+receiving a fresh selected actuator-force input. In default `px4_outputs`
+mode, both motor and servo output topics must be fresh. A stale task switch
+during `PUSH` is treated as a cancel and starts `RETURN`; stale actuator input
+holds the current position instead of failing open.
+
+At startup, confirm both of these conditions in the console/status output:
+
+```text
+IEBC enabled=True
+task_switch_source=manual_control_setpoint
+```
+
+Set `HNUTER_IEBC_ENABLE=0` explicitly when only the manual Offboard gateway is
+required and the AUX push task must remain disabled.
+
+The upstream task must first publish a nominal position close to the measured
+vehicle position. A new topic command farther than the configured initial
+radius is rejected. When IEBC is enabled, stale wrench or stale command data
+latches a zero-velocity hold rather than passing the nominal command through.
+
+## Build and run
+
+```bash
+cd /home/hnuter/px4_ws_ros2
+source /opt/ros/jazzy/setup.bash
+colcon build --packages-select px4_msgs --symlink-install \
+  --allow-overriding px4_msgs
+source install/local_setup.bash
+
+python3 -m controllers.hardware.hnuter_external_controller_px4_position_iebc_hardware
+```
+
+Start the node while disarmed, confirm PX4 topics and the JSON status topic,
+then use the transmitter to enter Armed + Offboard. First validation is
+propellers-off, followed by restrained/tethered testing; Gazebo results do not
+certify the hardware force model or energy bounds. The default command model
+also cannot detect a stalled motor, missed servo angle, ESC delay, or thrust
+calibration error; use conservative uncertainty margins until sensor-backed
+estimation has been validated.

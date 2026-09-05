@@ -22,7 +22,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from hnuter_log_paths import log_path, stamp
+from controllers.common.hnuter_log_paths import log_path, stamp
 from tools.plotting.trajectory_alignment import (
     fit_planar_rotation,
     transform_points,

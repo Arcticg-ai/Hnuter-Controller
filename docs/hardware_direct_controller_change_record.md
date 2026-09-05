@@ -1,6 +1,6 @@
 # Hnuter 实机直接外部控制器修改记录
 
-本文记录 `hnuter_external_direct_controller_hardware.py` 截至控制器仓库提交
+本文记录 `controllers/hardware/hnuter_external_direct_controller_hardware.py` 截至控制器仓库提交
 `082b6ce` 的实现状态。该文件在提交 `cb156f6` 中成为可独立运行的实机入口，
 并在提交 `92006e5` 中完成最近一次实机安全与分配参数更新。
 
@@ -65,9 +65,9 @@ HNUTER_HARDWARE_SPOOL_RAMP_S
 2026-08-12 当前四个实机入口统一适配无延迟固件 profile
 `3131ddd4_500_2500_gear2`：
 
-- `hnuter_external_direct_controller_hardware.py`、
-  `hnuter_external_direct_ok_hardware.py` 和
-  `hnuter_external_direct_drcda_hardware.py` 的四路倾转舵机输入都使用
+- `controllers/hardware/hnuter_external_direct_controller_hardware.py`、
+  `controllers/hardware/hnuter_external_direct_ok_hardware.py` 和
+  `controllers/hardware/hnuter_external_direct_drcda_hardware.py` 的四路倾转舵机输入都使用
   `500/1500/2500 us`。该范围不用于电机。
 - 一级归一化为 `primary_joint_angle / 180 deg`。
 - 二级归一化为
@@ -78,7 +78,7 @@ HNUTER_HARDWARE_SPOOL_RAMP_S
   会记录 profile、PWM 范围、舵机轴角和减速比。
 - 电机命令仍为 `ActuatorMotors.control` 归一化推力，使用独立的前电机/尾电机
   推力限幅和可逆设置，不读取 `servo_pwm_*_us`。
-- `hnuter_external_controller_px4_position_hardware.py` 只发布 PX4 位置/速度
+- `controllers/hardware/hnuter_external_controller_px4_position_hardware.py` 只发布 PX4 位置/速度
   setpoint，不发布电机或舵机命令；它记录同一 profile，PWM 映射由
   PX4 内部完成。
 

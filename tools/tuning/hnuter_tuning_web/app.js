@@ -38,6 +38,14 @@ function format(value, digits = 2) {
   return finite(value) ? `${value >= 0 ? '+' : ''}${value.toFixed(digits)}` : '--';
 }
 
+function formatAxisTick(value, step) {
+  if (!finite(value) || !finite(step) || step <= 0) return '--';
+  const digits = Math.max(0, Math.min(6, Math.ceil(-Math.log10(step))));
+  const zeroThreshold = 0.5 * (10 ** -digits);
+  const normalized = Math.abs(value) < zeroThreshold ? 0 : value;
+  return normalized.toFixed(digits);
+}
+
 async function api(path, options = {}) {
   const separator = path.includes('?') ? '&' : '?';
   const url = token ? `${path}${separator}token=${encodeURIComponent(token)}` : path;
@@ -86,6 +94,7 @@ class CanvasChart {
     this.series = series;
     this.fixedRange = options.fixedRange || null;
     this.minimumSpan = options.minimumSpan || 1;
+    this.singleAxisMinimumSpan = options.singleAxisMinimumSpan || this.minimumSpan;
     this.margin = options.margin ?? 0.08;
     this.axisFilter = canvas.closest('.plot-panel')?.querySelector('.axis-filter') || null;
   }
@@ -121,7 +130,9 @@ class CanvasChart {
     if (!values.length) return [-1, 1];
     let low = Math.min(...values);
     let high = Math.max(...values);
-    const span = Math.max(high - low, this.minimumSpan);
+    const singleAxisSelected = this.axisFilter && this.axisFilter.value !== 'all';
+    const minimumSpan = singleAxisSelected ? this.singleAxisMinimumSpan : this.minimumSpan;
+    const span = Math.max(high - low, minimumSpan);
     const center = (high + low) / 2;
     low = center - span / 2;
     high = center + span / 2;
@@ -146,6 +157,7 @@ class CanvasChart {
     const startT = latestT - historySeconds;
     const visible = allSamples.filter((sample) => sample.t >= startT);
     const [yLow, yHigh] = this.yRange(visible);
+    const yTickStep = (yHigh - yLow) / 4;
 
     ctx.lineWidth = 1;
     ctx.font = '11px Segoe UI, Arial, sans-serif';
@@ -161,7 +173,7 @@ class CanvasChart {
       ctx.stroke();
       ctx.fillStyle = '#66717b';
       ctx.textAlign = 'right';
-      ctx.fillText(value.toFixed(Math.abs(value) < 0.1 ? 3 : 1), left - 7, y);
+      ctx.fillText(formatAxisTick(value, yTickStep), left - 7, y);
     }
     for (let index = 0; index <= 5; index += 1) {
       const fraction = index / 5;
@@ -239,7 +251,7 @@ const charts = [
     {label: 'E sp', axis: 'E', path: ['position_setpoint', 1], color: palette.blue, dash: [5, 4]},
     {label: 'D', axis: 'D', path: ['position', 2], color: palette.green},
     {label: 'D sp', axis: 'D', path: ['position_setpoint', 2], color: palette.green, dash: [5, 4]},
-  ], {minimumSpan: 1}),
+  ], {minimumSpan: 1, singleAxisMinimumSpan: 0.02}),
   new CanvasChart($('#velocity-chart'), [
     {label: 'N vel', axis: 'N', path: ['velocity', 0], color: palette.red},
     {label: 'N vel sp', axis: 'N', path: ['velocity_setpoint', 0], color: palette.red, dash: [5, 4]},
@@ -257,7 +269,8 @@ const charts = [
     {label: 'N', axis: 'N', path: ['position_error', 0], color: palette.red},
     {label: 'E', axis: 'E', path: ['position_error', 1], color: palette.blue},
     {label: 'D', axis: 'D', path: ['position_error', 2], color: palette.green},
-  ], {minimumSpan: 0.2}),
+    {label: '3D', axis: '3D', path: ['position_error_3d'], color: palette.amber, width: 2.2},
+  ], {minimumSpan: 0.2, singleAxisMinimumSpan: 0.01}),
   new CanvasChart($('#torque-chart'), [
     {label: 'Tx', axis: 'Tx', path: ['torque', 0], color: palette.red},
     {label: 'Ty', axis: 'Ty', path: ['torque', 1], color: palette.blue},
@@ -327,13 +340,20 @@ function updateLiveState(payload) {
   setStatus($('#mode-status'), modeText, data.mode.armed ? 'armed' : 'neutral');
   $('#endpoint').textContent = payload.endpoint || 'MAVLink endpoint not connected';
   const spSource = data.setpoint_source === 'hnuter' ? 'HNTR' : 'PX4';
+  const sourceNote = $('#attitude-source-note');
+  sourceNote.textContent = data.setpoint_source === 'hnuter'
+    ? 'Dashed: Hnuter internal attitude target.'
+    : 'Dashed: PX4 standard vehicle_attitude_setpoint.';
   $('#roll-value').textContent = `${format(data.attitude[0])} / ${format(data.setpoint[0])} deg ${spSource}`;
   $('#pitch-value').textContent = `${format(data.attitude[1])} / ${format(data.setpoint[1])} deg ${spSource}`;
   $('#yaw-value').textContent = `${format(data.attitude[2])} / ${format(data.setpoint[2])} deg ${spSource}`;
   $('#position-value').textContent = data.position.map((value) => format(value, 2)).join(' ');
   $('#velocity-value').textContent = data.velocity.map((value) => format(value, 2)).join(' ');
   $('#angular-rate-value').textContent = data.angular_velocity.map((value) => format(value, 1)).join(' ');
-  $('#position-error-value').textContent = data.position_error.map((value) => format(value, 2)).join(' ');
+  const positionError = Array.isArray(data.position_error) ? data.position_error : [];
+  $('#position-error-value').textContent =
+    `N ${format(positionError[0], 3)}  E ${format(positionError[1], 3)}  ` +
+    `D ${format(positionError[2], 3)}  3D ${format(data.position_error_3d, 3)} m`;
   $('#torque-value').textContent = data.torque.map((value) => format(value, 3)).join(' ');
   $('#motor5-value').textContent = format(data.motors[4], 3);
 }

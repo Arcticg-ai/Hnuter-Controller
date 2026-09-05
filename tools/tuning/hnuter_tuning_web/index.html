@@ -33,6 +33,9 @@
         <button id="clear" type="button">Clear</button>
         <span id="sample-rate">0 Hz</span>
       </div>
+      <p id="attitude-source-note" class="telemetry-note">
+        Dashed: PX4 standard vehicle_attitude_setpoint.
+      </p>
 
       <div class="plot-grid">
         <article class="plot-panel">
@@ -56,7 +59,7 @@
           <canvas id="error-chart"></canvas>
         </article>
         <article class="plot-panel compact">
-          <div class="plot-title"><span>Position error</span><span>m <select class="axis-filter"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option></select></span></div>
+          <div class="plot-title"><span>Position error (3D = Euclidean norm)</span><span>m <select class="axis-filter"><option value="all">All</option><option value="N">N</option><option value="E">E</option><option value="D">D</option><option value="3D">3D</option></select></span></div>
           <canvas id="position-error-chart"></canvas>
         </article>
         <article class="plot-panel compact">

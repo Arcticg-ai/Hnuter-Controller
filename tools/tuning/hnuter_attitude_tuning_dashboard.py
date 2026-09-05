@@ -46,7 +46,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from hnuter_log_paths import configure_ros_log_dir, tuning_csv_path
+from controllers.common.hnuter_log_paths import configure_ros_log_dir, tuning_csv_path
 
 # Keep ROS2 discovery local by default so a real PX4 on LAN does not leak in.
 if os.environ.get('HNUTER_ALLOW_REMOTE_DDS', '0') != '1':

@@ -9,7 +9,7 @@ hnuter_iebc.patch
 
 *.csv
 hnuter_saved_plots/
-config/*.applied.json
+config/**/*.applied.json
 
 .agents/
 .codex/

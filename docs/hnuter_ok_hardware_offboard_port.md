@@ -2,7 +2,7 @@
 
 ## 目标与边界
 
-新控制器 `hnuter_external_direct_ok_hardware.py` 以远端 `hardware` 分支提交
+新控制器 `controllers/hardware/hnuter_external_direct_ok_hardware.py` 以远端 `hardware` 分支提交
 `0c31ccb` 的实机框架为外壳，将 PX4 标签 `hnuter-ok-144bd9fe` 中经过日志 48
 验证的控制器、控制分配器和实际参数移植到 ROS 2 Offboard 直接执行器路径。
 
@@ -62,7 +62,7 @@ Position-to-Offboard 执行器混合。
 
 ## 日志 48 参数
 
-独立配置位于 `config/hnuter_direct_ok_hardware_tuning.json`，其中同时记录：
+独立配置位于 `config/hardware/hnuter_direct_ok_hardware_tuning.json`，其中同时记录：
 
 - 来源标签、完整提交哈希和参数快照文件名。
 - `HNTR_POS_*`、`HNTR_VEL_*` 级联位置控制参数。
@@ -86,8 +86,8 @@ source ~/px4_ros2_ws/install/setup.bash
 source px4-venv/bin/activate
 
 HNUTER_LOG_DIR=$PWD/hnuter_logs/hardware_ok_offboard \
-HNUTER_TUNING_FILE=$PWD/config/hnuter_direct_ok_hardware_tuning.json \
-python3 hnuter_external_direct_ok_hardware.py
+HNUTER_TUNING_FILE=$PWD/config/hardware/hnuter_direct_ok_hardware_tuning.json \
+python3 -m controllers.hardware.hnuter_external_direct_ok_hardware
 ```
 
 ## 验证顺序

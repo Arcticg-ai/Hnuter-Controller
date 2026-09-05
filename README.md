@@ -2,16 +2,17 @@
 
 ROS 2 offboard controllers for the Hnuter PX4/Gazebo setup.
 
-## Main Files
+## Repository Layout
 
-- `hnuter_external_controller_px4_position.py`: PX4 position-offboard controller with gamepad, hover, and trajectory modes. It publishes no motor or servo commands.
-- `hnuter_external_controller_px4_position_iebc_simulation.py`: self-contained Gazebo IEBC contact simulation with resistance, release, recovery, and CSV logging. It is guarded against real-aircraft use.
-- `hnuter_external_controller_px4_position_hardware.py`: RC-driven real-aircraft PX4 position-offboard controller. Arm and Offboard stay under transmitter control, and every task starts relative to the current position.
-- `hnuter_external_direct_controller_debug.py`: direct actuator debug controller for checking motor/tilt command paths.
-- `hnuter_external_direct_controller_hardware.py`: standalone RC-driven hardware direct controller. It does not import another local controller module and leaves Arm/Offboard authority with PX4 and the transmitter.
-- `hnuter_external_direct_drcda.py`: delay-aware, reachability-constrained differential allocator for direct actuator control.
-- `hnuter_drcda.py`: ROS-independent DRCDA wrench model, actuator predictor, and short-horizon solver.
-- `hnuter_external_setpoint_gamepad.py`: setpoint-only gamepad controller. It publishes position, velocity, attitude, and optional body-rate references while leaving the controller and allocator inside PX4.
+- `controllers/simulation/`: PX4/Gazebo position, direct, DRCDA, IEBC, gamepad, and trajectory entry points.
+- `controllers/hardware/`: real-aircraft Position, IEBC, Direct, DRCDA, and OK-baseline entry points.
+- `controllers/common/`: shared logging, attitude-reference, and ROS-independent DRCDA logic.
+- `config/simulation/` and `config/hardware/`: environment-specific tuning files.
+- `tests/common/`, `tests/simulation/`, and `tests/hardware/`: matching automated tests.
+- `tools/`: experiment runners, analysis, plotting, and tuning dashboards.
+
+Use module entry points from the repository root. This keeps package imports
+stable and makes the simulation/hardware boundary visible in every command.
 
 ## Dependencies
 
@@ -39,7 +40,7 @@ Run the stable PX4 offboard controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_controller_px4_position.py
+python3 -m controllers.simulation.hnuter_external_controller_px4_position
 ```
 
 Run the Gazebo-only IEBC contact simulation:
@@ -48,7 +49,7 @@ Run the Gazebo-only IEBC contact simulation:
 cd ~/px4_ws_ros2
 HNUTER_IEBC_CUBE_SIM=1 \
 HNUTER_GZ_WORLD=hnuter_cube_contact \
-python3 hnuter_external_controller_px4_position_iebc_simulation.py
+python3 -m controllers.simulation.hnuter_external_controller_px4_position_iebc_simulation
 ```
 
 This entry point may Arm and enter Offboard automatically. It refuses to run
@@ -62,7 +63,7 @@ cd ~/px4_ws_ros2
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 source px4-venv/bin/activate
-python3 hnuter_external_controller_px4_position_hardware.py
+python3 -m controllers.hardware.hnuter_external_controller_px4_position_hardware
 ```
 
 The hardware position controller never publishes `VehicleCommand`; Arm and
@@ -72,11 +73,22 @@ rate. Keyboard `1`, `2`, and `3` start rectangle, Lissajous, and attitude
 tasks from the measured position at trigger time. If Offboard is closed during
 a task, reopening it restarts that task from the new current position.
 
+Run the real-aircraft IEBC position controller:
+
+```bash
+cd ~/px4_ws_ros2
+python3 -m controllers.hardware.hnuter_external_controller_px4_position_iebc_hardware
+```
+
+It inherits the same transmitter-owned Arm/Offboard gate and publishes only
+PX4 trajectory setpoints. Its contact, release, braking, confirmed-stop, and
+operator-cancel workflow is documented in `docs/iebc_hardware.md`.
+
 Run the direct actuator debug controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_direct_controller_debug.py
+python3 -m controllers.simulation.hnuter_external_direct_controller_debug
 ```
 
 In the debug controller, press `o` to allow takeoff after the ground tilt self-test.
@@ -93,7 +105,7 @@ Run the standalone real-aircraft entry point with:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_direct_controller_hardware.py
+python3 -m controllers.hardware.hnuter_external_direct_controller_hardware
 ```
 
 The file contains its own controller helpers, RC parser, logging paths, and
@@ -118,14 +130,15 @@ without propellers. Direction signs can be adjusted with
 `HNUTER_RC_PITCH_SIGN`, `HNUTER_RC_ROLL_SIGN`,
 `HNUTER_RC_THROTTLE_SIGN`, and `HNUTER_RC_YAW_SIGN`.
 
-All hardware entry points target no-delay firmware profile
-`3131ddd4_500_2500_gear2`. The direct-actuator controllers require:
+All hardware entry points use the no-delay `500/1500/2500 us` gear-2 servo
+mapping. The hardware DRCDA config records the newer identified tail model as
+profile `tail_identified_20260827_500_2500_gear2`. The direct-actuator controllers require:
 the four tilt-servo outputs MAIN8--11 must use `500/2500/1500 us`
 min/max/center, primary joints use the full `+/-180 deg` servo range, and
 secondary joints use
 `HNTR_S2_GEAR=2.0`. The secondary physical joint limit is therefore
 `+/-90 deg`. The standalone controller loads
-`config/hnuter_direct_hardware_tuning.json` by default.
+`config/hardware/hnuter_direct_hardware_tuning.json` by default.
 This PWM range is only the tilt-servo electrical input range. Motors continue
 to use normalized `ActuatorMotors.control` values and their independent thrust
 limits; they are not mapped through `500--2500 us` by these controllers. The
@@ -140,7 +153,7 @@ source /opt/ros/jazzy/setup.bash
 source ~/px4_ros2_ws/install/setup.bash
 source px4-venv/bin/activate
 HNUTER_LOG_DIR=$PWD/hnuter_logs/hardware_drcda \
-python3 hnuter_external_direct_drcda_hardware.py
+python3 -m controllers.hardware.hnuter_external_direct_drcda_hardware
 ```
 
 It retains the same transmitter-owned Arm/Offboard gate, low-throttle takeoff
@@ -153,10 +166,10 @@ Run the experimental DRCDA direct controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_direct_drcda.py
+python3 -m controllers.simulation.hnuter_external_direct_drcda
 ```
 
-This entrypoint loads `config/no_delay_drcda_tuning.json` and defaults to a 7 s
+This entrypoint loads `config/simulation/no_delay_drcda_tuning.json` and defaults to a 7 s
 3D Lissajous period. Its fixed `identified_gain_no_delay` servo predictor keeps
 only the identified directional static gains. All four pure-delay terms are
 zero and the old first-order lag fit is not applied; independent command slew
@@ -189,8 +202,8 @@ reloaded while the controller is running whenever the JSON file changes:
 
 ```bash
 HNUTER_DRCDA_VARIANT=full \
-HNUTER_TUNING_FILE=$PWD/config/no_delay_drcda_tuning.json \
-python3 hnuter_external_direct_drcda.py
+HNUTER_TUNING_FILE=$PWD/config/simulation/no_delay_drcda_tuning.json \
+python3 -m controllers.simulation.hnuter_external_direct_drcda
 ```
 
 The direct and DRCDA controllers compensate PX4 estimator quaternion resets by
@@ -207,7 +220,7 @@ predicted actuator state, wrench residual, and solve time. Run the
 ROS-independent model and allocation checks with:
 
 ```bash
-python3 -m unittest -v tests.test_hnuter_drcda
+python3 -m pytest -q tests/common/test_hnuter_drcda.py
 ```
 
 Compare an original-direct log with a DRCDA log and generate 3D and
@@ -243,7 +256,7 @@ Run the firmware-controller setpoint gamepad controller:
 
 ```bash
 cd ~/px4_ws_ros2
-python3 hnuter_external_setpoint_gamepad.py
+python3 -m controllers.simulation.hnuter_external_setpoint_gamepad
 ```
 
 Press `o` to request Offboard, Arm, and takeoff. The default gamepad mapping is:

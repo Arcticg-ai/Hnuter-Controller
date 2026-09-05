@@ -23,7 +23,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from hnuter_log_paths import log_path, stamp
+from controllers.common.hnuter_log_paths import log_path, stamp
 from plot_lissajous_comparison import (
     _equal_3d_axes,
     _relative,

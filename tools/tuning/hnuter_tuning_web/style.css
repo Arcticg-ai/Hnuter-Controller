@@ -91,6 +91,15 @@ h2 { font-size: 15px; font-weight: 650; }
 }
 .toolbar select { width: 84px; padding: 0 7px; }
 .toolbar #sample-rate { margin-left: auto; font-variant-numeric: tabular-nums; }
+.telemetry-note {
+  min-height: 25px;
+  margin: -1px 0 8px;
+  padding: 5px 8px;
+  border-left: 3px solid #8aa1b2;
+  background: #f7f9fa;
+  color: var(--muted);
+  font-size: 12px;
+}
 
 .plot-grid {
   display: grid;

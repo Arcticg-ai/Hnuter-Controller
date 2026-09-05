@@ -24,7 +24,7 @@ ver_hw        = CUAV_7_NANO
 - 二级物理关节限幅保持 `+/-90 deg`，归一化仍等效为 `theta / 90 deg`。
 - 水平位置增益使用实飞值 `Kp=[3,3]`、`Kd=[2.1,2.1]`。
 - 保留前部单电机和尾电机 `50 N` 推力上限、低油门起飞门控和 3 秒软启动。
-- 默认实机调参文件改为 `config/hnuter_direct_hardware_tuning.json`。
+- 默认实机调参文件现位于 `config/hardware/hnuter_direct_hardware_tuning.json`。
 
 ## 固件配置隔离
 
@@ -43,7 +43,7 @@ servo PWM     = 800/1500/2200 us
 新版 `3131ddd4` 使用独立配置：
 
 ```text
-config/hnuter_direct_hardware_tuning_3131ddd4.json
+config/hardware/hnuter_direct_hardware_tuning_3131ddd4.json
 primary       = +/-180 deg
 secondary     = servo +/-180 deg, gear=2, joint +/-90 deg
 servo PWM     = 500/1500/2500 us
@@ -97,15 +97,15 @@ source /opt/ros/jazzy/setup.bash
 source ~/px4_ros2_ws/install/setup.bash
 source px4-venv/bin/activate
 HNUTER_LOG_DIR=$PWD/hnuter_logs/hardware_recheck \
-python3 hnuter_external_direct_controller_hardware.py
+python3 -m controllers.hardware.hnuter_external_direct_controller_hardware
 ```
 
 新版 `3131ddd4` 固件必须显式指定：
 
 ```bash
 HNUTER_LOG_DIR=$PWD/hnuter_logs/hardware_3131ddd4 \
-HNUTER_TUNING_FILE=$PWD/config/hnuter_direct_hardware_tuning_3131ddd4.json \
-python3 hnuter_external_direct_controller_hardware.py
+HNUTER_TUNING_FILE=$PWD/config/hardware/hnuter_direct_hardware_tuning_3131ddd4.json \
+python3 -m controllers.hardware.hnuter_external_direct_controller_hardware
 ```
 
 启动日志必须显示预期的 profile、PWM、一级角度和二级比例。程序仍不发送 Arm、

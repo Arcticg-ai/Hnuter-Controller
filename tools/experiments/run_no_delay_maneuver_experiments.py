@@ -19,7 +19,7 @@ from pathlib import Path
 
 CONTROL_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_FIRMWARE = Path("/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter")
-DEFAULT_TUNING = CONTROL_ROOT / "config/no_delay_drcda_tuning.json"
+DEFAULT_TUNING = CONTROL_ROOT / "config/simulation/no_delay_drcda_tuning.json"
 METHODS = ("original_direct", "basic_da", "full", "no_horizon", "no_rate_limits")
 
 
@@ -253,12 +253,12 @@ def run_case(
             "HNUTER_TUNING_FILE": str(tuning_file),
             "HNUTER_PREFLIGHT_TILT_TEST": "0",
         })
-        script = "hnuter_external_direct_controller_debug.py"
+        controller_module = "controllers.simulation.hnuter_external_direct_controller_debug"
         if method != "original_direct":
-            script = "hnuter_external_direct_drcda.py"
+            controller_module = "controllers.simulation.hnuter_external_direct_drcda"
             controller_env["HNUTER_DRCDA_VARIANT"] = method
         controller = PtyProcess(
-            [sys.executable, script],
+            [sys.executable, "-m", controller_module],
             CONTROL_ROOT,
             controller_env,
             console_root / "controller.log",
