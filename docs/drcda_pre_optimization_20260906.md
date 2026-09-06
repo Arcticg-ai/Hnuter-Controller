@@ -21,6 +21,7 @@ The baseline must remain unchanged during the next algorithm iteration. New
 solver/controller code belongs under `controllers/experiments/drcda_v2/`, and
 new tuning/results belong under a separately named experiment directory.
 
-Evidence labels remain strict: automated tests prove software behavior; SITL
-results prove only the selected Gazebo plant and scenario; neither is a real
-flight validation of actuator delay prediction.
+Evidence labels remain strict: automated tests prove software behavior, while
+SITL results prove only the selected no-delay Gazebo plant and scenario. Delay
+models are historical artifacts and must not be used for future validation or
+algorithm ranking.

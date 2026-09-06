@@ -18,9 +18,17 @@ from pathlib import Path
 
 
 CONTROL_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_FIRMWARE = Path("/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter")
+DEFAULT_FIRMWARE = Path(
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl"
+)
 DEFAULT_TUNING = CONTROL_ROOT / "config/simulation/no_delay_drcda_tuning.json"
 DEFAULT_V2_TUNING = CONTROL_ROOT / "config/experiments/drcda_v2_tuning.json"
+VALIDATION_POLICY = "no_delay_only"
+FORBIDDEN_ACTUATOR_TOKENS = (
+    "servo_0_dynamic",
+    "transport_delay",
+    "FirstOrderActuator",
+)
 METHODS = (
     "original_direct",
     "paper_nda",
@@ -189,14 +197,18 @@ def git_value(firmware: Path, *args: str) -> str:
 def firmware_metadata(firmware: Path) -> dict[str, object]:
     model = firmware / "Tools/simulation/gz/models/hnuter/model.sdf"
     model_text = model.read_text(encoding="utf-8")
-    dynamic_tokens = ("servo_0_dynamic", "transport_delay", "FirstOrderActuator")
+    forbidden_tokens = [
+        token for token in FORBIDDEN_ACTUATOR_TOKENS if token in model_text
+    ]
     return {
         "path": str(firmware),
         "commit": git_value(firmware, "rev-parse", "HEAD"),
         "branch": git_value(firmware, "branch", "--show-current"),
         "describe": git_value(firmware, "describe", "--always", "--tags", "--dirty"),
         "model_sdf": str(model),
-        "dynamic_actuator_tokens_present": any(token in model_text for token in dynamic_tokens),
+        "validation_policy": VALIDATION_POLICY,
+        "forbidden_actuator_tokens": forbidden_tokens,
+        "dynamic_actuator_tokens_present": bool(forbidden_tokens),
     }
 
 
@@ -353,7 +365,11 @@ def main() -> int:
     args.output.mkdir(parents=True, exist_ok=True)
     metadata = firmware_metadata(args.firmware)
     if metadata["dynamic_actuator_tokens_present"]:
-        raise RuntimeError("firmware model contains delayed/dynamic actuator plugin tokens")
+        tokens = ", ".join(metadata["forbidden_actuator_tokens"])
+        raise RuntimeError(
+            "no-delay-only validation policy rejected this firmware model; "
+            f"forbidden actuator tokens: {tokens}"
+        )
     scenarios = args.scenario or list(SCENARIOS)
     methods = args.method or list(DEFAULT_METHODS)
     manifest = {
@@ -374,6 +390,7 @@ def main() -> int:
         },
         "methods": methods,
         "servo_model": "identified_gain_no_delay",
+        "validation_policy": VALIDATION_POLICY,
         "cases": [],
     }
     for scenario_name in scenarios:

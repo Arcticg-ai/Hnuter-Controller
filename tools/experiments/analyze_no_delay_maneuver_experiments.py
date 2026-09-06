@@ -434,6 +434,7 @@ def write_report(
         "",
         f"- 固件：`{manifest['firmware']['path']}`，提交 `{manifest['firmware']['commit']}`，分支 `{manifest['firmware']['branch']}`。",
         "- 模型检查未发现纯延迟或独立一阶执行器插件；DRCDA 使用 `identified_gain_no_delay` 舵机预测模型。",
+        "- 验证策略固定为 `no_delay_only`；带纯延迟或独立执行器动态插件的固件会被实验脚本直接拒绝。",
         "- 所有方法采用相同闭环参数，差别仅在执行器分配方法；v2 实验配置额外保存分配器自身参数。",
         "- `Paper NDA` 复现论文 Eq. 7-13 的增强 jerk、执行器速率归一化、伪逆/零空间分配和整向量统一饱和。当前无延迟对象没有独立一阶执行器状态，因此未启用 Eq. 14 的动力学逆；它不是论文完整 PDA 链。",
         "- `DRCDA v1` 来自优化前归档标签；`DRCDA v2` 位于独立实验副本，未覆盖原实现。",
