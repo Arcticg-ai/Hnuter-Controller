@@ -1,0 +1,193 @@
+{
+  "created_at_unix_s": 1788661644.489282,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+    "branch": "codex/hnuter-sitl-identified-gain-tuned-20260812",
+    "describe": "hnuter-servo-pwm-gear-20260804-8-g49b60a5d",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "validation_policy": "no_delay_only",
+    "forbidden_actuator_tokens": [],
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "968df77b71953cb42dbbeb0f0868d32fbc06897f",
+  "controller_worktree_dirty": false,
+  "common_tuning": "/tmp/hnuter-controller-consolidation/config/simulation/no_delay_drcda_tuning.json",
+  "scenarios": [
+    "aggressive",
+    "attitude_80_180"
+  ],
+  "scenario_definitions": {
+    "aggressive": {
+      "trigger": "2",
+      "timeout_s": 35.0,
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "tuning_overrides": {}
+    },
+    "attitude_80_180": {
+      "trigger": "3",
+      "timeout_s": 215.0,
+      "environment": {},
+      "tuning_overrides": {
+        "attitude_step_roll_deg": 80.0,
+        "attitude_step_pitch_deg": 180.0,
+        "attitude_step_yaw_deg": 0.0,
+        "attitude_segment_time_s": 15.0,
+        "attitude_peak_hold_s": 5.0,
+        "attitude_level_settle_s": 10.0,
+        "attitude_test_bidirectional": true,
+        "attitude_test_altitude_m": 3.0,
+        "attitude_test_altitude_only": false,
+        "attitude_test_max_acc_xy": 8.0,
+        "direct_large_tilt_yaw_min_scale": 0.4
+      }
+    }
+  },
+  "methods": [
+    "original_direct",
+    "paper_nda",
+    "drcda_v1",
+    "drcda_v2"
+  ],
+  "servo_model": "identified_gain_no_delay",
+  "validation_policy": "no_delay_only",
+  "cases": [
+    {
+      "scenario": "aggressive",
+      "method": "original_direct",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 46.07395204901695,
+      "controller": "original_direct",
+      "allocator_variant": null,
+      "servo_model": null,
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/original_direct/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/original_direct/logs/external_control/hnuter_direct_debug_1788661667.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/original_direct/px4.ulg"
+    },
+    {
+      "scenario": "aggressive",
+      "method": "paper_nda",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.99968730399269,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "paper_nda",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/paper_nda/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/paper_nda/logs/external_control/ablation/full/hnuter_full_debug_1788661713.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/paper_nda/px4.ulg"
+    },
+    {
+      "scenario": "aggressive",
+      "method": "drcda_v1",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 44.687584552011685,
+      "controller": "drcda",
+      "allocator_variant": "drcda_v1",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/drcda_v1/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/drcda_v1/logs/external_control/ablation/full/hnuter_full_debug_1788661759.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/drcda_v1/px4.ulg"
+    },
+    {
+      "scenario": "aggressive",
+      "method": "drcda_v2",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.85804659099085,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "drcda_v2",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/drcda_v2/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/drcda_v2/logs/external_control/ablation/full/hnuter_full_debug_1788661804.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/aggressive/drcda_v2/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "original_direct",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 217.8684385450033,
+      "controller": "original_direct",
+      "allocator_variant": null,
+      "servo_model": null,
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/original_direct/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/original_direct/logs/external_control/hnuter_direct_debug_1788661850.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/original_direct/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "paper_nda",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 217.86815192300128,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "paper_nda",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/paper_nda/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/paper_nda/logs/external_control/ablation/full/hnuter_full_debug_1788662068.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/paper_nda/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "drcda_v1",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 217.97666094297892,
+      "controller": "drcda",
+      "allocator_variant": "drcda_v1",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/drcda_v1/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/drcda_v1/logs/external_control/ablation/full/hnuter_full_debug_1788662286.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/drcda_v1/px4.ulg"
+    },
+    {
+      "scenario": "attitude_80_180",
+      "method": "drcda_v2",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 216.5841081579856,
+      "controller": "drcda_v2_experiment",
+      "allocator_variant": "drcda_v2",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/drcda_v2/effective_tuning.json",
+      "environment": {},
+      "csv": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/drcda_v2/logs/external_control/ablation/full/hnuter_full_debug_1788662504.csv",
+      "ulog": "/home/hnuter/px4_ws_ros2/hnuter_logs/no_delay_full_validation_20260906_rerun/runs/attitude_80_180/drcda_v2/px4.ulg"
+    }
+  ]
+}
