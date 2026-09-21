@@ -1,0 +1,89 @@
+{
+  "created_at_unix_s": 1789922272.660333,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+    "branch": "codex/hnuter-tail-motor-bench-sitl-20260812",
+    "describe": "hnuter-servo-pwm-gear-20260804-8-g49b60a5d",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "validation_policy": "no_delay_only",
+    "forbidden_actuator_tokens": [],
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "68e4a1caf6960e6740ddd826469e08e71314e171",
+  "controller_worktree_dirty": true,
+  "common_tuning": "/home/hnuter/px4_ws_ros2_consolidated/config/simulation/no_delay_drcda_tuning.json",
+  "scenarios": [
+    "aggressive",
+    "fast_feasible"
+  ],
+  "scenario_definitions": {
+    "aggressive": {
+      "trigger": "2",
+      "timeout_s": 35.0,
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "tuning_overrides": {}
+    },
+    "fast_feasible": {
+      "trigger": "2",
+      "timeout_s": 35.0,
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "0.7",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.5",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.20",
+        "HNUTER_LISSAJOUS_PERIOD_S": "5.0"
+      },
+      "tuning_overrides": {}
+    }
+  },
+  "methods": [
+    "drcda_closed_loop"
+  ],
+  "servo_model": "identified_gain_no_delay",
+  "validation_policy": "no_delay_only",
+  "cases": [
+    {
+      "scenario": "aggressive",
+      "method": "drcda_closed_loop",
+      "status": "complete",
+      "error": "",
+      "duration_wall_s": 45.78023433100316,
+      "controller": "drcda",
+      "allocator_variant": "drcda_closed_loop",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/tmp/drcda_closed_loop_geometry_20260921/runs/aggressive/drcda_closed_loop/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+        "HNUTER_LISSAJOUS_PERIOD_S": "7.0"
+      },
+      "csv": "/tmp/drcda_closed_loop_geometry_20260921/runs/aggressive/drcda_closed_loop/logs/external_control/experiments/drcda_closed_loop/hnuter_drcda_closed_loop_1789922295.csv",
+      "ulog": "/tmp/drcda_closed_loop_geometry_20260921/runs/aggressive/drcda_closed_loop/px4.ulg"
+    },
+    {
+      "scenario": "fast_feasible",
+      "method": "drcda_closed_loop",
+      "status": "failed",
+      "error": "trajectory yaw rate exceeded 1.0 rad/s",
+      "duration_wall_s": 43.94096386899764,
+      "controller": "drcda",
+      "allocator_variant": "drcda_closed_loop",
+      "servo_model": "identified_gain_no_delay",
+      "tuning_file": "/tmp/drcda_closed_loop_geometry_20260921/runs/fast_feasible/drcda_closed_loop/effective_tuning.json",
+      "environment": {
+        "HNUTER_LISSAJOUS_AMP_X_M": "0.7",
+        "HNUTER_LISSAJOUS_AMP_Y_M": "0.5",
+        "HNUTER_LISSAJOUS_AMP_Z_M": "0.20",
+        "HNUTER_LISSAJOUS_PERIOD_S": "5.0"
+      },
+      "csv": "/tmp/drcda_closed_loop_geometry_20260921/runs/fast_feasible/drcda_closed_loop/logs/external_control/experiments/drcda_closed_loop/hnuter_drcda_closed_loop_1789922341.csv",
+      "ulog": "/tmp/drcda_closed_loop_geometry_20260921/runs/fast_feasible/drcda_closed_loop/px4.ulg"
+    }
+  ]
+}

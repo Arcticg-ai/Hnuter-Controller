@@ -388,6 +388,8 @@ class HnuterDRCDAController(DirectController):
             allocation_dt = max(
                 self._drcda_accumulated_dt_s, self._drcda_current_dt_s
             )
+            previous_command = self.drcda.command.copy()
+            angle_limits = self._active_drcda_angle_limits()
             if self._drcda_estimator_reset_pending:
                 self.drcda.synchronize_wrench_reference(self.last_W)
                 self._drcda_estimator_reset_pending = False
@@ -395,9 +397,12 @@ class HnuterDRCDAController(DirectController):
                 desired_wrench=self.last_W,
                 dt=allocation_dt,
                 preferred_command=preferred,
-                active_angle_limits=self._active_drcda_angle_limits(),
+                active_angle_limits=angle_limits,
             )
             self._drcda_accumulated_dt_s = 0.0
+            self._post_drcda_allocation(
+                result, previous_command, allocation_dt, angle_limits
+            )
             self._apply_drcda_antiwindup(result.wrench_residual, allocation_dt)
         else:
             result = self.drcda.last_result
@@ -408,7 +413,7 @@ class HnuterDRCDAController(DirectController):
         # the simulated plant matches identified_gain_no_delay.
         # The standalone hardware controller still publishes actuator input
         # commands and is intentionally unaffected by this SITL-only emulation.
-        servo_state = self.drcda.state[:ANGLE_COUNT]
+        servo_state = self._drcda_servo_output_state()
         logical_thrust = command[ANGLE_COUNT:]
         output_motor_controls = [
             self._thrust_to_normalized_motor_control(logical_thrust[2]),
@@ -438,6 +443,12 @@ class HnuterDRCDAController(DirectController):
             self._theta1_cmd,
             self._theta2_cmd,
         )
+
+    def _drcda_servo_output_state(self) -> np.ndarray:
+        return self.drcda.state[:ANGLE_COUNT].copy()
+
+    def _post_drcda_allocation(self, result, previous_command, dt, angle_limits):
+        pass
 
 
 def main(args=None):

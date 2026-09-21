@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import pty
@@ -34,6 +35,7 @@ METHODS = (
     "paper_nda",
     "drcda_v1",
     "drcda_v2",
+    "drcda_closed_loop",
     "basic_da",
     "full",
     "no_horizon",
@@ -65,6 +67,48 @@ SCENARIOS: dict[str, Scenario] = {
             "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
             "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
             "HNUTER_LISSAJOUS_PERIOD_S": "7.0",
+        },
+        tuning_overrides={},
+    ),
+    "aggressive_repeat": Scenario(
+        key="aggressive_repeat",
+        trigger="2",
+        start_marker="开始执行三维李萨如轨迹",
+        finish_marker="三维李萨如轨迹完成",
+        timeout_s=35.0,
+        environment={
+            "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+            "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+            "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+            "HNUTER_LISSAJOUS_PERIOD_S": "5.0",
+        },
+        tuning_overrides={},
+    ),
+    "nominal_repeat": Scenario(
+        key="nominal_repeat",
+        trigger="2",
+        start_marker="开始执行三维李萨如轨迹",
+        finish_marker="三维李萨如轨迹完成",
+        timeout_s=35.0,
+        environment={
+            "HNUTER_LISSAJOUS_AMP_X_M": "1.2",
+            "HNUTER_LISSAJOUS_AMP_Y_M": "0.8",
+            "HNUTER_LISSAJOUS_AMP_Z_M": "0.30",
+            "HNUTER_LISSAJOUS_PERIOD_S": "7.0",
+        },
+        tuning_overrides={},
+    ),
+    "fast_feasible": Scenario(
+        key="fast_feasible",
+        trigger="2",
+        start_marker="开始执行三维李萨如轨迹",
+        finish_marker="三维李萨如轨迹完成",
+        timeout_s=35.0,
+        environment={
+            "HNUTER_LISSAJOUS_AMP_X_M": "0.7",
+            "HNUTER_LISSAJOUS_AMP_Y_M": "0.5",
+            "HNUTER_LISSAJOUS_AMP_Z_M": "0.20",
+            "HNUTER_LISSAJOUS_PERIOD_S": "5.0",
         },
         tuning_overrides={},
     ),
@@ -281,6 +325,9 @@ def run_case(
         if method in {"paper_nda", "drcda_v2"}:
             controller_module = "controllers.experiments.drcda_v2.controller"
             controller_env["HNUTER_DRCDA_V2_VARIANT"] = method
+        elif method == "drcda_closed_loop":
+            controller_module = "controllers.experiments.drcda_closed_loop.controller"
+            controller_env["HNUTER_DRCDA_VARIANT"] = "full"
         elif method != "original_direct":
             controller_module = "controllers.simulation.hnuter_external_direct_drcda"
             controller_env["HNUTER_DRCDA_VARIANT"] = (
@@ -303,7 +350,18 @@ def run_case(
             raise RuntimeError("scenario did not start")
         if not wait_for(processes, controller, scenario.finish_marker, scenario.timeout_s):
             raise RuntimeError("scenario did not finish before timeout")
-        drain_for(processes, 6.0)
+        if scenario.key in {"aggressive_repeat", "nominal_repeat"}:
+            drain_for(processes, 4.0)
+            controller.buffer = ""
+            controller.send(scenario.trigger)
+            if not wait_for(processes, controller, scenario.start_marker, 15.0):
+                raise RuntimeError("second trajectory did not start")
+            controller.buffer = ""
+            if not wait_for(processes, controller, scenario.finish_marker, scenario.timeout_s):
+                raise RuntimeError("second trajectory did not finish")
+            drain_for(processes, 12.0)
+        else:
+            drain_for(processes, 6.0)
         status = "complete"
     except Exception as exc:
         error = str(exc)
@@ -318,6 +376,30 @@ def run_case(
 
     csvs = sorted(log_root.rglob("*.csv"), key=lambda path: path.stat().st_mtime_ns)
     csv_path = csvs[-1] if csvs else None
+    if status == "complete" and csv_path is None:
+        status, error = "failed", "controller diagnostic CSV is missing"
+    if status == "complete" and csv_path is not None:
+        with csv_path.open(newline="", encoding="utf-8") as stream:
+            rows = list(csv.DictReader(stream))
+        flight_rows = [row for row in rows if row.get("auto_traj_mode") == "lissajous"]
+        if not rows or rows[-1].get("armed") != "1":
+            status, error = "failed", "disarmed before post-trajectory observation ended"
+        elif any(row.get("direct_safety_cutoff") == "1" for row in rows):
+            status, error = "failed", "direct safety cutoff occurred"
+        elif flight_rows and min(float(row["position_z_rel_m"]) for row in flight_rows) < 0.3:
+            status, error = "failed", "trajectory descended below 0.3 m"
+        elif flight_rows and max(
+            abs(float(row["angular_r_frd_rps"])) for row in flight_rows
+        ) > 1.0:
+            status, error = "failed", "trajectory yaw rate exceeded 1.0 rad/s"
+        elif flight_rows and (
+            sum(
+                (float(row["position_x_enu_m"]) - float(row["target_x_enu_m"])) ** 2
+                + (float(row["position_y_enu_m"]) - float(row["target_y_enu_m"])) ** 2
+                for row in flight_rows
+            ) / len(flight_rows)
+        ) ** 0.5 > 0.8:
+            status, error = "failed", "trajectory horizontal RMS error exceeded 0.8 m"
     ulog_source = latest_ulog(firmware, started_ns)
     ulog_path = None
     if ulog_source is not None:
