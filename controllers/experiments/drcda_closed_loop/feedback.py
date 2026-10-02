@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import os
 import sys
 import threading
 import time
@@ -42,7 +43,12 @@ class JointAngleFeedback:
     LINKS = (("base_link", "l2"), ("l2", "l1"),
              ("base_link", "r2"), ("r2", "r1"))
 
-    def __init__(self, topic: str = "/world/default/dynamic_pose/info") -> None:
+    def __init__(self, topic: str | None = None) -> None:
+        if topic is None:
+            world = os.environ.get(
+                'HNUTER_GZ_WORLD', os.environ.get('PX4_GZ_WORLD', 'default')
+            ).strip() or 'default'
+            topic = f'/world/{world}/dynamic_pose/info'
         if "/usr/lib/python3/dist-packages" not in sys.path:
             sys.path.append("/usr/lib/python3/dist-packages")
         from gz.msgs10.pose_v_pb2 import Pose_V

@@ -28,6 +28,72 @@ class HnuterWrenchModelTest(unittest.TestCase):
 
 
 class DRCDAAllocatorTest(unittest.TestCase):
+    def test_gazebo_joint_pid_model_has_identified_lag_and_no_delay(self):
+        config = DRCDAConfig.gazebo_joint_pid_no_delay()
+        np.testing.assert_allclose(
+            config.servo_gain_positive,
+            [0.9939, 0.9018, 0.9940, 0.9152],
+        )
+        np.testing.assert_allclose(
+            config.servo_gain_negative,
+            [0.9940, 0.9119, 0.9940, 0.9042],
+        )
+        np.testing.assert_allclose(
+            config.servo_tau_positive_s,
+            [0.1384, 0.0891, 0.1408, 0.0920],
+        )
+        np.testing.assert_allclose(
+            config.servo_tau_negative_s,
+            [0.1396, 0.0874, 0.1422, 0.0868],
+        )
+        np.testing.assert_array_equal(config.servo_delay_positive_s, 0.0)
+        np.testing.assert_array_equal(config.servo_delay_negative_s, 0.0)
+
+    def test_multi_horizon_state_and_sensitivity_follow_first_order_model(self):
+        config = DRCDAConfig.gazebo_joint_pid_no_delay(prediction_dt_s=0.01)
+        config.servo_gain_positive[:] = 1.0
+        config.servo_tau_positive_s[:] = 0.1
+        config.servo_rate_positive_rad_s[:] = 1e6
+        allocator = DRCDAAllocator(HnuterWrenchModel(), config)
+        command = np.zeros(ACTUATOR_COUNT)
+        command[:4] = 0.2
+        predictions = allocator._predict_horizons(
+            command, np.full(4, np.pi), [0.05, 0.10]
+        )
+        for horizon, (state, sensitivity) in zip((0.05, 0.10), predictions):
+            expected_sensitivity = 1.0 - np.exp(-horizon / 0.1)
+            np.testing.assert_allclose(
+                state[:4], 0.2 * expected_sensitivity, atol=1e-12
+            )
+            np.testing.assert_allclose(
+                np.diag(sensitivity)[:4], expected_sensitivity, atol=1e-12
+            )
+
+    def test_future_wrench_objective_records_both_prediction_points(self):
+        config = DRCDAConfig.gazebo_joint_pid_no_delay(
+            prediction_dt_s=0.01, horizon_s=0.1
+        )
+        allocator = DRCDAAllocator(HnuterWrenchModel(), config)
+        hover = np.array([0.0, 0.0, 44.145, 0.0, 0.0, 0.0])
+        preferred = np.array([
+            0.0, 0.0, 0.0, 0.0, 11.0, 11.0, 11.0, 11.0, 0.0
+        ])
+        allocator.reset(thrust_state=preferred[4:])
+        references = [
+            (0.05, hover + np.array([0.0, 2.0, 0.0, 0.0, 0.0, 0.0]), 0.5),
+            (0.10, hover + np.array([0.0, -2.0, 0.0, 0.0, 0.0, 0.0]), 1.0),
+        ]
+        result = allocator.allocate(
+            hover, 0.01, preferred,
+            future_wrench_references=references,
+        )
+        np.testing.assert_allclose(result.prediction_horizons_s, [0.05, 0.10])
+        self.assertEqual(result.predicted_wrenches.shape, (2, 6))
+        np.testing.assert_allclose(
+            result.future_wrench_references,
+            np.stack([references[0][1], references[1][1]]),
+        )
+
     def test_identified_gain_no_delay_keeps_only_static_gain(self):
         identified = DRCDAConfig()
         config = DRCDAConfig.identified_gain_no_delay(prediction_dt_s=0.01)

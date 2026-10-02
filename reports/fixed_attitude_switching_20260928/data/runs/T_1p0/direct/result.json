@@ -1,0 +1,42 @@
+{
+  "method": "direct",
+  "switch_duration_s": 1.0,
+  "status": "failed",
+  "error": "attitude peak 44.894 > 8.000; roll/pitch peak 10.555 > 5.000",
+  "metrics": {
+    "row_count": 149,
+    "transition_row_count": 19,
+    "position_error_rms_m": 0.3960862412024405,
+    "position_error_peak_m": 0.6538112380494899,
+    "attitude_error_rms_deg": 19.74986261239074,
+    "attitude_error_peak_deg": 44.89441112124562,
+    "roll_pitch_peak_deg": 10.554629494308191,
+    "yaw_rate_peak_rad_s": 2.4573683738708496,
+    "minimum_altitude_m": 1.223024070262909,
+    "joint_feedback_ratio": 1.0,
+    "joint_tracking_error_rms_rad": 0.31331331798598616,
+    "joint_tracking_error_peak_rad": 0.9237020499894132,
+    "reachable_wrench_residual_rms": NaN,
+    "final_armed": true,
+    "safety_cutoff": false,
+    "passed": false,
+    "failures": [
+      "attitude peak 44.894 > 8.000",
+      "roll/pitch peak 10.555 > 5.000"
+    ]
+  },
+  "gate": {
+    "spawned": true,
+    "returncode": 0,
+    "stdout": "data: true",
+    "stderr": "",
+    "asset": "/home/hnuter/px4_ws_ros2_consolidated/controllers/experiments/fixed_attitude_switching/gate.sdf",
+    "collision_enabled": false
+  },
+  "duration_wall_s": 43.43615719400077,
+  "csv": "/tmp/fixed_attitude_switching_final_20260928/runs/T_1p0/direct/logs/external_control/experiments/fixed_attitude_switching/direct/switching_1790599835.csv",
+  "ulog_source": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/rootfs/log/2026-09-28/12_50_24.ulg",
+  "tuning": "/tmp/fixed_attitude_switching_final_20260928/runs/T_1p0/direct/effective_tuning.json",
+  "servo_model": null,
+  "pure_delay_model_used": false
+}

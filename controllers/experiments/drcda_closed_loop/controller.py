@@ -52,11 +52,10 @@ class HnuterClosedLoopDRCDAController(HnuterDRCDAController):
         return super()._apply_drcda_antiwindup(wrench_residual, dt)
 
     def _drcda_servo_output_state(self):
-        command = self.drcda.command[:4]
-        cfg = self.drcda.config
-        gains = np.where(command >= 0.0, cfg.servo_gain_positive,
-                         cfg.servo_gain_negative)
-        return command * gains
+        # In SITL the allocator variable is the JointPositionController input.
+        # Its measured closed-loop gain belongs in the predictor, not in a
+        # second command-side scaling operation.
+        return self.drcda.command[:4].copy()
 
     def _direct_prearm_failure_reason(self):
         reason = super()._direct_prearm_failure_reason()

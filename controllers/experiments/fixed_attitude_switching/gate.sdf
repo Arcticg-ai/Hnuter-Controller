@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="fixed_attitude_gate">
+    <static>true</static>
+    <link name="physical_gate">
+      <collision name="left_wall_collision">
+        <pose>-2.10 0 1.25 0 0 0</pose>
+        <geometry><box><size>1.90 0.12 2.50</size></box></geometry>
+      </collision>
+      <collision name="right_wall_collision">
+        <pose>2.10 0 1.25 0 0 0</pose>
+        <geometry><box><size>1.90 0.12 2.50</size></box></geometry>
+      </collision>
+      <collision name="top_bar_collision">
+        <pose>0 0 2.43 0 0 0</pose>
+        <geometry><box><size>2.30 0.12 0.14</size></box></geometry>
+      </collision>
+      <visual name="left_wall">
+        <pose>-2.10 0 1.25 0 0 0</pose>
+        <geometry><box><size>1.90 0.12 2.50</size></box></geometry>
+        <material>
+          <ambient>0.12 0.16 0.20 1</ambient>
+          <diffuse>0.18 0.23 0.28 1</diffuse>
+        </material>
+      </visual>
+      <visual name="right_wall">
+        <pose>2.10 0 1.25 0 0 0</pose>
+        <geometry><box><size>1.90 0.12 2.50</size></box></geometry>
+        <material>
+          <ambient>0.12 0.16 0.20 1</ambient>
+          <diffuse>0.18 0.23 0.28 1</diffuse>
+        </material>
+      </visual>
+      <visual name="top_bar">
+        <pose>0 0 2.43 0 0 0</pose>
+        <geometry><box><size>2.30 0.12 0.14</size></box></geometry>
+        <material>
+          <ambient>0.85 0.16 0.10 1</ambient>
+          <diffuse>0.85 0.16 0.10 1</diffuse>
+        </material>
+      </visual>
+      <visual name="left_edge">
+        <pose>-1.15 0 1.25 0 0 0</pose>
+        <geometry><box><size>0.08 0.18 2.50</size></box></geometry>
+        <material><ambient>0.95 0.34 0.06 1</ambient><diffuse>0.95 0.34 0.06 1</diffuse></material>
+      </visual>
+      <visual name="right_edge">
+        <pose>1.15 0 1.25 0 0 0</pose>
+        <geometry><box><size>0.08 0.18 2.50</size></box></geometry>
+        <material><ambient>0.95 0.34 0.06 1</ambient><diffuse>0.95 0.34 0.06 1</diffuse></material>
+      </visual>
+      <visual name="gate_center_marker">
+        <pose>0 0 0.012 0 0 0</pose>
+        <geometry><box><size>2.30 0.55 0.02</size></box></geometry>
+        <material><ambient>0.95 0.72 0.06 1</ambient><diffuse>0.95 0.72 0.06 1</diffuse></material>
+      </visual>
+      <visual name="target_b_marker">
+        <pose>0 1.20 0.013 0 0 0</pose>
+        <geometry><cylinder><radius>0.38</radius><length>0.022</length></cylinder></geometry>
+        <material><ambient>0.08 0.62 0.82 1</ambient><diffuse>0.08 0.62 0.82 1</diffuse></material>
+      </visual>
+      <visual name="target_c_marker">
+        <pose>0 -1.20 0.013 0 0 0</pose>
+        <geometry><cylinder><radius>0.38</radius><length>0.022</length></cylinder></geometry>
+        <material><ambient>0.20 0.72 0.32 1</ambient><diffuse>0.20 0.72 0.32 1</diffuse></material>
+      </visual>
+      <visual name="course_line_positive">
+        <pose>0 0.60 0.011 0 0 0</pose>
+        <geometry><box><size>0.05 1.20 0.018</size></box></geometry>
+        <material><ambient>0.08 0.62 0.82 1</ambient><diffuse>0.08 0.62 0.82 1</diffuse></material>
+      </visual>
+      <visual name="course_line_negative">
+        <pose>0 -0.60 0.011 0 0 0</pose>
+        <geometry><box><size>0.05 1.20 0.018</size></box></geometry>
+        <material><ambient>0.20 0.72 0.32 1</ambient><diffuse>0.20 0.72 0.32 1</diffuse></material>
+      </visual>
+    </link>
+  </model>
+</sdf>

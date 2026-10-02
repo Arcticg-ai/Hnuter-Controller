@@ -2399,6 +2399,75 @@ class HnuterController(Node):
             float(-tau_c[2]),
         ], dtype=float)
 
+    def _predict_reference_wrench(
+        self,
+        position_enu: np.ndarray,
+        velocity_enu: np.ndarray,
+        acceleration_enu: np.ndarray,
+        horizon_s: float,
+    ) -> np.ndarray:
+        """Evaluate the current outer-loop law at a future trajectory sample.
+
+        The nominal vehicle state follows the trajectory increments over the
+        short horizon, which freezes the currently measured tracking error
+        instead of counting future position and velocity as new errors.
+        Integral and attitude-controller states are read but never updated, so
+        this helper cannot alter the outer loop.
+        """
+        horizon_s = max(float(horizon_s), 0.0)
+        target_abs_z_enu = (
+            float(self._z0 + position_enu[2])
+            if self._z0_initialized else float(self.position[2])
+        )
+        reference_delta_enu = position_enu - self.target_position
+        predicted_position_enu = self.position + reference_delta_enu
+        predicted_velocity_enu = (
+            self.velocity + velocity_enu - self.target_velocity
+        )
+        predicted_pos_ned = np.array([
+            predicted_position_enu[1],
+            predicted_position_enu[0],
+            -predicted_position_enu[2],
+        ], dtype=float)
+        predicted_vel_ned = np.array([
+            predicted_velocity_enu[1],
+            predicted_velocity_enu[0],
+            -predicted_velocity_enu[2],
+        ], dtype=float)
+        pos_sp_ned = np.array([
+            position_enu[1], position_enu[0], -target_abs_z_enu
+        ], dtype=float)
+        vel_sp_ned = np.array([
+            velocity_enu[1], velocity_enu[0], -velocity_enu[2]
+        ], dtype=float)
+        acc_ff_ned = np.array([
+            acceleration_enu[1], acceleration_enu[0], -acceleration_enu[2]
+        ], dtype=float)
+
+        pos_error = pos_sp_ned - predicted_pos_ned
+        vel_error = vel_sp_ned - predicted_vel_ned
+        acc_des = (
+            acc_ff_ned
+            + np.diag(self.direct_pos_Kp_ned) @ pos_error
+            + np.diag(self.direct_pos_Kd_ned) @ vel_error
+            + self.direct_pos_Ki_ned * self.integral_pos_error
+        )
+        acc_des[:2] = np.clip(acc_des[:2], -self.max_acc_xy, self.max_acc_xy)
+        acc_des[2] = float(np.clip(acc_des[2], -self.max_acc_z, self.max_acc_z))
+        f_world = self.mass * (
+            acc_des - np.array([0.0, 0.0, self.gravity], dtype=float)
+        )
+        f_body = self.R_ned_frd.T @ f_world
+        if self.alpha_limit_rad < math.radians(89.0):
+            fz_abs = abs(float(f_body[2]))
+            max_xy = fz_abs * math.tan(self.alpha_limit_rad)
+            fxy_norm = float(np.linalg.norm(f_body[:2]))
+            if fxy_norm > max_xy and fxy_norm > 1e-5:
+                f_body[:2] *= max_xy / fxy_norm
+        return self._allocator_wrench_from_body_force_torque(
+            f_body, self.last_tau_c
+        )
+
     def _direct_prearm_failure_reason(self) -> str:
         if (self.use_px4_position_takeoff
                 or not self.takeoff_requested

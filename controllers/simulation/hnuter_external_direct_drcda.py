@@ -65,17 +65,16 @@ class HnuterDRCDAController(DirectController):
         self._drcda_estimator_reset_pending = False
         super().__init__()
 
-        # Retain only the identified directional static gains. The old pure
-        # delay and first-order lag fit are not used by the active model.
-        # Command slew limits remain active independently.
-        model_name = 'identified_gain_no_delay'
+        # The active predictor matches the measured Gazebo joint-PID response.
+        # No pure transport delay is present or introduced.
+        model_name = 'gazebo_joint_pid_no_delay'
         config_kwargs = {
             'prediction_dt_s': env_float('HNUTER_DRCDA_PREDICTION_DT_S', 0.01),
             'horizon_s': env_float('HNUTER_DRCDA_HORIZON_S', 0.18),
             'gauss_newton_iterations': int(env_float('HNUTER_DRCDA_ITERATIONS', 2)),
             'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 8.0),
         }
-        config = DRCDAConfig.identified_gain_no_delay(**config_kwargs)
+        config = DRCDAConfig.gazebo_joint_pid_no_delay(**config_kwargs)
         configure_allocator_variant(config, self._drcda_variant)
 
         front_thrust_max = env_float('HNUTER_DRCDA_FRONT_MOTOR_MAX_N', 25.0)
@@ -206,24 +205,56 @@ class HnuterDRCDAController(DirectController):
         columns += [f'drcda_predicted_wrench_{name}' for name in (
             'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
         )]
+        columns += [f'drcda_estimated_wrench_{name}' for name in (
+            'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
+        )]
         columns += [f'drcda_wrench_residual_{name}' for name in (
             'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
         )]
         columns += ['drcda_wrench_rate_residual_norm']
+        for label in ('h1', 'h2'):
+            columns += [f'drcda_prediction_{label}_s']
+            columns += [f'drcda_predicted_{label}_wrench_{name}' for name in (
+                'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
+            )]
+            columns += [f'drcda_reference_{label}_wrench_{name}' for name in (
+                'fx_n', 'fy_n', 'fz_n', 'tx_nm', 'ty_nm', 'tz_nm'
+            )]
         return columns
 
     def _diagnostic_extra_values(self):
         if not self._drcda_ready or self.drcda.last_result is None:
-            return ['', float('nan'), 0] + [float('nan')] * 22
+            return ['', float('nan'), 0] + [float('nan')] * (
+                len(self._diagnostic_extra_header()) - 3
+            )
         result = self.drcda.last_result
-        return [
+        values = [
             result.status,
             float(result.solve_time_ms),
             int(result.iterations),
             *[float(value) for value in result.predicted_state],
             *[float(value) for value in result.predicted_wrench],
+            *[float(value) for value in result.estimated_wrench],
             *[float(value) for value in result.wrench_residual],
             float(np.linalg.norm(result.wrench_rate_residual)),
+        ]
+        for index in range(2):
+            if index < result.prediction_horizons_s.size:
+                values += [
+                    float(result.prediction_horizons_s[index]),
+                    *[float(value) for value in result.predicted_wrenches[index]],
+                    *[float(value) for value in result.future_wrench_references[index]],
+                ]
+            else:
+                values += [float('nan')] * 13
+        return values
+
+    def _future_drcda_wrench_references(self):
+        horizon_2 = self.drcda.config.horizon_s
+        horizon_1 = min(0.05, 0.5 * horizon_2)
+        return [
+            (horizon_1, self.last_W.copy(), 0.5),
+            (horizon_2, self.last_W.copy(), 1.0),
         ]
 
     def _motor_control_to_thrust(self, control: float, bidirectional: bool = False) -> float:
@@ -398,6 +429,10 @@ class HnuterDRCDAController(DirectController):
                 dt=allocation_dt,
                 preferred_command=preferred,
                 active_angle_limits=angle_limits,
+                future_wrench_references=(
+                    self._future_drcda_wrench_references()
+                    if self._drcda_variant == 'full' else None
+                ),
             )
             self._drcda_accumulated_dt_s = 0.0
             self._post_drcda_allocation(
@@ -407,10 +442,9 @@ class HnuterDRCDAController(DirectController):
         else:
             result = self.drcda.last_result
         command = self.drcda.command
-        # Gazebo's four JointPositionController instances follow their input
-        # almost instantaneously and do not implement the identified static
-        # gain. Drive them with the allocator's current physical servo state so
-        # the simulated plant matches identified_gain_no_delay.
+        # Send the allocator input directly to Gazebo. The identified K and tau
+        # describe the JointPositionController response inside the predictor;
+        # K must not be applied a second time on the command path.
         # The standalone hardware controller still publishes actuator input
         # commands and is intentionally unaffected by this SITL-only emulation.
         servo_state = self._drcda_servo_output_state()

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-02",
+  "firmware": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+  "firmware_commit": "49b60a5d",
+  "world": "independent zero-gravity Gazebo world",
+  "pure_delay_used": false,
+  "step_command_rad": 0.4,
+  "sample_period_s": 0.004,
+  "fit_model": "tau*dq/dt + q = K*u",
+  "logical_order": ["alpha_L", "beta_L", "alpha_R", "beta_R"],
+  "servo_topic_mapping": {
+    "servo_0": "rj2 / alpha_R",
+    "servo_1": "lj2 / alpha_L",
+    "servo_2": "rj1 / beta_R",
+    "servo_3": "lj1 / beta_L"
+  },
+  "gain_positive": [0.9939, 0.9018, 0.9940, 0.9152],
+  "gain_negative": [0.9940, 0.9119, 0.9940, 0.9042],
+  "tau_positive_s": [0.1384, 0.0891, 0.1408, 0.0920],
+  "tau_negative_s": [0.1396, 0.0874, 0.1422, 0.0868],
+  "fit_rmse_rad_positive": [0.01153, 0.00834, 0.01218, 0.00807],
+  "fit_rmse_rad_negative": [0.01181, 0.00834, 0.01225, 0.00796],
+  "notes": [
+    "Measured link-relative joint angles were used; command echoes were not used.",
+    "The model contains no transport delay term.",
+    "The identified gain belongs to the predictor. The Gazebo command is not multiplied by K a second time.",
+    "Measured joint angles overwrite the predictor initial state every allocation cycle."
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "method": "basic_da",
+  "switch_duration_s": 0.6,
+  "status": "failed",
+  "error": "fixed-attitude switching did not start: pre-trajectory disarm",
+  "metrics": {
+    "row_count": 61,
+    "transition_row_count": 0,
+    "position_error_rms_m": NaN,
+    "position_error_peak_m": NaN,
+    "attitude_error_rms_deg": NaN,
+    "attitude_error_peak_deg": NaN,
+    "roll_pitch_peak_deg": NaN,
+    "yaw_rate_peak_rad_s": NaN,
+    "minimum_altitude_m": NaN,
+    "joint_feedback_ratio": 0.0,
+    "joint_tracking_error_rms_rad": NaN,
+    "joint_tracking_error_peak_rad": NaN,
+    "reachable_wrench_residual_rms": NaN,
+    "final_armed": false,
+    "safety_cutoff": false,
+    "passed": false,
+    "failures": [
+      "missing transition diagnostics",
+      "disarmed before post-hold ended",
+      "position peak nan > 0.750",
+      "attitude peak nan > 8.000",
+      "roll/pitch peak nan > 5.000",
+      "minimum altitude nan < 0.500",
+      "joint feedback ratio 0.000 < 0.950"
+    ]
+  },
+  "gate": {
+    "spawned": true,
+    "returncode": 0,
+    "stdout": "data: true",
+    "stderr": "",
+    "asset": "/home/hnuter/px4_ws_ros2_consolidated/controllers/experiments/fixed_attitude_switching/gate.sdf",
+    "collision_enabled": false
+  },
+  "duration_wall_s": 35.46259219500098,
+  "csv": "/tmp/fixed_attitude_switching_final_20260928/runs/T_0p6/basic_da/logs/external_control/experiments/fixed_attitude_switching/basic_da/switching_1790600218.csv",
+  "ulog_source": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/rootfs/log/2026-09-28/12_56_47.ulg",
+  "tuning": "/tmp/fixed_attitude_switching_final_20260928/runs/T_0p6/basic_da/effective_tuning.json",
+  "servo_model": "identified_gain_no_delay",
+  "pure_delay_model_used": false
+}

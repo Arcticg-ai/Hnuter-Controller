@@ -164,6 +164,22 @@ class DRCDAConfig:
         config.servo_gain_negative[:] = identified.servo_gain_negative
         return config
 
+    @classmethod
+    def gazebo_joint_pid_no_delay(cls, **kwargs) -> 'DRCDAConfig':
+        """Use the measured Gazebo joint-PID response without pure delay.
+
+        Static gains and time constants are from independent positive/negative
+        zero-gravity steps. Logical order is alpha_L, beta_L, alpha_R, beta_R.
+        """
+        config = cls(**kwargs)
+        config.servo_gain_positive[:] = [0.9939, 0.9018, 0.9940, 0.9152]
+        config.servo_gain_negative[:] = [0.9940, 0.9119, 0.9940, 0.9042]
+        config.servo_tau_positive_s[:] = [0.1384, 0.0891, 0.1408, 0.0920]
+        config.servo_tau_negative_s[:] = [0.1396, 0.0874, 0.1422, 0.0868]
+        config.servo_delay_positive_s[:] = 0.0
+        config.servo_delay_negative_s[:] = 0.0
+        return config
+
 
 def configure_allocator_variant(config: DRCDAConfig, variant: str) -> DRCDAConfig:
     """Apply one isolated allocator ablation to an existing configuration."""
@@ -302,6 +318,15 @@ class DRCDAResult:
     solve_time_ms: float
     iterations: int
     status: str
+    prediction_horizons_s: np.ndarray = field(
+        default_factory=lambda: np.empty(0, dtype=float)
+    )
+    predicted_wrenches: np.ndarray = field(
+        default_factory=lambda: np.empty((0, 6), dtype=float)
+    )
+    future_wrench_references: np.ndarray = field(
+        default_factory=lambda: np.empty((0, 6), dtype=float)
+    )
 
 
 class DRCDAAllocator:
@@ -463,14 +488,21 @@ class DRCDAAllocator:
                 dt,
             )
 
-    def _predict_terminal(
+    def _predict_horizons(
         self,
         candidate_command: np.ndarray,
         active_angle_limits: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray]:
+        horizons_s: Iterable[float],
+    ) -> list[tuple[np.ndarray, np.ndarray]]:
         cfg = self.config
         prediction_dt = cfg.prediction_dt_s
-        steps = max(1, int(math.ceil(cfg.horizon_s / prediction_dt)))
+        horizons = np.asarray(tuple(horizons_s), dtype=float)
+        if horizons.ndim != 1 or horizons.size == 0:
+            raise ValueError('horizons_s must contain at least one value')
+        if np.any(~np.isfinite(horizons)) or np.any(horizons <= 0.0):
+            raise ValueError('prediction horizons must be finite and positive')
+        target_steps = np.maximum(1, np.ceil(horizons / prediction_dt).astype(int))
+        steps = int(np.max(target_steps))
         state = self.state.copy()
         sensitivity = np.zeros(ACTUATOR_COUNT)
         delayed = self._delayed_servo_command.copy()
@@ -482,11 +514,13 @@ class DRCDAAllocator:
                 for remaining_s, command in self._pending_servo_commands[index]
             ]
             events.append((delay_s, float(candidate_command[index]), 1.0))
+            events.sort(key=lambda event: event[0])
             prediction_events.append(events)
 
         elapsed_s = 0.0
         delayed_sensitivity = np.zeros(ANGLE_COUNT)
-        for _ in range(steps):
+        captured: dict[int, tuple[np.ndarray, np.ndarray]] = {}
+        for step in range(1, steps + 1):
             elapsed_s += prediction_dt
             for index in range(ANGLE_COUNT):
                 while (
@@ -516,7 +550,18 @@ class DRCDAAllocator:
                     float(sensitivity[state_index]),
                     1.0,
                 )
-        return state, np.diag(sensitivity)
+            if step in target_steps:
+                captured[step] = (state.copy(), np.diag(sensitivity.copy()))
+        return [captured[int(step)] for step in target_steps]
+
+    def _predict_terminal(
+        self,
+        candidate_command: np.ndarray,
+        active_angle_limits: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        return self._predict_horizons(
+            candidate_command, active_angle_limits, [self.config.horizon_s]
+        )[0]
 
     def predict_terminal(
         self,
@@ -602,6 +647,9 @@ class DRCDAAllocator:
         dt: float,
         preferred_command: Iterable[float] | None = None,
         active_angle_limits: Iterable[float] | None = None,
+        future_wrench_references: Iterable[
+            tuple[float, Iterable[float], float]
+        ] | None = None,
     ) -> DRCDAResult:
         start_time = time.perf_counter()
         cfg = self.config
@@ -618,6 +666,21 @@ class DRCDAAllocator:
             if preferred_command is None
             else _array(preferred_command, ACTUATOR_COUNT, 'preferred_command')
         )
+        future_references: list[tuple[float, np.ndarray, float]] = []
+        if future_wrench_references is not None:
+            for horizon_s, wrench, weight in future_wrench_references:
+                horizon_s = float(horizon_s)
+                weight = float(weight)
+                if not math.isfinite(horizon_s) or horizon_s <= 0.0:
+                    raise ValueError('future wrench horizon must be positive')
+                if not math.isfinite(weight) or weight <= 0.0:
+                    raise ValueError('future wrench weight must be positive')
+                future_references.append((
+                    horizon_s,
+                    _array(wrench, 6, 'future_wrench_reference'),
+                    weight,
+                ))
+            future_references.sort(key=lambda item: item[0])
 
         self._advance_state(dt)
         estimated_wrench = self.model.wrench(self.state)
@@ -644,32 +707,56 @@ class DRCDAAllocator:
 
         try:
             for iteration in range(cfg.gauss_newton_iterations):
-                predicted_state, state_sensitivity = self._predict_terminal(command, limits)
-                predicted_wrench = self.model.wrench(predicted_state)
-                command_jacobian = (
-                    self.model.jacobian(predicted_state)
-                    @ state_sensitivity
-                    @ np.diag(normalizer)
-                )
-                weighted_jacobian_base = sqrt_weight[:, None] * command_jacobian
-                weighted_wrench_error = sqrt_weight * (predicted_wrench - desired)
-                weighted_rate_error = (
-                    math.sqrt(cfg.wrench_rate_weight)
-                    * sqrt_weight
-                    * (
-                        predicted_wrench
-                        - estimated_wrench
-                        - cfg.horizon_s * jerk_reference
+                if future_references:
+                    predictions = self._predict_horizons(
+                        command, limits,
+                        [item[0] for item in future_references],
                     )
-                )
-                weighted_jacobian = np.vstack((
-                    weighted_jacobian_base,
-                    math.sqrt(cfg.wrench_rate_weight) * weighted_jacobian_base,
-                ))
-                weighted_error = np.concatenate((
-                    weighted_wrench_error,
-                    weighted_rate_error,
-                ))
+                    jacobian_blocks = []
+                    error_blocks = []
+                    for (_, reference, weight), (state_h, sensitivity_h) in zip(
+                        future_references, predictions
+                    ):
+                        wrench_h = self.model.wrench(state_h)
+                        jacobian_h = (
+                            self.model.jacobian(state_h)
+                            @ sensitivity_h
+                            @ np.diag(normalizer)
+                        )
+                        scale = math.sqrt(weight) * sqrt_weight
+                        jacobian_blocks.append(scale[:, None] * jacobian_h)
+                        error_blocks.append(scale * (wrench_h - reference))
+                    weighted_jacobian = np.vstack(jacobian_blocks)
+                    weighted_error = np.concatenate(error_blocks)
+                else:
+                    predicted_state, state_sensitivity = self._predict_terminal(
+                        command, limits
+                    )
+                    predicted_wrench = self.model.wrench(predicted_state)
+                    command_jacobian = (
+                        self.model.jacobian(predicted_state)
+                        @ state_sensitivity
+                        @ np.diag(normalizer)
+                    )
+                    weighted_jacobian_base = sqrt_weight[:, None] * command_jacobian
+                    weighted_wrench_error = sqrt_weight * (predicted_wrench - desired)
+                    weighted_rate_error = (
+                        math.sqrt(cfg.wrench_rate_weight)
+                        * sqrt_weight
+                        * (
+                            predicted_wrench
+                            - estimated_wrench
+                            - cfg.horizon_s * jerk_reference
+                        )
+                    )
+                    weighted_jacobian = np.vstack((
+                        weighted_jacobian_base,
+                        math.sqrt(cfg.wrench_rate_weight) * weighted_jacobian_base,
+                    ))
+                    weighted_error = np.concatenate((
+                        weighted_wrench_error,
+                        weighted_rate_error,
+                    ))
                 command_normalized = command / normalizer
                 previous_normalized = previous / normalizer
                 preferred_normalized = preferred / normalizer
@@ -703,8 +790,16 @@ class DRCDAAllocator:
             status = 'motor_only_fallback'
             command = self._motor_only_fallback(desired, previous, dt, limits)
 
-        predicted_state, state_sensitivity = self._predict_terminal(command, limits)
+        diagnostic_horizons = [item[0] for item in future_references]
+        all_predictions = self._predict_horizons(
+            command, limits, diagnostic_horizons + [cfg.horizon_s]
+        )
+        predicted_state, state_sensitivity = all_predictions[-1]
         predicted_wrench = self.model.wrench(predicted_state)
+        predicted_wrenches = np.asarray([
+            self.model.wrench(state_h)
+            for state_h, _ in all_predictions[:len(diagnostic_horizons)]
+        ], dtype=float).reshape((-1, 6))
         predicted_rate = (
             predicted_wrench - estimated_wrench
         ) / max(cfg.horizon_s, cfg.prediction_dt_s)
@@ -729,6 +824,11 @@ class DRCDAAllocator:
             solve_time_ms=solve_time_ms,
             iterations=completed_iterations,
             status=status,
+            prediction_horizons_s=np.asarray(diagnostic_horizons, dtype=float),
+            predicted_wrenches=predicted_wrenches,
+            future_wrench_references=np.asarray(
+                [item[1] for item in future_references], dtype=float
+            ).reshape((-1, 6)),
         )
         self.last_result = result
         return result
@@ -747,6 +847,9 @@ class BasicDifferentialAllocator(DRCDAAllocator):
         dt: float,
         preferred_command: Iterable[float] | None = None,
         active_angle_limits: Iterable[float] | None = None,
+        future_wrench_references: Iterable[
+            tuple[float, Iterable[float], float]
+        ] | None = None,
     ) -> DRCDAResult:
         start_time = time.perf_counter()
         cfg = self.config
