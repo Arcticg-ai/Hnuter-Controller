@@ -1,0 +1,323 @@
+[
+  {
+    "run": "sitl_matrix_0_A_s0_20261010_191338",
+    "source_ulog": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg",
+    "sha256": "e92a5e724b4c07165df093f43f4897eae735bb6b922dad1c2af04efd17fd4d0d",
+    "sensor_samples": 1850,
+    "total_windows": 93,
+    "admissible_sensor_windows": 0,
+    "shadow_proposal": {
+      "rank": 0,
+      "singular_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "condition": null,
+      "projector": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "accepted": false,
+      "theta": [
+        -0.10491714014645875,
+        -0.0010965586443656384,
+        0.2456310347464148,
+        0.12755830286928857,
+        0.32644494646825895
+      ],
+      "reason": "independent_sample_count"
+    },
+    "evaluation_only": {
+      "all": {
+        "count": 93,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.030999264032748382,
+            0.04191902552390081,
+            0.0064600340451849
+          ],
+          "max_norm": 0.11948925986138484
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.035745704789069445,
+            0.05716311943818437,
+            0.007110920423460473
+          ],
+          "max_norm": 0.20211609215654458
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.01770267675064846,
+            0.041069561485133375,
+            0.003743677935747908
+          ],
+          "max_norm": 0.11889904017584176
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.017676505854332263,
+            0.04112231027274363,
+            0.0037643751451332274
+          ],
+          "max_norm": 0.12088812270997976
+        },
+        "omitted_terms_pass": 23,
+        "physical_truth_residual_pass": 11
+      },
+      "low_motion": {
+        "count": 0
+      }
+    }
+  },
+  {
+    "run": "sitl_matrix_2_C_s0_20261010_191338",
+    "source_ulog": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg",
+    "sha256": "fdf2199c789d8f7face8ec0406a7c393d018e0202d5e25a52070bc2f97fe92cb",
+    "sensor_samples": 1850,
+    "total_windows": 92,
+    "admissible_sensor_windows": 0,
+    "shadow_proposal": {
+      "rank": 0,
+      "singular_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "condition": null,
+      "projector": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "accepted": false,
+      "theta": [
+        -0.10491714014645875,
+        -0.0010965586443656384,
+        0.2456310347464148,
+        0.12755830286928857,
+        0.32644494646825895
+      ],
+      "reason": "independent_sample_count"
+    },
+    "evaluation_only": {
+      "all": {
+        "count": 92,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.020794464240609593,
+            0.044990733894927165,
+            0.006939029375997223
+          ],
+          "max_norm": 0.1374847345770794
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.025803444975734856,
+            0.06847588729244963,
+            0.007935107158839187
+          ],
+          "max_norm": 0.22079465311499158
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.014310162567729962,
+            0.04815116158955025,
+            0.004794028124943305
+          ],
+          "max_norm": 0.13127832951109344
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.014366126052969795,
+            0.048330623179414015,
+            0.004797822973175453
+          ],
+          "max_norm": 0.1287361979488677
+        },
+        "omitted_terms_pass": 7,
+        "physical_truth_residual_pass": 17
+      },
+      "low_motion": {
+        "count": 0
+      }
+    }
+  },
+  {
+    "run": "sitl_matrix_7_C_s1_20261010_191649",
+    "source_ulog": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/rootfs/log/2026-10-10/11_17_00.ulg",
+    "sha256": "3abba79f06c315fd0bca07a6257185232b906f2b21cc7fdbc362e81eaf536c0e",
+    "sensor_samples": 1426,
+    "total_windows": 72,
+    "admissible_sensor_windows": 0,
+    "shadow_proposal": {
+      "rank": 0,
+      "singular_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "condition": null,
+      "projector": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "accepted": false,
+      "theta": [
+        -0.10491714014645875,
+        -0.0010965586443656384,
+        0.2456310347464148,
+        0.12755830286928857,
+        0.32644494646825895
+      ],
+      "reason": "independent_sample_count"
+    },
+    "evaluation_only": {
+      "all": {
+        "count": 72,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            3.941587269058969,
+            3.7347075229931983,
+            5.09522066743431
+          ],
+          "max_norm": 41.77313482043539
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            4.010371765407663,
+            3.871865838225536,
+            5.2189658122584985
+          ],
+          "max_norm": 42.70501868245379
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.06440059635699354,
+            0.12296821030314666,
+            0.074631595976117
+          ],
+          "max_norm": 0.8334019910570473
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.2655770613353175,
+            0.223514148384927,
+            0.202844353294593
+          ],
+          "max_norm": 1.9115253018374085
+        },
+        "omitted_terms_pass": 18,
+        "physical_truth_residual_pass": 16
+      },
+      "low_motion": {
+        "count": 0
+      }
+    }
+  }
+]

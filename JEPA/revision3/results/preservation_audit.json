@@ -1,0 +1,40 @@
+{
+  "/home/hnuter/px4_ws_ros2": {
+    "README.md": true,
+    "config/hnuter_drcda_hardware_tuning.json": true,
+    "docs/iebc_hardware.md": true,
+    "hnuter_external_controller_px4_position_iebc_hardware.py": true,
+    "hnuter_external_controller_px4_position_iebc_simulation.py": true,
+    "hnuter_external_direct_drcda_hardware.py": true,
+    "tests/test_hnuter_external_controller_px4_position_iebc_hardware.py": true,
+    "tests/test_hnuter_external_controller_px4_position_iebc_simulation.py": true,
+    "tests/test_hnuter_external_direct_drcda_hardware.py": true
+  },
+  "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl": {
+    "msg/HnuterControlStatus.msg": true,
+    "src/modules/mc_rate_control/HnuterControl.cpp": true,
+    "src/modules/mc_rate_control/HnuterControl.hpp": true
+  },
+  "revision2_sha256": {
+    "JEPA/revision2/actuator_sensors.py": true,
+    "JEPA/revision2/run_sitl.py": true,
+    "JEPA/revision2/analyze_failure_cause.py": true,
+    "JEPA/revision2/plot_outcomes.py": true,
+    "JEPA/revision2/test_offline.py": true,
+    "JEPA/revision2/audit_release.py": true,
+    "JEPA/revision2/audit_transitions.py": true,
+    "JEPA/revision2/estimator.py": true,
+    "JEPA/revision2/sitl_position_probe.py": true,
+    "JEPA/revision2/write_report.py": true,
+    "JEPA/revision2/diagnose_new_failures.py": true,
+    "JEPA/revision2/audit_wrench_axes.py": true,
+    "JEPA/revision2/run_matrix.py": true,
+    "JEPA/revision2/plot_revision.py": true,
+    "JEPA/revision2/inspect_failures.py": true,
+    "JEPA/revision2/run_regression.py": true,
+    "JEPA/revision2/analyze_sitl.py": true,
+    "JEPA/revision2/model_audit.py": true,
+    "JEPA/revision2/audit_landings.py": true,
+    "JEPA/revision2/summarize_revision.py": true
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "status": "BLOCKED_BEFORE_LAUNCH",
+  "gates": {
+    "unit_tests_pass": true,
+    "physical_models_generated": true,
+    "identifiable_low_motion_windows": false,
+    "recorded_wrench_model_residual": false,
+    "independent_torque_bias_bound_verified": false,
+    "actual_px4_oracle_consumer_verified": false,
+    "actual_allocator_margin_verified": false,
+    "revision3_recovery_verified": false
+  },
+  "new_sitl_launches": 0,
+  "max_initial_launches": 8,
+  "evidence_boundary": "Offline synthetic and replay only; no revision3 flight evidence.",
+  "schedule": [
+    {
+      "case": "offset_y",
+      "group": "A",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "offset_y",
+      "group": "D",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "offset_y",
+      "group": "B",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "offset_y",
+      "group": "C",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "symmetric_inertia",
+      "group": "A",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "symmetric_inertia",
+      "group": "D",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "symmetric_inertia",
+      "group": "B",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    },
+    {
+      "case": "symmetric_inertia",
+      "group": "C",
+      "status": "NOT_ATTEMPTED_MODEL_GATE"
+    }
+  ],
+  "proposed_evaluation": {
+    "duration_s": 24,
+    "horizontal_amplitude_m": 0.04,
+    "attitude_amplitude_deg": 1.0,
+    "axes": [
+      "roll",
+      "pitch",
+      "yaw"
+    ],
+    "same_for_all_groups": true,
+    "implemented_in_flight": false
+  },
+  "baseline_controller_gains_unchanged": true
+}

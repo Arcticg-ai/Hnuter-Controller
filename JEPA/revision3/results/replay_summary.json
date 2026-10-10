@@ -1,0 +1,578 @@
+[
+  {
+    "run": "sitl_matrix_0_A_s0_20261010_191338",
+    "source_ulog": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg",
+    "sha256": "e92a5e724b4c07165df093f43f4897eae735bb6b922dad1c2af04efd17fd4d0d",
+    "sensor_samples": 1850,
+    "total_windows": 93,
+    "admissible_sensor_windows": 0,
+    "shadow_proposal": {
+      "rank": 0,
+      "singular_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "condition": null,
+      "projector": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "accepted": false,
+      "theta": [
+        -0.10491714014645875,
+        -0.0010965586443656384,
+        0.2456310347464148,
+        0.12755830286928857,
+        0.32644494646825895
+      ],
+      "reason": "independent_sample_count"
+    },
+    "evaluation_only": {
+      "all_including_recovery": {
+        "count": 93,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.030999264032748382,
+            0.04191902552390081,
+            0.0064600340451849
+          ],
+          "max_norm": 0.11948925986138484
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.035745704789069445,
+            0.05716311943818437,
+            0.007110920423460473
+          ],
+          "max_norm": 0.20211609215654458
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.01770267675064846,
+            0.041069561485133375,
+            0.003743677935747908
+          ],
+          "max_norm": 0.11889904017584176
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.017676505854332263,
+            0.04112231027274363,
+            0.0037643751451332274
+          ],
+          "max_norm": 0.12088812270997976
+        },
+        "rotor_spin_equivalent_Nm": {
+          "rms_components": [
+            0.0008165016013480408,
+            0.00028138407143057643,
+            0.0002741859892253696
+          ],
+          "max_norm": 0.0027029306942433543
+        },
+        "tilt_internal_equivalent_Nm": {
+          "rms_components": [
+            0.01768546770463752,
+            0.04109681827554112,
+            0.0037301300313657905
+          ],
+          "max_norm": 0.11930757791819066
+        },
+        "external_center_torque_rms_Nm": {
+          "rms_components": [
+            0.3001902432615484,
+            0.16091164328349739,
+            0.09656145342545895
+          ],
+          "max_norm": 0.5574376340670704
+        },
+        "omitted_terms_pass": 23,
+        "physical_truth_residual_pass": 11
+      },
+      "active_only": {
+        "count": 93,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.030999264032748382,
+            0.04191902552390081,
+            0.0064600340451849
+          ],
+          "max_norm": 0.11948925986138484
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.035745704789069445,
+            0.05716311943818437,
+            0.007110920423460473
+          ],
+          "max_norm": 0.20211609215654458
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.01770267675064846,
+            0.041069561485133375,
+            0.003743677935747908
+          ],
+          "max_norm": 0.11889904017584176
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.017676505854332263,
+            0.04112231027274363,
+            0.0037643751451332274
+          ],
+          "max_norm": 0.12088812270997976
+        },
+        "rotor_spin_equivalent_Nm": {
+          "rms_components": [
+            0.0008165016013480408,
+            0.00028138407143057643,
+            0.0002741859892253696
+          ],
+          "max_norm": 0.0027029306942433543
+        },
+        "tilt_internal_equivalent_Nm": {
+          "rms_components": [
+            0.01768546770463752,
+            0.04109681827554112,
+            0.0037301300313657905
+          ],
+          "max_norm": 0.11930757791819066
+        },
+        "external_center_torque_rms_Nm": {
+          "rms_components": [
+            0.3001902432615484,
+            0.16091164328349739,
+            0.09656145342545895
+          ],
+          "max_norm": 0.5574376340670704
+        },
+        "omitted_terms_pass": 23,
+        "physical_truth_residual_pass": 11
+      },
+      "low_motion": {
+        "count": 0
+      }
+    }
+  },
+  {
+    "run": "sitl_matrix_2_C_s0_20261010_191338",
+    "source_ulog": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg",
+    "sha256": "fdf2199c789d8f7face8ec0406a7c393d018e0202d5e25a52070bc2f97fe92cb",
+    "sensor_samples": 1850,
+    "total_windows": 92,
+    "admissible_sensor_windows": 0,
+    "shadow_proposal": {
+      "rank": 0,
+      "singular_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "condition": null,
+      "projector": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "accepted": false,
+      "theta": [
+        -0.10491714014645875,
+        -0.0010965586443656384,
+        0.2456310347464148,
+        0.12755830286928857,
+        0.32644494646825895
+      ],
+      "reason": "independent_sample_count"
+    },
+    "evaluation_only": {
+      "all_including_recovery": {
+        "count": 92,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.020794464240609593,
+            0.044990733894927165,
+            0.006939029375997223
+          ],
+          "max_norm": 0.1374847345770794
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.025803444975734856,
+            0.06847588729244963,
+            0.007935107158839187
+          ],
+          "max_norm": 0.22079465311499158
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.014310162567729962,
+            0.04815116158955025,
+            0.004794028124943305
+          ],
+          "max_norm": 0.13127832951109344
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.014366126052969795,
+            0.048330623179414015,
+            0.004797822973175453
+          ],
+          "max_norm": 0.1287361979488677
+        },
+        "rotor_spin_equivalent_Nm": {
+          "rms_components": [
+            0.0006972107521957688,
+            0.0004255589988894351,
+            0.00037735320412649037
+          ],
+          "max_norm": 0.0022540916474926617
+        },
+        "tilt_internal_equivalent_Nm": {
+          "rms_components": [
+            0.014318209664558912,
+            0.04811981869283637,
+            0.004783022160311496
+          ],
+          "max_norm": 0.13188850598712862
+        },
+        "external_center_torque_rms_Nm": {
+          "rms_components": [
+            0.2763993180648341,
+            0.10880954843102227,
+            0.08385872405117895
+          ],
+          "max_norm": 0.524802707330264
+        },
+        "omitted_terms_pass": 7,
+        "physical_truth_residual_pass": 17
+      },
+      "active_only": {
+        "count": 92,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.020794464240609593,
+            0.044990733894927165,
+            0.006939029375997223
+          ],
+          "max_norm": 0.1374847345770794
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.025803444975734856,
+            0.06847588729244963,
+            0.007935107158839187
+          ],
+          "max_norm": 0.22079465311499158
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.014310162567729962,
+            0.04815116158955025,
+            0.004794028124943305
+          ],
+          "max_norm": 0.13127832951109344
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.014366126052969795,
+            0.048330623179414015,
+            0.004797822973175453
+          ],
+          "max_norm": 0.1287361979488677
+        },
+        "rotor_spin_equivalent_Nm": {
+          "rms_components": [
+            0.0006972107521957688,
+            0.0004255589988894351,
+            0.00037735320412649037
+          ],
+          "max_norm": 0.0022540916474926617
+        },
+        "tilt_internal_equivalent_Nm": {
+          "rms_components": [
+            0.014318209664558912,
+            0.04811981869283637,
+            0.004783022160311496
+          ],
+          "max_norm": 0.13188850598712862
+        },
+        "external_center_torque_rms_Nm": {
+          "rms_components": [
+            0.2763993180648341,
+            0.10880954843102227,
+            0.08385872405117895
+          ],
+          "max_norm": 0.524802707330264
+        },
+        "omitted_terms_pass": 7,
+        "physical_truth_residual_pass": 17
+      },
+      "low_motion": {
+        "count": 0
+      }
+    }
+  },
+  {
+    "run": "sitl_matrix_7_C_s1_20261010_191649",
+    "source_ulog": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/rootfs/log/2026-10-10/11_17_00.ulg",
+    "sha256": "3abba79f06c315fd0bca07a6257185232b906f2b21cc7fdbc362e81eaf536c0e",
+    "sensor_samples": 1426,
+    "total_windows": 72,
+    "admissible_sensor_windows": 0,
+    "shadow_proposal": {
+      "rank": 0,
+      "singular_values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "condition": null,
+      "projector": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      ],
+      "accepted": false,
+      "theta": [
+        -0.10491714014645875,
+        -0.0010965586443656384,
+        0.2456310347464148,
+        0.12755830286928857,
+        0.32644494646825895
+      ],
+      "reason": "independent_sample_count"
+    },
+    "evaluation_only": {
+      "all_including_recovery": {
+        "count": 72,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            3.941587269058969,
+            3.7347075229931983,
+            5.09522066743431
+          ],
+          "max_norm": 41.77313482043539
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            4.010371765407663,
+            3.871865838225536,
+            5.2189658122584985
+          ],
+          "max_norm": 42.70501868245379
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.06440059635699354,
+            0.12296821030314666,
+            0.074631595976117
+          ],
+          "max_norm": 0.8334019910570473
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.2655770613353175,
+            0.223514148384927,
+            0.202844353294593
+          ],
+          "max_norm": 1.9115253018374085
+        },
+        "rotor_spin_equivalent_Nm": {
+          "rms_components": [
+            0.0072825053758009345,
+            0.003205618853244167,
+            0.007341978595290573
+          ],
+          "max_norm": 0.04903331306140696
+        },
+        "tilt_internal_equivalent_Nm": {
+          "rms_components": [
+            0.06474601514574693,
+            0.12248970219332193,
+            0.07854575889795891
+          ],
+          "max_norm": 0.8358365866234171
+        },
+        "external_center_torque_rms_Nm": {
+          "rms_components": [
+            13.624782104323348,
+            1.460193840751043,
+            4.323786403501457
+          ],
+          "max_norm": 51.91777466424642
+        },
+        "omitted_terms_pass": 18,
+        "physical_truth_residual_pass": 16
+      },
+      "active_only": {
+        "count": 58,
+        "rigid_truth_residual_Nm": {
+          "rms_components": [
+            0.017066293134731313,
+            0.0232708399282372,
+            0.006767316752420604
+          ],
+          "max_norm": 0.06743207539156483
+        },
+        "articulated_truth_residual_Nm": {
+          "rms_components": [
+            0.0176706915434856,
+            0.04393756399407524,
+            0.005433796687718174
+          ],
+          "max_norm": 0.11800923204672467
+        },
+        "internal_momentum_equivalent_Nm": {
+          "rms_components": [
+            0.015028970039874035,
+            0.03441230086088156,
+            0.0023172720784171773
+          ],
+          "max_norm": 0.08196643546489742
+        },
+        "articulation_correction_Nm": {
+          "rms_components": [
+            0.015014458186248334,
+            0.03438276791371844,
+            0.002323000962557935
+          ],
+          "max_norm": 0.081799389820744
+        },
+        "rotor_spin_equivalent_Nm": {
+          "rms_components": [
+            0.0019210634275831418,
+            0.0006760553500845977,
+            0.0016195739792780924
+          ],
+          "max_norm": 0.011895135192583364
+        },
+        "tilt_internal_equivalent_Nm": {
+          "rms_components": [
+            0.014467952577104806,
+            0.03437329303027129,
+            0.0011346681925736774
+          ],
+          "max_norm": 0.08138835399816466
+        },
+        "external_center_torque_rms_Nm": {
+          "rms_components": [
+            0.7465991413697638,
+            0.6758904006955178,
+            0.19978418475298276
+          ],
+          "max_norm": 1.5040046090145878
+        },
+        "omitted_terms_pass": 18,
+        "physical_truth_residual_pass": 16
+      },
+      "low_motion": {
+        "count": 0
+      }
+    }
+  }
+]

@@ -1,0 +1,48 @@
+{
+  "/home/hnuter/px4_ws_ros2": {
+    "head": "abeb52c13c49fb601401a44a30b343fad0183133",
+    "branch": "hardware",
+    "dirty_sha256": {
+      "README.md": "43f7df720baaaa1ccad6f8511d3562e4b16e1f3f2d79868b02c672eecf287d18",
+      "config/hnuter_drcda_hardware_tuning.json": "d6082f724b4c067d7be4bdcfc1ded0cd7970661dc9ce1892b58da4cab7ad79c7",
+      "docs/iebc_hardware.md": "7e78b9439178c146f414a5fec7a293203c211d3995b45ad9b3a3ad22cf110f40",
+      "hnuter_external_controller_px4_position_iebc_hardware.py": "3cf8b888cda47ad307b88bf8eacb4cae26899fcab61afcaa9add4eacffdd5082",
+      "hnuter_external_controller_px4_position_iebc_simulation.py": "5aee2f449aa229f045afba11f8b0cd00b7909de462aa98f95099f9923da6102f",
+      "hnuter_external_direct_drcda_hardware.py": "d470c8dad0ac363d77fe5bd997c55193400f8e655251e297cf50ee1fea8a95e5",
+      "tests/test_hnuter_external_controller_px4_position_iebc_hardware.py": "a54909d563b29c368fee3e3a68d05590c268031e2e6d5b4bbe2d5d66860082f6",
+      "tests/test_hnuter_external_controller_px4_position_iebc_simulation.py": "998d106ff604372c4fa4a92e3c53cf962cd6688968e156c0511ca5d135e0f8cb",
+      "tests/test_hnuter_external_direct_drcda_hardware.py": "13ac0ec760c049a5e9cdbecfe4cc5767478bb6e7196fcbffc1a20a461d466148"
+    }
+  },
+  "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl": {
+    "head": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+    "branch": "hnuter-tail-motor-bench-sitl-20260812",
+    "dirty_sha256": {
+      "msg/HnuterControlStatus.msg": "302da1905a04c665df7ff8c213d8977f7a6f9ad917906715e390ced4f53e5965",
+      "src/modules/mc_rate_control/HnuterControl.cpp": "8f6f4f865856a402f33ffcaac694bcda992c03d43389eb67913d6170de999453",
+      "src/modules/mc_rate_control/HnuterControl.hpp": "bb16ba3e307f1f5dc294c5faf3492be5aa7d4dea7fad155cd64a29466b2ca0c8"
+    }
+  },
+  "revision2_sha256": {
+    "JEPA/revision2/actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+    "JEPA/revision2/run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+    "JEPA/revision2/analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+    "JEPA/revision2/plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+    "JEPA/revision2/test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+    "JEPA/revision2/audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+    "JEPA/revision2/audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+    "JEPA/revision2/estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+    "JEPA/revision2/sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+    "JEPA/revision2/write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+    "JEPA/revision2/diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+    "JEPA/revision2/audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+    "JEPA/revision2/run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+    "JEPA/revision2/plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+    "JEPA/revision2/inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+    "JEPA/revision2/run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+    "JEPA/revision2/analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+    "JEPA/revision2/model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+    "JEPA/revision2/audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+    "JEPA/revision2/summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+  }
+}
