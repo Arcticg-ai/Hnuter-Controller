@@ -51,3 +51,26 @@ def window(t,r,w,specific_acc_o,tau_o,hz,delta_h,delta_jo,hrel_o):
     b=np.trapz(np.einsum('nij,nj->ni',r,tau_o-np.cross(delta_h,specific_acc_o)),t,axis=0)
     b-=known_h[-1]-known_h[0]+lever[:,2]*hz
     return a,b
+
+
+def discrete_window(t,r,w,specific_acc_o,tau_o,hz,delta_h,delta_jo,hrel_o):
+    """Gazebo semi-implicit step quadrature, derived from measurement semantics.
+
+    Forces at t[k] are applied over the NEXT step. The IMU acceleration at
+    t[k+1] represents (v[k+1]-v[k])/dt, expressed at the END orientation.
+    Rotate that sample back to the beginning frame before taking h cross f.
+    No tuned shift or future sample: finish a window only after its endpoint
+    samples have arrived. This is a simulator discretization model, not a
+    generally valid sensor correction for hardware.
+    """
+    # Same validation contract as continuous quadrature.
+    window(t,r,w,specific_acc_o,tau_o,hz,delta_h,delta_jo,hrel_o)
+    dt=np.diff(t)
+    fend_world=np.einsum('nij,nj->ni',r[1:],specific_acc_o[1:])
+    fstart=np.einsum('nji,nj->ni',r[:-1],fend_world)
+    lever=np.sum(np.array([-rr@skew(f) for rr,f in zip(r[:-1],fstart)])*dt[:,None,None],axis=0)
+    a=np.column_stack([lever[:,0],lever[:,1]]+[r[-1]@b@w[-1]-r[0]@b@w[0] for b in BASES])
+    known_h=np.einsum('nij,nj->ni',r,np.einsum('nij,nj->ni',delta_jo,w)+hrel_o)
+    b=np.sum(np.einsum('nij,nj->ni',r[:-1],tau_o[:-1]-np.cross(delta_h[:-1],fstart))*dt[:,None],axis=0)
+    b-=known_h[-1]-known_h[0]+lever[:,2]*hz
+    return a,b
