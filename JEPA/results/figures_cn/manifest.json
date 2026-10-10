@@ -1,0 +1,35 @@
+{
+  "scope": "Existing actual SITL records only; no simulation rerun or data modification",
+  "sources": {
+    "/home/hnuter/px4_ws_ros2/JEPA/results/all_trials.csv": "89e8f46bcec33bd78e67977fab33437cedddfeadc33f031a32f6f506a9a0db7a",
+    "/home/hnuter/px4_ws_ros2/JEPA/results/summary.json": "74898817bd42449924d7ceab7ad2798aadc0af8eb94bbf7ebd96f46cae668a31",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_s0_20261010_171426/mass_windows.csv": "287b068f59ae521367ad242188df55de16f83eacf5243de7532b7e92ab4c1986",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_s0_20261010_171426/metrics.json": "ea563c17b02f76d6404ad1f10710cc558bab4c5d468303f9ffe75c3737f6c601",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_s0_20261010_171426/trajectory.csv": "d7536614c704b7dbeaf832c7c62150bbb7fa9e2d43a2a41202d899e026be91c7",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_A_s0_20261010_171956/trajectory.csv": "a7d53742935ae533816487c22fdc66d62020ade1b43f7ade338ea5f25e19b38e",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_B_s0_20261010_171956/trajectory.csv": "824c448172f15e1ab7df349cacce7ef1fb3dc7679d0d237e39885dded81dcdf9",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_C_s0_20261010_171956/mass_windows.csv": "5584078f8a62a41d67b5c7629907965a9e6ece954f421ea107242f4b7db1cd71",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_C_s0_20261010_171956/rootfs/log/2026-10-10/09_20_12.ulg": "6b0c3658ff6b5d0e25ea7c4d38f1aff461ac0b11a0547d314e1989d724d84842",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_C_s0_20261010_171956/trajectory.csv": "de52c2ba6689482efaf11d1b4570abae9be38b8dfce6a13de76d29bd37667b0c",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_C_shadow_s0_20261010_172142/trajectory.csv": "75ca98f03425510353840195897579e03765f5ab25161813e5bbca47cf8e477b",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_noisy_D_s0_20261010_172142/trajectory.csv": "576806ede76c22da7c20e248bd8f3cb967b975abf463688556b379f6e59e8116",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_sensor_shadow_final_20261010_173321/mass_windows.csv": "4f68b826fc2b9798f16e1bad23eee0685c7a8cc3e6992d3ed00f8a54fe293110",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_sensor_shadow_final_20261010_173321/metrics.json": "55f9240c82ed18e1e99002f0f00805c2e8e42c7ea1a7027cdf55f6b80372ef80",
+    "/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_sensor_shadow_final_20261010_173321/trajectory.csv": "5183f7a62474f1e5e83203bb10336b8c64e180c8dcb229349dbacf683c246f67"
+  },
+  "script_sha256": "9126dd9f1795b5da1fff10022f9ba99cb9918d15fbdb90db816cef6fca64cfdb",
+  "outputs": {
+    "01_overview.png": "feba3df79048d6d5073941e0b323fb571d932709c8ee8169864f4a67107d1ea2",
+    "01_overview.svg": "ab96c71eaa31db0121b12cc3be338efe06ee71513f564c456b964c76c4586837",
+    "01_overview.pdf": "d2b224c82c6eef02945e4a28dacc66851fb02c6fbca7bf31c5c7833ded95ffeb",
+    "02_mass_and_outcomes.png": "40aeca6057703cacd0d62bf4366e81d6e5894163c2e83c4fa6084364518a1327",
+    "02_mass_and_outcomes.svg": "bac762f4d0c0007906cddb1405aa7703fe35065255aba10cfe83000e9898338a",
+    "02_mass_and_outcomes.pdf": "cfa6fdc7f054080346012a2119e650398b18e3594943f5f58a9d5e98b0c9a5dc",
+    "03_transition.png": "8366d798c41b6144b00d95996e7f96500ddb43c7e5e93deae0069aa199c7020d",
+    "03_transition.svg": "d6d70c3789869a251f55f9c0740b02706faa845f3af241a05ccb88a07017f7bd",
+    "03_transition.pdf": "d4d6da05637606c920d669d03b9682b07bfbaa0bf7148cd1107463a4dbdfe5b4",
+    "04_shared_trajectory.png": "691312dc36cafb2f823c5ba8a0a675f0c0add3847575405748ee9dc589ab6081",
+    "04_shared_trajectory.svg": "b49d3e76f51ab66de87d98a4c71183f4e65e6712698293b7d833745866b550aa",
+    "04_shared_trajectory.pdf": "83de0dd7996eed7be6327855600e1aea959fe75701fcf3edb9f4b3ecac5ca74b"
+  }
+}

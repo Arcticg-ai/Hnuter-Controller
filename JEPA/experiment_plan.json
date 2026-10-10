@@ -1,0 +1,91 @@
+{
+  "status": "EXECUTED_WITH_FAILURES_AND_LIMITATIONS",
+  "scope": "SITL only; no JEPA or neural training in phase one",
+  "required_first_gate": "Unmodified nominal position-control takeoff/hover/vertical-motion/hover/landing",
+  "evaluation_only": {
+    "nominal_mass_kg": 4.49999998,
+    "payload_kg": 0.9,
+    "loaded_mass_kg": 5.39999998
+  },
+  "groups": {
+    "A": {
+      "estimate": false,
+      "excitation": false,
+      "compensate": false,
+      "initial_model_mass_kg": 4.5
+    },
+    "B": {
+      "estimate": true,
+      "excitation": false,
+      "compensate": true,
+      "initial_model_mass_kg": 4.5
+    },
+    "C": {
+      "estimate": true,
+      "excitation": true,
+      "compensate": true,
+      "initial_model_mass_kg": 4.5
+    },
+    "D": {
+      "estimate": false,
+      "excitation": false,
+      "compensate": false,
+      "initial_model_mass_kg": 5.39999998
+    },
+    "C_shadow": {
+      "estimate": true,
+      "excitation": true,
+      "compensate": false,
+      "initial_model_mass_kg": 4.5
+    }
+  },
+  "candidate_calibration": {
+    "duration_s": 16,
+    "amplitude_m": 0.08,
+    "frequency_hz": 0.4,
+    "envelope": "sin(pi*t/T)^4"
+  },
+  "replication": {
+    "noise_free_per_group": "Attempted; blocked by PX4 unchanged-value sensor validators. Not passed.",
+    "noisy_delayed_seeds_per_group": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "low_noise_per_group": 1
+  },
+  "pending": [],
+  "runtime": {
+    "speed": 1,
+    "takeoff": "minimum-jerk 1.3 m / 10 s; all formal groups",
+    "window_s": 0.4,
+    "max_sample_gap_s": 0.045,
+    "effective_mass_rate_limit_kg_s": 0.3,
+    "known_world_gravity": 9.8,
+    "controller_gravity_unchanged": 9.81,
+    "low_sensor_std_scale": 0.01,
+    "sensor_delay_low_s": 0.03,
+    "sensor_delay_noisy_s": 0.06,
+    "extra_rotor_noise_std_rad_s": 2,
+    "extra_angle_noise_std_deg": 0.1,
+    "extra_vz_noise_std_m_s": 0.01
+  },
+  "completed": [
+    "Original nominal flight baseline",
+    "Payload CoM/inertia audit and independent model",
+    "Independent measured rotor/joint telemetry and shadow identification",
+    "SITL-only in-memory bumpless mass compensation, compiled and flown",
+    "Five low-noise group trials and 25 native-noise/additional-noise/delay trials",
+    "Nominal measured-state mass cross-check",
+    "Strict zero-noise 1x failure reproduction without disabling health checks"
+  ],
+  "unresolved": [
+    "Intermittent missing Gazebo joint telemetry; fail closed retains nominal mass",
+    "Three noisy formal flights exited; two did not confirm landing/disarm before simulation cleanup",
+    "Strict zero-noise state estimation invalid under unchanged-sensor validators",
+    "No validated advantage of active excitation over passive hover",
+    "No larger-payload, unknown thrust-scale/disturbance, or hardware validation"
+  ]
+}

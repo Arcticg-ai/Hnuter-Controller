@@ -1,0 +1,1584 @@
+{
+  "aggregates": [
+    {
+      "phase": "low",
+      "group": "A",
+      "n": 1,
+      "flight_passes": 1,
+      "evaluation_complete": 1,
+      "calibration_accepts": null,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 0,
+      "safety_exits": 0,
+      "calibration_failure_fraction": null,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "position_rmse_m": {
+        "n": 1,
+        "mean": 0.026369251326258447,
+        "std": 0.0,
+        "min": 0.026369251326258447,
+        "max": 0.026369251326258447
+      },
+      "vertical_rmse_m": {
+        "n": 1,
+        "mean": 0.016291039503382287,
+        "std": 0.0,
+        "min": 0.016291039503382287,
+        "max": 0.016291039503382287
+      },
+      "truth_position_rmse_m": {
+        "n": 1,
+        "mean": 0.03714084381931383,
+        "std": 0.0,
+        "min": 0.03714084381931383,
+        "max": 0.03714084381931383
+      },
+      "position_max_m": {
+        "n": 1,
+        "mean": 0.0577959940743975,
+        "std": 0.0,
+        "min": 0.0577959940743975,
+        "max": 0.0577959940743975
+      },
+      "mass_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "acceptance_time_s": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "holdout_relative_rms": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "calibration_rmse_m": {
+        "n": 1,
+        "mean": 0.04682442135060318,
+        "std": 0.0,
+        "min": 0.04682442135060318,
+        "max": 0.04682442135060318
+      },
+      "calibration_max_m": {
+        "n": 1,
+        "mean": 0.07881173493637106,
+        "std": 0.0,
+        "min": 0.07881173493637106,
+        "max": 0.07881173493637106
+      },
+      "calibration_cost_m2_s": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "transition_force_step_N": {
+        "n": 1,
+        "mean": 5.142293930053711,
+        "std": 0.0,
+        "min": 5.142293930053711,
+        "max": 5.142293930053711
+      },
+      "transition_position_peak_m": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "thrust_balance_rms_N": {
+        "n": 1,
+        "mean": 0.1442596863144009,
+        "std": 0.0,
+        "min": 0.1442596863144009,
+        "max": 0.1442596863144009
+      }
+    },
+    {
+      "phase": "low",
+      "group": "B",
+      "n": 1,
+      "flight_passes": 1,
+      "evaluation_complete": 1,
+      "calibration_accepts": 1,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 0,
+      "safety_exits": 0,
+      "calibration_failure_fraction": 0.0,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 1,
+        "mean": 0.08124344218911617,
+        "std": 0.0,
+        "min": 0.08124344218911617,
+        "max": 0.08124344218911617
+      },
+      "position_rmse_m": {
+        "n": 1,
+        "mean": 0.02002458018560887,
+        "std": 0.0,
+        "min": 0.02002458018560887,
+        "max": 0.02002458018560887
+      },
+      "vertical_rmse_m": {
+        "n": 1,
+        "mean": 0.011175620305254453,
+        "std": 0.0,
+        "min": 0.011175620305254453,
+        "max": 0.011175620305254453
+      },
+      "truth_position_rmse_m": {
+        "n": 1,
+        "mean": 0.05359044508563033,
+        "std": 0.0,
+        "min": 0.05359044508563033,
+        "max": 0.05359044508563033
+      },
+      "position_max_m": {
+        "n": 1,
+        "mean": 0.038008750474543204,
+        "std": 0.0,
+        "min": 0.038008750474543204,
+        "max": 0.038008750474543204
+      },
+      "mass_error_percent": {
+        "n": 1,
+        "mean": -0.08124344218911617,
+        "std": 0.0,
+        "min": -0.08124344218911617,
+        "max": -0.08124344218911617
+      },
+      "mass_abs_error_percent": {
+        "n": 1,
+        "mean": 0.08124344218911617,
+        "std": 0.0,
+        "min": 0.08124344218911617,
+        "max": 0.08124344218911617
+      },
+      "acceptance_time_s": {
+        "n": 1,
+        "mean": 10.188000000000002,
+        "std": 0.0,
+        "min": 10.188000000000002,
+        "max": 10.188000000000002
+      },
+      "holdout_relative_rms": {
+        "n": 1,
+        "mean": 0.004259029443421805,
+        "std": 0.0,
+        "min": 0.004259029443421805,
+        "max": 0.004259029443421805
+      },
+      "calibration_rmse_m": {
+        "n": 1,
+        "mean": 0.038805526657438916,
+        "std": 0.0,
+        "min": 0.038805526657438916,
+        "max": 0.038805526657438916
+      },
+      "calibration_max_m": {
+        "n": 1,
+        "mean": 0.07018309496632064,
+        "std": 0.0,
+        "min": 0.07018309496632064,
+        "max": 0.07018309496632064
+      },
+      "calibration_cost_m2_s": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 1,
+        "mean": 7.630325853824615e-06,
+        "std": 0.0,
+        "min": 7.630325853824615e-06,
+        "max": 7.630325853824615e-06
+      },
+      "transition_force_step_N": {
+        "n": 1,
+        "mean": 4.159454345703125,
+        "std": 0.0,
+        "min": 4.159454345703125,
+        "max": 4.159454345703125
+      },
+      "transition_position_peak_m": {
+        "n": 1,
+        "mean": 0.03701814270537611,
+        "std": 0.0,
+        "min": 0.03701814270537611,
+        "max": 0.03701814270537611
+      },
+      "thrust_balance_rms_N": {
+        "n": 1,
+        "mean": 0.1178196059596903,
+        "std": 0.0,
+        "min": 0.1178196059596903,
+        "max": 0.1178196059596903
+      }
+    },
+    {
+      "phase": "low",
+      "group": "C",
+      "n": 1,
+      "flight_passes": 1,
+      "evaluation_complete": 1,
+      "calibration_accepts": 1,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 0,
+      "safety_exits": 0,
+      "calibration_failure_fraction": 0.0,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 1,
+        "mean": 0.03390625865392627,
+        "std": 0.0,
+        "min": 0.03390625865392627,
+        "max": 0.03390625865392627
+      },
+      "position_rmse_m": {
+        "n": 1,
+        "mean": 0.023814350953756256,
+        "std": 0.0,
+        "min": 0.023814350953756256,
+        "max": 0.023814350953756256
+      },
+      "vertical_rmse_m": {
+        "n": 1,
+        "mean": 0.011428824997906779,
+        "std": 0.0,
+        "min": 0.011428824997906779,
+        "max": 0.011428824997906779
+      },
+      "truth_position_rmse_m": {
+        "n": 1,
+        "mean": 0.07055620352306359,
+        "std": 0.0,
+        "min": 0.07055620352306359,
+        "max": 0.07055620352306359
+      },
+      "position_max_m": {
+        "n": 1,
+        "mean": 0.04654912259710204,
+        "std": 0.0,
+        "min": 0.04654912259710204,
+        "max": 0.04654912259710204
+      },
+      "mass_error_percent": {
+        "n": 1,
+        "mean": -0.03390625865392627,
+        "std": 0.0,
+        "min": -0.03390625865392627,
+        "max": -0.03390625865392627
+      },
+      "mass_abs_error_percent": {
+        "n": 1,
+        "mean": 0.03390625865392627,
+        "std": 0.0,
+        "min": 0.03390625865392627,
+        "max": 0.03390625865392627
+      },
+      "acceptance_time_s": {
+        "n": 1,
+        "mean": 10.232000000000006,
+        "std": 0.0,
+        "min": 10.232000000000006,
+        "max": 10.232000000000006
+      },
+      "holdout_relative_rms": {
+        "n": 1,
+        "mean": 0.0028884726617881364,
+        "std": 0.0,
+        "min": 0.0028884726617881364,
+        "max": 0.0028884726617881364
+      },
+      "calibration_rmse_m": {
+        "n": 1,
+        "mean": 0.043900231269500066,
+        "std": 0.0,
+        "min": 0.043900231269500066,
+        "max": 0.043900231269500066
+      },
+      "calibration_max_m": {
+        "n": 1,
+        "mean": 0.09034463222359457,
+        "std": 0.0,
+        "min": 0.09034463222359457,
+        "max": 0.09034463222359457
+      },
+      "calibration_cost_m2_s": {
+        "n": 1,
+        "mean": 0.08966389890136656,
+        "std": 0.0,
+        "min": 0.08966389890136656,
+        "max": 0.08966389890136656
+      },
+      "saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 1,
+        "mean": 7.62939453125e-06,
+        "std": 0.0,
+        "min": 7.62939453125e-06,
+        "max": 7.62939453125e-06
+      },
+      "transition_force_step_N": {
+        "n": 1,
+        "mean": 4.070828914642334,
+        "std": 0.0,
+        "min": 4.070828914642334,
+        "max": 4.070828914642334
+      },
+      "transition_position_peak_m": {
+        "n": 1,
+        "mean": 0.0465646429122415,
+        "std": 0.0,
+        "min": 0.0465646429122415,
+        "max": 0.0465646429122415
+      },
+      "thrust_balance_rms_N": {
+        "n": 1,
+        "mean": 0.1337527482727167,
+        "std": 0.0,
+        "min": 0.1337527482727167,
+        "max": 0.1337527482727167
+      }
+    },
+    {
+      "phase": "low",
+      "group": "D",
+      "n": 1,
+      "flight_passes": 1,
+      "evaluation_complete": 1,
+      "calibration_accepts": null,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 0,
+      "safety_exits": 0,
+      "calibration_failure_fraction": null,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "position_rmse_m": {
+        "n": 1,
+        "mean": 0.024806815407242347,
+        "std": 0.0,
+        "min": 0.024806815407242347,
+        "max": 0.024806815407242347
+      },
+      "vertical_rmse_m": {
+        "n": 1,
+        "mean": 0.017400860486952177,
+        "std": 0.0,
+        "min": 0.017400860486952177,
+        "max": 0.017400860486952177
+      },
+      "truth_position_rmse_m": {
+        "n": 1,
+        "mean": 0.06667405662193246,
+        "std": 0.0,
+        "min": 0.06667405662193246,
+        "max": 0.06667405662193246
+      },
+      "position_max_m": {
+        "n": 1,
+        "mean": 0.053004777168027074,
+        "std": 0.0,
+        "min": 0.053004777168027074,
+        "max": 0.053004777168027074
+      },
+      "mass_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "acceptance_time_s": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "holdout_relative_rms": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "calibration_rmse_m": {
+        "n": 1,
+        "mean": 0.050985536188778484,
+        "std": 0.0,
+        "min": 0.050985536188778484,
+        "max": 0.050985536188778484
+      },
+      "calibration_max_m": {
+        "n": 1,
+        "mean": 0.13835986834505995,
+        "std": 0.0,
+        "min": 0.13835986834505995,
+        "max": 0.13835986834505995
+      },
+      "calibration_cost_m2_s": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "transition_force_step_N": {
+        "n": 1,
+        "mean": 1.8357901573181152,
+        "std": 0.0,
+        "min": 1.8357901573181152,
+        "max": 1.8357901573181152
+      },
+      "transition_position_peak_m": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "thrust_balance_rms_N": {
+        "n": 1,
+        "mean": 0.06481557908315433,
+        "std": 0.0,
+        "min": 0.06481557908315433,
+        "max": 0.06481557908315433
+      }
+    },
+    {
+      "phase": "low",
+      "group": "C_shadow",
+      "n": 1,
+      "flight_passes": 1,
+      "evaluation_complete": 1,
+      "calibration_accepts": 1,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 0,
+      "safety_exits": 0,
+      "calibration_failure_fraction": 0.0,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 1,
+        "mean": 0.00906637300914781,
+        "std": 0.0,
+        "min": 0.00906637300914781,
+        "max": 0.00906637300914781
+      },
+      "position_rmse_m": {
+        "n": 1,
+        "mean": 0.032617265764994886,
+        "std": 0.0,
+        "min": 0.032617265764994886,
+        "max": 0.032617265764994886
+      },
+      "vertical_rmse_m": {
+        "n": 1,
+        "mean": 0.020148180351680204,
+        "std": 0.0,
+        "min": 0.020148180351680204,
+        "max": 0.020148180351680204
+      },
+      "truth_position_rmse_m": {
+        "n": 1,
+        "mean": 0.07571687696733936,
+        "std": 0.0,
+        "min": 0.07571687696733936,
+        "max": 0.07571687696733936
+      },
+      "position_max_m": {
+        "n": 1,
+        "mean": 0.05975923293468497,
+        "std": 0.0,
+        "min": 0.05975923293468497,
+        "max": 0.05975923293468497
+      },
+      "mass_error_percent": {
+        "n": 1,
+        "mean": 0.00906637300914781,
+        "std": 0.0,
+        "min": 0.00906637300914781,
+        "max": 0.00906637300914781
+      },
+      "mass_abs_error_percent": {
+        "n": 1,
+        "mean": 0.00906637300914781,
+        "std": 0.0,
+        "min": 0.00906637300914781,
+        "max": 0.00906637300914781
+      },
+      "acceptance_time_s": {
+        "n": 1,
+        "mean": 10.003999999999998,
+        "std": 0.0,
+        "min": 10.003999999999998,
+        "max": 10.003999999999998
+      },
+      "holdout_relative_rms": {
+        "n": 1,
+        "mean": 0.00927787169100747,
+        "std": 0.0,
+        "min": 0.00927787169100747,
+        "max": 0.00927787169100747
+      },
+      "calibration_rmse_m": {
+        "n": 1,
+        "mean": 0.04813349095355425,
+        "std": 0.0,
+        "min": 0.04813349095355425,
+        "max": 0.04813349095355425
+      },
+      "calibration_max_m": {
+        "n": 1,
+        "mean": 0.10009280761183058,
+        "std": 0.0,
+        "min": 0.10009280761183058,
+        "max": 0.10009280761183058
+      },
+      "calibration_cost_m2_s": {
+        "n": 1,
+        "mean": 0.08966541210809023,
+        "std": 0.0,
+        "min": 0.08966541210809023,
+        "max": 0.08966541210809023
+      },
+      "saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 1,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "transition_force_step_N": {
+        "n": 1,
+        "mean": 4.209830284118652,
+        "std": 0.0,
+        "min": 4.209830284118652,
+        "max": 4.209830284118652
+      },
+      "transition_position_peak_m": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "thrust_balance_rms_N": {
+        "n": 1,
+        "mean": 0.15998741346852266,
+        "std": 0.0,
+        "min": 0.15998741346852266,
+        "max": 0.15998741346852266
+      }
+    },
+    {
+      "phase": "noisy",
+      "group": "A",
+      "n": 5,
+      "flight_passes": 5,
+      "evaluation_complete": 5,
+      "calibration_accepts": null,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 1,
+      "safety_exits": 0,
+      "calibration_failure_fraction": null,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "position_rmse_m": {
+        "n": 5,
+        "mean": 0.049814550941118266,
+        "std": 0.011969072555571721,
+        "min": 0.03527341556452408,
+        "max": 0.0627309313085971
+      },
+      "vertical_rmse_m": {
+        "n": 5,
+        "mean": 0.04093558011597358,
+        "std": 0.014302079889799379,
+        "min": 0.023007550313916613,
+        "max": 0.05683922624949174
+      },
+      "truth_position_rmse_m": {
+        "n": 5,
+        "mean": 0.160266445128116,
+        "std": 0.053070409608925534,
+        "min": 0.08196429001794696,
+        "max": 0.21464553780003004
+      },
+      "position_max_m": {
+        "n": 5,
+        "mean": 0.10080273703186551,
+        "std": 0.021776741945771744,
+        "min": 0.07994006742934123,
+        "max": 0.1310648564012773
+      },
+      "mass_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "acceptance_time_s": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "holdout_relative_rms": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "calibration_rmse_m": {
+        "n": 5,
+        "mean": 0.04981930387640277,
+        "std": 0.006667086846264087,
+        "min": 0.040878762731449116,
+        "max": 0.05677782215717347
+      },
+      "calibration_max_m": {
+        "n": 5,
+        "mean": 0.09435742152231123,
+        "std": 0.019012978175832994,
+        "min": 0.07130333744671577,
+        "max": 0.116126775672542
+      },
+      "calibration_cost_m2_s": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "saturation_fraction": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "transition_force_step_N": {
+        "n": 5,
+        "mean": 4.917661952972412,
+        "std": 0.5412327835984496,
+        "min": 4.108679294586182,
+        "max": 5.524596214294434
+      },
+      "transition_position_peak_m": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "thrust_balance_rms_N": {
+        "n": 4,
+        "mean": 0.1388543853587988,
+        "std": 0.04286150890152861,
+        "min": 0.10915025846377524,
+        "max": 0.2021262500001477
+      }
+    },
+    {
+      "phase": "noisy",
+      "group": "B",
+      "n": 5,
+      "flight_passes": 4,
+      "evaluation_complete": 4,
+      "calibration_accepts": 3,
+      "landing_unconfirmed": 1,
+      "no_actuator_sensor_runs": 1,
+      "safety_exits": 1,
+      "calibration_failure_fraction": 0.4,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 3,
+        "mean": 0.0545814994018734,
+        "std": 0.037520591568800284,
+        "min": 0.02627682244946694,
+        "max": 0.09714032901368963
+      },
+      "position_rmse_m": {
+        "n": 4,
+        "mean": 0.034196835056263857,
+        "std": 0.008903864308896657,
+        "min": 0.025536338283110735,
+        "max": 0.046372426253578514
+      },
+      "vertical_rmse_m": {
+        "n": 4,
+        "mean": 0.022889569850345192,
+        "std": 0.0129683739641233,
+        "min": 0.013504111825061844,
+        "max": 0.04205439978436452
+      },
+      "truth_position_rmse_m": {
+        "n": 4,
+        "mean": 0.09357603460987635,
+        "std": 0.046766862445864706,
+        "min": 0.055216922138373065,
+        "max": 0.1505950055455052
+      },
+      "position_max_m": {
+        "n": 4,
+        "mean": 0.07182242319267021,
+        "std": 0.03415913832599297,
+        "min": 0.047341261303484455,
+        "max": 0.12229918773977973
+      },
+      "mass_error_percent": {
+        "n": 5,
+        "mean": -6.650048582265735,
+        "std": 9.144008383318079,
+        "min": -16.666666358024685,
+        "max": 0.09714032901368963
+      },
+      "mass_abs_error_percent": {
+        "n": 5,
+        "mean": 6.699415442850997,
+        "std": 9.09885228489953,
+        "min": 0.02627682244946694,
+        "max": 16.666666358024685
+      },
+      "acceptance_time_s": {
+        "n": 3,
+        "mean": 10.189333333333332,
+        "std": 0.04406056437829128,
+        "min": 10.159999999999997,
+        "max": 10.240000000000002
+      },
+      "holdout_relative_rms": {
+        "n": 3,
+        "mean": 0.00544367841930201,
+        "std": 0.0003884269196371222,
+        "min": 0.0051291263591151355,
+        "max": 0.005877844721837309
+      },
+      "calibration_rmse_m": {
+        "n": 5,
+        "mean": 0.05045184748986229,
+        "std": 0.01448197238700937,
+        "min": 0.02842307960468486,
+        "max": 0.06705769133249785
+      },
+      "calibration_max_m": {
+        "n": 5,
+        "mean": 0.12422464889607406,
+        "std": 0.10284447724457663,
+        "min": 0.06811509410975267,
+        "max": 0.3074890813493122
+      },
+      "calibration_cost_m2_s": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "saturation_fraction": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 3,
+        "mean": 6.360620621611209e-06,
+        "std": 2.1983882608808607e-06,
+        "min": 3.82214057026431e-06,
+        "max": 7.630326763319317e-06
+      },
+      "transition_force_step_N": {
+        "n": 5,
+        "mean": 32.45774745941162,
+        "std": 64.13065896603048,
+        "min": 2.824045181274414,
+        "max": 147.16860961914062
+      },
+      "transition_position_peak_m": {
+        "n": 3,
+        "mean": 0.059874819072349574,
+        "std": 0.011463176598655327,
+        "min": 0.04955380138040859,
+        "max": 0.07221250445815382
+      },
+      "thrust_balance_rms_N": {
+        "n": 4,
+        "mean": 0.28447700180970215,
+        "std": 0.25401198107682277,
+        "min": 0.14938840532662406,
+        "max": 0.6653582327757581
+      }
+    },
+    {
+      "phase": "noisy",
+      "group": "C",
+      "n": 5,
+      "flight_passes": 4,
+      "evaluation_complete": 4,
+      "calibration_accepts": 3,
+      "landing_unconfirmed": 1,
+      "no_actuator_sensor_runs": 1,
+      "safety_exits": 1,
+      "calibration_failure_fraction": 0.4,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 3,
+        "mean": 0.1456782038795438,
+        "std": 0.11645782988898652,
+        "min": 0.01442483493532265,
+        "max": 0.23663946942271696
+      },
+      "position_rmse_m": {
+        "n": 4,
+        "mean": 0.03481919279587612,
+        "std": 0.0034253752609234725,
+        "min": 0.031189861808376886,
+        "max": 0.03944327613193532
+      },
+      "vertical_rmse_m": {
+        "n": 4,
+        "mean": 0.0232438581092108,
+        "std": 0.002577031259002508,
+        "min": 0.021289431764360954,
+        "max": 0.027001020845363658
+      },
+      "truth_position_rmse_m": {
+        "n": 4,
+        "mean": 0.09855140254549223,
+        "std": 0.03205902020120639,
+        "min": 0.06813639680312016,
+        "max": 0.13927752824499492
+      },
+      "position_max_m": {
+        "n": 4,
+        "mean": 0.05570320226656471,
+        "std": 0.004512633674612055,
+        "min": 0.049267618864339814,
+        "max": 0.05893815940759913
+      },
+      "mass_error_percent": {
+        "n": 5,
+        "mean": -6.748303531563472,
+        "std": 9.054671770395727,
+        "min": -16.666666358024685,
+        "max": 0.01442483493532265
+      },
+      "mass_abs_error_percent": {
+        "n": 5,
+        "mean": 6.7540734655376,
+        "std": 9.04929257400226,
+        "min": 0.01442483493532265,
+        "max": 16.666666358024685
+      },
+      "acceptance_time_s": {
+        "n": 3,
+        "mean": 10.18,
+        "std": 0.027712812921098985,
+        "min": 10.164000000000001,
+        "max": 10.211999999999996
+      },
+      "holdout_relative_rms": {
+        "n": 3,
+        "mean": 0.006559363478662009,
+        "std": 0.0019704130472862997,
+        "min": 0.0050308449959922145,
+        "max": 0.008783160665039345
+      },
+      "calibration_rmse_m": {
+        "n": 4,
+        "mean": 0.04848804905681253,
+        "std": 0.010588214321812143,
+        "min": 0.03398714962517228,
+        "max": 0.05913965288972707
+      },
+      "calibration_max_m": {
+        "n": 4,
+        "mean": 0.08609412307164899,
+        "std": 0.02686541828697389,
+        "min": 0.05619096758565109,
+        "max": 0.11558305885852851
+      },
+      "calibration_cost_m2_s": {
+        "n": 4,
+        "mean": 0.08966532421032974,
+        "std": 3.57954617172544e-07,
+        "min": 0.08966480795020634,
+        "max": 0.08966560249915495
+      },
+      "saturation_fraction": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 3,
+        "mean": 6.359080089168856e-06,
+        "std": 2.2018622532905232e-06,
+        "min": 3.816588559857337e-06,
+        "max": 7.630325853824615e-06
+      },
+      "transition_force_step_N": {
+        "n": 5,
+        "mean": 3.3720548950135707,
+        "std": 1.8786413290907338,
+        "min": 0.0319468192756176,
+        "max": 4.473702907562256
+      },
+      "transition_position_peak_m": {
+        "n": 3,
+        "mean": 0.06260902501437836,
+        "std": 0.015178729531181287,
+        "min": 0.05236817961454501,
+        "max": 0.08004763119658206
+      },
+      "thrust_balance_rms_N": {
+        "n": 3,
+        "mean": 0.14533981130900128,
+        "std": 0.028759610227375172,
+        "min": 0.1214324975366382,
+        "max": 0.1772545664007645
+      }
+    },
+    {
+      "phase": "noisy",
+      "group": "D",
+      "n": 5,
+      "flight_passes": 5,
+      "evaluation_complete": 5,
+      "calibration_accepts": null,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 1,
+      "safety_exits": 0,
+      "calibration_failure_fraction": null,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "position_rmse_m": {
+        "n": 5,
+        "mean": 0.0394035198119239,
+        "std": 0.015200564997214039,
+        "min": 0.021136495445341488,
+        "max": 0.062452456251877696
+      },
+      "vertical_rmse_m": {
+        "n": 5,
+        "mean": 0.0307519329698952,
+        "std": 0.01758430384526261,
+        "min": 0.015022109144402593,
+        "max": 0.057799874372458454
+      },
+      "truth_position_rmse_m": {
+        "n": 5,
+        "mean": 0.11721680266332198,
+        "std": 0.07542740726259016,
+        "min": 0.047662851396558056,
+        "max": 0.2454742153369219
+      },
+      "position_max_m": {
+        "n": 5,
+        "mean": 0.07427965314263262,
+        "std": 0.028621811787078105,
+        "min": 0.03901254883079264,
+        "max": 0.10860716873624615
+      },
+      "mass_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "mass_abs_error_percent": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "acceptance_time_s": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "holdout_relative_rms": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "calibration_rmse_m": {
+        "n": 5,
+        "mean": 0.04114322026383997,
+        "std": 0.006928124878882001,
+        "min": 0.035792803211825736,
+        "max": 0.0526704170315113
+      },
+      "calibration_max_m": {
+        "n": 5,
+        "mean": 0.07906119500340977,
+        "std": 0.03133560499624874,
+        "min": 0.05642316525524041,
+        "max": 0.13433982479392975
+      },
+      "calibration_cost_m2_s": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "saturation_fraction": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "transition_force_step_N": {
+        "n": 5,
+        "mean": 2.6416461944580076,
+        "std": 0.8363698854130078,
+        "min": 1.7785007953643799,
+        "max": 3.7913601398468018
+      },
+      "transition_position_peak_m": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "thrust_balance_rms_N": {
+        "n": 4,
+        "mean": 0.07965236294375588,
+        "std": 0.004131539780858381,
+        "min": 0.07552122658566456,
+        "max": 0.08491775443682724
+      }
+    },
+    {
+      "phase": "noisy",
+      "group": "C_shadow",
+      "n": 5,
+      "flight_passes": 4,
+      "evaluation_complete": 4,
+      "calibration_accepts": 4,
+      "landing_unconfirmed": 0,
+      "no_actuator_sensor_runs": 0,
+      "safety_exits": 1,
+      "calibration_failure_fraction": 0.19999999999999996,
+      "accepted_only_mass_abs_error_percent": {
+        "n": 4,
+        "mean": 0.10993192867451707,
+        "std": 0.01377267868987674,
+        "min": 0.0911372466653404,
+        "max": 0.12275232792617885
+      },
+      "position_rmse_m": {
+        "n": 4,
+        "mean": 0.03561174956590834,
+        "std": 0.00852848106313447,
+        "min": 0.028682611857392352,
+        "max": 0.04653283525418917
+      },
+      "vertical_rmse_m": {
+        "n": 4,
+        "mean": 0.025117084276530127,
+        "std": 0.009080701462513382,
+        "min": 0.014890867906834313,
+        "max": 0.03450158159473534
+      },
+      "truth_position_rmse_m": {
+        "n": 4,
+        "mean": 0.10294272590984213,
+        "std": 0.061032866135859565,
+        "min": 0.051592004386041036,
+        "max": 0.1887154704677974
+      },
+      "position_max_m": {
+        "n": 4,
+        "mean": 0.06509619607268911,
+        "std": 0.012049006743421806,
+        "min": 0.05070097030706377,
+        "max": 0.07808736623936678
+      },
+      "mass_error_percent": {
+        "n": 5,
+        "mean": -3.3412960756202574,
+        "std": 7.4499224717566435,
+        "min": -16.666666358024685,
+        "max": 0.10881960064539342
+      },
+      "mass_abs_error_percent": {
+        "n": 5,
+        "mean": 3.421278814544551,
+        "std": 7.404406340674083,
+        "min": 0.0911372466653404,
+        "max": 16.666666358024685
+      },
+      "acceptance_time_s": {
+        "n": 4,
+        "mean": 10.166999999999998,
+        "std": 0.11446688021723317,
+        "min": 10.0,
+        "max": 10.259999999999998
+      },
+      "holdout_relative_rms": {
+        "n": 4,
+        "mean": 0.004912441892526231,
+        "std": 0.0012556179442810725,
+        "min": 0.003171717927824834,
+        "max": 0.0061702424528284365
+      },
+      "calibration_rmse_m": {
+        "n": 4,
+        "mean": 0.04630105490837173,
+        "std": 0.00392898932387297,
+        "min": 0.042995560836159415,
+        "max": 0.050776275372146594
+      },
+      "calibration_max_m": {
+        "n": 4,
+        "mean": 0.09009746199972579,
+        "std": 0.019364581498201507,
+        "min": 0.06636669570745353,
+        "max": 0.11041413113334923
+      },
+      "calibration_cost_m2_s": {
+        "n": 4,
+        "mean": 0.08966524829375849,
+        "std": 1.0324058307989171e-07,
+        "min": 0.0896651364907252,
+        "max": 0.08966535585358043
+      },
+      "saturation_fraction": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "calibration_saturation_fraction": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "update_force_error_N": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "transition_force_step_N": {
+        "n": 4,
+        "mean": 4.732583463191986,
+        "std": 1.4390141189057821,
+        "min": 3.5388619899749756,
+        "max": 6.804855823516846
+      },
+      "transition_position_peak_m": {
+        "n": 0,
+        "mean": null,
+        "std": null,
+        "min": null,
+        "max": null
+      },
+      "thrust_balance_rms_N": {
+        "n": 4,
+        "mean": 0.12871529331764503,
+        "std": 0.031026172529214767,
+        "min": 0.1057116725306397,
+        "max": 0.1738335584007081
+      }
+    }
+  ],
+  "paired_contrasts": [
+    {
+      "metric": "position_rmse_m",
+      "comparison": "A minus B",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.012771832292107118,
+      "bootstrap_95pct_interval_m": [
+        0.004696732033895026,
+        0.017221466304242036
+      ]
+    },
+    {
+      "metric": "position_rmse_m",
+      "comparison": "A minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.012149474552494847,
+      "bootstrap_95pct_interval_m": [
+        0.0036151687173190793,
+        0.02321466265014021
+      ]
+    },
+    {
+      "metric": "position_rmse_m",
+      "comparison": "A minus D",
+      "positive_means_improvement": true,
+      "paired_seed_count": 5,
+      "mean_difference_m": 0.010411031129194363,
+      "bootstrap_95pct_interval_m": [
+        -0.008765071265832192,
+        0.029195152456177608
+      ]
+    },
+    {
+      "metric": "position_rmse_m",
+      "comparison": "A minus C_shadow",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.01616333153437431,
+      "bootstrap_95pct_interval_m": [
+        -0.0008058179356698857,
+        0.033132481004418506
+      ]
+    },
+    {
+      "metric": "position_rmse_m",
+      "comparison": "B minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": -0.0006223577396122721,
+      "bootstrap_95pct_interval_m": [
+        -0.007354013747641346,
+        0.007418748956568074
+      ]
+    },
+    {
+      "metric": "position_rmse_m",
+      "comparison": "C_shadow minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 3,
+      "mean_difference_m": 0.0017928820446768516,
+      "bootstrap_95pct_interval_m": [
+        -0.00591364127900668,
+        0.012485455147395907
+      ]
+    },
+    {
+      "metric": "vertical_rmse_m",
+      "comparison": "A minus B",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.014720641602732556,
+      "bootstrap_95pct_interval_m": [
+        0.007347506768977354,
+        0.021010420636009393
+      ]
+    },
+    {
+      "metric": "vertical_rmse_m",
+      "comparison": "A minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.01436635334386695,
+      "bootstrap_95pct_interval_m": [
+        0.0036213843855883616,
+        0.028413175335224847
+      ]
+    },
+    {
+      "metric": "vertical_rmse_m",
+      "comparison": "A minus D",
+      "positive_means_improvement": true,
+      "paired_seed_count": 5,
+      "mean_difference_m": 0.010183647146078374,
+      "bootstrap_95pct_interval_m": [
+        -0.009938637983277005,
+        0.02929761878325151
+      ]
+    },
+    {
+      "metric": "vertical_rmse_m",
+      "comparison": "A minus C_shadow",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.016904958238928854,
+      "bootstrap_95pct_interval_m": [
+        -0.004120992904573115,
+        0.03793090938243082
+      ]
+    },
+    {
+      "metric": "vertical_rmse_m",
+      "comparison": "B minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": -0.0003542882588656055,
+      "bootstrap_95pct_interval_m": [
+        -0.009116309514798708,
+        0.013470533871550217
+      ]
+    },
+    {
+      "metric": "vertical_rmse_m",
+      "comparison": "C_shadow minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 3,
+      "mean_difference_m": 0.004839639053771553,
+      "bootstrap_95pct_interval_m": [
+        -0.000965837419008294,
+        0.011733482166488424
+      ]
+    },
+    {
+      "metric": "truth_position_rmse_m",
+      "comparison": "A minus B",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.053095637350261154,
+      "bootstrap_95pct_interval_m": [
+        -0.02586430484670319,
+        0.1253647563723757
+      ]
+    },
+    {
+      "metric": "truth_position_rmse_m",
+      "comparison": "A minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.04812026941464528,
+      "bootstrap_95pct_interval_m": [
+        0.003806510244865273,
+        0.09243402858442529
+      ]
+    },
+    {
+      "metric": "truth_position_rmse_m",
+      "comparison": "A minus D",
+      "positive_means_improvement": true,
+      "paired_seed_count": 5,
+      "mean_difference_m": 0.04304964246479405,
+      "bootstrap_95pct_interval_m": [
+        -0.037274215570049465,
+        0.12337350049963755
+      ]
+    },
+    {
+      "metric": "truth_position_rmse_m",
+      "comparison": "A minus C_shadow",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": 0.057977368166744134,
+      "bootstrap_95pct_interval_m": [
+        -0.054863125943375834,
+        0.14099167059218926
+      ]
+    },
+    {
+      "metric": "truth_position_rmse_m",
+      "comparison": "B minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 4,
+      "mean_difference_m": -0.004975367935615881,
+      "bootstrap_95pct_interval_m": [
+        -0.0429363543495521,
+        0.047560293967824845
+      ]
+    },
+    {
+      "metric": "truth_position_rmse_m",
+      "comparison": "C_shadow minus C",
+      "positive_means_improvement": true,
+      "paired_seed_count": 3,
+      "mean_difference_m": 0.011369895291492895,
+      "bootstrap_95pct_interval_m": [
+        -0.07070294212843223,
+        0.11026106094122323
+      ]
+    }
+  ]
+}

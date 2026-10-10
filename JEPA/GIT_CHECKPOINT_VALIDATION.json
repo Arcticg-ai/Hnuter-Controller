@@ -1,0 +1,28 @@
+{
+  "phase1_tests": {
+    "passed": 10,
+    "evidence": "rerun test_offline.py during Git protection"
+  },
+  "revision2_tests": {
+    "passed": 10,
+    "evidence": "rerun revision2/test_offline.py during Git protection"
+  },
+  "revision3_tests": {
+    "passed": 20,
+    "log_sha256": "755f510682e1d4ea17285ca5f19f9313f333bee288eeca91a8c31ef86201e0b1"
+  },
+  "articulated_tests": {
+    "passed": 3,
+    "log_sha256": "3207abab748537b51069772cf82dea02bfffd91d179209abdd100b8cb47a37da"
+  },
+  "firmware": {
+    "build": "previous revision2 build succeeded; current hashes match frozen release",
+    "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+  },
+  "limitations": [
+    "No revision3 SITL",
+    "Actual CoM/J consumer not integrated",
+    "Timing/model residual gate remains failed",
+    "No high-rate truth or loaded parameters enter estimator"
+  ]
+}

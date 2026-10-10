@@ -1,0 +1,33 @@
+{
+  "preexisting_modified_files_unchanged": {
+    "README.md": true,
+    "config/hnuter_drcda_hardware_tuning.json": true,
+    "docs/iebc_hardware.md": true,
+    "hnuter_external_controller_px4_position_iebc_hardware.py": true,
+    "hnuter_external_controller_px4_position_iebc_simulation.py": true,
+    "hnuter_external_direct_drcda_hardware.py": true,
+    "tests/test_hnuter_external_controller_px4_position_iebc_hardware.py": true,
+    "tests/test_hnuter_external_controller_px4_position_iebc_simulation.py": true,
+    "tests/test_hnuter_external_direct_drcda_hardware.py": true
+  },
+  "repos": {
+    "controller": {
+      "branch": "hardware",
+      "head": "abeb52c13c49fb601401a44a30b343fad0183133",
+      "status": "M README.md\n M config/hnuter_drcda_hardware_tuning.json\n M docs/iebc_hardware.md\n M hnuter_external_controller_px4_position_iebc_hardware.py\n M hnuter_external_controller_px4_position_iebc_simulation.py\n M hnuter_external_direct_drcda_hardware.py\n M tests/test_hnuter_external_controller_px4_position_iebc_hardware.py\n M tests/test_hnuter_external_controller_px4_position_iebc_simulation.py\n M tests/test_hnuter_external_direct_drcda_hardware.py\n?? JEPA/\n?? VID_20260821_230607_015.mp4\n?? VID_20260827_190452_031.mp4\n?? docs/iebc_flight_records/\n?? iebc/\n?? output/\n?? outputs/"
+    },
+    "px4": {
+      "branch": "hnuter-tail-motor-bench-sitl-20260812",
+      "head": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+      "status": "M msg/HnuterControlStatus.msg\n M src/modules/mc_rate_control/HnuterControl.cpp\n M src/modules/mc_rate_control/HnuterControl.hpp"
+    }
+  },
+  "original_position_entry_unchanged": true,
+  "original_sdf_unchanged": true,
+  "firmware_copies_match": {
+    "src/modules/mc_rate_control/HnuterControl.hpp": true,
+    "src/modules/mc_rate_control/HnuterControl.cpp": true,
+    "msg/HnuterControlStatus.msg": true
+  },
+  "px4_only_expected_tracked_modifications": true
+}

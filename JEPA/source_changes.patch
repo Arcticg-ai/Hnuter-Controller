@@ -1,0 +1,2137 @@
+--- /dev/null
++++ b/JEPA/PREPARATION_REPORT.md
+@@ -0,0 +1,115 @@
++# 质量自校准：准备代码与受阻报告
++
++本目录是第一阶段准备产物，**尚不是可运行的闭环自校准系统**。本次实际执行了环境诊断、SDF 质量/惯量审计、负载模型生成、SDF 校验和离线数学测试；**PX4/Gazebo 飞行 0 次**。没有操作硬件，没有启动控制节点，没有改动原控制器或 PX4 源码。JEPA、神经网络训练均未实现。
++
++## 复现已执行检查
++
++```bash
++cd /home/hnuter/px4_ws_ros2
++python3 JEPA/run_offline_checks.py
++```
++
++此脚本只运行准备检查，不会解锁飞行器。当前权限下预期返回码为 **2**，表示 SITL 受阻；不能把离线测试通过当成任务完成。结果写入 `JEPA/runs/offline_<时间>/`，最新目录记在 `JEPA/latest_offline_run.txt`。时间使用 Asia/Shanghai。
++
++单独重现：
++
++```bash
++python3 JEPA/preflight.py
++python3 JEPA/model_audit.py
++python3 -m unittest discover -s JEPA -p test_offline.py -v
++gz sdf -k JEPA/generated/zero_sensor_noise/hnuter_mass_cal_payload/model.sdf
++```
++
++不要将上述命令称为完整实验启动命令。隔离启动器、普通位置入口状态机、在线遥测和固件质量补偿尚未接入，不能据此直接执行 A/B/C/D。
++
++## 当前阻塞及所需权限
++
++1. 本会话创建 AF_INET UDP/TCP socket 均失败：`PermissionError(1, 'Operation not permitted')`，甚至尚未连接任何端点，仅尝试绑定 `127.0.0.1`。ROS/DDS、XRCE Agent、Gazebo Transport 无法在该限制下联调。
++2. 会话文件权限仅允许 JEPA 所在 ROS 工作区、指定 visualization 目录和临时目录写入；指定 PX4 仓库处于只读范围。不能在原仓库修改 `HnuterControl`、写构建目录或使用默认 rootfs 写参数/ULog。
++
++继续完整验证需要将该 PX4 仓库加入本会话可写工作区，并允许本机仿真所需进程间/回环通信。无需开放真实飞控网络、串口或硬件访问。没有使用 chmod、sudo、替代工具或提权绕过限制；没有自动审批拒绝事件。
++
++## 本次确认的工程事实
++
++| 项目 | 本次读取结果 |
++|---|---|
++| PX4 路径 | `/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl` |
++| PX4 分支 / HEAD | `hnuter-tail-motor-bench-sitl-20260812` / `49b60a5d8775655c1e6a9be722f76e9e4ab2517b` |
++| PX4 工作树 | 无已跟踪或未跟踪变化 |
++| ROS 分支 / HEAD | `hardware` / `abeb52c13c49fb601401a44a30b343fad0183133` |
++| 原有 ROS 修改 | 9 个已跟踪修改文件，以及此前未跟踪目录/视频；全部保留 |
++| ROS / Gazebo | Jazzy 环境加载、rclpy/px4_msgs 导入通过；`gz sim --versions` 输出 8.11.0 |
++| 构建身份 | `build_git_version.h` 中版本与 PX4 HEAD 一致；二进制 SHA256 已保存，尚未通过运行中的 `ver all` 确认 |
++| AGENTS.md | 已检查祖先目录及涉及源码/JEPA 子树，未发现适用文件 |
++
++诊断 JSON 包含 Git 状态、原有已跟踪修改的哈希、源码/二进制哈希、版本头、实际执行命令与错误。`*_existing_changes.diff` 是运行前已有修改的备份，不是本任务的改动。
++
++## 模型审计
++
++对所有 **10 个 link** 沿 `relative_to` frame graph 求变换，将每个 link 的惯性中心转换到模型坐标，旋转惯量后用平行轴定理合成。结果对应 **SDF 零关节位姿**，不是运动中固定不变的 CoM。
++
++- 标称总质量：**4.49999998 kg**；base_link 单独为 3.0552478 kg。
++- 标称组合 CoM（模型局部坐标，米）：`[-0.1049171401, 0.0010965586, -0.0040426450]`。
++- 内置 0.9 kg 刚性负载放在该 CoM，尺寸 `0.12 × 0.12 × 0.08 m`，惯量对角为 `[0.00156, 0.00156, 0.00216] kg·m²`，满足正定及主惯量三角不等式。
++- 加载后总质量：**5.39999998 kg**，此位姿下组合 CoM 不变。
++- 标称组合主惯量：`[0.1262345492, 0.2469026946, 0.3264970403] kg·m²`；加载后：`[0.1277945502, 0.2484630817, 0.3286566522] kg·m²`。
++
++完整分 link 数据与惯量矩阵见 `generated/mass_audit.json`。模型为独立 `hnuter_mass_cal_payload`，通过 fixed joint 连接 base_link；内部负载沿用原外壳碰撞体，不增加重叠碰撞体。mesh 使用当前机器源路径，换机器后应重新生成。
++
++`native_noise/` 保留原 SDF 传感器噪声；`zero_sensor_noise/` 将模型内传感器 noise 的均值/标准差置零。所有 link 关闭 wind。后者仅是模型噪声设置，不保证整个仿真无噪声：世界、系统插件、估计器和传输仍待实际检查。两份文件均通过 `gz sdf -k`，但尚未装载进 Gazebo。
++
++## 控制链路与输入审计
++
++普通入口 `hnuter_external_controller_px4_position.py:481` 固定 `use_px4_position_takeoff=True`，`control_loop()` 的该分支发布位置轨迹并返回。不能因同文件也有直接执行器代码，就误判本模式使用外部力控制。
++
++`MulticopterRateControl.cpp:167` 在 `CA_AIRFRAME=16` 且相应控制标志有效时调用 `HnuterControl::update()`。`HnuterControl.cpp:148` 从 `HNTR_MASS` 读取质量；第 319 行组合
++
++```text
++acc_unsaturated = acc_ff + velocity_p * vel_error + velocity_integral
++                  - velocity_d * measured_acceleration
++```
++
++随后限制加速度，第 337–358 行执行积分更新和限幅，第 363 行通过 `F_world = mass * (acc_des - gravity_vec)` 计算合力。积分器是加速度量纲，但本周期 `acc_des` 使用更新积分之前的值，因此在线实现要在一致阶段重算，不能只在现有参数读取处换质量。
++
++世界 `default.sdf` 的重力为 **9.8**，HnuterControl 内部使用 **9.81**。辨识器按世界的已知重力设置 9.8，无扰公式按实际控制实现使用 9.81；不能混用。这里没有修改既有控制器的重力或增益。
++
++`GZMixingInterfaceESC.cpp:39–48,135` 将 `/.../command/motor_speed` 同时用于输出与“反馈”，直接填入 `esc_rpm`，既不是独立转速测量，也不能因为字段名 rpm 就按 rpm 单位换算。前四个 SDF 电机 `k=8.54858e-5`，转速时间常数 0.001/0.002 s；尾电机 `k=1.2777084e-5`，时间常数 0.05 s。舵机为 JointPositionController，不能把舵机命令直接当实际角度。
++
++目前只实现从物理转速、实际推力轴和姿态旋转重建 `T_up` 的数学函数；**尚未提供这些独立遥测，也没有经验证的指令滞后/舵机状态观测器**。因此在线质量可辨识性尚未验证。
++
++## 已有代码及测试边界
++
++| 文件 | 实现与边界 |
++|---|---|
++| `preflight.py` | 只读诊断、Git/文件身份记录、socket 探针；不启动飞行 |
++| `model_audit.py` | frame graph、整机惯量审计、独立负载模型生成；明确拒绝未支持的 SDF 结构 |
++| `estimator.py` | 0.4 s 积分窗口、遗忘最小二乘、固定先验、物理范围、20 训练窗后稳定性检查、冻结候选并以 5 个独立后续窗口验收；异常间隔/不合格数据重置训练段 |
++| `test_offline.py` | 10 项离线测试，包括 5 个合成速度噪声种子；这些不是要求的 5 次 SITL 复测 |
++| `run_offline_checks.py` | 自动执行并保存原始诊断、测试、SDF 校验日志；生成解析参考图 |
++| `experiment_plan.json` | A/B/C/D/C_shadow 组别、初步预算和未实现项；属于实验配置，不供估计器读取 |
++
++估计器没有读取模型或真实质量的接口。但离线测试为验证公式而使用真值生成合成力输入，这不构成真实执行器重建证据。`eligible` 只是调用方契约，尚未接入实际离地、状态有效、姿态、饱和、时延等检测。
++
++无扰切换目前仅有代数候选函数：在未饱和时保持切换前后合力一致；积分超限则拒绝，不裁剪。**尚无固件 m_eff、变化率限制、SITL 编译保护、消息输入和闭环瞬态日志。**没有修改 HNTR_MASS，没有高频写参数，没有改变 PID。
++
++图 `planned_reference.png` 仅为 16 s、0.08 m、0.4 Hz、sin⁴ 包络的解析位置/速度/加速度，标题明确标为非飞行数据。当前窗口、噪声和阈值均待实测调试。
++
++## 三个研究问题的当前答案
++
++| 问题 | 当前结论 |
++|---|---|
++| 质量能否独立辨识？ | 数学与合成输入测试通过；真实执行器/速度遥测链未建立，SITL 未验证 |
++| 补偿是否平稳？ | 未饱和公式的力连续性测试通过；固件未接入，闭环未验证 |
++| 主动比被动值得吗？ | 未验证；合成悬停也能辨识，不能预先宣称主动更好 |
++
++A/B/C/D/C_shadow、标称基线、加载后稳定性、实际质量误差/收敛时间、独立实测窗口残差、轨迹 RMSE/最大误差、更新瞬态、饱和率、校准失败率、安全退出次数全部 **N/A（未执行）**。不能把 N/A 写成零故障、零饱和或成功。
++
++## 解除权限限制后的顺序
++
++1. 验证独占实例和通信边界：拟使用独立 domain 73、XRCE UDP 28888、命名空间 `jepa_sitl`、独立 GZ_PARTITION、loopback；这些值是候选，未检查宿主占用。基类绝对 `/fmu/...` topic 必须显式 remap；Agent 的监听地址需实际约束，环境变量本身不是完整网络隔离证明。
++2. 在每次独立 rootfs 中启动原固件/原模型，记录 `ver all`、实际参数与 ULog。先完成普通位置基线，不复用依赖 cube world 的 IEBC 入口。只关闭本次创建的 PID/process group。
++3. 原模型基线通过后，加载生成的独立模型，旧控制器完成同样动作。失败则先报告稳定边界，不开启质量补偿。
++4. 实现独立电机/关节遥测及对齐，先 C_shadow 辨识；通过后才接入固件内存 m_eff 和完整安全状态机。
++5. 冻结公共评价轨迹和噪声/延迟配置，执行 5 组无噪声试验及每组 5 个随机种子，保留全部失败。控制增益固定，单独计算校准时间/误差/动作代价。
++
++本报告不借用历史 SITL 结果作为本次实验成功证据。
+--- /dev/null
++++ b/JEPA/README.md
+@@ -0,0 +1,97 @@
++# PX4/Gazebo SITL 质量在线自校准
++
++2026-10-10 在本机实际运行。普通位置入口由 `sitl_position_probe.py` 继承原 `hnuter_external_controller_px4_position.py`，原入口未改；实际闭环在 CA_AIRFRAME=16 的 HnuterControl 内更新内存有效质量。没有 JEPA、神经网络训练、IEBC、DRCDA 或直接执行器控制。
++
++本轮结论：独立辨识和已接受更新的平滑性得到 SITL 支持；噪声组存在校准拒绝和安全退出，整套系统尚未通过可靠性验证，主动优势未得到证明。详见 [研究结论与失败边界](results/CONCLUSIONS.md)。
++
++数值结果和全部正式运行见 [实测汇总](results/RESULTS.md)、[逐次指标](results/all_trials.csv)、[结果图](results/comparison.png)。[早期准备报告](PREPARATION_REPORT.md) 是权限开放前历史记录，其中“未启动/受阻”状态已经过期。本次通过用户授权的正式宿主执行审批运行，未使用 sudo/chmod。
++
++## 重现命令
++
++当前 PX4 补丁已经应用并构建。启动器自动启动并回收自有 DDS Agent、PX4、Gazebo 和位置节点。不要另开同实例的 Agent/PX4，不要将节点 remap 到其他飞控。
++
++```bash
++cd /home/hnuter/px4_ws_ros2
++python3 -m unittest discover -s JEPA -p test_offline.py -v
++python3 JEPA/model_audit.py
++python3 JEPA/run_sitl.py --label manual_C --loaded --instrument --smooth-takeoff --group C --noise low_noise --seed 0
++python3 JEPA/run_matrix.py --phase low --workers 3
++python3 JEPA/run_matrix.py --phase noisy --workers 3
++python3 JEPA/summarize_matrix.py
++```
++
++需要现有 Jazzy、Gazebo 8.11、MicroXRCEAgent、numpy、matplotlib、pyulog 和 Gazebo Python bindings。启动器自行加载 `/opt/ros/jazzy/setup.bash` 与本工作区 `install/setup.bash`。固件构建命令：
++
++```bash
++cd /home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl
++make px4_sitl_default -j4
++```
++
++对未修改源码重现补丁，可在确认三处源码与备份一致后运行 `python3 /home/hnuter/px4_ws_ros2/JEPA/prepare_firmware.py --apply`；脚本检查源码锚点，拒绝重复应用或覆盖不同备份。当前仓库不要重复应用。见 [firmware.patch](firmware.patch)。这不是硬件部署流程。
++
++启动器直接运行构建二进制及私有 etc/rootfs，采用 4051_gz_hnuter 启动配置，避免 make gz_hnuter 的共用 rootfs 冲突。每次 `launch.json` 记录实际命令、实例、命名空间及源码/二进制哈希；`px4.log` 含运行时 ver all 和参数，ULog 与 `ulog_parameters.json` 保存实际参数。
++
++## 工程、通信和保存边界
++
++- PX4：分支 `hnuter-tail-motor-bench-sitl-20260812`，HEAD `49b60a5d8775655c1e6a9be722f76e9e4ab2517b`。ROS：分支 `hardware`，HEAD `abeb52c13c49fb601401a44a30b343fad0183133`。未切分支、reset、pull、commit 或 push。
++- PX4 只改 HnuterControl.hpp/.cpp 和 msg/HnuterControlStatus.msg；备份在 `firmware_original/`，最终副本在 `firmware_patched/`。ROS 新代码全部在 JEPA；原有九处已跟踪修改核对见 `preservation_check.json`。
++- 实例 0/1/2 分别使用 XRCE UDP 28888/28889/28890、ROS domain 73/74/75；每次随机 DDS namespace 与 GZ_PARTITION。GZ_IP=127.0.0.1、FastDDS loopback whitelist；全部 /fmu topic 重映射到本次 namespace。私有启动禁用 MAVLink，不打开串口；PX4 只连接本机 Agent。
++- Agent UDP 监听为通配地址；这是独立端口/namespace/本机 DDS 进程隔离，不声称建立网络 namespace 或 firewall。检查端口占用、PX4 实例锁和自有 PID；只清理本次进程组。未连接真实飞控。
++
++## 模型与独立辨识
++
++所有 10 个刚体经 frame graph、旋转惯量与平行轴定理审计：标称总质量 **4.49999998 kg**，零关节位姿 CoM `[-0.1049171401,0.0010965586,-0.0040426450] m`，不是 base_link 单独的 3.0552478 kg。
++
++在该 CoM 加入固定 0.9 kg 内部箱形负载（0.12×0.12×0.08 m），惯量对角 `[0.00156,0.00156,0.00216] kg·m²`。总质量 **5.39999998 kg**，参考位姿 CoM 不变；主惯量由 `[0.1262345492,0.2469026946,0.3264970403]` 变为 `[0.1277945502,0.2484630817,0.3286566522] kg·m²`。未在线辨识惯量。独立模型及逐 link 审计在 `generated/`；原模型未覆盖，关闭风，无额外扰动力。
++
++本地 esc_rpm 是电机命令回显，估计器不用它。JointStatePublisher 提供实际物理关节速度/角度；程序仅读取时间、axis position/velocity，忽略消息中的模型姿态、质量和力。由固定 motorConstant、旋向、slowdown=10 及实际倾转轴重建力，通过 PX4 姿态转 NED，负 z 分量为向上推力。配置 `actuator_geometry.json` 不含质量/惯量。该遥测能力仅在仿真中验证，不能假定实机具备。
++
++世界 g=9.8；计算 `Q=∫T_up dt`、`Y=9.8Δt−Δv_z`、`Q=mY`。不使用控制期望力或由待估质量反算的力。真值质量/速度只供离线评价；推力平衡残差包含未建模气动力，并非直接测得的真值合力误差。
++
++参数：0.4 s 不重叠窗、遗忘因子 0.98、4.5 kg 先验权重 1、范围 3.5–7 kg。至少 20 个训练窗，最后 8 窗标准差/质量 <1.5%；冻结候选，再以至少 5 个独立后续窗检验相对 RMS ≤3%。不靠内部协方差验收。
++
++关闭 UXRCE wallclock translation，使用共同仿真时钟；速度时间之前的关节/姿态样本年龄 ≤25 ms。低噪声处理缓冲 30 ms，噪声组 60 ms，不用未来信息。约 20 ms 遥测实测存在 28–32 ms 间隔，初始 25 ms 最大间隔曾拒绝校准；保存数据重放比较 0.3/0.4/0.5 s 窗后统一采用 **45 ms 间隔上限**，见 `timing_window_audit.json`。原拒绝结果保留。
++
++## 状态机、保护及补偿
++
++共用状态机：有效状态等待 → 平滑起飞至 1.3 m（10 s minimum-jerk，阶段共 12 s）→ 悬停 6 s → 校准 16 s → 检查 6 s → 公共评价 16 s → 悬停 5 s → 降落。C/C_shadow 校准为 0.08 m、0.4 Hz 正弦乘 sin⁴ 包络，B 为悬停；公共轨迹为 0.15 m、0.3 Hz。位置/速度/加速度来自同一解析表达。
++
++窗口要求解锁、自由飞行、位置/速度有效、误差 <0.3 m、倾角 <20°、速度 <1.2 m/s、电机绝对指令 <0.9。任务退出门限为倾角 25°、水平偏移 1 m、起飞后误差 0.5 m 或速度 1.5 m/s、执行器 ≥0.95 持续 0.3 s、状态失效/超时 0.5 s。触发后停止激励与质量心跳，请求仿真 NAV_LAND 并记失败，不能保证所有异常恢复成功。
++
++正常降落采用 2 s 余弦速度过渡至 0.7 m/s 向下，持续下降参考直到原 land detector 自动上锁。地面接触后保留下降意图是该仿真落地判据所需，未强制上锁或降低落地门限。早期停止下降参考的版本出现落地超时，失败日志保留。
++
++m_eff 初值取 HNTR_MASS；质量请求仅编译在 CONFIG_ARCH_BOARD_PX4_SITL 中。B/C 在检查阶段 1 s 后，以 10 Hz 发送 command 31000、source_system=73、param2=54123 的时间戳消息；超过 0.5 s 未收到心跳则冻结，不写持久参数。Commander 对自定义命令可能打印 unsupported，实际接收者是 HnuterControl 独立订阅；以 ULog 的 effective_mass 验证生效。
++
++实际积分器是加速度量纲，F=m(acc_des−g)。在本周期积分更新之前变换同一状态的积分器并重算加速度，检查新旧加速度限幅、积分限幅、自由飞行/Offboard/有效状态和起飞保护。变化率 ≤0.3 kg/s（控制采样时钟），不能保持力连续则拒绝该步。已有重力力矩前馈也使用有效质量；不改 PID。
++
++ULog publication timestamp 有重复/抖动，直接差分瞬时质量斜率可超过 0.3；另报整体转换平均斜率。代数质量变换力误差与含反馈动态的相邻 force_body 变化分开统计。
++
++## 对照与未验证范围
++
++| 组 | 校准 | 估计 | 补偿 | 初始质量 |
++|---|---|---|---|---|
++| A | 悬停 | 关 | 关 | 4.5 kg |
++| B | 悬停 | 开 | 开 | 4.5 kg |
++| C | 竖直激励 | 开 | 开 | 4.5 kg |
++| D | 悬停 | 关 | 关 | 5.4 kg，仅参考 |
++| C_shadow | 竖直激励 | 开 | 关 | 4.5 kg |
++
++五组同样增益、负载、初始模型位姿、公共轨迹和 1 倍速。每种子用于 Gazebo 与附加遥测噪声；调度与轨迹使噪声调用顺序不同，配对不是完美共随机数。
++
++**严格零噪声未通过**：恒值传感器触发原 PX4 数据不更新检查，不能正常解锁；没有关闭检查制造成功。正式低噪声使用原 SDF 标准差×0.01，不能称为无噪声验证。噪声组保留原 SDF 噪声，附加转速 2 rad/s、角度 0.1°、竖直速度 0.01 m/s 高斯噪声，处理缓冲增加 30 ms；未覆盖任意网络延迟、丢包或时钟漂移。
++
++原始未改标称模型/控制器完整飞行通过；+20% 负载原快速起飞触发水平保护。因此正式全部组统一平滑起飞，先以旧质量无补偿完成校准动作，再接通补偿。不能宣称原启动策略可安全起飞任意负载。2 倍速诊断失败保留，正式评价全部 1 倍速。
++
++指标覆盖完整校准和公共评价阶段，RMSE 时间积分加权，最大误差不筛样本；PX4 估计位置与 Gazebo 真值（首个解锁样本固定平移对齐）分开统计。动作代价 ∫v_ref²dt 是运动强度代理，不是能耗。五种子均值/标准差、配对 bootstrap 仅描述本场景；未验证更大负载、未知推力比例、未知竖直外力及真实硬件。
++
++## 交付物
++
++- 模型：`model_audit.py`、`generated/`。
++- 在线链路：`actuator_sensors.py`、`estimator.py`、`sitl_position_probe.py`。
++- 固件：`prepare_firmware.py`、`firmware.patch`、源码/二进制备份、实际构建日志。
++- 自动化：`run_sitl.py`、`run_matrix.py`；分析：`analyze_sitl.py`、`summarize_matrix.py`。
++- 验证：`test_offline.py`、`final_offline_tests.log`（十项离线测试，不能替代 SITL）。
++- `runs/sitl_*/`：实际命令、Agent/PX4/节点日志、配置、ULog、原始 CSV、指标和飞行图。
++- `results/`：正式汇总、图及诊断索引；`source_changes.patch`、`SHA256SUMS.txt`：源文件差异与校验和。
++
++runs、生成模型和原二进制保留在本机，被 .gitignore 排除；未向远端提交。复制交付物必须包含这些目录，Git diff 不包含原始实验证据。
+--- /dev/null
++++ b/JEPA/actuator_sensors.py
+@@ -0,0 +1,87 @@
++"""Sensor-state wrench reconstruction; configuration has no mass/inertia fields."""
++import json
++from pathlib import Path
++import threading
++from collections import deque
++import numpy as np
++from gz.transport13 import Node
++from gz.msgs10.model_pb2 import Model
++from model_audit import pose
++from estimator import thrust_up_from_rotors
++import xml.etree.ElementTree as ET
++
++
++def export_geometry(source, destination):
++    model=ET.parse(source).getroot().find('model')
++    geometry=dict(links={},joints={},motors=[])
++    for e in model.findall('link')+model.findall('joint'):
++        pe=e.find('pose')
++        row=dict(pose=pose(pe).tolist(),relative=pe.get('relative_to','__model__') if pe is not None else '__model__')
++        if e.tag=='joint':
++            row.update(child=e.findtext('child'),axis=[float(v) for v in e.findtext('axis/xyz','0 0 1').split()])
++        geometry[e.tag+'s'][e.get('name')]=row
++    for e in model.findall('plugin'):
++        if 'MulticopterMotorModel' in e.get('name',''):
++            geometry['motors'].append(dict(index=int(e.findtext('motorNumber')),link=e.findtext('linkName'),joint=e.findtext('jointName'),
++                                           k=float(e.findtext('motorConstant')),slowdown=float(e.findtext('rotorVelocitySlowdownSim')),
++                                           direction=1 if e.findtext('turningDirection')=='ccw' else -1))
++    geometry['motors'].sort(key=lambda v:v['index'])
++    Path(destination).write_text(json.dumps(geometry,indent=2)+'\n')
++
++
++class JointSensors:
++    def __init__(self,geometry_path,topic):
++        self.geometry=json.loads(Path(geometry_path).read_text())
++        self.samples=deque(maxlen=3000)
++        self.lock=threading.Lock()
++        self.node=Node()
++        self.node.subscribe(Model,topic,self.callback)
++
++    def callback(self,msg):
++        stamp=msg.header.stamp.sec+msg.header.stamp.nsec*1e-9
++        joints={j.name:(j.axis1.position,j.axis1.velocity) for j in msg.joint}
++        with self.lock:self.samples.append((stamp,joints))
++
++    def at(self,t,rng=None):
++        with self.lock:
++            samples=list(self.samples)
++        if not samples:return None
++        # Last measurement at/before the velocity time; no future information.
++        valid=[s for s in samples if s[0]<=t+1e-6]
++        if not valid:return None
++        stamp,joints=valid[-1]
++        if t-stamp>.025:return None
++        if not all(n in joints for n in self.geometry['joints']):return None
++        if rng is not None:
++            joints={name:(p+rng.normal(0,np.deg2rad(.1)),v) for name,(p,v) in joints.items()}
++        transforms={'__model__':np.eye(4)}
++        children={j['child']:name for name,j in self.geometry['joints'].items()}
++        entities={**self.geometry['links'],**self.geometry['joints']}
++        def transform(name):
++            if name in transforms:return transforms[name]
++            e=entities[name]
++            matrix=transform(e['relative'])@np.array(e['pose'])
++            if name in children:
++                jname=children[name]; axis=np.array(self.geometry['joints'][jname]['axis'],dtype=float)
++                axis/=np.linalg.norm(axis);theta=joints[jname][0]
++                a=np.array([[0,-axis[2],axis[1]],[axis[2],0,-axis[0]],[-axis[1],axis[0],0]])
++                rotation=np.eye(4);rotation[:3,:3]=np.eye(3)+np.sin(theta)*a+(1-np.cos(theta))*(a@a)
++                # Child pose is relative to joint in this audited SDF.
++                matrix=transform(e['relative'])@rotation@np.array(e['pose'])
++            transforms[name]=matrix
++            return matrix
++        axes=[];speeds=[];ks=[]
++        for m in self.geometry['motors']:
++            # GZ physical rotor velocity = slowed joint velocity times slowdown.
++            # Direction restores signed command convention for CW rotors.
++            speeds.append(joints[m['joint']][1]*m['slowdown']*m['direction'])
++            if rng is not None:speeds[-1]+=rng.normal(0,2.)
++            axes.append(np.diag([1.,-1.,-1.])@transform(m['link'])[:3,2])
++            ks.append(m['k'])
++        return stamp,np.array(speeds),np.array(axes),np.array(ks)
++
++    def thrust(self,t,rotation,rng=None):
++        sample=self.at(t,rng)
++        if sample is None:return None
++        stamp,omega,axes,k=sample
++        return dict(sensor_t=stamp,thrust_up=thrust_up_from_rotors(omega,axes,rotation,k),omega=omega.tolist())
+--- /dev/null
++++ b/JEPA/analyze_sitl.py
+@@ -0,0 +1,137 @@
++"""Offline evaluation: this file may read mass truth and ULog, never controls."""
++import argparse
++import csv
++import hashlib
++import json
++import os
++from pathlib import Path
++import numpy as np
++
++
++def time_mean(values,times):
++    """Time weighting prevents callback jitter from over-weighting dense bursts."""
++    return float(np.trapz(values,times)/(times[-1]-times[0])) if len(times)>1 and times[-1]>times[0] else float(np.mean(values))
++
++
++def analyze(out,truth_mass):
++    os.environ['MPLCONFIGDIR']=str(out/'mpl_cache')
++    import matplotlib
++    matplotlib.use('Agg')
++    import matplotlib.pyplot as plt
++    from pyulog import ULog
++    result=json.loads((out/'flight_result.json').read_text())
++    with (out/'trajectory.csv').open() as f:rows=list(csv.DictReader(f))
++    metrics={'flight':result,'truth_mass_kg_evaluation_only':truth_mass,'phases':{}}
++    for phase in dict.fromkeys(r['phase'] for r in rows):
++        selected=[r for r in rows if r['phase']==phase]
++        a=lambda key:np.array([float(r[key]) for r in selected])
++        metrics['phases'][phase]=dict(samples=len(selected),duration_s=float(np.ptp(a('t'))),
++                                     position_rmse_m=float(np.sqrt(time_mean(a('error')**2,a('t')))),
++                                     position_max_m=float(max(a('error'))),
++                                     vertical_rmse_m=float(np.sqrt(time_mean((a('z_up')-a('z_ref'))**2,a('t')))),
++                                     tilt_max_deg=float(max(a('tilt_deg'))),
++                                     saturation_fraction=time_mean((a('motor_max')>=.95).astype(float),a('t')),
++                                     reference_velocity_energy_m2_s=float(np.trapz(a('vz_ref')**2,a('t'))))
++    path=out/'mass_windows.csv'
++    if path.exists():
++        with path.open() as f:windows=list(csv.DictReader(f))
++        valid=[r for r in windows if r['mode']=='validation']
++        metrics['mass']=dict(estimate_kg=result['mass_estimate_kg'],
++                             error_percent=100*(result['mass_estimate_kg']/truth_mass-1),
++                             training_windows=sum(r['mode']=='training' for r in windows),
++                             validation_windows=len(valid),
++                             accepted=result['mass_accepted'],
++                             holdout_relative_rms=float(np.sqrt(np.mean([(float(r['residual_Ns'])/float(r['Q_Ns']))**2 for r in valid]))) if valid else None)
++        calibration=[r for r in rows if r['phase']=='CALIBRATION']
++        if calibration and 'px4_time_s' in calibration[0]:
++            start=float(calibration[0]['px4_time_s'])
++            accepted=result.get('mass_accepted_at_px4_s')
++            metrics['mass']['acceptance_time_s']=accepted-start if accepted is not None else None
++            accurate=[r for r in windows if abs(float(r['mass_kg'])/truth_mass-1)<.02]
++            metrics['mass']['first_within_2pct_s']=float(accurate[0]['t'])-start if accurate else None
++    logs=list((out/'rootfs/log').rglob('*.ulg'))
++    for log in logs:
++        u=ULog(str(log))
++        metrics['ulog']=dict(path=str(log),sha256=hashlib.sha256(log.read_bytes()).hexdigest(),
++                              firmware=u.msg_info_dict.get('ver_sw','unknown'),
++                              params={k:v for k,v in u.initial_parameters.items() if k.startswith(('HNTR_','UXRCE_DDS_')) or k=='CA_AIRFRAME'})
++        (out/'ulog_parameters.json').write_text(json.dumps(u.initial_parameters,indent=2)+'\n')
++        if rows and 'px4_time_s' in rows[0]:
++            gt=u.get_dataset('vehicle_local_position_groundtruth').data
++            stamps=np.array([float(r['px4_time_s']) for r in rows]);gt_t=gt['timestamp']*1e-6
++            truth=np.column_stack([np.interp(stamps,gt_t,gt['y']),np.interp(stamps,gt_t,gt['x']),-np.interp(stamps,gt_t,gt['z'])])
++            initial=np.array([float(rows[0]['x']),float(rows[0]['y']),float(rows[0]['z_up'])])
++            truth=truth-truth[0]+initial
++            reference=np.array([[float(r[k]) for k in ('x_ref','y_ref','z_ref')] for r in rows])
++            truth_error=np.linalg.norm(truth-reference,axis=1)
++            for phase in metrics['phases']:
++                mask=np.array([r['phase']==phase for r in rows])
++                metrics['phases'][phase]['truth_position_rmse_m']=float(np.sqrt(time_mean(truth_error[mask]**2,stamps[mask])))
++                metrics['phases'][phase]['truth_position_max_m']=float(np.max(truth_error[mask]))
++            metrics['truth_alignment']='Fixed translation aligns Gazebo ENU to logged local/reference frame at first armed sample; no scale/rotation/time fitting.'
++        status=u.get_dataset('hnuter_control_status').data
++        if 'effective_mass' in status:
++            mass=status['effective_mass'];updated=status['mass_updated'].astype(bool)
++            force=np.column_stack([status[f'force_body[{i}]'] for i in range(3)])
++            jumps=np.linalg.norm(np.diff(force,axis=0),axis=1)
++            metrics['compensation']=dict(initial_effective_mass_kg=float(mass[0]),final_effective_mass_kg=float(mass[-1]),
++                updated_logged_samples=int(np.sum(updated)),rejected_logged_samples=int(np.sum(status['mass_update_rejected'])),
++                max_algebraic_update_force_error_N=float(np.max(status['mass_update_force_error'][updated])) if np.any(updated) else None,
++                max_adjacent_logged_force_change_during_update_N=float(np.max(jumps[updated[1:]])) if np.any(updated[1:]) else None,
++                note='Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.')
++            if rows and 'px4_time_s' in rows[0]:
++                t0=float(rows[0]['px4_time_s']);times=status['timestamp']*1e-6
++                transition=(times[1:]>=t0+35)&(times[1:]<=t0+39)
++                metrics['compensation']['common_transition_max_force_step_N']=float(np.max(jumps[transition])) if np.any(transition) else None
++                metrics['compensation']['common_transition_p95_force_step_N']=float(np.percentile(jumps[transition],95)) if np.any(transition) else None
++            if np.any(updated) and rows and 'px4_time_s' in rows[0]:
++                first=float(status['timestamp'][updated][0])*1e-6;last=float(status['timestamp'][updated][-1])*1e-6
++                transient=[r for r in rows if first-1<=float(r['px4_time_s'])<=last+2]
++                status_dt=np.diff(status['timestamp'].astype(float))*1e-6
++                positive_dt=status_dt>0
++                # ULog publication times can duplicate or bunch; distinguish this
++                # diagnostic slope from the firmware's angular-sample dt limiter.
++                metrics['compensation'].update(update_duration_s=last-first,
++                    transient_position_max_m=max(float(r['error']) for r in transient),
++                    observed_mass_rate_max_kg_s=float(np.max(np.abs(np.diff(mass)[positive_dt])/status_dt[positive_dt])),
++                    transition_average_mass_rate_kg_s=float((mass[updated][-1]-mass[updated][0])/(last-first)),
++                    nonincreasing_status_timestamps=int(np.sum(~positive_dt)),
++                    rate_note='Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock.')
++        sensor_file=out/'actuator_sensor.csv'
++        if sensor_file.exists():
++            with sensor_file.open() as f:sensors=list(csv.DictReader(f))
++            sensors=[r for r in sensors if r['phase']=='CALIBRATION']
++            gt=u.get_dataset('vehicle_local_position_groundtruth').data
++            gt_t=gt['timestamp']*1e-6
++            gt_vz=gt['vz']
++            residuals=[]
++            start=0
++            for end in range(1,len(sensors)):
++                t0=float(sensors[start]['t']);t1=float(sensors[end]['t'])
++                if t1-t0<.4-1e-6:continue
++                chunk=sensors[start:end+1];ts=np.array([float(r['t']) for r in chunk]);fs=np.array([float(r['thrust_up']) for r in chunk])
++                if np.max(np.diff(ts))<.05 and gt_t[0]<=t0<t1<=gt_t[-1]:
++                    q=float(np.trapz(fs,ts));y=9.8*(t1-t0)-(np.interp(t1,gt_t,gt_vz)-np.interp(t0,gt_t,gt_vz))
++                    residuals.append((q-truth_mass*y)/(t1-t0))
++                start=end
++            metrics['offline_thrust_balance']=dict(windows=len(residuals),
++                rms_residual_N=float(np.sqrt(np.mean(np.square(residuals)))) if residuals else None,
++                mean_residual_N=float(np.mean(residuals)) if residuals else None,
++                reference='Evaluation-only m*(g*dt-delta_vz_groundtruth); includes unmodeled aerodynamic force, not a direct force sensor.')
++    a=lambda key:np.array([float(r[key]) for r in rows])
++    fig,axes=plt.subplots(4,1,figsize=(10,10),sharex=True)
++    axes[0].plot(a('t'),a('z_ref'),label='reference');axes[0].plot(a('t'),a('z_up'),label='PX4 estimated altitude');axes[0].legend();axes[0].set_ylabel('Height (m)')
++    axes[1].plot(a('t'),a('error'));axes[1].set_ylabel('3D error (m)')
++    axes[2].plot(a('t'),a('tilt_deg'));axes[2].set_ylabel('Tilt (deg)')
++    axes[3].plot(a('t'),a('motor_max'));axes[3].set_ylabel('Max |motor cmd|');axes[3].set_xlabel('Time after arming (s)')
++    for ax in axes:ax.grid(alpha=.3)
++    fig.suptitle(f'Actual PX4/Gazebo SITL — {out.name}\n{result["status"]}, controller mass {metrics["ulog"]["params"]["HNTR_MASS"]:.1f} kg / physical mass {truth_mass:.1f} kg')
++    fig.tight_layout();fig.savefig(out/'flight.png',dpi=140);plt.close(fig)
++    metrics['rmse_definition']='Trapezoidal time-weighted RMS over each entire phase; maximum retains all samples.'
++    (out/'metrics.json').write_text(json.dumps(metrics,indent=2,allow_nan=False)+'\n')
++    return metrics
++
++
++if __name__=='__main__':
++    p=argparse.ArgumentParser();p.add_argument('run',type=Path);p.add_argument('--truth-mass',type=float,required=True);a=p.parse_args()
++    m=analyze(a.run,a.truth_mass);print(json.dumps({'status':m['flight']['status'],'phases':m['phases'],'mass':m.get('mass')},indent=2))
+--- /dev/null
++++ b/JEPA/audit_deliverables.py
+@@ -0,0 +1,75 @@
++"""Read-only repository/run audit plus evidence manifests in JEPA."""
++import difflib
++import hashlib
++import json
++from pathlib import Path
++import subprocess
++
++ROOT=Path(__file__).resolve().parent
++PX4=Path('/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl')
++
++
++def sha(path):
++    h=hashlib.sha256()
++    with path.open('rb') as f:
++        for block in iter(lambda:f.read(1048576),b''):h.update(block)
++    return h.hexdigest()
++
++
++def main():
++    initial=json.loads((ROOT/'runs/preflight_20261010_162752/preflight.json').read_text())
++    preserved={name:sha(ROOT.parent/name)==value for name,value in initial['preexisting_modified_file_sha256'].items()}
++    git=lambda repo,*args:subprocess.check_output(['git',*args],cwd=repo,text=True).strip()
++    expected=['src/modules/mc_rate_control/HnuterControl.hpp','src/modules/mc_rate_control/HnuterControl.cpp','msg/HnuterControlStatus.msg']
++    repos={name:dict(branch=git(repo,'branch','--show-current'),head=git(repo,'rev-parse','HEAD'),status=git(repo,'status','--short')) for name,repo in [('controller',ROOT.parent),('px4',PX4)]}
++    check=dict(preexisting_modified_files_unchanged=preserved,repos=repos,
++               original_position_entry_unchanged=sha(ROOT.parent/'hnuter_external_controller_px4_position.py')==initial['input_sha256'][str(ROOT.parent/'hnuter_external_controller_px4_position.py')],
++               original_sdf_unchanged=sha(PX4/'Tools/simulation/gz/models/hnuter/model.sdf')==initial['input_sha256'][str(PX4/'Tools/simulation/gz/models/hnuter/model.sdf')],
++               firmware_copies_match={name:sha(PX4/name)==sha(ROOT/'firmware_patched'/name) for name in expected},
++               px4_only_expected_tracked_modifications=set(git(PX4,'diff','--name-only').splitlines())==set(expected))
++    (ROOT/'preservation_check.json').write_text(json.dumps(check,indent=2)+'\n')
++    assert all(preserved.values()) and check['original_position_entry_unchanged'] and check['original_sdf_unchanged']
++    assert all(check['firmware_copies_match'].values()) and check['px4_only_expected_tracked_modifications']
++    for name in repos:
++        assert repos[name]['head']==initial['repos'][name]['head']['stdout'].strip()
++        assert repos[name]['branch']==initial['repos'][name]['branch']['stdout'].strip()
++    formal=set();entries=[]
++    for phase in ['low','noisy']:
++        pointer=ROOT/f'latest_matrix_{phase}.txt'
++        if pointer.exists():
++            matrix=Path(pointer.read_text().strip())
++            for r in json.loads((matrix/'results.json').read_text()):formal.add(r['run']);entries.append(r)
++    online=['run_sitl.py','sitl_position_probe.py','actuator_sensors.py','estimator.py']
++    identities={name:set() for name in online};binaries=set();gains=[];cleanup=[]
++    for entry in entries:
++        run=Path(entry['run']);launch=json.loads((run/'launch.json').read_text());binaries.add(launch['binary_sha256'])
++        for name in online:identities[name].add(launch['controller_sources_sha256'][name])
++        params=json.loads((run/'ulog_parameters.json').read_text())
++        gains.append({k:v for k,v in params.items() if k.startswith('HNTR_') and k!='HNTR_MASS'})
++        cleanup.append((run/'process_exit.json').exists())
++    evidence=dict(formal_runs=len(entries),binary_sha256=sorted(binaries),online_source_sha256={k:sorted(v) for k,v in identities.items()},
++                  fixed_hnuter_parameters_except_mass=all(g==gains[0] for g in gains),all_have_cleanup_records=all(cleanup))
++    assert len(binaries)==1 and all(len(s)==1 for s in identities.values())
++    assert evidence['fixed_hnuter_parameters_except_mass'] and evidence['all_have_cleanup_records']
++    out=ROOT/'results';out.mkdir(exist_ok=True)
++    (out/'identity_audit.json').write_text(json.dumps(evidence,indent=2)+'\n')
++    lines=['# 全部诊断与先行试验','', '正式矩阵之外的所有本次运行均保留。失败不是正式对比中的成功样本。', '', '| 运行 | 状态 | 原因 | 原始记录 |','|---|---|---|---|']
++    for run in sorted((ROOT/'runs').glob('sitl_*')):
++        if str(run) in formal:continue
++        f=run/'flight_result.json';r=json.loads(f.read_text()) if f.exists() else {}
++        status=r.get('status','INCOMPLETE/STARTUP FAILED');reason=r.get('failure') or r.get('mass_reason') or 'see logs'
++        lines.append(f'| {run.name} | {status} | {reason} | [controller log]({run}/controller.log), [PX4 log]({run}/px4.log) |')
++    (out/'DIAGNOSTICS.md').write_text('\n'.join(lines)+'\n')
++    # This patch deliberately contains only the task's text source/docs, not raw
++    # experiment logs, pre-existing user modifications, or binary build outputs.
++    patches=[]
++    for path in sorted(ROOT.iterdir()):
++        if path.suffix not in ['.py','.md','.json'] or path.name in ['preservation_check.json']:continue
++        patches.extend(difflib.unified_diff([],path.read_text().splitlines(True),fromfile='/dev/null',tofile='b/JEPA/'+path.name))
++    (ROOT/'source_changes.patch').write_text(''.join(patches))
++    paths=[p for p in ROOT.rglob('*') if p.is_file() and p.name!='SHA256SUMS.txt' and not {'__pycache__','mpl_cache'}.intersection(p.parts)]
++    (ROOT/'SHA256SUMS.txt').write_text(''.join(f'{sha(p)}  {p.relative_to(ROOT)}\n' for p in sorted(paths)))
++    print(json.dumps(dict(preservation='PASS',identity=evidence,hashed_files=len(paths)),indent=2))
++
++
++if __name__=='__main__':main()
+--- /dev/null
++++ b/JEPA/estimator.py
+@@ -0,0 +1,151 @@
++"""Offline-tested estimator core; no ROS/PX4 integration or mass truth access.
++
++Caller must provide synchronized, independently reconstructed thrust and NED
++velocity. This module cannot establish sensor provenance by itself.
++"""
++from dataclasses import dataclass
++import math
++import numpy as np
++
++
++@dataclass(frozen=True)
++class Config:
++    prior_kg: float = 4.5
++    lower_kg: float = 3.5
++    upper_kg: float = 7.0
++    gravity: float = 9.8  # local default.sdf; HnuterControl uses 9.81
++    window_s: float = .4
++    max_gap_s: float = .045  # measured 20 ms DDS stream has 28–32 ms scheduling jitter
++    forgetting: float = .98
++    prior_weight: float = 1.
++    min_windows: int = 20
++    holdout_windows: int = 5
++    stable_std_fraction: float = .015
++    residual_fraction: float = .03
++
++
++class MassEstimator:
++    def __init__(self, cfg=Config()):
++        if not (0 < cfg.lower_kg < cfg.prior_kg < cfg.upper_kg and 0 < cfg.forgetting <= 1
++                and cfg.window_s > cfg.max_gap_s > 0 and cfg.prior_weight > 0
++                and cfg.min_windows >= 8 and cfg.holdout_windows >= 1):
++            raise ValueError('Invalid estimator configuration')
++        self.cfg = cfg
++        self.mass = cfg.prior_kg
++        self.yy = self.yq = 0.
++        self.history = []
++        self.holdout = []
++        self.rows = []
++        self.candidate = None
++        self.accepted = False
++        self.reason = 'insufficient_windows'
++        self.start = self.prev = None
++        self.q = 0.
++
++    def invalidate(self, reason):
++        self.start = self.prev = None
++        self.q = 0.
++        # Independent holdout must be contiguous with the frozen candidate.
++        self.candidate = None
++        self.holdout.clear()
++        self.accepted = False
++        self.reason = reason
++        self.yy = self.yq = 0.
++        self.history.clear()
++        self.mass = self.cfg.prior_kg
++
++    def push(self, t, vz_ned, thrust_up, eligible=True):
++        if not eligible or not all(math.isfinite(x) for x in (t, vz_ned, thrust_up)) or thrust_up <= 0:
++            self.invalidate('invalid_or_ineligible_sample')
++            return None
++        sample = (t, vz_ned, thrust_up)
++        if self.prev is None:
++            self.start = self.prev = sample
++            return None
++        dt = t - self.prev[0]
++        if not 0 < dt <= self.cfg.max_gap_s:
++            self.invalidate('timestamp_gap_or_reversal')
++            return None
++        self.q += .5 * (self.prev[2] + thrust_up) * dt
++        self.prev = sample
++        duration = t - self.start[0]
++        if duration + 1e-9 < self.cfg.window_s:
++            return None
++        y = self.cfg.gravity * duration - (vz_ned - self.start[1])
++        q = self.q
++        self.start = self.prev = sample  # shared boundary, disjoint integration intervals
++        self.q = 0.
++        if y <= .5*self.cfg.gravity*duration:
++            self.invalidate('insufficient_positive_Y')
++            return None
++        raw_mass = q/y
++        if not self.cfg.lower_kg < raw_mass < self.cfg.upper_kg:
++            self.invalidate('outside_physical_bounds')
++            return None
++        mode = 'validation' if self.candidate is not None else 'training'
++        if mode == 'training':
++            self.yy = self.cfg.forgetting*self.yy + y*y
++            self.yq = self.cfg.forgetting*self.yq + y*q
++            self.mass = (self.yq+self.cfg.prior_weight*self.cfg.prior_kg)/(self.yy+self.cfg.prior_weight)
++            self.history.append(self.mass)
++            if len(self.history) >= self.cfg.min_windows and np.std(self.history[-8:])/self.mass < self.cfg.stable_std_fraction:
++                self.candidate = self.mass
++                self.reason = 'awaiting_independent_holdout'
++        residual = q-self.mass*y
++        if mode == 'validation' and not self.accepted:
++            self.holdout.append(residual/max(abs(q), 1e-9))
++            if len(self.holdout) >= self.cfg.holdout_windows:
++                rms = float(np.sqrt(np.mean(np.square(self.holdout))))
++                self.accepted = rms <= self.cfg.residual_fraction
++                self.reason = 'accepted' if self.accepted else 'holdout_residual_rejected'
++                if not self.accepted:
++                    self.candidate = None
++                    self.holdout.clear()
++        row = dict(t=t, Q_Ns=q, Y_m_s=y, raw_mass_kg=raw_mass, mass_kg=self.mass,
++                   mode=mode, residual_Ns=residual, accepted=self.accepted, reason=self.reason)
++        self.rows.append(row)
++        return row
++
++
++def thrust_up_from_rotors(omega_rad_s, thrust_axes_body_frd, body_to_ned, coefficients):
++    """Physical rotor rad/s and thrust-positive unit axes, NOT esc_rpm feedback.
++
++    For command-only input a separately validated lag/servo observer is required.
++    No such observer is claimed implemented here. Reverse signed speed is allowed.
++    """
++    omega, axes, rotation, k = map(np.asarray, (omega_rad_s, thrust_axes_body_frd, body_to_ned, coefficients))
++    if axes.shape != (len(omega), 3) or k.shape != omega.shape or rotation.shape != (3, 3):
++        raise ValueError('Invalid shapes')
++    if not all(np.all(np.isfinite(a)) for a in (omega,axes,rotation,k)) or np.any(k <= 0):
++        raise ValueError('Invalid rotor inputs')
++    if not np.allclose(np.linalg.norm(axes, axis=1), 1.) or not np.allclose(rotation.T@rotation, np.eye(3), atol=1e-5) or not np.isclose(np.linalg.det(rotation),1):
++        raise ValueError('Invalid rotation or axis')
++    force_body = np.sum((k*omega*np.abs(omega))[:, None]*axes, axis=0)
++    return -float((rotation@force_body)[2])
++
++
++def vertical_reference(t, duration=16., amplitude=.08, frequency=.4):
++    """NED z offset and analytic v/a; sin^4 envelope gives C2 zero endpoints."""
++    if not 0 < t < duration:
++        return np.zeros(3)
++    b, w = math.pi/duration, 2*math.pi*frequency
++    s, c = math.sin(b*t), math.cos(b*t)
++    e, de, dde = s**4, 4*b*s**3*c, 4*b*b*(3*s*s*c*c-s**4)
++    sw, cw = math.sin(w*t), math.cos(w*t)
++    return amplitude*np.array([e*sw, de*sw+e*w*cw, dde*sw+2*de*w*cw-e*w*w*sw])
++
++
++def bumpless_candidate(m_old, m_new, a_base, integral, xy_limit=2., z_limit=3.):
++    """Algebra-only candidate, valid only before acceleration/force saturation.
++
++    Firmware still needs state gates, rate limiting, and recomputation of all
++    acceleration/force limits. Return None instead of clipping the integral.
++    """
++    a, old = np.asarray(a_base, dtype=float), np.asarray(integral, dtype=float)
++    if min(m_old,m_new) <= 0 or not np.all(np.isfinite([m_old,m_new,*a,*old])):
++        raise ValueError('Invalid mass or state')
++    g = np.array([0.,0.,9.81])  # HnuterControl.cpp:149 in the audited checkout
++    new = m_old/m_new*(a+old-g)-a+g
++    if np.linalg.norm(new[:2]) > xy_limit or abs(new[2]) > z_limit:
++        return None
++    return new
+--- /dev/null
++++ b/JEPA/experiment_plan.json
+@@ -0,0 +1,91 @@
++{
++  "status": "EXECUTED_WITH_FAILURES_AND_LIMITATIONS",
++  "scope": "SITL only; no JEPA or neural training in phase one",
++  "required_first_gate": "Unmodified nominal position-control takeoff/hover/vertical-motion/hover/landing",
++  "evaluation_only": {
++    "nominal_mass_kg": 4.49999998,
++    "payload_kg": 0.9,
++    "loaded_mass_kg": 5.39999998
++  },
++  "groups": {
++    "A": {
++      "estimate": false,
++      "excitation": false,
++      "compensate": false,
++      "initial_model_mass_kg": 4.5
++    },
++    "B": {
++      "estimate": true,
++      "excitation": false,
++      "compensate": true,
++      "initial_model_mass_kg": 4.5
++    },
++    "C": {
++      "estimate": true,
++      "excitation": true,
++      "compensate": true,
++      "initial_model_mass_kg": 4.5
++    },
++    "D": {
++      "estimate": false,
++      "excitation": false,
++      "compensate": false,
++      "initial_model_mass_kg": 5.39999998
++    },
++    "C_shadow": {
++      "estimate": true,
++      "excitation": true,
++      "compensate": false,
++      "initial_model_mass_kg": 4.5
++    }
++  },
++  "candidate_calibration": {
++    "duration_s": 16,
++    "amplitude_m": 0.08,
++    "frequency_hz": 0.4,
++    "envelope": "sin(pi*t/T)^4"
++  },
++  "replication": {
++    "noise_free_per_group": "Attempted; blocked by PX4 unchanged-value sensor validators. Not passed.",
++    "noisy_delayed_seeds_per_group": [
++      0,
++      1,
++      2,
++      3,
++      4
++    ],
++    "low_noise_per_group": 1
++  },
++  "pending": [],
++  "runtime": {
++    "speed": 1,
++    "takeoff": "minimum-jerk 1.3 m / 10 s; all formal groups",
++    "window_s": 0.4,
++    "max_sample_gap_s": 0.045,
++    "effective_mass_rate_limit_kg_s": 0.3,
++    "known_world_gravity": 9.8,
++    "controller_gravity_unchanged": 9.81,
++    "low_sensor_std_scale": 0.01,
++    "sensor_delay_low_s": 0.03,
++    "sensor_delay_noisy_s": 0.06,
++    "extra_rotor_noise_std_rad_s": 2,
++    "extra_angle_noise_std_deg": 0.1,
++    "extra_vz_noise_std_m_s": 0.01
++  },
++  "completed": [
++    "Original nominal flight baseline",
++    "Payload CoM/inertia audit and independent model",
++    "Independent measured rotor/joint telemetry and shadow identification",
++    "SITL-only in-memory bumpless mass compensation, compiled and flown",
++    "Five low-noise group trials and 25 native-noise/additional-noise/delay trials",
++    "Nominal measured-state mass cross-check",
++    "Strict zero-noise 1x failure reproduction without disabling health checks"
++  ],
++  "unresolved": [
++    "Intermittent missing Gazebo joint telemetry; fail closed retains nominal mass",
++    "Three noisy formal flights exited; two did not confirm landing/disarm before simulation cleanup",
++    "Strict zero-noise state estimation invalid under unchanged-sensor validators",
++    "No validated advantage of active excitation over passive hover",
++    "No larger-payload, unknown thrust-scale/disturbance, or hardware validation"
++  ]
++}
+--- /dev/null
++++ b/JEPA/model_audit.py
+@@ -0,0 +1,139 @@
++"""Read-only SDF audit and separate payload model generation (zero joint pose).
++
++No runtime estimator imports this module. Mass truth stays in experiment setup.
++Supports the frame graph used by this checkout; unsupported SDF fails closed.
++"""
++import argparse
++import copy
++import json
++from pathlib import Path
++import xml.etree.ElementTree as ET
++import numpy as np
++
++PX4 = Path('/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl')
++
++
++def pose(element):
++    t = np.eye(4)
++    if element is None:
++        return t
++    if element.get('degrees') or element.get('rotation_format'):
++        raise ValueError('Unsupported pose convention')
++    x, y, z, r, p, yaw = map(float, element.text.split())
++    cr, sr, cp, sp, cy, sy = np.cos(r), np.sin(r), np.cos(p), np.sin(p), np.cos(yaw), np.sin(yaw)
++    t[:3, :3] = [[cy*cp, cy*sp*sr-sy*cr, cy*sp*cr+sy*sr],
++                 [sy*cp, sy*sp*sr+cy*cr, sy*sp*cr-cy*sr], [-sp, cp*sr, cp*cr]]
++    t[:3, 3] = [x, y, z]
++    return t
++
++
++def audit(model):
++    if model.find('include') is not None or model.find('model') is not None:
++        raise ValueError('Nested/included models require explicit resolution')
++    frames = {'__model__': np.eye(4)}
++    entities = {e.get('name'): e for e in model if e.tag in ('link', 'joint', 'frame')}
++
++    def transform(name, visiting=()):
++        if name in frames:
++            return frames[name]
++        if name in visiting:
++            raise ValueError('Frame cycle')
++        e = entities[name]
++        pe = e.find('pose')
++        default = e.findtext('child') if e.tag == 'joint' else (e.get('attached_to', '__model__') if e.tag == 'frame' else '__model__')
++        relative = pe.get('relative_to', default) if pe is not None else default
++        frames[name] = transform(relative, visiting + (name,)) @ pose(pe)
++        return frames[name]
++
++    rows = []
++    for link in model.findall('link'):
++        inertial = link.find('inertial')
++        if inertial is None or inertial.get('auto') == 'true':
++            raise ValueError('Explicit inertial required: ' + link.get('name'))
++        ip = inertial.find('pose')
++        if ip is not None and ip.get('relative_to'):
++            raise ValueError('Inertial relative_to not supported')
++        t = transform(link.get('name')) @ pose(ip)
++        mass = float(inertial.findtext('mass'))
++        a, b, c, d, e, f = [float(inertial.findtext('inertia/' + key, '0')) for key in ('ixx', 'iyy', 'izz', 'ixy', 'ixz', 'iyz')]
++        inertia = np.array([[a, d, e], [d, b, f], [e, f, c]])
++        eig = np.linalg.eigvalsh(inertia)
++        if mass <= 0 or min(eig) <= 0 or eig[-1] > sum(eig[:2]) + 1e-10:
++            raise ValueError('Nonphysical inertial: ' + link.get('name'))
++        inertia = t[:3, :3] @ inertia @ t[:3, :3].T
++        rows.append(dict(link=link.get('name'), mass_kg=mass, com_model_m=t[:3, 3].tolist(), inertia_com_model_kg_m2=inertia.tolist()))
++    total = sum(r['mass_kg'] for r in rows)
++    com = sum(r['mass_kg'] * np.array(r['com_model_m']) for r in rows) / total
++    inertia = np.zeros((3, 3))
++    for row in rows:
++        delta = np.array(row['com_model_m']) - com
++        inertia += np.array(row['inertia_com_model_kg_m2']) + row['mass_kg'] * (np.dot(delta, delta)*np.eye(3) - np.outer(delta, delta))
++    return dict(configuration='SDF reference pose; all joints at zero, model-local axes',
++                total_mass_kg=total, com_model_m=com.tolist(), inertia_com_model_kg_m2=inertia.tolist(),
++                principal_inertias_kg_m2=np.linalg.eigvalsh(inertia).tolist(), links=rows)
++
++
++def generate(source, out, payload):
++    tree = ET.parse(source)
++    original = tree.getroot().find('model')
++    before = audit(original)
++    model = copy.deepcopy(original)
++    name = 'hnuter_mass_cal_payload'
++    model.set('name', name)
++    com = before['com_model_m']
++    # A compact 0.12 x 0.12 x 0.08 m box, rigidly mounted at nominal CoM.
++    inertia = payload/12 * np.array([.12**2+.08**2, .12**2+.08**2, 2*.12**2])
++    link = ET.SubElement(model, 'link', name='calibration_payload')
++    ET.SubElement(link, 'pose').text = ' '.join(map(str, com)) + ' 0 0 0'
++    ii = ET.SubElement(link, 'inertial')
++    ET.SubElement(ii, 'mass').text = str(payload)
++    tensor = ET.SubElement(ii, 'inertia')
++    for key, value in zip(('ixx','iyy','izz','ixy','ixz','iyz'), [*inertia,0,0,0]):
++        ET.SubElement(tensor, key).text = str(value)
++    # Payload is internal to the existing body collision; no duplicate collider.
++    joint = ET.SubElement(model, 'joint', name='payload_mount', type='fixed')
++    ET.SubElement(joint, 'parent').text = 'base_link'
++    ET.SubElement(joint, 'child').text = 'calibration_payload'
++    for uri in model.findall('.//mesh/uri'):
++        if not uri.text.startswith(('model://','file://','http://','https://','/')):
++            uri.text = str((source.parent / uri.text).resolve())
++    for link in model.findall('link'):
++        wind = link.find('enable_wind')
++        if wind is None:
++            wind = ET.SubElement(link, 'enable_wind')
++        wind.text = 'false'
++    out.mkdir(parents=True, exist_ok=True)
++    after = audit(model)
++    for mode in ('native_noise', 'zero_sensor_noise'):
++        variant = copy.deepcopy(model)
++        if mode == 'zero_sensor_noise':
++            for noise in variant.findall('.//sensor//noise'):
++                for child in noise:
++                    if child.tag in ('mean','stddev','bias_mean','bias_stddev','dynamic_bias_stddev'):
++                        child.text = '0'
++        folder = out / mode / name
++        folder.mkdir(parents=True, exist_ok=True)
++        root = ET.Element('sdf', version='1.11')
++        root.append(variant)
++        ET.indent(root)
++        ET.ElementTree(root).write(folder/'model.sdf', encoding='utf-8', xml_declaration=True)
++        (folder/'model.config').write_text(f'<model><name>{name}</name><version>1</version><sdf version="1.11">model.sdf</sdf></model>\n')
++    report = dict(source=str(source), nominal=before, loaded=after,
++                  payload=dict(mass_kg=payload, box_size_m=[.12,.12,.08], inertia_kg_m2=inertia.tolist()),
++                  caveats=['Zero-joint assembly CoM; CoM moves with articulation.',
++                           'Generated models have not been loaded in Gazebo.',
++                           'zero_sensor_noise removes model sensor noise only; world/transport still require verification.'])
++    (out/'mass_audit.json').write_text(json.dumps(report, indent=2)+'\n')
++    return report
++
++
++if __name__ == '__main__':
++    p = argparse.ArgumentParser()
++    p.add_argument('--source', type=Path, default=PX4/'Tools/simulation/gz/models/hnuter/model.sdf')
++    p.add_argument('--out', type=Path, default=Path(__file__).parent/'generated')
++    p.add_argument('--payload', type=float, default=.9)
++    args = p.parse_args()
++    if not np.isfinite(args.payload) or args.payload <= 0:
++        p.error('payload must be finite and positive')
++    result = generate(args.source, args.out, args.payload)
++    print(json.dumps({k: result[k]['total_mass_kg'] for k in ('nominal','loaded')}, indent=2))
+--- /dev/null
++++ b/JEPA/plot_transition.py
+@@ -0,0 +1,40 @@
++"""Offline transition evidence from recorded ULog and estimator windows."""
++import argparse
++import csv
++import json
++import os
++from pathlib import Path
++import numpy as np
++from pyulog import ULog
++
++
++def main():
++    parser=argparse.ArgumentParser();parser.add_argument('run',type=Path);args=parser.parse_args();run=args.run
++    out=Path(__file__).resolve().parent/'results';out.mkdir(exist_ok=True)
++    os.environ['MPLCONFIGDIR']=str(out/'mpl_cache')
++    import matplotlib
++    matplotlib.use('Agg')
++    import matplotlib.pyplot as plt
++    with (run/'trajectory.csv').open() as f:rows=list(csv.DictReader(f))
++    with (run/'mass_windows.csv').open() as f:windows=list(csv.DictReader(f))
++    log=next((run/'rootfs/log').rglob('*.ulg'));data=ULog(str(log)).get_dataset('hnuter_control_status').data
++    t0=float(rows[0]['px4_time_s']);t=data['timestamp']*1e-6-t0
++    fig,axes=plt.subplots(3,1,figsize=(11,8),sharex=True)
++    axes[0].plot([float(r['t'])-t0 for r in windows],[float(r['mass_kg']) for r in windows],label='Independent estimate')
++    axes[0].plot(t,data['effective_mass'],label='Firmware effective mass')
++    truth=json.loads((run/'metrics.json').read_text())['truth_mass_kg_evaluation_only']
++    axes[0].axhline(truth,linestyle='--',color='gray',label='Truth (evaluation only)');axes[0].set_ylabel('Mass (kg)');axes[0].legend()
++    shown=(t>=16)&(t<=57)
++    axes[1].plot(t[shown],-data['force_body[2]'][shown],linewidth=.6,label='Desired body upward force')
++    axes[1].set_ylabel('Force (N)');axes[1].legend()
++    shown_rows=[r for r in rows if 16<=float(r['t'])<=57]
++    axes[2].plot([float(r['t']) for r in shown_rows],[float(r['error'])*100 for r in shown_rows],linewidth=.8)
++    axes[2].set_ylabel('Position error (cm)');axes[2].set_xlabel('Time after arming (s)')
++    for ax in axes:
++        ax.axvspan(18,34,alpha=.08,color='blue');ax.axvspan(35,38.1,alpha=.1,color='orange');ax.grid(alpha=.25);ax.set_xlim(16,57)
++    fig.suptitle(f'Actual SITL: {run.name}\nBlue: calibration; orange: approximate mass transition; evaluation: 40–56 s')
++    fig.tight_layout();fig.savefig(out/'transition.png',dpi=160)
++    (out/'transition_source.json').write_text(json.dumps(dict(run=str(run),ulog=str(log),note='Representative preselected noisy C seed 0; all trials are reported separately.'),indent=2)+'\n')
++
++
++if __name__=='__main__':main()
+--- /dev/null
++++ b/JEPA/preflight.py
+@@ -0,0 +1,76 @@
++"""Read-only diagnostics. Does not arm, start PX4, or contact any endpoint."""
++import datetime
++import hashlib
++import json
++import os
++from pathlib import Path
++import shutil
++import socket
++import subprocess
++from zoneinfo import ZoneInfo
++
++ROOT = Path(__file__).resolve().parent
++PX4 = Path('/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl')
++
++
++def command(args, cwd=None):
++    try:
++        r = subprocess.run(args, cwd=cwd, capture_output=True, text=True, timeout=15)
++        return dict(argv=args, returncode=r.returncode, stdout=r.stdout, stderr=r.stderr)
++    except (OSError, subprocess.TimeoutExpired) as e:
++        return dict(argv=args, error=repr(e))
++
++
++def sha(path):
++    h = hashlib.sha256()
++    with path.open('rb') as f:
++        for block in iter(lambda:f.read(1024*1024),b''):
++            h.update(block)
++    return h.hexdigest()
++
++
++def main():
++    stamp = datetime.datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%Y%m%d_%H%M%S')
++    out = ROOT/'runs'/('preflight_'+stamp)
++    out.mkdir(parents=True, exist_ok=False)
++    report = dict(timezone='Asia/Shanghai', timestamp=stamp, sockets={}, repos={},
++                  isolation_proposal=dict(ROS_DOMAIN_ID=73, ROS_AUTOMATIC_DISCOVERY_RANGE='LOCALHOST',
++                                          PX4_UXRCE_DDS_PORT=28888, PX4_UXRCE_DDS_NS='jepa_sitl',
++                                          GZ_PARTITION='jepa_mass_cal_unique_per_run', GZ_IP='127.0.0.1'),
++                  scope='Diagnostics only. No PX4, simulator, controller or hardware launched.')
++    for label, kind in [('udp', socket.SOCK_DGRAM),('tcp',socket.SOCK_STREAM)]:
++        try:
++            with socket.socket(socket.AF_INET, kind) as s:
++                s.bind(('127.0.0.1',0))
++                report['sockets'][label] = dict(ok=True, local_address=s.getsockname())
++        except OSError as exc:
++            report['sockets'][label] = dict(ok=False, error=repr(exc), errno=exc.errno)
++    for name, path in [('controller',ROOT.parent),('px4',PX4)]:
++        report['repos'][name] = {key:command(['git',*args],path) for key,args in
++            [('branch',['branch','--show-current']),('head',['rev-parse','HEAD']),('status',['status','--short'])]}
++        diff = command(['git','diff','--binary'],path)
++        (out/(name+'_existing_changes.diff')).write_text(diff.get('stdout',''))
++    tracked_hashes = {}
++    for line in command(['git','diff','--name-only'],ROOT.parent).get('stdout','').splitlines():
++        p = ROOT.parent/line
++        if p.is_file():
++            tracked_hashes[line] = sha(p)
++    report['preexisting_modified_file_sha256'] = tracked_hashes
++    paths = [PX4/'build/px4_sitl_default/bin/px4', PX4/'Tools/simulation/gz/models/hnuter/model.sdf',
++             ROOT.parent/'hnuter_external_controller_px4_position.py']
++    report['input_sha256'] = {str(p):sha(p) for p in paths if p.is_file()}
++    report['build_version_header'] = (PX4/'build/px4_sitl_default/src/lib/version/build_git_version.h').read_text()
++    report['executables'] = {x:shutil.which(x) for x in ['MicroXRCEAgent','gz','python3','make']}
++    report['environment'] = {k:os.environ.get(k) for k in ['ROS_DISTRO','ROS_DOMAIN_ID','RMW_IMPLEMENTATION','GZ_PARTITION','PX4_SIM_MODEL']}
++    report['gz_version'] = command(['gz','sim','--versions'])
++    report['ros_import'] = command(['bash','-c',"source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\npython3 -c 'import rclpy; from px4_msgs.msg import VehicleLocalPosition; print(\"ROS imports OK\")'"])
++    # Do not confuse UNIX mode bits with sandbox write permission.
++    report['filesystem_policy'] = dict(jepa='Writable per session policy', px4='Read-only per session policy; no write attempted')
++    report['status'] = 'BLOCKED_LOCAL_SOCKETS' if not all(v['ok'] for v in report['sockets'].values()) else 'SOCKET_PROBE_OK_NOT_FLIGHT_READY'
++    (out/'preflight.json').write_text(json.dumps(report,indent=2)+'\n')
++    print(json.dumps(dict(status=report['status'],output=str(out),sockets=report['sockets']),indent=2))
++    return 2 if report['status'].startswith('BLOCKED') else 0
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+--- /dev/null
++++ b/JEPA/prepare_firmware.py
+@@ -0,0 +1,148 @@
++"""Reproducible guarded firmware patch, preserving originals and binary first."""
++import argparse
++import difflib
++import hashlib
++import json
++from pathlib import Path
++import shutil
++
++ROOT=Path(__file__).resolve().parent
++PX4=Path('/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl')
++
++
++def replace(text,old,new):
++    if text.count(old)!=1:raise RuntimeError('Source anchor changed: '+old[:80])
++    return text.replace(old,new)
++
++
++def main():
++    p=argparse.ArgumentParser();p.add_argument('--apply',action='store_true');args=p.parse_args()
++    paths=['src/modules/mc_rate_control/HnuterControl.hpp','src/modules/mc_rate_control/HnuterControl.cpp','msg/HnuterControlStatus.msg']
++    original={name:(PX4/name).read_text() for name in paths}
++    if 'JEPA_SITL_MASS' in original[paths[0]]:raise RuntimeError('Patch already applied; refusing duplicate application')
++    changed=original.copy()
++    h=changed[paths[0]]
++    h=replace(h,'#include <uORB/topics/vehicle_control_mode.h>', '#include <uORB/topics/vehicle_control_mode.h>\n#if defined(CONFIG_ARCH_BOARD_PX4_SITL)\n#include <uORB/topics/vehicle_command.h>\n#endif')
++    h=replace(h,'\tmatrix::Vector3f _velocity_integral{};', '''#if defined(CONFIG_ARCH_BOARD_PX4_SITL)
++\t// JEPA_SITL_MASS: compiled out on physical flight-controller targets.
++\tuORB::Subscription _jepa_mass_command_sub{ORB_ID(vehicle_command)};
++\tfloat _jepa_mass_effective{0.f};
++\tfloat _jepa_mass_target{0.f};
++\thrt_abstime _jepa_mass_request_time{0};
++#endif
++\tmatrix::Vector3f _velocity_integral{};''')
++    changed[paths[0]]=h
++    c=changed[paths[1]]
++    c=replace(c,'void HnuterControl::reset()\n{','''void HnuterControl::reset()
++{
++#if defined(CONFIG_ARCH_BOARD_PX4_SITL)
++\t_jepa_mass_effective = 0.f;
++\t_jepa_mass_target = 0.f;
++\t_jepa_mass_request_time = 0;
++#endif''')
++    c=replace(c,'\tconst float mass = math::max(_param_hntr_mass.get(), 0.1f);','''\tfloat mass = math::max(_param_hntr_mass.get(), 0.1f);
++\tfloat jepa_mass_force_error = 0.f;
++\tbool jepa_mass_updated = false;
++\tbool jepa_mass_rejected = false;
++#if defined(CONFIG_ARCH_BOARD_PX4_SITL)
++\tif (_jepa_mass_effective < 0.1f) {
++\t\t_jepa_mass_effective = mass;
++\t\t_jepa_mass_target = mass;
++\t}
++\tmass = _jepa_mass_effective;
++\tvehicle_command_s mass_request{};
++\tif (_jepa_mass_command_sub.update(&mass_request)
++\t    && mass_request.command == 31000 && mass_request.from_external
++\t    && mass_request.target_system == 1 && mass_request.source_system == 73
++\t    && fabsf(mass_request.param2 - 54123.f) < 0.1f
++\t    && PX4_ISFINITE(mass_request.param1)
++\t    && mass_request.param1 >= 3.5f && mass_request.param1 <= 7.f
++\t    && mass_request.timestamp <= now && now - mass_request.timestamp < 500000) {
++\t\t_jepa_mass_target = mass_request.param1;
++\t\t_jepa_mass_request_time = now;
++\t}
++\t// Loss of the acceptance heartbeat freezes the current mass, no parameter write.
++\tif (now - _jepa_mass_request_time > 500000) {
++\t\t_jepa_mass_target = mass;
++\t}
++#endif''')
++    c=replace(c,'\tconst Vector3f acc_unsaturated = acc_ff + velocity_p * vel_error + _velocity_integral','\tVector3f acc_unsaturated = acc_ff + velocity_p * vel_error + _velocity_integral')
++    anchor='\tacc_des(2) = math::constrain(acc_des(2), -max_acc_up, max_acc_down);'
++    c=replace(c,anchor,anchor+'''
++
++#if defined(CONFIG_ARCH_BOARD_PX4_SITL)
++\t// Transform the PRE-integration state used by this cycle's force computation.
++\t// Reject rather than clamp: both integral and acceleration limits must allow
++\t// exactly the same desired force. Existing integration then proceeds normally.
++\tconst bool mass_gate = !landed && !maybe_landed && have_local_pos
++\t\t&& local_pos.xy_valid && local_pos.z_valid && local_pos.v_xy_valid && local_pos.v_z_valid
++\t\t&& local_pos.timestamp <= now && now - local_pos.timestamp < 200000
++\t\t&& vehicle_control_mode.flag_control_offboard_enabled
++\t\t&& Dcmf{Quatf(att.q)}(2, 2) > 0.93969f
++\t\t&& (acc_unsaturated - acc_des).norm() < 0.00001f
++\t\t&& !tilt_suppress_active && !xy_lock_active && !takeoff_release_ramp_active;
++\tif (fabsf(_jepa_mass_target - mass) > 0.00001f && mass_gate) {
++\t\tconst float proposed = mass + math::constrain(_jepa_mass_target - mass, -0.3f * dt, 0.3f * dt);
++\t\tconst Vector3f grav{0.f, 0.f, gravity};
++\t\tconst Vector3f base_acc = acc_unsaturated - _velocity_integral;
++\t\tconst Vector3f integral_proposed = (mass / proposed) * (acc_des - grav) - base_acc + grav;
++\t\tconst Vector3f acc_proposed = base_acc + integral_proposed;
++\t\tVector3f bounded_acc = acc_proposed;
++\t\tconstrainXY(bounded_acc, max_acc_xy);
++\t\tconst float proposed_up_limit = math::min(requested_max_acc_z,
++\t\t\tmath::max(max_front_vertical_thrust / proposed - gravity, 0.1f));
++\t\tbounded_acc(2) = math::constrain(bounded_acc(2), -proposed_up_limit, max_acc_down);
++\t\tjepa_mass_force_error = Vector3f{proposed * (acc_proposed - grav) - mass * (acc_des - grav)}.norm();
++\t\tif (Vector2f{integral_proposed(0), integral_proposed(1)}.norm() <= _param_hntr_vel_ilim_xy.get()
++\t\t    && fabsf(integral_proposed(2)) <= _param_hntr_vel_ilim_z.get()
++\t\t    && (bounded_acc - acc_proposed).norm() < 0.00001f && jepa_mass_force_error < 0.0001f) {
++\t\t\t_velocity_integral = integral_proposed;
++\t\t\tacc_des = acc_proposed;
++\t\t\tacc_unsaturated = acc_proposed;
++\t\t\tmass = proposed;
++\t\t\t_jepa_mass_effective = proposed;
++\t\t\tjepa_mass_updated = true;
++\t\t} else {
++\t\t\tjepa_mass_rejected = true;
++\t\t}
++\t}
++#endif
++''')
++    c=replace(c,'\thnuter_status.active = geometric_control_active;','''\thnuter_status.active = geometric_control_active;
++\thnuter_status.effective_mass = mass;
++\thnuter_status.mass_target = mass;
++#if defined(CONFIG_ARCH_BOARD_PX4_SITL)
++\thnuter_status.mass_target = _jepa_mass_target;
++#endif
++\thnuter_status.mass_update_force_error = jepa_mass_force_error;
++\thnuter_status.mass_updated = jepa_mass_updated;
++\thnuter_status.mass_update_rejected = jepa_mass_rejected;''')
++    changed[paths[1]]=c
++    changed[paths[2]]+='''
++# JEPA SITL diagnostics; effective mass equals HNTR_MASS on hardware builds.
++float32 effective_mass
++float32 mass_target
++float32 mass_update_force_error
++bool mass_updated
++bool mass_update_rejected
++'''
++    patches=[]
++    backup=ROOT/'firmware_original';backup.mkdir(exist_ok=True)
++    for name in paths:
++        p=backup/name;p.parent.mkdir(parents=True,exist_ok=True)
++        if p.exists() and p.read_text()!=original[name]:raise RuntimeError('Refusing to overwrite a different backup')
++        p.write_text(original[name])
++        p=ROOT/'firmware_patched'/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(changed[name])
++        patches.extend(difflib.unified_diff(original[name].splitlines(True),changed[name].splitlines(True),fromfile='a/'+name,tofile='b/'+name))
++    (ROOT/'firmware.patch').write_text(''.join(patches))
++    binary=backup/'px4_original'
++    if not binary.exists():shutil.copy2(PX4/'build/px4_sitl_default/bin/px4',binary)
++    (backup/'sha256.json').write_text(json.dumps({name:hashlib.sha256(original[name].encode()).hexdigest() for name in paths},indent=2)+'\n')
++    if args.apply:
++        for name in paths:
++            if (PX4/name).read_text()!=original[name]:raise RuntimeError('Concurrent source modification')
++        for name in paths:(PX4/name).write_text(changed[name])
++    print('Applied' if args.apply else 'Prepared',ROOT/'firmware.patch')
++
++
++if __name__=='__main__':main()
+--- /dev/null
++++ b/JEPA/run_matrix.py
+@@ -0,0 +1,58 @@
++"""Run matched trials on owned, isolated PX4/DDS/Gazebo instances at 1x only."""
++import argparse
++import concurrent.futures
++import datetime
++import json
++from pathlib import Path
++import signal
++import subprocess
++import sys
++from zoneinfo import ZoneInfo
++
++ROOT=Path(__file__).resolve().parent
++
++
++def main():
++    p=argparse.ArgumentParser();p.add_argument('--phase',choices=['low','noisy'],required=True)
++    p.add_argument('--workers',type=int,default=3);args=p.parse_args()
++    if not 1<=args.workers<=3:p.error('workers must be 1..3')
++    groups=['A','B','C','D','C_shadow']
++    seeds=[0] if args.phase=='low' else list(range(5))
++    jobs=[(group,seed) for seed in seeds for group in groups]
++    stamp=datetime.datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%Y%m%d_%H%M%S')
++    out=ROOT/'runs'/f'matrix_{args.phase}_{stamp}';out.mkdir()
++    results=[]
++    def worker(instance):
++        local=[]
++        for group,seed in jobs[instance::args.workers]:
++            label=f'{args.phase}_{group}_s{seed}'
++            cmd=[sys.executable,str(ROOT/'run_sitl.py'),'--label',label,'--loaded','--instrument','--smooth-takeoff',
++                 '--group',group,'--noise','low_noise' if args.phase=='low' else 'noisy_delayed','--seed',str(seed),'--instance',str(instance)]
++            proc=subprocess.Popen(cmd,cwd=ROOT.parent,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True)
++            try:stdout,_=proc.communicate(timeout=240)
++            except subprocess.TimeoutExpired:
++                proc.send_signal(signal.SIGINT);stdout,_=proc.communicate(timeout=25)
++            (out/(label+'.log')).write_text(stdout)
++            run=None
++            for line in stdout.splitlines():
++                if line.startswith('STARTED '):run=Path(line.removeprefix('STARTED '))
++            result=dict(group=group,seed=seed,instance=instance,returncode=proc.returncode,run=str(run) if run else None)
++            if run and (run/'flight_result.json').exists():
++                result['flight']=json.loads((run/'flight_result.json').read_text())
++                if (run/'trajectory.csv').exists():
++                    analysis=subprocess.run([sys.executable,str(ROOT/'analyze_sitl.py'),str(run),'--truth-mass','5.39999998'],capture_output=True,text=True)
++                    (run/'analysis.log').write_text(analysis.stdout+analysis.stderr)
++                    result['analysis_returncode']=analysis.returncode
++            local.append(result)
++            print(json.dumps(result),flush=True)
++        return local
++    with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
++        futures=[pool.submit(worker,i) for i in range(args.workers)]
++        for future in concurrent.futures.as_completed(futures):
++            results.extend(future.result())
++            (out/'results.json').write_text(json.dumps(results,indent=2)+'\n')
++    (ROOT/f'latest_matrix_{args.phase}.txt').write_text(str(out)+'\n')
++    print('MATRIX_COMPLETE',out,flush=True)
++
++
++if __name__=='__main__':main()
+--- /dev/null
++++ b/JEPA/run_offline_checks.py
+@@ -0,0 +1,60 @@
++"""Reproduce preparatory checks and archive outputs; never starts a flight."""
++import datetime
++import hashlib
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++from zoneinfo import ZoneInfo
++
++ROOT = Path(__file__).resolve().parent
++
++
++def main():
++    stamp = datetime.datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%Y%m%d_%H%M%S')
++    out = ROOT/'runs'/('offline_'+stamp)
++    out.mkdir(parents=True,exist_ok=False)
++    commands = [
++        ('preflight',[sys.executable,str(ROOT/'preflight.py')]),
++        ('model_audit',[sys.executable,str(ROOT/'model_audit.py')]),
++        ('unit_tests',[sys.executable,'-m','unittest','discover','-s',str(ROOT),'-p','test_offline.py','-v']),
++        ('sdf_native',['gz','sdf','-k',str(ROOT/'generated/native_noise/hnuter_mass_cal_payload/model.sdf')]),
++        ('sdf_zero',['gz','sdf','-k',str(ROOT/'generated/zero_sensor_noise/hnuter_mass_cal_payload/model.sdf')]),
++    ]
++    results = {}
++    for name, cmd in commands:
++        r = subprocess.run(cmd,cwd=ROOT,capture_output=True,text=True,timeout=45)
++        (out/(name+'.log')).write_text(r.stdout+r.stderr)
++        results[name] = dict(argv=cmd,returncode=r.returncode,log=str(out/(name+'.log')))
++    os.environ['MPLCONFIGDIR'] = str(out/'mpl_cache')
++    import matplotlib
++    matplotlib.use('Agg')
++    import matplotlib.pyplot as plt
++    import numpy as np
++    from estimator import vertical_reference
++    t = np.linspace(0,16,1601)
++    reference = np.array([vertical_reference(x) for x in t])
++    fig, axes = plt.subplots(3,1,figsize=(9,7),sharex=True)
++    for i,label in enumerate(['z offset (m), NED','v_z (m/s), NED','a_z (m/s^2), NED']):
++        axes[i].plot(t,reference[:,i]); axes[i].set_ylabel(label); axes[i].grid(alpha=.3)
++    axes[-1].set_xlabel('Time (s)')
++    fig.suptitle('Planned calibration reference — analytic only, NOT flight data')
++    fig.tight_layout()
++    fig.savefig(out/'planned_reference.png',dpi=150)
++    plt.close(fig)
++    # Persist source manifest for this exact offline run.
++    manifest = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in ROOT.glob('*.py')}
++    summary = dict(evidence='OFFLINE_ONLY',sitl_flights=0,commands=results,source_sha256=manifest,
++                   status='BLOCKED_SITL' if results['preflight']['returncode']==2 else 'OFFLINE_CHECKS_ONLY',
++                   offline_checks_passed=all(v['returncode']==0 for k,v in results.items() if k!='preflight'))
++    (out/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')
++    (ROOT/'latest_offline_run.txt').write_text(str(out)+'\n')
++    print(json.dumps(summary,indent=2))
++    if not summary['offline_checks_passed']:
++        return 1
++    return 2 if summary['status']=='BLOCKED_SITL' else 0
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+--- /dev/null
++++ b/JEPA/run_sitl.py
+@@ -0,0 +1,141 @@
++"""Own and reap an isolated nominal PX4/Gazebo/DDS baseline experiment."""
++import argparse
++import datetime
++import json
++import os
++from pathlib import Path
++import shutil
++import signal
++import socket
++import subprocess
++import time
++import uuid
++import hashlib
++import xml.etree.ElementTree as ET
++from zoneinfo import ZoneInfo
++
++ROOT=Path(__file__).resolve().parent
++PX4=Path('/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl')
++BUILD=PX4/'build/px4_sitl_default'
++
++
++def main():
++    p=argparse.ArgumentParser();p.add_argument('--label',default='nominal')
++    p.add_argument('--loaded',action='store_true');p.add_argument('--instrument',action='store_true')
++    p.add_argument('--speed',type=float,default=1.)
++    p.add_argument('--smooth-takeoff',action='store_true')
++    p.add_argument('--group',choices=['A','B','C','D','C_shadow'],default='C_shadow')
++    p.add_argument('--noise',choices=['native','zero','low_noise','noisy_delayed'],default='native')
++    p.add_argument('--seed',type=int,default=0)
++    p.add_argument('--instance',type=int,default=0)
++    args=p.parse_args()
++    # No reuse or attach to an existing instance. PX4 itself enforces its lock.
++    if not 0<=args.instance<=4:p.error('instance must be 0..4')
++    port=28888+args.instance
++    for port in (port,):
++        with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as s: s.bind(('0.0.0.0',port))
++    stamp=datetime.datetime.now(ZoneInfo('Asia/Shanghai')).strftime('%Y%m%d_%H%M%S')
++    out=ROOT/'runs'/('sitl_'+args.label+'_'+stamp);out.mkdir(parents=True)
++    rootfs=out/'rootfs';rootfs.mkdir()
++    shutil.copytree(BUILD/'etc',rootfs/'etc')
++    # Networking-only change to private startup copy: no MAVLink/remote GCS sockets.
++    (rootfs/'etc/init.d-posix/px4-rc.mavlink').write_text('#!/bin/sh\n# Disabled for isolated JEPA DDS-only SITL.\n')
++    rc=rootfs/'etc/init.d-posix/rcS'
++    rc.write_text(rc.read_text().replace('param set MAV_SYS_ID $((px4_instance+1))','param set MAV_SYS_ID 1 # isolated per-domain JEPA instance'))
++    shutil.copy(BUILD/'rootfs/gz_env.sh',rootfs/'gz_env.sh')
++    model_name='hnuter'
++    if args.instrument or args.loaded:
++        from actuator_sensors import export_geometry
++        source=PX4/'Tools/simulation/gz/models/hnuter/model.sdf'
++        if args.loaded:source=ROOT/'generated/native_noise/hnuter_mass_cal_payload/model.sdf'
++        tree=ET.parse(source);model=tree.getroot().find('model')
++        if args.noise in ('zero','low_noise'):
++            for noise in model.findall('.//sensor//noise'):
++                for child in noise:
++                    if child.tag in ('mean','stddev','bias_mean','bias_stddev','dynamic_bias_stddev'):
++                        # Exact-zero gyro/accel/baro/mag trip unchanged-value validators.
++                        child.text=str(float(child.text)*.01) if args.noise=='low_noise' and child.tag=='stddev' else '0'
++        model_name='hnuter_jepa';model.set('name',model_name)
++        for uri in model.findall('.//mesh/uri'):
++            if not uri.text.startswith(('/', 'model://', 'file://')):
++                uri.text=str(source.parent/uri.text)
++        plugin=ET.SubElement(model,'plugin',filename='gz-sim-joint-state-publisher-system',name='gz::sim::systems::JointStatePublisher')
++        ET.SubElement(plugin,'topic').text='/jepa_joint_sensors'
++        models=out/'models';folder=models/model_name;folder.mkdir(parents=True)
++        tree.write(folder/'model.sdf',encoding='utf-8',xml_declaration=True)
++        export_geometry(PX4/'Tools/simulation/gz/models/hnuter/model.sdf',out/'actuator_geometry.json')
++        with (rootfs/'gz_env.sh').open('a') as f:
++            f.write(f'\nexport PX4_GZ_MODELS={models}\nexport GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:{models}\n')
++    profile=out/'dds_loopback.xml'
++    profile.write_text('''<?xml version="1.0" encoding="UTF-8" ?>
++<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
++<transport_descriptors><transport_descriptor><transport_id>jepa_udp</transport_id><type>UDPv4</type>
++<interfaceWhiteList><address>127.0.0.1</address></interfaceWhiteList></transport_descriptor></transport_descriptors>
++<participant profile_name="jepa_local" is_default_profile="true"><rtps>
++<userTransports><transport_id>jepa_udp</transport_id></userTransports><useBuiltinTransports>false</useBuiltinTransports>
++</rtps></participant></profiles>''')
++    token='jepa_'+uuid.uuid4().hex[:12]
++    env={k:v for k,v in os.environ.items() if not k.startswith(('PX4_','ROS_','GZ_','HNUTER_','RMW_'))}
++    env.update(HEADLESS='1',PX4_SIM_MODEL='gz_'+model_name,PX4_SYS_AUTOSTART='4051',PX4_GZ_WORLD='default',
++               GZ_IP='127.0.0.1',GZ_PARTITION=token,ROS_DOMAIN_ID=str(73+args.instance),ROS_AUTOMATIC_DISCOVERY_RANGE='LOCALHOST',
++               PX4_UXRCE_DDS_PORT=str(port),PX4_UXRCE_DDS_NS=token,
++               PX4_PARAM_UXRCE_DDS_SYNCT='0',
++               FASTDDS_DEFAULT_PROFILES_FILE=str(profile),FASTRTPS_DEFAULT_PROFILES_FILE=str(profile),
++               RMW_IMPLEMENTATION='rmw_fastrtps_cpp',ROS_LOG_DIR=str(out/'ros_logs'),JEPA_RUN_DIR=str(out),
++               PYTHONUNBUFFERED='1',SDL_VIDEODRIVER='dummy',SDL_AUDIODRIVER='dummy')
++    env['JEPA_SMOOTH_TAKEOFF']='1' if args.smooth_takeoff else '0'
++    env['JEPA_GROUP']=args.group;env['JEPA_NOISE']=args.noise;env['JEPA_SEED']=str(args.seed)
++    if args.group=='D':env['PX4_PARAM_HNTR_MASS']='5.39999998' if args.loaded else '4.49999998'
++    startup=rootfs/'etc/init.d-posix/px4-rc.gzsim'
++    startup.write_text(startup.read_text().replace('--verbose=${GZ_VERBOSE:=1} -r -s',f'--seed {args.seed} --verbose=${{GZ_VERBOSE:=1}} -r -s'))
++    if args.speed!=1.:env['PX4_SIM_SPEED_FACTOR']=str(args.speed)
++    procs={};logs=[];commands={}
++    def launch(name,cmd,cwd):
++        f=(out/(name+'.log')).open('w');logs.append(f);commands[name]=cmd
++        procs[name]=subprocess.Popen(cmd,cwd=cwd,env=env,stdin=subprocess.PIPE,stdout=f,stderr=subprocess.STDOUT,start_new_session=True,text=True)
++        return procs[name]
++    try:
++        launch('agent',['MicroXRCEAgent','udp4','-p',str(port),'-v','4'],out)
++        px=launch('px4',[str(BUILD/'bin/px4'),'-i',str(args.instance),'-w',str(rootfs)],rootfs)
++        manifest=dict(kind='owned_local_sitl',namespace=token,GZ_PARTITION=token,environment={k:v for k,v in env.items() if k in ['ROS_DOMAIN_ID','ROS_AUTOMATIC_DISCOVERY_RANGE','PX4_UXRCE_DDS_PORT','GZ_IP','PX4_SIM_MODEL']},
++                      pids={n:x.pid for n,x in procs.items()},commands=commands,source_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=PX4,text=True).strip())
++        manifest.update(experiment=vars(args),binary_sha256=hashlib.sha256((BUILD/'bin/px4').read_bytes()).hexdigest())
++        manifest['controller_sources_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in ROOT.glob('*.py')}
++        (out/'launch.json').write_text(json.dumps(manifest,indent=2)+'\n')
++        (ROOT/'latest_sitl_run.txt').write_text(str(out)+'\n')
++        print('STARTED',out,flush=True)
++        deadline=time.monotonic()+65
++        while time.monotonic()<deadline:
++            if px.poll() is not None: raise RuntimeError('PX4 exited during startup')
++            if 'Startup script returned successfully' in (out/'px4.log').read_text(): break
++            time.sleep(1)
++        else: raise RuntimeError('PX4 startup timeout')
++        px.stdin.write('ver all\nparam show HNTR_*\nparam show CA_AIRFRAME\nparam show UXRCE_DDS_*\n');px.stdin.flush()
++        time.sleep(3)
++        cmd=['bash','-c',f'source /opt/ros/jazzy/setup.bash\nsource {ROOT.parent}/install/setup.bash\nexec python3 {ROOT}/sitl_position_probe.py']
++        node=launch('controller',cmd,out)
++        manifest['commands']=commands;manifest['pids']={n:x.pid for n,x in procs.items()}
++        (out/'launch.json').write_text(json.dumps(manifest,indent=2)+'\n')
++        result=node.wait(timeout=170)
++        print('CONTROLLER_EXIT',result,flush=True)
++        return result
++    finally:
++        if 'px4' in procs and procs['px4'].poll() is None:
++            try:
++                procs['px4'].stdin.write('shutdown\n');procs['px4'].stdin.flush();time.sleep(2)
++            except (BrokenPipeError,OSError): pass
++        for name,proc in reversed(list(procs.items())):
++            try: os.killpg(proc.pid,signal.SIGTERM)
++            except ProcessLookupError: pass
++        for proc in procs.values():
++            try: proc.wait(timeout=5)
++            except subprocess.TimeoutExpired:
++                try: os.killpg(proc.pid,signal.SIGKILL)
++                except ProcessLookupError: pass
++                proc.wait()
++        for f in logs:f.close()
++        (out/'process_exit.json').write_text(json.dumps({n:p.returncode for n,p in procs.items()},indent=2)+'\n')
++        print('OWNED_PROCESSES_CLEANED',out,flush=True)
++
++
++if __name__=='__main__': raise SystemExit(main())
+--- /dev/null
++++ b/JEPA/sitl_position_probe.py
+@@ -0,0 +1,295 @@
++"""Automated references using the preserved ordinary PX4 position controller.
++
++SITL-only launcher manifest required. No direct actuator publishing permitted.
++"""
++import csv
++import json
++import math
++import os
++from pathlib import Path
++import sys
++import time
++from collections import deque
++import numpy as np
++
++ROOT = Path(__file__).resolve().parent
++sys.path.insert(0, str(ROOT.parent))
++import hnuter_external_controller_px4_position as base
++from estimator import vertical_reference,MassEstimator
++from px4_msgs.msg import VehicleLandDetected, ActuatorMotors
++from rclpy.qos import qos_profile_sensor_data
++
++
++class NoInput:
++    def __init__(self, *a, **kw): pass
++    def close(self): pass
++    def get_commands(self): return []
++    def get_velocity_commands(self, dt):
++        return dict(vx_b=0.,vy_b=0.,vz=0.,yaw_rate=0.,pitch_rate=0.,lt=0.,rt=0.)
++
++
++class Probe(base.HnuterController):
++    def __init__(self, out):
++        self.out = out
++        self.phase = 'WAIT'
++        self.started = None
++        self.finished = False
++        self.failure = None
++        self.land_started = None
++        self.last_pos_wall = self.last_att_wall = 0.
++        self.valid = False
++        self.landed = True
++        self.motor = np.zeros(5)
++        self.had_armed = False
++        self.rows = []
++        self.stable_since = None
++        self.flight_origin = None
++        self.land_acknowledged = False
++        self.sensors=None
++        self.sensor_rows=[]
++        self.estimator=MassEstimator()
++        self.rotation_ned=np.eye(3)
++        self.group=os.environ.get('JEPA_GROUP','C_shadow')
++        self.noisy=os.environ.get('JEPA_NOISE')=='noisy_delayed'
++        self.rng=np.random.default_rng(int(os.environ.get('JEPA_SEED','0')))
++        self.velocities=deque()
++        self.attitudes=deque(maxlen=2000)
++        self.accepted_at=None
++        self.last_error=0.;self.last_tilt=0.
++        self.saturated_since=None
++        self.init_wall=time.monotonic()
++        self.offboard_landing=False
++        if (out/'actuator_geometry.json').exists():
++            from actuator_sensors import JointSensors
++            self.sensors=JointSensors(out/'actuator_geometry.json','/jepa_joint_sensors')
++        super().__init__()
++        assert self.use_px4_position_takeoff and not self.publish_gz_servos_direct
++        self.create_subscription(VehicleLandDetected,'/fmu/out/vehicle_land_detected',self.on_land,qos_profile_sensor_data)
++        self.create_subscription(ActuatorMotors,'/fmu/out/actuator_motors',self.on_motors,qos_profile_sensor_data)
++        self.create_timer(.1,self.watchdog)
++
++    def print_status(self):
++        self.get_logger().info(f'PHASE={self.phase} armed={self.armed} pos={self.position} failure={self.failure}')
++
++    def on_land(self,msg): self.landed = bool(msg.landed)
++    def on_motors(self,msg): self.motor = np.array(msg.control[:5])
++
++    def local_position_callback(self,msg):
++        self.last_pos_wall = time.monotonic()
++        self.valid = all([msg.xy_valid,msg.z_valid,msg.v_xy_valid,msg.v_z_valid])
++        super().local_position_callback(msg)
++        if self.sensors is not None:
++            now=msg.timestamp*1e-6
++            self.velocities.append((now,float(msg.vz),self.phase,self.valid and self.armed and not self.landed and self.last_error<.3 and self.last_tilt<math.radians(20) and np.linalg.norm(self.velocity)<1.2 and float(np.nanmax(np.abs(self.motor)))<.9))
++            delay=.06 if self.noisy else .03
++            while self.velocities and now-self.velocities[0][0]>=delay:
++                self.process_sensor(*self.velocities.popleft())
++
++    def process_sensor(self,t,vz,phase,eligible):
++            rotations=[q for stamp,q in self.attitudes if 0<=t-stamp<.025]
++            measurement=self.sensors.thrust(t,rotations[-1],self.rng if self.noisy else None) if rotations else None
++            if measurement is not None:
++                if self.noisy:vz+=self.rng.normal(0,.01)
++                self.sensor_rows.append(dict(t=t,sensor_t=measurement['sensor_t'],vz_ned=vz,
++                                             thrust_up=measurement['thrust_up'],phase=phase,
++                                             **{f'omega{i}':v for i,v in enumerate(measurement['omega'])}))
++                if phase=='CALIBRATION' and self.group in ('B','C','C_shadow'):
++                    self.estimator.push(t,vz,measurement['thrust_up'],eligible=eligible)
++                    if self.estimator.accepted and self.accepted_at is None:self.accepted_at=t
++            elif phase=='CALIBRATION':
++                self.estimator.invalidate('missing_aligned_sensor')
++
++    def attitude_callback(self,msg):
++        self.last_att_wall = time.monotonic()
++        w,x,y,z=msg.q
++        self.rotation_ned=np.array([[1-2*(y*y+z*z),2*(x*y-w*z),2*(x*z+w*y)],
++                                    [2*(x*y+w*z),1-2*(x*x+z*z),2*(y*z-w*x)],
++                                    [2*(x*z-w*y),2*(y*z+w*x),1-2*(x*x+y*y)]])
++        self.attitudes.append((msg.timestamp*1e-6,self.rotation_ned.copy()))
++        super().attitude_callback(msg)
++
++    def publish_direct_actuator_setpoint(self,*a,**kw):
++        raise RuntimeError('Direct actuator control forbidden')
++
++    def publish_actuator_commands(self,*a,**kw):
++        raise RuntimeError('Direct actuator control forbidden')
++
++    def offboard_startup_tick(self):
++        if self.phase == 'LAND':
++            # Stop mode-reentry requests after the explicit PX4 LAND command.
++            if self.offboard_landing:self.publish_offboard_control_mode()
++            return
++        super().offboard_startup_tick()
++
++    def control_loop(self):
++        if self.phase != 'LAND':
++            super().control_loop()
++        elif self.offboard_landing and self.armed:
++            # Same analytic position-only landing reference for every comparison.
++            # Retain commanded descent until disarm: the original land detector
++            # explicitly requires positive NED velocity even after touchdown.
++            t=max(0.,self.px4_timestamp*1e-6-self.landing_start_px4)
++            ramp=2.;speed=.7
++            if t<ramp:
++                z=self.landing_initial_z-speed*.5*(t-ramp/math.pi*math.sin(math.pi*t/ramp))
++                v=-speed*.5*(1-math.cos(math.pi*t/ramp))
++                a=-speed*math.pi/(2*ramp)*math.sin(math.pi*t/ramp)
++            else:z=self.landing_initial_z-speed*(t-ramp/2);v=-speed;a=0.
++            self.target_position=np.array([*self.flight_origin,z])
++            self.target_velocity=np.array([0.,0.,v])
++            self.target_acceleration=np.array([0.,0.,a])
++            self.publish_px4_trajectory_setpoint()
++
++    def land(self,reason=None):
++        if self.phase == 'LAND': return
++        self.failure = reason
++        self.phase = 'LAND'
++        self.land_started = time.monotonic()
++        if reason is None:
++            self.offboard_landing=True
++            self.landing_start_px4=self.px4_timestamp*1e-6
++            self.landing_initial_z=float(self.position[2]-self._z0)
++        else:
++            self.publish_vehicle_command(21)
++        self.get_logger().info(f'LAND requested; reason={reason}')
++
++    def watchdog(self):
++        now = time.monotonic()
++        if self.phase == 'WAIT':
++            if now-self.init_wall>45:
++                self.failure='no_valid_state_before_arming';self.finished=True
++                return
++            if self.valid and self.data_received and now-self.last_pos_wall<.2 and now-self.last_att_wall<.2:
++                if self.stable_since is None: self.stable_since=now
++                if now-self.stable_since>3.:
++                    self.takeoff_requested=True
++                    self.phase='ARM_WAIT'
++            else: self.stable_since=None
++        if self.armed: self.had_armed=True
++        if self.armed and self.phase != 'LAND':
++            if not self.valid or max(now-self.last_pos_wall,now-self.last_att_wall)>.5:
++                self.land('invalid_or_stale_state')
++        if self.phase == 'LAND':
++            if not self.armed and self.had_armed:
++                self.finished=True
++            elif now-self.land_started>35:
++                self.failure=self.failure or 'landing_timeout'
++                self.finished=True
++        elif self.had_armed and not self.armed:
++            self.failure='unexpected_disarm'
++            self.finished=True
++        if self.group in ('B','C') and self.estimator.accepted and self.phase in ('CHECK','EVALUATION','FINAL_HOVER') and self.started is not None and self.px4_timestamp*1e-6-self.sim_start_time_s-self.started>=35. and self.armed and self.valid and not self.landed and self.last_error<.3 and self.last_tilt<math.radians(20) and float(np.nanmax(np.abs(self.motor)))<.9:
++            request=base.VehicleCommand()
++            request.command=31000;request.param1=float(self.estimator.mass);request.param2=54123.
++            request.target_system=1;request.target_component=1;request.source_system=73;request.source_component=1
++            request.from_external=True;request.timestamp=self.timestamp_now_us()
++            self.vehicle_command_pub.publish(request)
++
++    def update_trajectory(self,current_time,dt):
++        # Use baseline takeoff/hover implementation unchanged until stable hover.
++        super().update_trajectory(current_time,dt)
++        if not self.armed or not self.is_offboard(): return
++        if self.started is None:
++            self.started=current_time
++            self.flight_origin=self.position[:2].copy()
++        elapsed=current_time-self.started
++        if elapsed<12:
++            self.phase='TAKEOFF'
++            if os.environ.get('JEPA_SMOOTH_TAKEOFF')=='1':
++                duration=10.;s=min(elapsed/duration,1.)
++                h=self.takeoff_height
++                self.target_position=np.array([*self.flight_origin,h*(10*s**3-15*s**4+6*s**5)])
++                self.target_velocity=np.array([0.,0.,h/duration*(30*s**2-60*s**3+30*s**4)])
++                self.target_acceleration=np.array([0.,0.,h/duration**2*(60*s-180*s**2+120*s**3)])
++        else:
++            if elapsed<18:
++                self.phase='HOVER'
++                zva=np.array([self.takeoff_height,0.,0.])
++            elif elapsed<34:
++                self.phase='CALIBRATION'
++                zva=vertical_reference(elapsed-18,amplitude=.08 if self.group in ('C','C_shadow') else 0.)
++                zva=np.array([self.takeoff_height-zva[0],-zva[1],-zva[2]])
++            elif elapsed<40:
++                self.phase='CHECK'
++                zva=np.array([self.takeoff_height,0.,0.])
++            elif elapsed<56:
++                self.phase='EVALUATION'
++                zva=vertical_reference(elapsed-40,amplitude=.15,frequency=.3)
++                zva=np.array([self.takeoff_height-zva[0],-zva[1],-zva[2]])
++            elif elapsed<61:
++                self.phase='FINAL_HOVER'
++                zva=np.array([self.takeoff_height,0.,0.])
++            else:
++                self.land()
++                return
++            self.target_position=np.array([*self.flight_origin,zva[0]])
++            self.target_velocity=np.array([0.,0.,zva[1]])
++            self.target_acceleration=np.array([0.,0.,zva[2]])
++        position=np.array([*self.position[:2],self.position[2]-self._z0])
++        err=position-self.target_position
++        tilt=math.acos(float(np.clip(self.R[2,2],-1,1)))
++        self.last_error=float(np.linalg.norm(err));self.last_tilt=tilt
++        if float(np.nanmax(np.abs(self.motor)))>=.95:
++            if self.saturated_since is None:self.saturated_since=elapsed
++        else:self.saturated_since=None
++        self.rows.append(dict(t=elapsed,px4_time_s=self.px4_timestamp*1e-6,phase=self.phase,x=position[0],y=position[1],z_up=position[2],
++                             x_ref=self.target_position[0],y_ref=self.target_position[1],z_ref=self.target_position[2],
++                             vz_up=self.velocity[2],vz_ref=self.target_velocity[2],az_ref=self.target_acceleration[2],
++                             error=float(np.linalg.norm(err)),tilt_deg=math.degrees(tilt),landed=self.landed,
++                             motor_max=float(np.nanmax(np.abs(self.motor))),valid=self.valid))
++        if tilt>math.radians(25) or np.linalg.norm(position[:2]-self.flight_origin)>1.0:
++            self.land('attitude_or_horizontal_limit')
++        elif elapsed>12 and (np.linalg.norm(err)>.5 or np.linalg.norm(self.velocity)>1.5 or self.landed):
++            self.land('tracking_velocity_or_contact_limit')
++        elif self.saturated_since is not None and elapsed-self.saturated_since>.3:
++            self.land('sustained_saturation')
++
++
++def main():
++    out=Path(os.environ['JEPA_RUN_DIR'])
++    manifest=json.loads((out/'launch.json').read_text())
++    assert manifest['kind']=='owned_local_sitl' and os.environ['GZ_PARTITION']==manifest['GZ_PARTITION']
++    for name in ('px4','agent'):
++        os.kill(manifest['pids'][name],0)
++    base.GamepadManager=base.KeyboardCommandReader=NoInput
++    names=['/fmu/in/offboard_control_mode','/fmu/in/trajectory_setpoint','/fmu/in/vehicle_command',
++           '/fmu/in/actuator_motors','/fmu/in/actuator_servos','/fmu/out/vehicle_local_position_v1',
++           '/fmu/out/vehicle_attitude','/fmu/out/vehicle_angular_velocity','/fmu/out/vehicle_status_v1',
++           '/fmu/out/vehicle_control_mode','/fmu/out/vehicle_command_ack','/fmu/out/vehicle_land_detected','/fmu/out/actuator_motors']
++    args=['--ros-args']
++    for name in names: args+=['-r',name+':=/'+manifest['namespace']+name]
++    base.rclpy.init(args=args)
++    node=Probe(out)
++    started=time.monotonic()
++    try:
++        while not node.finished and time.monotonic()-started<150:
++            base.rclpy.spin_once(node,timeout_sec=.1)
++        if not node.finished: node.failure='overall_timeout'
++    finally:
++        if node.rows:
++            with (out/'trajectory.csv').open('w') as f:
++                w=csv.DictWriter(f,fieldnames=list(node.rows[0]));w.writeheader();w.writerows(node.rows)
++        for name,rows in [('actuator_sensor',node.sensor_rows),('mass_windows',node.estimator.rows)]:
++            if rows:
++                with (out/(name+'.csv')).open('w') as f:
++                    w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
++        rows=[r for r in node.rows if r['phase']=='EVALUATION']
++        if node.finished and node.failure is None and (not node.landed or node.armed):node.failure='landing_unconfirmed'
++        result=dict(status='PASS' if node.finished and node.failure is None and rows and rows[-1]['t']-rows[0]['t']>15.9 else 'FAIL',
++                    failure=node.failure,phase=node.phase,samples=len(node.rows),evaluation_samples=len(rows),
++                    landed=node.landed,disarmed=not node.armed,
++                    sensor_samples=len(node.sensor_rows),mass_estimate_kg=node.estimator.mass if node.group in ('B','C','C_shadow') else None,
++                    mass_accepted=node.estimator.accepted if node.group in ('B','C','C_shadow') else None,
++                    mass_reason=node.estimator.reason if node.group in ('B','C','C_shadow') else 'disabled',
++                    group=node.group,noise=os.environ.get('JEPA_NOISE'),mass_accepted_at_px4_s=node.accepted_at,
++                    last_px4_timestamp_s=node.px4_timestamp*1e-6,
++                    last_joint_timestamp_s=node.sensors.samples[-1][0] if node.sensors and node.sensors.samples else None,
++                    position_rmse_m=float(np.sqrt(np.mean([r['error']**2 for r in rows]))) if rows else None,
++                    max_position_error_m=max([r['error'] for r in rows],default=None))
++        (out/'flight_result.json').write_text(json.dumps(result,indent=2)+'\n')
++        print(json.dumps(result),flush=True)
++        node.destroy_node();base.rclpy.shutdown()
++    return 0 if result['status']=='PASS' else 1
++
++
++if __name__=='__main__': raise SystemExit(main())
+--- /dev/null
++++ b/JEPA/summarize_matrix.py
+@@ -0,0 +1,147 @@
++"""Evidence-bound aggregate report; never used by the online estimator."""
++import csv
++import json
++import os
++from pathlib import Path
++import numpy as np
++
++ROOT=Path(__file__).resolve().parent
++GROUPS=['A','B','C','D','C_shadow']
++
++
++def statistics(values):
++    values=[float(v) for v in values if v is not None and np.isfinite(v)]
++    if not values:return dict(n=0,mean=None,std=None,min=None,max=None)
++    return dict(n=len(values),mean=float(np.mean(values)),std=float(np.std(values,ddof=1)) if len(values)>1 else 0.,min=min(values),max=max(values))
++
++
++def main():
++    out=ROOT/'results';out.mkdir(exist_ok=True)
++    rows=[];all_runs=[]
++    for phase in ['low','noisy']:
++        pointer=ROOT/f'latest_matrix_{phase}.txt'
++        if not pointer.exists():continue
++        matrix=Path(pointer.read_text().strip())
++        entries=json.loads((matrix/'results.json').read_text())
++        for entry in entries:
++            run=Path(entry['run']);metrics=json.loads((run/'metrics.json').read_text()) if (run/'metrics.json').exists() else {}
++            flight=entry.get('flight',{})
++            evaluation=metrics.get('phases',{}).get('EVALUATION',{})
++            cal=metrics.get('phases',{}).get('CALIBRATION',{})
++            mass=metrics.get('mass',{});comp=metrics.get('compensation',{})
++            estimate=flight.get('mass_estimate_kg')
++            mass_error=100*(estimate/metrics.get('truth_mass_kg_evaluation_only',5.39999998)-1) if estimate is not None else None
++            eval_complete=evaluation.get('duration_s',0)>15.9
++            row=dict(phase=phase,group=entry['group'],seed=entry['seed'],run=str(run),flight_pass=flight.get('status')=='PASS',
++                     failure=flight.get('failure'),evaluation_complete=eval_complete,
++                     landing_confirmed=flight.get('landed') is True and flight.get('disarmed') is True,
++                     sensor_samples=flight.get('sensor_samples'),mass_reason=flight.get('mass_reason'),
++                     estimate_kg=estimate,mass_error_percent=mass_error,
++                     mass_abs_error_percent=abs(mass_error) if mass_error is not None else None,
++                     mass_accepted=flight.get('mass_accepted'),acceptance_time_s=mass.get('acceptance_time_s'),
++                     holdout_relative_rms=mass.get('holdout_relative_rms'),
++                     position_rmse_m=evaluation.get('position_rmse_m') if eval_complete else None,
++                     vertical_rmse_m=evaluation.get('vertical_rmse_m') if eval_complete else None,
++                     truth_position_rmse_m=evaluation.get('truth_position_rmse_m') if eval_complete else None,
++                     position_max_m=evaluation.get('position_max_m'),calibration_rmse_m=cal.get('position_rmse_m'),
++                     calibration_max_m=cal.get('position_max_m'),
++                     calibration_cost_m2_s=cal.get('reference_velocity_energy_m2_s'),
++                     saturation_fraction=evaluation.get('saturation_fraction'),
++                     calibration_saturation_fraction=cal.get('saturation_fraction'),
++                     effective_mass_kg=comp.get('final_effective_mass_kg'),
++                     update_force_error_N=comp.get('max_algebraic_update_force_error_N'),
++                     transition_force_step_N=comp.get('common_transition_max_force_step_N'),
++                     transition_position_peak_m=comp.get('transient_position_max_m'),
++                     thrust_balance_rms_N=metrics.get('offline_thrust_balance',{}).get('rms_residual_N'))
++            rows.append(row);all_runs.append(dict(entry=entry,metrics=metrics))
++    if not rows:raise RuntimeError('No completed matrix')
++    with (out/'all_trials.csv').open('w') as f:
++        w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
++    aggregates=[]
++    for phase in ['low','noisy']:
++        for group in GROUPS:
++            selected=[r for r in rows if r['phase']==phase and r['group']==group]
++            if not selected:continue
++            agg=dict(phase=phase,group=group,n=len(selected),flight_passes=sum(r['flight_pass'] for r in selected),
++                     evaluation_complete=sum(r['evaluation_complete'] for r in selected),
++                     calibration_accepts=sum(r['mass_accepted'] is True for r in selected) if group in ['B','C','C_shadow'] else None,
++                     landing_unconfirmed=sum(not r['landing_confirmed'] for r in selected),
++                     no_actuator_sensor_runs=sum(r['sensor_samples']==0 for r in selected),
++                     safety_exits=sum(r['failure'] in ['attitude_or_horizontal_limit','tracking_velocity_or_contact_limit','sustained_saturation','invalid_or_stale_state'] for r in selected))
++            agg['calibration_failure_fraction']=1-agg['calibration_accepts']/agg['n'] if agg['calibration_accepts'] is not None else None
++            agg['accepted_only_mass_abs_error_percent']=statistics([r['mass_abs_error_percent'] for r in selected if r['mass_accepted'] is True])
++            for field in ['position_rmse_m','vertical_rmse_m','truth_position_rmse_m','position_max_m','mass_error_percent','mass_abs_error_percent','acceptance_time_s','holdout_relative_rms','calibration_rmse_m','calibration_max_m','calibration_cost_m2_s','saturation_fraction','calibration_saturation_fraction','update_force_error_N','transition_force_step_N','transition_position_peak_m','thrust_balance_rms_N']:
++                agg[field]=statistics([r[field] for r in selected])
++            aggregates.append(agg)
++    contrasts=[]
++    for metric in ['position_rmse_m','vertical_rmse_m','truth_position_rmse_m']:
++        for baseline,treatment in [('A','B'),('A','C'),('A','D'),('A','C_shadow'),('B','C'),('C_shadow','C')]:
++            deltas=[]
++            for seed in range(5):
++                a=next((r for r in rows if r['phase']=='noisy' and r['group']==baseline and r['seed']==seed),None)
++                b=next((r for r in rows if r['phase']=='noisy' and r['group']==treatment and r['seed']==seed),None)
++                if a and b and a[metric] is not None and b[metric] is not None:deltas.append(a[metric]-b[metric])
++            if deltas:
++                rng=np.random.default_rng(20261010);boot=np.mean(rng.choice(deltas,(10000,len(deltas)),replace=True),axis=1)
++                contrasts.append(dict(metric=metric,comparison=baseline+' minus '+treatment,positive_means_improvement=True,
++                                      paired_seed_count=len(deltas),mean_difference_m=float(np.mean(deltas)),
++                                      bootstrap_95pct_interval_m=np.percentile(boot,[2.5,97.5]).tolist()))
++    (out/'summary.json').write_text(json.dumps(dict(aggregates=aggregates,paired_contrasts=contrasts),indent=2)+'\n')
++    def fmt(stat,scale=1):
++        return 'N/A' if stat['n']==0 else f"{stat['mean']*scale:.3f} ± {stat['std']*scale:.3f}"
++    lines=['# SITL 质量自校准实测汇总','',
++           '全部正式组使用同一 5.39999998 kg 负载模型、固定增益、1 倍速、平滑起飞、16 秒校准预算和公共评价轨迹。',
++           'low 为原 SDF 传感器标准差的 1%；noisy 为原 SDF 噪声，加转速 2 rad/s、关节角 0.1°、竖直速度 0.01 m/s 的独立高斯噪声及 60 ms 对齐缓冲（low 为 30 ms）。严格零噪声因 PX4 恒值传感器检查失败，未伪称通过。','',
++           '表内为均值 ± 样本标准差；性能统计只含完成公共评价阶段的样本，完整飞行成功数和校准验收数单独列出。质量误差含未接受时保留的先验，不能只挑成功估计。主位置误差使用 PX4 状态估计；Gazebo 真值以首个解锁样本做固定平移对齐后单独报告。','',
++           '| 条件 | 组 | 全程成功 | 校准接受 | 评价 RMSE cm | 竖直 RMSE cm | 真值 RMSE cm | 质量误差 % | 验收时间 s |','|---|---|---|---|---|---|---|---|---|']
++    for a in aggregates:
++        accept='—' if a['calibration_accepts'] is None else f"{a['calibration_accepts']}/{a['n']}"
++        lines.append(f"| {a['phase']} | {a['group']} | {a['flight_passes']}/{a['n']} | {accept} | {fmt(a['position_rmse_m'],100)} | {fmt(a['vertical_rmse_m'],100)} | {fmt(a['truth_position_rmse_m'],100)} | {fmt(a['mass_error_percent'])} | {fmt(a['acceptance_time_s'])} |")
++    lines+=['','A=固定标称；B=被动估计补偿；C=主动估计补偿；D=已知质量参考；C_shadow=主动估计、不补偿。',
++            '端到端成功率优先于条件 RMSE：某组中途退出的种子未进入评价，完成子集的较小误差不能推成该组总体更可靠。源结果 flight_result.json 中是采样均方，本文由原始 CSV 统一重算时间加权均方。',
++            '验收时间为有效独立验证窗口终点相对校准开始的时间，不包含另行记录的处理缓冲。质量未知时的“首次进入 2% 真值误差带”仅由离线评价程序计算。','',
++            '## 配对差异','',
++            '以下是 noisy 条件同种子前组减后组的平均 RMSE 差，正数代表后组误差较小。区间来自最多 5 个种子中可配对且完成评价的试验；配对数单列。bootstrap 仅作不确定性描述，不代表广泛统计结论。','',
++            '| 指标 | 比较 | 配对数 | 平均差 cm | bootstrap 95% 区间 cm |','|---|---|---|---|---|']
++    for c in contrasts:
++        lo,hi=c['bootstrap_95pct_interval_m'];lines.append(f"| {c['metric']} | {c['comparison']} | {c['paired_seed_count']} | {c['mean_difference_m']*100:.3f} | [{lo*100:.3f}, {hi*100:.3f}] |")
++    lines+=['','## 校准成本、瞬态与失败','',
++            '| 条件 | 组 | 校准 RMSE cm | 动作代价 m²/s | 质量绝对误差 % | 独立窗残差 % | 评价饱和 % | 校准失败率 | 安全退出 / 落地未确认 |',
++            '|---|---|---|---|---|---|---|---|---|']
++    for a in aggregates:
++        failure='—' if a['calibration_failure_fraction'] is None else f"{100*a['calibration_failure_fraction']:.1f}%"
++        lines.append(f"| {a['phase']} | {a['group']} | {fmt(a['calibration_rmse_m'],100)} | {fmt(a['calibration_cost_m2_s'])} | {fmt(a['mass_abs_error_percent'])} | {fmt(a['holdout_relative_rms'],100)} | {fmt(a['saturation_fraction'],100)} | {failure} | {a['safety_exits']} / {a['landing_unconfirmed']} |")
++    lines+=['','动作代价为整个校准段的参考速度平方积分，不是能耗。独立窗残差包含冻结候选之后的全部后续窗口；验收至少使用前五窗。','',
++            '| 条件 | 组 | 转换代数力误差最大值 N | 公共 35–39 s 最大相邻力变化均值 N | 转换期位置峰值均值 cm | 离线推力平衡 RMS 均值 N |',
++            '|---|---|---|---|---|---|']
++    for a in aggregates:
++        err=a['update_force_error_N']['max'];err='—' if err is None else f'{err:.3g}'
++        lines.append(f"| {a['phase']} | {a['group']} | {err} | {fmt(a['transition_force_step_N'])} | {fmt(a['transition_position_peak_m'],100)} | {fmt(a['thrust_balance_rms_N'])} |")
++    lines+=['','代数力误差仅隔离质量/积分器转换；相邻力变化同时含正常反馈和轨迹变化，不能称为质量更新跳变量。公共 35–39 s 窗也保留安全退出后恢复过程，因此 B 组的大力变化包含未补偿的失败试验，不能解释为质量转换冲击。离线推力平衡使用评价真值质量与速度，含气动力，未送入估计器。',
++            '校准指标统计实际执行到的校准段：提前退出试验可能只有部分校准数据或没有校准数据。逐次时长、峰值和样本量在 metrics.json 中；不得把它们当成全部完整校准成功。']
++    lines+=['','## 已接受估计的条件精度','', '| 条件 | 组 | 接受数 / 全部次数 | 仅接受子集质量绝对误差 % |','|---|---|---|---|']
++    for a in aggregates:
++        if a['calibration_accepts'] is not None:
++            lines.append(f"| {a['phase']} | {a['group']} | {a['calibration_accepts']}/{a['n']} | {fmt(a['accepted_only_mass_abs_error_percent'])} |")
++    lines+=['','## 全部原始运行','']
++    for r in sorted(rows,key=lambda r:(r['phase'],r['seed'],r['group'])):
++        lines.append(f"- {r['phase']} / {r['group']} / seed {r['seed']}: [日志与指标]({r['run']}/metrics.json)，全程 {'PASS' if r['flight_pass'] else 'FAIL'}，原因 {r['failure']}。")
++    (out/'RESULTS.md').write_text('\n'.join(lines)+'\n')
++    os.environ['MPLCONFIGDIR']=str(out/'mpl_cache')
++    import matplotlib
++    matplotlib.use('Agg')
++    import matplotlib.pyplot as plt
++    fig,axes=plt.subplots(2,2,figsize=(12,8))
++    for ax,(field,title,scale) in zip(axes.flat,[('position_rmse_m','Evaluation: estimated position RMSE (cm)',100),('truth_position_rmse_m','Evaluation: aligned truth position RMSE (cm)',100),('mass_error_percent','Signed mass estimation error (%)',1),('calibration_rmse_m','Calibration position RMSE (cm)',100)]):
++        for i,group in enumerate(GROUPS):
++            values=[r[field]*scale for r in rows if r['phase']=='noisy' and r['group']==group and r[field] is not None]
++            if values:
++                ax.scatter(i+np.linspace(-.08,.08,len(values)),values,s=28,color=f'C{i}')
++                ax.errorbar(i,np.mean(values),yerr=np.std(values,ddof=1) if len(values)>1 else 0,fmt='_',color='black',capsize=5)
++        ax.set_xticks(range(len(GROUPS)),GROUPS);ax.set_title(title);ax.grid(axis='y',alpha=.25)
++    fig.suptitle('PX4/Gazebo SITL — 5 attempted seeds per group, fixed gains, +20% payload\nEvaluation: completed flights only; failed calibrations retain nominal mass')
++    fig.tight_layout();fig.savefig(out/'comparison.png',dpi=160);plt.close(fig)
++    print(json.dumps(aggregates,indent=2))
++
++
++if __name__=='__main__':main()
+--- /dev/null
++++ b/JEPA/test_offline.py
+@@ -0,0 +1,104 @@
++"""Synthetic mathematical checks, explicitly NOT a PX4/Gazebo experiment."""
++import unittest
++import numpy as np
++from estimator import MassEstimator, thrust_up_from_rotors, vertical_reference, bumpless_candidate
++from model_audit import audit, PX4
++import xml.etree.ElementTree as ET
++
++
++class CoreTests(unittest.TestCase):
++    def feed(self, mass=5.4, vz_noise=0., seed=0):
++        estimator = MassEstimator()
++        rng = np.random.default_rng(seed)
++        for t in np.arange(0,16.001,.004):
++            v, a = .1*np.sin(t), .1*np.cos(t)
++            # Deliberately synthetic; this is the fixture, not thrust reconstruction.
++            estimator.push(t,v+rng.normal(0,vz_noise),mass*(9.8-a))
++        return estimator
++
++    def test_nominal_and_loaded_are_distinct(self):
++        nominal, loaded = self.feed(4.5), self.feed(5.4)
++        self.assertTrue(nominal.accepted and loaded.accepted)
++        self.assertLess(abs(nominal.mass-4.5),.01)
++        self.assertLess(abs(loaded.mass-5.4),.01)
++
++    def test_five_noise_seeds_only_synthetic(self):
++        for seed in range(5):
++            estimator = self.feed(vz_noise=.01,seed=seed)
++            self.assertTrue(estimator.accepted)
++            self.assertLess(abs(estimator.mass-5.4),.03)
++
++    def test_hover_informative(self):
++        e = MassEstimator()
++        for t in np.arange(0,16.001,.004):
++            e.push(t,0,5.4*9.8)
++        self.assertTrue(e.accepted)
++        self.assertLess(abs(e.mass-5.4),.01)
++
++    def test_independent_holdout_rejects_changed_force(self):
++        e = MassEstimator()
++        for t in np.arange(0,8.001,.004):
++            e.push(t,0,5.4*9.8)
++        self.assertIsNotNone(e.candidate)
++        self.assertFalse(e.accepted)
++        frozen = e.mass
++        for t in np.arange(8.004,10.001,.004):
++            e.push(t,0,6.2*9.8)
++        self.assertFalse(e.accepted)
++        self.assertEqual(e.mass,frozen)
++        self.assertEqual(e.reason,'holdout_residual_rejected')
++
++    def test_timestamp_and_gate_reset(self):
++        e = self.feed()
++        e.push(17,0,53)
++        self.assertFalse(e.accepted)
++        self.assertEqual(e.reason,'timestamp_gap_or_reversal')
++        e.push(17.004,0,53,False)
++        self.assertIsNone(e.start)
++        self.assertEqual(e.reason,'invalid_or_ineligible_sample')
++
++    def test_bounds_not_silently_clipped(self):
++        e = MassEstimator()
++        for t in np.arange(0,.405,.004):
++            e.push(t,0,100)
++        self.assertFalse(e.accepted)
++        self.assertEqual(e.reason,'outside_physical_bounds')
++
++    def test_rotation_and_units(self):
++        omega = np.array([100.,200.])
++        axes = np.array([[0,0,-1.],[0,0,-1.]])
++        k = np.array([.001,.001])
++        self.assertAlmostEqual(thrust_up_from_rotors(omega,axes,np.eye(3),k),50.)
++        angle = np.pi/3
++        r = np.array([[1,0,0],[0,np.cos(angle),-np.sin(angle)],[0,np.sin(angle),np.cos(angle)]])
++        self.assertAlmostEqual(thrust_up_from_rotors(omega,axes,r,k),25.)
++        with self.assertRaises(ValueError):
++            thrust_up_from_rotors(omega,axes,-np.eye(3),k)
++
++    def test_reference_derivatives_and_endpoints(self):
++        h = 1e-4
++        for t in np.linspace(.01,15.99,99):
++            p, v, a = vertical_reference(t)
++            lo, hi = vertical_reference(t-h), vertical_reference(t+h)
++            self.assertAlmostEqual(v,(hi[0]-lo[0])/(2*h),places=7)
++            self.assertAlmostEqual(a,(hi[1]-lo[1])/(2*h),places=7)
++        for t in (0,16):
++            np.testing.assert_array_equal(vertical_reference(t),[0,0,0])
++
++    def test_bumpless_force_and_rejection(self):
++        a = np.array([.2,-.1,.3]); old = np.array([.1,.1,-1.9]); g = np.array([0,0,9.81])
++        new = bumpless_candidate(4.5,5.4,a,old)
++        self.assertIsNotNone(new)
++        np.testing.assert_allclose(4.5*(a+old-g),5.4*(a+new-g),atol=1e-12)
++        self.assertIsNone(bumpless_candidate(4.5,7.,[0,0,0],[0,0,0]))
++
++    def test_source_mass_and_frame_resolution(self):
++        model = ET.parse(PX4/'Tools/simulation/gz/models/hnuter/model.sdf').getroot().find('model')
++        result = audit(model)
++        self.assertAlmostEqual(result['total_mass_kg'],4.5,places=6)
++        self.assertEqual(len(result['links']),10)
++        self.assertTrue(all(x>0 for x in result['principal_inertias_kg_m2']))
++
++
++if __name__ == '__main__':
++    unittest.main(verbosity=2)
+--- /dev/null
++++ b/JEPA/timing_window_audit.json
+@@ -0,0 +1,122 @@
++[
++  {
++    "group": "B",
++    "window_s": 0.3,
++    "max_gap_s": 0.025,
++    "estimate_kg": 5.28669394428442,
++    "accepted": false,
++    "acceptance_s": null,
++    "valid_windows": 19,
++    "error_percent": -2.098259928430213
++  },
++  {
++    "group": "B",
++    "window_s": 0.3,
++    "max_gap_s": 0.045,
++    "estimate_kg": 5.388923146944726,
++    "accepted": true,
++    "acceptance_s": 7.696000000000005,
++    "valid_windows": 51,
++    "error_percent": -0.20512653882035492
++  },
++  {
++    "group": "B",
++    "window_s": 0.4,
++    "max_gap_s": 0.025,
++    "estimate_kg": 5.3442827176815015,
++    "accepted": false,
++    "acceptance_s": null,
++    "valid_windows": 12,
++    "error_percent": -1.031801157867751
++  },
++  {
++    "group": "B",
++    "window_s": 0.4,
++    "max_gap_s": 0.045,
++    "estimate_kg": 5.396793316896905,
++    "accepted": true,
++    "acceptance_s": 10.219999999999999,
++    "valid_windows": 39,
++    "error_percent": -0.05938265027723988
++  },
++  {
++    "group": "B",
++    "window_s": 0.5,
++    "max_gap_s": 0.025,
++    "estimate_kg": 5.362265227032986,
++    "accepted": false,
++    "acceptance_s": null,
++    "valid_windows": 9,
++    "error_percent": -0.6987917241994768
++  },
++  {
++    "group": "B",
++    "window_s": 0.5,
++    "max_gap_s": 0.045,
++    "estimate_kg": 5.399079852629416,
++    "accepted": true,
++    "acceptance_s": 12.68,
++    "valid_windows": 31,
++    "error_percent": -0.0170393958146553
++  },
++  {
++    "group": "C",
++    "window_s": 0.3,
++    "max_gap_s": 0.025,
++    "estimate_kg": 5.3135802248748645,
++    "accepted": false,
++    "acceptance_s": null,
++    "valid_windows": 22,
++    "error_percent": -1.6003658415779332
++  },
++  {
++    "group": "C",
++    "window_s": 0.3,
++    "max_gap_s": 0.045,
++    "estimate_kg": 5.39965122994075,
++    "accepted": true,
++    "acceptance_s": 7.740000000000002,
++    "valid_windows": 51,
++    "error_percent": -0.0064583344544622
++  },
++  {
++    "group": "C",
++    "window_s": 0.4,
++    "max_gap_s": 0.025,
++    "estimate_kg": 5.349956805052034,
++    "accepted": false,
++    "acceptance_s": null,
++    "valid_windows": 12,
++    "error_percent": -0.9267254654316881
++  },
++  {
++    "group": "C",
++    "window_s": 0.4,
++    "max_gap_s": 0.045,
++    "estimate_kg": 5.400760878715941,
++    "accepted": true,
++    "acceptance_s": 10.159999999999997,
++    "valid_windows": 39,
++    "error_percent": 0.014090717014059173
++  },
++  {
++    "group": "C",
++    "window_s": 0.5,
++    "max_gap_s": 0.025,
++    "estimate_kg": 4.5,
++    "accepted": false,
++    "acceptance_s": null,
++    "valid_windows": 6,
++    "error_percent": -16.666666358024685
++  },
++  {
++    "group": "C",
++    "window_s": 0.5,
++    "max_gap_s": 0.045,
++    "estimate_kg": 5.401804151570817,
++    "accepted": true,
++    "acceptance_s": 12.816000000000003,
++    "valid_windows": 31,
++    "error_percent": 0.033410584768511775
++  }
++]

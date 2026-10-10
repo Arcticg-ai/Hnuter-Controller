@@ -1,0 +1,5 @@
+{
+  "run": "JEPA/runs/sitl_noisy_C_s0_20261010_171956",
+  "ulog": "JEPA/runs/sitl_noisy_C_s0_20261010_171956/rootfs/log/2026-10-10/09_20_12.ulg",
+  "note": "Representative preselected noisy C seed 0; all trials are reported separately."
+}

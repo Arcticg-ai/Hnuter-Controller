@@ -1,0 +1,23 @@
+# 全部诊断与先行试验
+
+正式矩阵之外的所有本次运行均保留。失败不是正式对比中的成功样本。
+
+| 运行 | 状态 | 原因 | 原始记录 |
+|---|---|---|---|
+| sitl_C_low_all_sensors_20261010_170001 | FAIL | landing_timeout | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_all_sensors_20261010_170001/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_all_sensors_20261010_170001/px4.log) |
+| sitl_C_low_landing_check_20261010_170451 | FAIL | landing_timeout | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_landing_check_20261010_170451/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_landing_check_20261010_170451/px4.log) |
+| sitl_C_low_realtime_20261010_165746 | FAIL | insufficient_windows | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_realtime_20261010_165746/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_realtime_20261010_165746/px4.log) |
+| sitl_C_low_smoke_20261010_165617 | FAIL | attitude_or_horizontal_limit | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_smoke_20261010_165617/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_low_smoke_20261010_165617/px4.log) |
+| sitl_C_zero_smoke_20261010_165259 | FAIL | overall_timeout | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_zero_smoke_20261010_165259/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_C_zero_smoke_20261010_165259/px4.log) |
+| sitl_instrumented_nominal_20261010_164205 | PASS | insufficient_windows | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_instrumented_nominal_20261010_164205/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_instrumented_nominal_20261010_164205/px4.log) |
+| sitl_loaded_shadow_20261010_164056 | FAIL | attitude_or_horizontal_limit | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_loaded_shadow_20261010_164056/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_loaded_shadow_20261010_164056/px4.log) |
+| sitl_loaded_shadow_sync0_20261010_164412 | FAIL | attitude_or_horizontal_limit | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_loaded_shadow_sync0_20261010_164412/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_loaded_shadow_sync0_20261010_164412/px4.log) |
+| sitl_loaded_smooth_shadow_20261010_164628 | PASS | accepted | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_loaded_smooth_shadow_20261010_164628/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_loaded_smooth_shadow_20261010_164628/px4.log) |
+| sitl_low_A_s0_20261010_170945 | PASS | disabled | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_A_s0_20261010_170945/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_A_s0_20261010_170945/px4.log) |
+| sitl_low_B_s0_20261010_170945 | PASS | timestamp_gap_or_reversal | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_B_s0_20261010_170945/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_B_s0_20261010_170945/px4.log) |
+| sitl_low_C_s0_20261010_170945 | PASS | timestamp_gap_or_reversal | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_s0_20261010_170945/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_s0_20261010_170945/px4.log) |
+| sitl_low_C_shadow_s0_20261010_171126 | PASS | accepted | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_shadow_s0_20261010_171126/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_C_shadow_s0_20261010_171126/px4.log) |
+| sitl_low_D_s0_20261010_171126 | PASS | disabled | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_D_s0_20261010_171126/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_low_D_s0_20261010_171126/px4.log) |
+| sitl_nominal_20261010_163746 | PASS | see logs | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_20261010_163746/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_20261010_163746/px4.log) |
+| sitl_nominal_sensor_shadow_final_20261010_173321 | PASS | accepted | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_sensor_shadow_final_20261010_173321/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_nominal_sensor_shadow_final_20261010_173321/px4.log) |
+| sitl_strict_zero_realtime_final_20261010_173444 | FAIL | no_valid_state_before_arming | [controller log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_strict_zero_realtime_final_20261010_173444/controller.log), [PX4 log](/home/hnuter/px4_ws_ros2/JEPA/runs/sitl_strict_zero_realtime_final_20261010_173444/px4.log) |

@@ -1,0 +1,22 @@
+{
+  "formal_runs": 30,
+  "binary_sha256": [
+    "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+  ],
+  "online_source_sha256": {
+    "run_sitl.py": [
+      "575e8802e50a57d4b1dd480670fc4bc81fdd32fea21e80134946f2ade58bec5d"
+    ],
+    "sitl_position_probe.py": [
+      "5e173fae6d2db6c9b55b18d61aa26a7bb7e4bb8004dd48fa816723fa2ddc1f48"
+    ],
+    "actuator_sensors.py": [
+      "4576803f03fbfdae5cf28332cf5353bf62a7ab65fc39219c4574aee158403566"
+    ],
+    "estimator.py": [
+      "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4"
+    ]
+  },
+  "fixed_hnuter_parameters_except_mass": true,
+  "all_have_cleanup_records": true
+}

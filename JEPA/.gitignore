@@ -1,0 +1,27 @@
+# Generated raw experiments and private/bulk artifacts remain local.
+runs/
+rootfs/
+ros_logs/
+__pycache__/
+mplcache/
+mpl_cache/
+.pytest_cache/
+*.pyc
+*.ulg
+*.log
+*.zip
+*.npz
+*.mp4
+*.tar
+*.bundle
+SHA256SUMS.txt
+latest_sitl_run.txt
+latest_nominal_run.txt
+
+# Per-window replay arrays are local; compact aggregate reports are versioned.
+revision3/results/sitl_*/
+
+# Small aggregate tables are evidence, not raw flight logs.
+!/results/all_trials.csv
+!/revision2/results/all_attempts.csv
+!/revision2/results_level_reference/all_attempts.csv

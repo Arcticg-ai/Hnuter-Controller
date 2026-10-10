@@ -1,0 +1,5 @@
+{
+  "src/modules/mc_rate_control/HnuterControl.hpp": "03cd372374cb55fcc7b01d6512d72ec795607a9699d020adbf86c1f7c8d2b635",
+  "src/modules/mc_rate_control/HnuterControl.cpp": "0608dd19c031a7e8ab2a83b494b306bb59621bb0cfcbafa03c773b5fd4ef7944",
+  "msg/HnuterControlStatus.msg": "b1aeb19c0654a7d094f25eb0a0e80ebe0cff86f50b7a5a8ee875bd8ad3c9e8a3"
+}
