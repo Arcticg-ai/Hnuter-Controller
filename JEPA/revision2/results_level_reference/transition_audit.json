@@ -1,0 +1,956 @@
+[
+  {
+    "run": "sitl_matrix_0_A_s0_20261010_190011",
+    "group": "A",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.153571844100952,
+      "common_transition_p95_force_step_N": 2.73858642578125
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.85086185099763,
+      "thrust_std_N": 0.6285101643598295,
+      "actual_reconstructed_thrust_step_p95_N": 2.6479025850178073,
+      "position_error_peak_m": 0.10676160600851148
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.9675279385606,
+      "thrust_std_N": 0.7492484831639394,
+      "actual_reconstructed_thrust_step_p95_N": 2.8744962164390695,
+      "position_error_peak_m": 0.12619174234705205
+    },
+    "post": {
+      "samples": 151,
+      "thrust_mean_N": 52.95004515440977,
+      "thrust_std_N": 0.6536671247882325,
+      "actual_reconstructed_thrust_step_p95_N": 2.64755212281645,
+      "position_error_peak_m": 0.10864193053334627
+    }
+  },
+  {
+    "run": "sitl_matrix_10_A_s2_20261010_190441",
+    "group": "A",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.7337238788604736,
+      "common_transition_p95_force_step_N": 2.9881874799728387
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.95541594557136,
+      "thrust_std_N": 1.0553461073953365,
+      "actual_reconstructed_thrust_step_p95_N": 3.521628242227174,
+      "position_error_peak_m": 0.047341459016892046
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.96235861983142,
+      "thrust_std_N": 0.8630908505705879,
+      "actual_reconstructed_thrust_step_p95_N": 3.031297429488923,
+      "position_error_peak_m": 0.0886664743151921
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.9367009761905,
+      "thrust_std_N": 0.7917524600626015,
+      "actual_reconstructed_thrust_step_p95_N": 2.8753050975775793,
+      "position_error_peak_m": 0.07813266116234807
+    }
+  },
+  {
+    "run": "sitl_matrix_11_B_s2_20261010_190454",
+    "group": "B",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.40288782119751,
+      "updated_logged_samples": 150,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.629627361893654e-06,
+      "max_adjacent_logged_force_change_during_update_N": 3.112123489379883,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.8603451251983643,
+      "common_transition_p95_force_step_N": 1.2880047082900987,
+      "update_duration_s": 2.980000000000004,
+      "transient_position_max_m": 0.11318094895905846,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.300049781799316,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.892837486629425,
+      "thrust_std_N": 0.808213691807383,
+      "actual_reconstructed_thrust_step_p95_N": 3.058692765962351,
+      "position_error_peak_m": 0.11227275482404797
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.93398671280745,
+      "thrust_std_N": 0.42812385228750677,
+      "actual_reconstructed_thrust_step_p95_N": 1.2640558296044286,
+      "position_error_peak_m": 0.11318094895905846
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.91422766072593,
+      "thrust_std_N": 0.4334798133046166,
+      "actual_reconstructed_thrust_step_p95_N": 1.0922368813048449,
+      "position_error_peak_m": 0.07011959499494831
+    }
+  },
+  {
+    "run": "sitl_matrix_12_C_s2_20261010_190527",
+    "group": "C",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.399769306182861,
+      "updated_logged_samples": 150,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 3.822605322056916e-06,
+      "max_adjacent_logged_force_change_during_update_N": 2.903534173965454,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.5179901123046875,
+      "common_transition_p95_force_step_N": 1.7799428343772885,
+      "update_duration_s": 2.9840000000000018,
+      "transient_position_max_m": 0.1412421411156072,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.30004978179931624,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.999002643924314,
+      "thrust_std_N": 0.8671889191456479,
+      "actual_reconstructed_thrust_step_p95_N": 2.8524660947661813,
+      "position_error_peak_m": 0.08283375491565208
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.91998883013993,
+      "thrust_std_N": 0.5121011356533168,
+      "actual_reconstructed_thrust_step_p95_N": 1.8393879028125082,
+      "position_error_peak_m": 0.1412421411156072
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.94703913593659,
+      "thrust_std_N": 0.3537722535692757,
+      "actual_reconstructed_thrust_step_p95_N": 0.936621675220202,
+      "position_error_peak_m": 0.21403700119523192
+    }
+  },
+  {
+    "run": "sitl_matrix_13_D_s2_20261010_190617",
+    "group": "D",
+    "compensation": {
+      "initial_effective_mass_kg": 5.400000095367432,
+      "final_effective_mass_kg": 5.400000095367432,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 2.9531607627868652,
+      "common_transition_p95_force_step_N": 1.038012146949768
+    },
+    "pre": {
+      "samples": 151,
+      "thrust_mean_N": 52.87988311459753,
+      "thrust_std_N": 0.3612668847632025,
+      "actual_reconstructed_thrust_step_p95_N": 1.075359184079738,
+      "position_error_peak_m": 0.10172496170356683
+    },
+    "update": {
+      "samples": 201,
+      "thrust_mean_N": 52.97867964305828,
+      "thrust_std_N": 0.40980877091319,
+      "actual_reconstructed_thrust_step_p95_N": 1.183770008418309,
+      "position_error_peak_m": 0.059600440259939956
+    },
+    "post": {
+      "samples": 151,
+      "thrust_mean_N": 52.882064740137324,
+      "thrust_std_N": 0.5076468950098583,
+      "actual_reconstructed_thrust_step_p95_N": 1.7908907063217483,
+      "position_error_peak_m": 0.0790326723513184
+    }
+  },
+  {
+    "run": "sitl_matrix_14_C_shadow_s2_20261010_190632",
+    "group": "C_shadow",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 5.012412071228027,
+      "common_transition_p95_force_step_N": 3.9548338055610657
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 53.01624709268385,
+      "thrust_std_N": 1.062126577679534,
+      "actual_reconstructed_thrust_step_p95_N": 3.411146656272074,
+      "position_error_peak_m": 0.1267245197403251
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.87752689529401,
+      "thrust_std_N": 1.3869744109123756,
+      "actual_reconstructed_thrust_step_p95_N": 3.734591411941828,
+      "position_error_peak_m": 0.13832539882691036
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.982649247904135,
+      "thrust_std_N": 1.2621605130787166,
+      "actual_reconstructed_thrust_step_p95_N": 3.4526598270630826,
+      "position_error_peak_m": 0.1483249940017509
+    }
+  },
+  {
+    "run": "sitl_matrix_15_A_s3_20261010_190648",
+    "group": "A",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.4835562705993652,
+      "common_transition_p95_force_step_N": 2.9021992802619927
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.936381465468024,
+      "thrust_std_N": 0.7596899043602366,
+      "actual_reconstructed_thrust_step_p95_N": 3.084603889607794,
+      "position_error_peak_m": 0.12987357466923202
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.89716939115149,
+      "thrust_std_N": 0.7237592252497299,
+      "actual_reconstructed_thrust_step_p95_N": 2.6466999732530265,
+      "position_error_peak_m": 0.08637806626495903
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.94833565649014,
+      "thrust_std_N": 0.6502165368763064,
+      "actual_reconstructed_thrust_step_p95_N": 2.1836518558637628,
+      "position_error_peak_m": 0.08982618703915822
+    }
+  },
+  {
+    "run": "sitl_matrix_16_B_s3_20261010_190752",
+    "group": "B",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.4020094871521,
+      "updated_logged_samples": 151,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.629685569554567e-06,
+      "max_adjacent_logged_force_change_during_update_N": 2.967440366744995,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 2.967440366744995,
+      "common_transition_p95_force_step_N": 1.8877440690994263,
+      "update_duration_s": 3.0,
+      "transient_position_max_m": 0.1501937244909236,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.3000497817993164,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.91952399308988,
+      "thrust_std_N": 0.5418680506042446,
+      "actual_reconstructed_thrust_step_p95_N": 2.2319142111703916,
+      "position_error_peak_m": 0.14664666201407128
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.91852321277378,
+      "thrust_std_N": 0.5414916162373394,
+      "actual_reconstructed_thrust_step_p95_N": 2.0688907704803077,
+      "position_error_peak_m": 0.1501937244909236
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.965777600083484,
+      "thrust_std_N": 0.3802843669770074,
+      "actual_reconstructed_thrust_step_p95_N": 0.9924150368362618,
+      "position_error_peak_m": 0.08546990592670552
+    }
+  },
+  {
+    "run": "sitl_matrix_17_C_s3_20261010_190808",
+    "group": "C",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.400966167449951,
+      "updated_logged_samples": 150,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.63311891205376e-06,
+      "max_adjacent_logged_force_change_during_update_N": 4.549473285675049,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.549473285675049,
+      "common_transition_p95_force_step_N": 1.0702410876750943,
+      "update_duration_s": 2.979999999999997,
+      "transient_position_max_m": 0.1337014033496113,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.30004978179931674,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.880899150690226,
+      "thrust_std_N": 0.7610376620063889,
+      "actual_reconstructed_thrust_step_p95_N": 2.565667502876947,
+      "position_error_peak_m": 0.1215732463946853
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.922458365264575,
+      "thrust_std_N": 0.4588262058556387,
+      "actual_reconstructed_thrust_step_p95_N": 1.2277479167022798,
+      "position_error_peak_m": 0.0862435830437606
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.954003244556915,
+      "thrust_std_N": 0.4206920072945236,
+      "actual_reconstructed_thrust_step_p95_N": 1.269483919131674,
+      "position_error_peak_m": 0.13848519653928967
+    }
+  },
+  {
+    "run": "sitl_matrix_18_D_s3_20261010_190825",
+    "group": "D",
+    "compensation": {
+      "initial_effective_mass_kg": 5.400000095367432,
+      "final_effective_mass_kg": 5.400000095367432,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.307785987854004,
+      "common_transition_p95_force_step_N": 1.5267996966838802
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.92965278080157,
+      "thrust_std_N": 0.4465540118143869,
+      "actual_reconstructed_thrust_step_p95_N": 1.3722659562555917,
+      "position_error_peak_m": 0.09884235857833776
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.89641112158597,
+      "thrust_std_N": 0.5621349905800627,
+      "actual_reconstructed_thrust_step_p95_N": 2.2241475113498046,
+      "position_error_peak_m": 0.10116702363129017
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.945869811569764,
+      "thrust_std_N": 0.4973745163286921,
+      "actual_reconstructed_thrust_step_p95_N": 1.6511832690127335,
+      "position_error_peak_m": 0.08185315517486721
+    }
+  },
+  {
+    "run": "sitl_matrix_19_C_shadow_s3_20261010_190928",
+    "group": "C_shadow",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.348731517791748,
+      "common_transition_p95_force_step_N": 4.0941757440567015
+    },
+    "pre": {
+      "samples": 151,
+      "thrust_mean_N": 52.94028797851188,
+      "thrust_std_N": 0.743470216409985,
+      "actual_reconstructed_thrust_step_p95_N": 2.879233852016183,
+      "position_error_peak_m": 0.09704358991588012
+    },
+    "update": {
+      "samples": 201,
+      "thrust_mean_N": 53.10258405365296,
+      "thrust_std_N": 1.2416313808741994,
+      "actual_reconstructed_thrust_step_p95_N": 3.614857202828813,
+      "position_error_peak_m": 0.07205351206545109
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.96675092797014,
+      "thrust_std_N": 1.2771815253207683,
+      "actual_reconstructed_thrust_step_p95_N": 3.608549711414258,
+      "position_error_peak_m": 0.077140330333185
+    }
+  },
+  {
+    "run": "sitl_matrix_1_B_s0_20261010_190011",
+    "group": "B",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.392455101013184,
+      "updated_logged_samples": 149,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.63311891205376e-06,
+      "max_adjacent_logged_force_change_during_update_N": 2.936546564102173,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.423609733581543,
+      "common_transition_p95_force_step_N": 2.0017789840698237,
+      "update_duration_s": 2.960000000000001,
+      "transient_position_max_m": 0.09845115333247502,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.3000497817993163,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.899209480983544,
+      "thrust_std_N": 0.8081781970348139,
+      "actual_reconstructed_thrust_step_p95_N": 3.227056271224597,
+      "position_error_peak_m": 0.06911669244186323
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.938054230245456,
+      "thrust_std_N": 0.49866959754905005,
+      "actual_reconstructed_thrust_step_p95_N": 2.005091501357499,
+      "position_error_peak_m": 0.09845115333247502
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.952401807648876,
+      "thrust_std_N": 0.3893207666149008,
+      "actual_reconstructed_thrust_step_p95_N": 1.344915302321726,
+      "position_error_peak_m": 0.11933549756303276
+    }
+  },
+  {
+    "run": "sitl_matrix_20_A_s4_20261010_190944",
+    "group": "A",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.531761169433594,
+      "common_transition_p95_force_step_N": 2.965219640731811
+    },
+    "pre": {
+      "samples": 151,
+      "thrust_mean_N": 52.91099100873031,
+      "thrust_std_N": 0.7288854235952057,
+      "actual_reconstructed_thrust_step_p95_N": 2.891881700786709,
+      "position_error_peak_m": 0.05495700050596383
+    },
+    "update": {
+      "samples": 201,
+      "thrust_mean_N": 52.950871011080736,
+      "thrust_std_N": 0.8936558629065141,
+      "actual_reconstructed_thrust_step_p95_N": 3.260517084557432,
+      "position_error_peak_m": 0.04993035170006171
+    },
+    "post": {
+      "samples": 151,
+      "thrust_mean_N": 52.95490836860067,
+      "thrust_std_N": 0.7159574457530193,
+      "actual_reconstructed_thrust_step_p95_N": 2.633706451052866,
+      "position_error_peak_m": 0.09753380657599865
+    }
+  },
+  {
+    "run": "sitl_matrix_21_B_s4_20261010_191001",
+    "group": "B",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.403593063354492,
+      "updated_logged_samples": 151,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.629918400198221e-06,
+      "max_adjacent_logged_force_change_during_update_N": 3.4888052940368652,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.4888052940368652,
+      "common_transition_p95_force_step_N": 1.7180153131484985,
+      "update_duration_s": 3.0,
+      "transient_position_max_m": 0.10900649401527078,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.3000497817993164,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.933755782003125,
+      "thrust_std_N": 0.702171136116163,
+      "actual_reconstructed_thrust_step_p95_N": 2.640873209228621,
+      "position_error_peak_m": 0.08728756957073561
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.95934559327238,
+      "thrust_std_N": 0.4949063552200407,
+      "actual_reconstructed_thrust_step_p95_N": 1.873082236546954,
+      "position_error_peak_m": 0.10900649401527078
+    },
+    "post": {
+      "samples": 151,
+      "thrust_mean_N": 52.87043947056003,
+      "thrust_std_N": 0.3127425222910677,
+      "actual_reconstructed_thrust_step_p95_N": 0.8794456945789578,
+      "position_error_peak_m": 0.08590788418118397
+    }
+  },
+  {
+    "run": "sitl_matrix_22_C_s4_20261010_191104",
+    "group": "C",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.40513277053833,
+      "updated_logged_samples": 151,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.633351742697414e-06,
+      "max_adjacent_logged_force_change_during_update_N": 4.552574634552002,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.552574634552002,
+      "common_transition_p95_force_step_N": 4.1191354274749745,
+      "update_duration_s": 3.0,
+      "transient_position_max_m": 0.10913538849614685,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.3000497817993164,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.859141962358336,
+      "thrust_std_N": 1.4265532266385184,
+      "actual_reconstructed_thrust_step_p95_N": 3.6887244824059153,
+      "position_error_peak_m": 0.10831703780831949
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.88166478678691,
+      "thrust_std_N": 1.0057696492515824,
+      "actual_reconstructed_thrust_step_p95_N": 3.5491570302316524,
+      "position_error_peak_m": 0.10913538849614685
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.93739308685795,
+      "thrust_std_N": 0.42843049084862955,
+      "actual_reconstructed_thrust_step_p95_N": 1.0440449779051202,
+      "position_error_peak_m": 0.05612384960300901
+    }
+  },
+  {
+    "run": "sitl_matrix_23_D_s4_20261010_191119",
+    "group": "D",
+    "compensation": {
+      "initial_effective_mass_kg": 5.400000095367432,
+      "final_effective_mass_kg": 5.400000095367432,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.721497058868408,
+      "common_transition_p95_force_step_N": 1.4344581365585327
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.9708715397386,
+      "thrust_std_N": 0.5166824054156244,
+      "actual_reconstructed_thrust_step_p95_N": 1.3360355307542537,
+      "position_error_peak_m": 0.09313356012459238
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.912569567835874,
+      "thrust_std_N": 0.4992893066728516,
+      "actual_reconstructed_thrust_step_p95_N": 1.2812065034060003,
+      "position_error_peak_m": 0.08922637876961606
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.99641539349108,
+      "thrust_std_N": 0.48571864247347424,
+      "actual_reconstructed_thrust_step_p95_N": 0.9839381473724855,
+      "position_error_peak_m": 0.05039688147459166
+    }
+  },
+  {
+    "run": "sitl_matrix_24_C_shadow_s4_20261010_191136",
+    "group": "C_shadow",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.651675224304199,
+      "common_transition_p95_force_step_N": 4.123290395736694
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.95797504790349,
+      "thrust_std_N": 1.3074803914570783,
+      "actual_reconstructed_thrust_step_p95_N": 3.605484290869265,
+      "position_error_peak_m": 0.14357449170098666
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.96438260454608,
+      "thrust_std_N": 1.494541083044645,
+      "actual_reconstructed_thrust_step_p95_N": 3.5922857433249824,
+      "position_error_peak_m": 0.12695683477283692
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.96047051219449,
+      "thrust_std_N": 1.6469751256691398,
+      "actual_reconstructed_thrust_step_p95_N": 3.7305468668368005,
+      "position_error_peak_m": 0.10978856980162023
+    }
+  },
+  {
+    "run": "sitl_matrix_2_C_s0_20261010_190011",
+    "group": "C",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.396903991699219,
+      "updated_logged_samples": 149,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.629510946571827e-06,
+      "max_adjacent_logged_force_change_during_update_N": 3.237438201904297,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.237438201904297,
+      "common_transition_p95_force_step_N": 1.8412546157836909,
+      "update_duration_s": 2.960000000000001,
+      "transient_position_max_m": 0.09783211761931909,
+      "observed_mass_rate_max_kg_s": 0.3000497817993164,
+      "transition_average_mass_rate_kg_s": 0.3000497817993163,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 53.00144405385401,
+      "thrust_std_N": 0.681443056534309,
+      "actual_reconstructed_thrust_step_p95_N": 2.8078618370973114,
+      "position_error_peak_m": 0.05113019370975158
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.93571233562077,
+      "thrust_std_N": 0.5069110613237592,
+      "actual_reconstructed_thrust_step_p95_N": 1.9801702193173236,
+      "position_error_peak_m": 0.07692153039741975
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.90739194396569,
+      "thrust_std_N": 0.30789516787872245,
+      "actual_reconstructed_thrust_step_p95_N": 0.8278923805594273,
+      "position_error_peak_m": 0.09783211761931909
+    }
+  },
+  {
+    "run": "sitl_matrix_3_D_s0_20261010_190143",
+    "group": "D",
+    "compensation": {
+      "initial_effective_mass_kg": 5.400000095367432,
+      "final_effective_mass_kg": 5.400000095367432,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.2978456020355225,
+      "common_transition_p95_force_step_N": 2.1126319646835325
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.88901688017596,
+      "thrust_std_N": 0.34308670976662026,
+      "actual_reconstructed_thrust_step_p95_N": 0.9687553403498952,
+      "position_error_peak_m": 0.06602997490031044
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.94827328548459,
+      "thrust_std_N": 0.5301105728219889,
+      "actual_reconstructed_thrust_step_p95_N": 1.6484268237322937,
+      "position_error_peak_m": 0.05824119794768717
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.956192081420376,
+      "thrust_std_N": 0.39659701217871435,
+      "actual_reconstructed_thrust_step_p95_N": 1.1797093388467526,
+      "position_error_peak_m": 0.05816932830500812
+    }
+  },
+  {
+    "run": "sitl_matrix_4_C_shadow_s0_20261010_190129",
+    "group": "C_shadow",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.299272298812866,
+      "common_transition_p95_force_step_N": 2.708494210243224
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 53.016656660221585,
+      "thrust_std_N": 0.6279217893100041,
+      "actual_reconstructed_thrust_step_p95_N": 2.2600456135410596,
+      "position_error_peak_m": 0.10317825831566875
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.900693945857235,
+      "thrust_std_N": 0.6642097888930494,
+      "actual_reconstructed_thrust_step_p95_N": 2.6538067863798998,
+      "position_error_peak_m": 0.1304303776414209
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.93371312955226,
+      "thrust_std_N": 0.8967873208420948,
+      "actual_reconstructed_thrust_step_p95_N": 3.068386263275637,
+      "position_error_peak_m": 0.03775942556536687
+    }
+  },
+  {
+    "run": "sitl_matrix_5_A_s1_20261010_190143",
+    "group": "A",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.398712158203125,
+      "common_transition_p95_force_step_N": 3.184233880043029
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.94762993519894,
+      "thrust_std_N": 0.7957706555695864,
+      "actual_reconstructed_thrust_step_p95_N": 2.9407630526598707,
+      "position_error_peak_m": 0.07601708985885361
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.881034033264356,
+      "thrust_std_N": 0.889358211218218,
+      "actual_reconstructed_thrust_step_p95_N": 3.4189276986290893,
+      "position_error_peak_m": 0.1084089415158174
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.915861453923824,
+      "thrust_std_N": 0.8324859380095444,
+      "actual_reconstructed_thrust_step_p95_N": 2.9991469630806957,
+      "position_error_peak_m": 0.0707499859409217
+    }
+  },
+  {
+    "run": "sitl_matrix_6_B_s1_20261010_190318",
+    "group": "B",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": null,
+      "common_transition_p95_force_step_N": null
+    },
+    "pre": {
+      "samples": 0,
+      "thrust_mean_N": null,
+      "thrust_std_N": null,
+      "actual_reconstructed_thrust_step_p95_N": null,
+      "position_error_peak_m": null
+    },
+    "update": {
+      "samples": 0,
+      "thrust_mean_N": null,
+      "thrust_std_N": null,
+      "actual_reconstructed_thrust_step_p95_N": null,
+      "position_error_peak_m": null
+    },
+    "post": {
+      "samples": 0,
+      "thrust_mean_N": null,
+      "thrust_std_N": null,
+      "actual_reconstructed_thrust_step_p95_N": null,
+      "position_error_peak_m": null
+    }
+  },
+  {
+    "run": "sitl_matrix_7_C_s1_20261010_190305",
+    "group": "C",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 5.406246185302734,
+      "updated_logged_samples": 151,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": 7.629627361893654e-06,
+      "max_adjacent_logged_force_change_during_update_N": 4.661869525909424,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 4.661869525909424,
+      "common_transition_p95_force_step_N": 4.010345768928527,
+      "update_duration_s": 3.0,
+      "transient_position_max_m": 0.08943771221730468,
+      "observed_mass_rate_max_kg_s": 0.30004978179931646,
+      "transition_average_mass_rate_kg_s": 0.3000497817993164,
+      "nonincreasing_status_timestamps": 0,
+      "rate_note": "Maximum is a publication-timestamp finite difference, affected by log timing. Limiter is 0.3 kg/s in the control sample clock."
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.891436366299274,
+      "thrust_std_N": 1.54069646238145,
+      "actual_reconstructed_thrust_step_p95_N": 3.6735997326973515,
+      "position_error_peak_m": 0.12806626518149994
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.934837514641785,
+      "thrust_std_N": 0.939126639345431,
+      "actual_reconstructed_thrust_step_p95_N": 3.4056323365529595,
+      "position_error_peak_m": 0.06343232064782212
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 52.96143142723442,
+      "thrust_std_N": 0.3274205883673742,
+      "actual_reconstructed_thrust_step_p95_N": 0.860962766292097,
+      "position_error_peak_m": 0.08943771221730468
+    }
+  },
+  {
+    "run": "sitl_matrix_8_D_s1_20261010_190318",
+    "group": "D",
+    "compensation": {
+      "initial_effective_mass_kg": 5.400000095367432,
+      "final_effective_mass_kg": 5.400000095367432,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 2.8754210472106934,
+      "common_transition_p95_force_step_N": 1.2930648744106286
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.93074941406492,
+      "thrust_std_N": 0.482105991885641,
+      "actual_reconstructed_thrust_step_p95_N": 2.0017241773968517,
+      "position_error_peak_m": 0.06216779038809152
+    },
+    "update": {
+      "samples": 200,
+      "thrust_mean_N": 52.897482034862804,
+      "thrust_std_N": 0.46049285738640305,
+      "actual_reconstructed_thrust_step_p95_N": 1.30021845486958,
+      "position_error_peak_m": 0.07961325812354508
+    },
+    "post": {
+      "samples": 150,
+      "thrust_mean_N": 53.022659158301984,
+      "thrust_std_N": 0.4155784421901192,
+      "actual_reconstructed_thrust_step_p95_N": 1.400855765198423,
+      "position_error_peak_m": 0.0792641946618022
+    }
+  },
+  {
+    "run": "sitl_matrix_9_C_shadow_s1_20261010_190352",
+    "group": "C_shadow",
+    "compensation": {
+      "initial_effective_mass_kg": 4.5,
+      "final_effective_mass_kg": 4.5,
+      "updated_logged_samples": 0,
+      "rejected_logged_samples": 0,
+      "max_algebraic_update_force_error_N": null,
+      "max_adjacent_logged_force_change_during_update_N": null,
+      "note": "Algebraic error isolates the mass change; adjacent samples also include normal feedback/trajectory dynamics.",
+      "common_transition_max_force_step_N": 3.4674220085144043,
+      "common_transition_p95_force_step_N": 2.9050304055213916
+    },
+    "pre": {
+      "samples": 150,
+      "thrust_mean_N": 52.85473387029336,
+      "thrust_std_N": 0.936488741081264,
+      "actual_reconstructed_thrust_step_p95_N": 3.390293351034168,
+      "position_error_peak_m": 0.06989216032540857
+    },
+    "update": {
+      "samples": 201,
+      "thrust_mean_N": 53.004997346090576,
+      "thrust_std_N": 0.7499239697992132,
+      "actual_reconstructed_thrust_step_p95_N": 3.0895927270887293,
+      "position_error_peak_m": 0.05306692265596253
+    },
+    "post": {
+      "samples": 151,
+      "thrust_mean_N": 53.02562952321056,
+      "thrust_std_N": 0.9234186854888669,
+      "actual_reconstructed_thrust_step_p95_N": 3.3417456665507714,
+      "position_error_peak_m": 0.10650689584492815
+    }
+  }
+]

@@ -1,0 +1,482 @@
+{
+  "primary_attitude_reference": "level",
+  "batches": [
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_ablation_shared_20261010_185127",
+      "planned": 3,
+      "finished": 3,
+      "passed": 3,
+      "ready_unarmed": 0,
+      "failures": 0
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_matrix_shared_20261010_190011",
+      "planned": 25,
+      "finished": 25,
+      "passed": 22,
+      "ready_unarmed": 0,
+      "failures": 3
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_readiness_shared_20261010_185532",
+      "planned": 12,
+      "finished": 12,
+      "passed": 0,
+      "ready_unarmed": 12,
+      "failures": 0
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_recovery_shared_20261010_185352",
+      "planned": 2,
+      "finished": 2,
+      "passed": 0,
+      "ready_unarmed": 0,
+      "failures": 2
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_recovery_shared_20261010_185832",
+      "planned": 2,
+      "finished": 2,
+      "passed": 0,
+      "ready_unarmed": 0,
+      "failures": 2
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_targeted_shared_20261010_184600",
+      "planned": 7,
+      "finished": 7,
+      "passed": 7,
+      "ready_unarmed": 0,
+      "failures": 0
+    }
+  ],
+  "formal": [
+    {
+      "group": "A",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 0,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.06749667699061512,
+        "std": 0.010162693909895841
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.08145357568299766,
+        "std": 0.011822076930138276
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.1195439036993278,
+        "std": 0.010549716964857797
+      },
+      "mass_error_pct": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "acceptance_s": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "holdout": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.077697467020901,
+        "std": 0.02033342406092166
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "transient_error": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      }
+    },
+    {
+      "group": "B",
+      "attempts": 5,
+      "flight_pass": 3,
+      "accepted": 4,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 3,
+        "mean": 0.05717067442724973,
+        "std": 0.008953820596329319
+      },
+      "truth_rmse": {
+        "n": 3,
+        "mean": 0.07139642285779069,
+        "std": 0.005899204476578258
+      },
+      "max_error": {
+        "n": 4,
+        "mean": 0.20866216106605784,
+        "std": 0.19592154487041477
+      },
+      "mass_error_pct": {
+        "n": 4,
+        "mean": 0.0043783557562598885,
+        "std": 0.09681187090671038
+      },
+      "acceptance_s": {
+        "n": 4,
+        "mean": 10.013,
+        "std": 0.0059999999999966755
+      },
+      "holdout": {
+        "n": 4,
+        "mean": 0.00455997473471802,
+        "std": 0.0007603476074361783
+      },
+      "calibration_rmse": {
+        "n": 4,
+        "mean": 0.0738747882431036,
+        "std": 0.017963707528613117
+      },
+      "calibration_cost": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "saturation": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 4,
+        "mean": 3.126228928565979,
+        "std": 0.25354407306979654
+      },
+      "transient_error": {
+        "n": 4,
+        "mean": 0.11770808019943198,
+        "std": 0.022526716262996127
+      }
+    },
+    {
+      "group": "C",
+      "attempts": 5,
+      "flight_pass": 4,
+      "accepted": 5,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 4,
+        "mean": 0.07229617092610299,
+        "std": 0.02304573006060097
+      },
+      "truth_rmse": {
+        "n": 4,
+        "mean": 0.09074518781176773,
+        "std": 0.03216826618030909
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.21191743560370796,
+        "std": 0.16587671649960598
+      },
+      "mass_error_pct": {
+        "n": 5,
+        "mean": 0.03340035708150779,
+        "std": 0.07152257116086394
+      },
+      "acceptance_s": {
+        "n": 5,
+        "mean": 10.019999999999998,
+        "std": 0.010198039027185492
+      },
+      "holdout": {
+        "n": 5,
+        "mean": 0.004659773130836078,
+        "std": 0.0010688305899622505
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.07748254284943944,
+        "std": 0.014662795600012588
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.08966535039108386,
+        "std": 1.1665745449407164e-08
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 5,
+        "mean": 3.9809779644012453,
+        "std": 0.8407228291971955
+      },
+      "transient_error": {
+        "n": 5,
+        "mean": 0.11426975255959784,
+        "std": 0.02246267215386774
+      }
+    },
+    {
+      "group": "D",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 0,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.05059645121627958,
+        "std": 0.002855293917995406
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.08572281834177436,
+        "std": 0.049368775555888936
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.08886647822642549,
+        "std": 0.007443765709608148
+      },
+      "mass_error_pct": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "acceptance_s": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "holdout": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.058418735910822306,
+        "std": 0.003949006554068939
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "transient_error": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      }
+    },
+    {
+      "group": "C_shadow",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 5,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.060416974866639585,
+        "std": 0.010847574295089894
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.11735155608347787,
+        "std": 0.07008942078322633
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.10768243443254115,
+        "std": 0.011048889842944947
+      },
+      "mass_error_pct": {
+        "n": 5,
+        "mean": -0.05652419617207416,
+        "std": 0.04370070482278442
+      },
+      "acceptance_s": {
+        "n": 5,
+        "mean": 10.015199999999998,
+        "std": 0.006572670690062675
+      },
+      "holdout": {
+        "n": 5,
+        "mean": 0.004360315817366119,
+        "std": 0.0004302671722719551
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.07103293733133094,
+        "std": 0.009291499394358284
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.08966535384639893,
+        "std": 4.554811888150827e-09
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "transient_error": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      }
+    }
+  ],
+  "paired": [
+    {
+      "comparison": "B minus C",
+      "metric": "rmse",
+      "seeds": [
+        3,
+        4
+      ],
+      "mean": -0.012235719144347186,
+      "bootstrap95": [
+        -0.04902026608333888,
+        0.024548827794644505
+      ]
+    },
+    {
+      "comparison": "B minus C",
+      "metric": "truth_rmse",
+      "seeds": [
+        3,
+        4
+      ],
+      "mean": -0.015551643645042836,
+      "bootstrap95": [
+        -0.05961634538074888,
+        0.028513058090663207
+      ]
+    },
+    {
+      "comparison": "C_shadow minus C",
+      "metric": "rmse",
+      "seeds": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "mean": -0.012590028491005677,
+      "bootstrap95": [
+        -0.02759121331871104,
+        0.010068236387019466
+      ]
+    },
+    {
+      "comparison": "C_shadow minus C",
+      "metric": "truth_rmse",
+      "seeds": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "mean": 0.022345029767574194,
+      "bootstrap95": [
+        -0.025705015890099155,
+        0.07779538510362818
+      ]
+    },
+    {
+      "comparison": "A minus B",
+      "metric": "rmse",
+      "seeds": [
+        2,
+        3,
+        4
+      ],
+      "mean": 0.009104347139759888,
+      "bootstrap95": [
+        -0.0005704572353013374,
+        0.022683806963673236
+      ]
+    },
+    {
+      "comparison": "A minus B",
+      "metric": "truth_rmse",
+      "seeds": [
+        2,
+        3,
+        4
+      ],
+      "mean": 0.005383058319352925,
+      "bootstrap95": [
+        -0.0072931311792224784,
+        0.020663315790379513
+      ]
+    },
+    {
+      "comparison": "A minus C",
+      "metric": "rmse",
+      "seeds": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "mean": -0.0022449487584056405,
+      "bootstrap95": [
+        -0.022401100285544873,
+        0.01791120276873359
+      ]
+    },
+    {
+      "comparison": "A minus C",
+      "metric": "truth_rmse",
+      "seeds": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "mean": -0.004850850325510015,
+      "bootstrap95": [
+        -0.030539210621695498,
+        0.021857869719783273
+      ]
+    }
+  ],
+  "other_reference_trials": []
+}

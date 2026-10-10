@@ -1,0 +1,23 @@
+[
+  {
+    "run": "sitl_ablation_2_C_shadow_s3_20261010_185127",
+    "flight": "PASS",
+    "max_desired_tilt_deg": 16.9957275390625,
+    "max_actual_tilt_deg": 15.412144818858575,
+    "evaluation_rmse": 0.028494816283968823
+  },
+  {
+    "run": "sitl_ablation_0_B_s4_20261010_185127",
+    "flight": "PASS",
+    "max_desired_tilt_deg": 16.355741500854492,
+    "max_actual_tilt_deg": 15.273049349176802,
+    "evaluation_rmse": 0.023504335277016414
+  },
+  {
+    "run": "sitl_ablation_1_C_s4_20261010_185127",
+    "flight": "PASS",
+    "max_desired_tilt_deg": 17.435014724731445,
+    "max_actual_tilt_deg": 15.779588247932981,
+    "evaluation_rmse": 0.022720023735750244
+  }
+]

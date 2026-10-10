@@ -1,0 +1,18 @@
+[
+  {
+    "run": "sitl_recovery_0_A_s0_20261010_185352",
+    "landed_disarmed": true,
+    "recovery_wall_s": 5.1641830959997606,
+    "mass_updates_after_exit": 0,
+    "last_update_after_exit_s": null,
+    "force_error_N": null
+  },
+  {
+    "run": "sitl_recovery_1_C_s0_20261010_185352",
+    "landed_disarmed": true,
+    "recovery_wall_s": 6.267140907002613,
+    "mass_updates_after_exit": 24,
+    "last_update_after_exit_s": 0.4680000000000035,
+    "force_error_N": 3.81655945602688e-06
+  }
+]

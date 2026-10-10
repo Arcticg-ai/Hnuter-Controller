@@ -1,0 +1,17 @@
+{
+  "px4_head": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+  "ros_head": "abeb52c13c49fb601401a44a30b343fad0183133",
+  "files": {
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad",
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/src/modules/mc_rate_control/HnuterControl.cpp": "8f6f4f865856a402f33ffcaac694bcda992c03d43389eb67913d6170de999453",
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/src/modules/mc_rate_control/HnuterControl.hpp": "bb16ba3e307f1f5dc294c5faf3492be5aa7d4dea7fad155cd64a29466b2ca0c8",
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/msg/HnuterControlStatus.msg": "302da1905a04c665df7ff8c213d8977f7a6f9ad917906715e390ced4f53e5965",
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+    "/home/hnuter/px4_ws_ros2/hnuter_external_controller_px4_position.py": "9b59007d062ac13e5131d0a9745415a2511d2f1944257082eb028568ba032695"
+  },
+  "notes": "Frozen for final recovery and new matrix. No PID or safety limit relaxation."
+}

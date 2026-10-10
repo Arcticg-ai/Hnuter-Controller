@@ -1,0 +1,10 @@
+{
+  "run_sitl.py": true,
+  "run_matrix.py": true,
+  "sitl_position_probe.py": true,
+  "actuator_sensors.py": true,
+  "estimator.py": true,
+  "model_audit.py": true,
+  "analyze_sitl.py": true,
+  "test_offline.py": true
+}

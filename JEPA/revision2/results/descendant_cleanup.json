@@ -1,0 +1,7 @@
+{
+  "pid": 314347,
+  "pgid": 312760,
+  "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736",
+  "partition_verified": true,
+  "termination": "SIGTERM; SIGKILL only if still alive after 5 seconds"
+}

@@ -1,0 +1,51 @@
+[
+  {
+    "run": "sitl_targeted_0_A_s3_20261010_184600",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 10.014587929495052,
+    "mass": null,
+    "flight": "PASS"
+  },
+  {
+    "run": "sitl_targeted_1_B_s1_20261010_184600",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 8.44608927335182,
+    "mass": 5.405711375912684,
+    "flight": "PASS"
+  },
+  {
+    "run": "sitl_targeted_2_C_s3_20261010_184600",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 9.637711840074166,
+    "mass": 5.399047140280088,
+    "flight": "PASS"
+  },
+  {
+    "run": "sitl_targeted_3_D_s2_20261010_184736",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 2.548987364923599,
+    "mass": null,
+    "flight": "PASS"
+  },
+  {
+    "run": "sitl_targeted_4_B_s4_20261010_184736",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 8.450639188321075,
+    "mass": 5.403015746553789,
+    "flight": "PASS"
+  },
+  {
+    "run": "sitl_targeted_5_C_s4_20261010_184736",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 9.761981135811316,
+    "mass": 5.4003258603930995,
+    "flight": "PASS"
+  },
+  {
+    "run": "sitl_targeted_6_C_shadow_s3_20261010_184911",
+    "max_desired_tilt_deg": 0.0,
+    "max_actual_tilt_deg": 10.096186291296654,
+    "mass": 5.40038889351291,
+    "flight": "PASS"
+  }
+]

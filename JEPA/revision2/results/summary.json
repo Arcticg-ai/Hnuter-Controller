@@ -1,0 +1,1218 @@
+{
+  "primary_attitude_reference": "legacy",
+  "batches": [
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_ablation_shared_20261010_185127",
+      "planned": 3,
+      "finished": 3,
+      "passed": 3,
+      "ready_unarmed": 0,
+      "failures": 0
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_matrix_shared_20261010_190011",
+      "planned": 25,
+      "finished": 25,
+      "passed": 22,
+      "ready_unarmed": 0,
+      "failures": 3
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_matrix_shared_20261010_191338",
+      "planned": 25,
+      "finished": 25,
+      "passed": 23,
+      "ready_unarmed": 0,
+      "failures": 2
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_readiness_shared_20261010_185532",
+      "planned": 12,
+      "finished": 12,
+      "passed": 0,
+      "ready_unarmed": 12,
+      "failures": 0
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_recovery_shared_20261010_185352",
+      "planned": 2,
+      "finished": 2,
+      "passed": 0,
+      "ready_unarmed": 0,
+      "failures": 2
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_recovery_shared_20261010_185832",
+      "planned": 2,
+      "finished": 2,
+      "passed": 0,
+      "ready_unarmed": 0,
+      "failures": 2
+    },
+    {
+      "path": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/batch_targeted_shared_20261010_184600",
+      "planned": 7,
+      "finished": 7,
+      "passed": 7,
+      "ready_unarmed": 0,
+      "failures": 0
+    }
+  ],
+  "formal": [
+    {
+      "group": "A",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 0,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.031661402554634635,
+        "std": 0.0037453004923011356
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.06515464445958281,
+        "std": 0.03292463778209914
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.06196152872541514,
+        "std": 0.009654934780023607
+      },
+      "mass_error_pct": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "acceptance_s": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "holdout": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.04585727319774011,
+        "std": 0.0068975319762384635
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "transient_error": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      }
+    },
+    {
+      "group": "B",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 5,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.026764382284678902,
+        "std": 0.002730932071372788
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.044965902633637575,
+        "std": 0.01715077791100601
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.04833624970105967,
+        "std": 0.004837913501942443
+      },
+      "mass_error_pct": {
+        "n": 5,
+        "mean": -0.021023978386787157,
+        "std": 0.04699302932610566
+      },
+      "acceptance_s": {
+        "n": 5,
+        "mean": 10.026399999999999,
+        "std": 0.03528172331392122
+      },
+      "holdout": {
+        "n": 5,
+        "mean": 0.004549795568198511,
+        "std": 0.0010606780350318693
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.039648336524040664,
+        "std": 0.0016463881047569713
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 5,
+        "mean": 5.805517768859863,
+        "std": 1.1106982029672652
+      },
+      "transient_error": {
+        "n": 5,
+        "mean": 0.040518660154416394,
+        "std": 0.012383241487034269
+      }
+    },
+    {
+      "group": "C",
+      "attempts": 5,
+      "flight_pass": 3,
+      "accepted": 4,
+      "confirmed_landed_disarmed": 4,
+      "rmse": {
+        "n": 3,
+        "mean": 0.030861247453002602,
+        "std": 0.007601655881736329
+      },
+      "truth_rmse": {
+        "n": 3,
+        "mean": 0.10624416483829528,
+        "std": 0.08726135480304682
+      },
+      "max_error": {
+        "n": 4,
+        "mean": 0.14682312969445457,
+        "std": 0.18213696192257245
+      },
+      "mass_error_pct": {
+        "n": 5,
+        "mean": -3.332028790102941,
+        "std": 7.454407474542189
+      },
+      "acceptance_s": {
+        "n": 4,
+        "mean": 10.025,
+        "std": 0.01194431524477821
+      },
+      "holdout": {
+        "n": 4,
+        "mean": 0.005831096836984932,
+        "std": 0.0015351639631698596
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.05622145134592763,
+        "std": 0.03187649097104554
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.07187308468408768,
+        "std": 0.03978467183851066
+      },
+      "saturation": {
+        "n": 4,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 4,
+        "mean": 4.946244090795517,
+        "std": 2.6537563419920387
+      },
+      "transient_error": {
+        "n": 4,
+        "mean": 0.05268174607661111,
+        "std": 0.017836121866844357
+      }
+    },
+    {
+      "group": "D",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 0,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.022621103732731178,
+        "std": 0.005448676208135632
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.06276921278494907,
+        "std": 0.027470526832629558
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.04310912253637204,
+        "std": 0.010053045676704715
+      },
+      "mass_error_pct": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "acceptance_s": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "holdout": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.03257268482810487,
+        "std": 0.005047395566950566
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "transient_error": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      }
+    },
+    {
+      "group": "C_shadow",
+      "attempts": 5,
+      "flight_pass": 5,
+      "accepted": 5,
+      "confirmed_landed_disarmed": 5,
+      "rmse": {
+        "n": 5,
+        "mean": 0.031062577204816266,
+        "std": 0.0019081740073578662
+      },
+      "truth_rmse": {
+        "n": 5,
+        "mean": 0.062329619137240735,
+        "std": 0.02181866615791956
+      },
+      "max_error": {
+        "n": 5,
+        "mean": 0.0591442451692181,
+        "std": 0.007268845806886861
+      },
+      "mass_error_pct": {
+        "n": 5,
+        "mean": 0.008824809471355,
+        "std": 0.07495045250156633
+      },
+      "acceptance_s": {
+        "n": 5,
+        "mean": 10.0224,
+        "std": 0.01374045122985438
+      },
+      "holdout": {
+        "n": 5,
+        "mean": 0.0052007814096631695,
+        "std": 0.0009429883403705528
+      },
+      "calibration_rmse": {
+        "n": 5,
+        "mean": 0.04498286826890042,
+        "std": 0.0025632057232257126
+      },
+      "calibration_cost": {
+        "n": 5,
+        "mean": 0.08966535579036462,
+        "std": 1.0901635305794767e-10
+      },
+      "saturation": {
+        "n": 5,
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "force_step": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      },
+      "transient_error": {
+        "n": 0,
+        "mean": null,
+        "std": null
+      }
+    }
+  ],
+  "paired": [
+    {
+      "comparison": "B minus C",
+      "metric": "rmse",
+      "seeds": [
+        0,
+        2,
+        3
+      ],
+      "mean": -0.003111215103743809,
+      "bootstrap95": [
+        -0.012509602849208568,
+        0.007351332208058409
+      ]
+    },
+    {
+      "comparison": "B minus C",
+      "metric": "truth_rmse",
+      "seeds": [
+        0,
+        2,
+        3
+      ],
+      "mean": -0.06811853874537915,
+      "bootstrap95": [
+        -0.15905504905830925,
+        -0.009977800717835848
+      ]
+    },
+    {
+      "comparison": "C_shadow minus C",
+      "metric": "rmse",
+      "seeds": [
+        0,
+        2,
+        3
+      ],
+      "mean": 0.0014547968833770325,
+      "bootstrap95": [
+        -0.008091228600188627,
+        0.009079858590966657
+      ]
+    },
+    {
+      "comparison": "C_shadow minus C",
+      "metric": "truth_rmse",
+      "seeds": [
+        0,
+        2,
+        3
+      ],
+      "mean": -0.03820305317392919,
+      "bootstrap95": [
+        -0.11053338645557943,
+        0.005334526623298801
+      ]
+    },
+    {
+      "comparison": "A minus B",
+      "metric": "rmse",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "mean": 0.004897020269955732,
+      "bootstrap95": [
+        0.0017360747094199297,
+        0.008277389720922021
+      ]
+    },
+    {
+      "comparison": "A minus B",
+      "metric": "truth_rmse",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "mean": 0.020188741825945232,
+      "bootstrap95": [
+        0.008066469254029304,
+        0.036805168770050564
+      ]
+    },
+    {
+      "comparison": "A minus C",
+      "metric": "rmse",
+      "seeds": [
+        0,
+        2,
+        3
+      ],
+      "mean": 0.0012906269287164644,
+      "bootstrap95": [
+        -0.009335724756862892,
+        0.009276771549562548
+      ]
+    },
+    {
+      "comparison": "A minus C",
+      "metric": "truth_rmse",
+      "seeds": [
+        0,
+        2,
+        3
+      ],
+      "mean": -0.056082214904117696,
+      "bootstrap95": [
+        -0.15694336168512815,
+        0.008036726275593778
+      ]
+    }
+  ],
+  "other_reference_trials": [
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "A",
+      "seed": 0,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 9.343367294000927,
+      "sensor_samples": 3688,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.08117077703219837,
+      "rmse": 0.08117077703219837,
+      "truth_rmse": 0.09619646760059657,
+      "max_error": 0.1309593988141989,
+      "saturation": 0.0,
+      "calibration_rmse": 0.08331614737154118,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "B",
+      "seed": 0,
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 9.336708738002926,
+      "sensor_samples": 3007,
+      "accepted": true,
+      "mass": 5.392455081865955,
+      "mass_error_pct": -0.13972033633312675,
+      "acceptance_s": 10.015999999999998,
+      "holdout": 0.005358606556667528,
+      "evaluation_duration_s": 7.460000000000008,
+      "partial_or_full_rmse": 0.27055250640714706,
+      "rmse": null,
+      "truth_rmse": null,
+      "max_error": 0.5015291540086472,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06187201355786286,
+      "calibration_cost": 0.0,
+      "force_algebraic": 7.63311891205376e-06,
+      "force_step": 2.936546564102173,
+      "transient_error": 0.09845115333247502,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C",
+      "seed": 0,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 9.333042226004181,
+      "sensor_samples": 3682,
+      "accepted": true,
+      "mass": 5.396903806966184,
+      "mass_error_pct": -0.05733653787561854,
+      "acceptance_s": 10.027999999999999,
+      "holdout": 0.005945865024246741,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.07509689098028346,
+      "rmse": 0.07509689098028346,
+      "truth_rmse": 0.10264113403415831,
+      "max_error": 0.1676899368140221,
+      "saturation": 0.0,
+      "calibration_rmse": 0.0642071397968132,
+      "calibration_cost": 0.08966532953702797,
+      "force_algebraic": 7.629510946571827e-06,
+      "force_step": 3.237438201904297,
+      "transient_error": 0.09783211761931909,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "D",
+      "seed": 0,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.429411524004536,
+      "sensor_samples": 3672,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.992000000000004,
+      "partial_or_full_rmse": 0.051269626630764197,
+      "rmse": 0.051269626630764197,
+      "truth_rmse": 0.05779758577568854,
+      "max_error": 0.08606782014872104,
+      "saturation": 0.0,
+      "calibration_rmse": 0.057259996486038474,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C_shadow",
+      "seed": 0,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.716321894011344,
+      "sensor_samples": 3681,
+      "accepted": true,
+      "mass": 5.39508126171491,
+      "mass_error_pct": -0.09108737598716443,
+      "acceptance_s": 10.003999999999998,
+      "holdout": 0.0049070904923709255,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.044275126275538645,
+      "rmse": 0.044275126275538645,
+      "truth_rmse": 0.062176062103024086,
+      "max_error": 0.09334208784106127,
+      "saturation": 0.0,
+      "calibration_rmse": 0.057906452705061194,
+      "calibration_cost": 0.08966535585358044,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "A",
+      "seed": 1,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 9.428839288986637,
+      "sensor_samples": 3687,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.999999999999993,
+      "partial_or_full_rmse": 0.05748754321984836,
+      "rmse": 0.05748754321984836,
+      "truth_rmse": 0.08073296728296088,
+      "max_error": 0.12851066941470873,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06454222151933031,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "B",
+      "seed": 1,
+      "status": "FAIL",
+      "failure": "motor_command_without_rotor_response",
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 9.63385497800482,
+      "sensor_samples": 622,
+      "accepted": false,
+      "mass": 4.5,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": null,
+      "partial_or_full_rmse": null,
+      "rmse": null,
+      "truth_rmse": null,
+      "max_error": null,
+      "saturation": null,
+      "calibration_rmse": null,
+      "calibration_cost": null,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C",
+      "seed": 1,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.91001412300102,
+      "sensor_samples": 3696,
+      "accepted": true,
+      "mass": 5.40624619158746,
+      "mass_error_pct": 0.11567058538137776,
+      "acceptance_s": 10.031999999999996,
+      "holdout": 0.005703329311736436,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.07595328467127245,
+      "rmse": 0.07595328467127245,
+      "truth_rmse": 0.08603072099863478,
+      "max_error": 0.14811217484833664,
+      "saturation": 0.0,
+      "calibration_rmse": 0.08841210326908694,
+      "calibration_cost": 0.08966535585358043,
+      "force_algebraic": 7.629627361893654e-06,
+      "force_step": 4.661869525909424,
+      "transient_error": 0.08943771221730468,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "D",
+      "seed": 1,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.535010656007216,
+      "sensor_samples": 3688,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.996000000000002,
+      "partial_or_full_rmse": 0.0521939359145143,
+      "rmse": 0.0521939359145143,
+      "truth_rmse": 0.17341813258160574,
+      "max_error": 0.10076487068458687,
+      "saturation": 0.0,
+      "calibration_rmse": 0.057316454738560264,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C_shadow",
+      "seed": 1,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.628566515995772,
+      "sensor_samples": 3670,
+      "accepted": true,
+      "mass": 5.399655294990798,
+      "mass_error_pct": -0.0063830557495925255,
+      "acceptance_s": 10.019999999999996,
+      "holdout": 0.00449438024280248,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.05805372551066274,
+      "rmse": 0.05805372551066274,
+      "truth_rmse": 0.07508576114957069,
+      "max_error": 0.10650689584492815,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06631736356040849,
+      "calibration_cost": 0.08966535585358043,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "A",
+      "seed": 2,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.717962681010249,
+      "sensor_samples": 3676,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.05727849628228616,
+      "rmse": 0.05727849628228616,
+      "truth_rmse": 0.06369052846995742,
+      "max_error": 0.10518134946757085,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06093342605939076,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "B",
+      "seed": 2,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 10.938860697002383,
+      "sensor_samples": 3807,
+      "accepted": true,
+      "mass": 5.402887719593182,
+      "mass_error_pct": 0.05347665933106427,
+      "acceptance_s": 10.015999999999998,
+      "holdout": 0.004200263036389035,
+      "evaluation_duration_s": 15.99600000000001,
+      "partial_or_full_rmse": 0.057848953517587495,
+      "rmse": 0.057848953517587495,
+      "truth_rmse": 0.0709836596491799,
+      "max_error": 0.13326657575926432,
+      "saturation": 0.0,
+      "calibration_rmse": 0.10057979301671054,
+      "calibration_cost": 0.0,
+      "force_algebraic": 7.629627361893654e-06,
+      "force_step": 3.112123489379883,
+      "transient_error": 0.11318094895905846,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C",
+      "seed": 2,
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.432345858003828,
+      "sensor_samples": 2930,
+      "accepted": true,
+      "mass": 5.399769191046618,
+      "mass_error_pct": -0.004273869522897211,
+      "acceptance_s": 10.019999999999996,
+      "holdout": 0.003942511372204928,
+      "evaluation_duration_s": 6.003999999999998,
+      "partial_or_full_rmse": 0.2600322508701764,
+      "rmse": null,
+      "truth_rmse": null,
+      "max_error": 0.5025977641828012,
+      "saturation": 0.0,
+      "calibration_rmse": 0.05952192344352333,
+      "calibration_cost": 0.08966535585358044,
+      "force_algebraic": 3.822605322056916e-06,
+      "force_step": 2.903534173965454,
+      "transient_error": 0.1412421411156072,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "D",
+      "seed": 2,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.727552866999758,
+      "sensor_samples": 3676,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.05208577195710989,
+      "rmse": 0.05208577195710989,
+      "truth_rmse": 0.06851644214278137,
+      "max_error": 0.08482045410594354,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06436968777098204,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C_shadow",
+      "seed": 2,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.626807185006328,
+      "sensor_samples": 3684,
+      "accepted": true,
+      "mass": 5.39894924392496,
+      "mass_error_pct": -0.019458075535760955,
+      "acceptance_s": 10.015999999999998,
+      "holdout": 0.004151187780175732,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.06326030459280865,
+      "rmse": 0.06326030459280865,
+      "truth_rmse": 0.13439691010002167,
+      "max_error": 0.11984709734176548,
+      "saturation": 0.0,
+      "calibration_rmse": 0.07752005138592122,
+      "calibration_cost": 0.0896653456990221,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "A",
+      "seed": 3,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 9.935476601007394,
+      "sensor_samples": 3737,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.07058081016368148,
+      "rmse": 0.07058081016368148,
+      "truth_rmse": 0.08637775601809827,
+      "max_error": 0.11877774135653064,
+      "saturation": 0.0,
+      "calibration_rmse": 0.110738793089418,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "B",
+      "seed": 3,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.722628774004988,
+      "sensor_samples": 3680,
+      "accepted": true,
+      "mass": 5.402009624736248,
+      "mass_error_pct": 0.037215643401689036,
+      "acceptance_s": 10.004000000000005,
+      "holdout": 0.005000383872824349,
+      "evaluation_duration_s": 15.99600000000001,
+      "partial_or_full_rmse": 0.04789700320000825,
+      "rmse": 0.04789700320000825,
+      "truth_rmse": 0.06571444022771876,
+      "max_error": 0.09476511901597579,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06534411827607896,
+      "calibration_cost": 0.0,
+      "force_algebraic": 7.629685569554567e-06,
+      "force_step": 2.967440366744995,
+      "transient_error": 0.1501937244909236,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C",
+      "seed": 3,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.723292870010482,
+      "sensor_samples": 3678,
+      "accepted": true,
+      "mass": 5.400966199922454,
+      "mass_error_pct": 0.017892961593202195,
+      "acceptance_s": 10.012,
+      "holdout": 0.0037754960012934325,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.09691726928334712,
+      "rmse": 0.09691726928334712,
+      "truth_rmse": 0.12533078560846764,
+      "max_error": 0.15839601012444635,
+      "saturation": 0.0,
+      "calibration_rmse": 0.08342040719789129,
+      "calibration_cost": 0.08966535485765006,
+      "force_algebraic": 7.63311891205376e-06,
+      "force_step": 4.549473285675049,
+      "transient_error": 0.1337014033496113,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "D",
+      "seed": 3,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.630289818000165,
+      "sensor_samples": 3675,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.051903848956500465,
+      "rmse": 0.051903848956500465,
+      "truth_rmse": 0.05823921777470589,
+      "max_error": 0.09098150077440473,
+      "saturation": 0.0,
+      "calibration_rmse": 0.05954018948546793,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C_shadow",
+      "seed": 3,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.723041806995752,
+      "sensor_samples": 3687,
+      "accepted": true,
+      "mass": 5.396832738484339,
+      "mass_error_pct": -0.058652620877608364,
+      "acceptance_s": 10.020000000000003,
+      "holdout": 0.004490925388588004,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.07432261136130591,
+      "rmse": 0.07432261136130591,
+      "truth_rmse": 0.23270628569632656,
+      "max_error": 0.11734835428070117,
+      "saturation": 0.0,
+      "calibration_rmse": 0.07200740088687976,
+      "calibration_cost": 0.08966535585358044,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "A",
+      "seed": 4,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.62557774799643,
+      "sensor_samples": 3670,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.07096575825506121,
+      "rmse": 0.07096575825506121,
+      "truth_rmse": 0.08027015904337513,
+      "max_error": 0.11429035944362988,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06895674706482467,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "B",
+      "seed": 4,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.532612434995826,
+      "sensor_samples": 3689,
+      "accepted": true,
+      "mass": 5.403593218644463,
+      "mass_error_pct": 0.066541456625413,
+      "acceptance_s": 10.015999999999998,
+      "holdout": 0.003680645472991169,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.06576606656415344,
+      "rmse": 0.06576606656415344,
+      "truth_rmse": 0.07749116869647339,
+      "max_error": 0.10508779548034425,
+      "saturation": 0.0,
+      "calibration_rmse": 0.06770322812176205,
+      "calibration_cost": 0.0,
+      "force_algebraic": 7.629918400198221e-06,
+      "force_step": 3.4888052940368652,
+      "transient_error": 0.10900649401527078,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C",
+      "seed": 4,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.624903149990132,
+      "sensor_samples": 3679,
+      "accepted": true,
+      "mass": 5.405132606855889,
+      "mass_error_pct": 0.09504864583147477,
+      "acceptance_s": 10.007999999999996,
+      "holdout": 0.003931663944698852,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.04121723876950894,
+      "rmse": 0.04121723876950894,
+      "truth_rmse": 0.048978110605810185,
+      "max_error": 0.08279129204893335,
+      "saturation": 0.0,
+      "calibration_rmse": 0.09185114053988247,
+      "calibration_cost": 0.08966535585358044,
+      "force_algebraic": 7.633351742697414e-06,
+      "force_step": 4.552574634552002,
+      "transient_error": 0.10913538849614685,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "D",
+      "seed": 4,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 10.124115591999725,
+      "sensor_samples": 3750,
+      "accepted": null,
+      "mass": null,
+      "mass_error_pct": null,
+      "acceptance_s": null,
+      "holdout": null,
+      "evaluation_duration_s": 15.995999999999995,
+      "partial_or_full_rmse": 0.04552907262250907,
+      "rmse": 0.04552907262250907,
+      "truth_rmse": 0.0706427134340903,
+      "max_error": 0.08169774541847134,
+      "saturation": 0.0,
+      "calibration_rmse": 0.05360735107306281,
+      "calibration_cost": 0.0,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119"
+    },
+    {
+      "batch": "batch_matrix_shared_20261010_190011",
+      "attitude_reference": "level",
+      "group": "C_shadow",
+      "seed": 4,
+      "status": "PASS",
+      "failure": null,
+      "landed": true,
+      "disarmed": true,
+      "ready_s": 8.72922336999909,
+      "sensor_samples": 3689,
+      "accepted": true,
+      "mass": 5.394219827975054,
+      "mass_error_pct": -0.10703985271024452,
+      "acceptance_s": 10.015999999999998,
+      "holdout": 0.0037579951828934526,
+      "evaluation_duration_s": 15.99600000000001,
+      "partial_or_full_rmse": 0.062173106592881965,
+      "rmse": 0.062173106592881965,
+      "truth_rmse": 0.08239276136844635,
+      "max_error": 0.10136773685424967,
+      "saturation": 0.0,
+      "calibration_rmse": 0.08141341811838401,
+      "calibration_cost": 0.0896653559722313,
+      "force_algebraic": null,
+      "force_step": null,
+      "transient_error": null,
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136"
+    }
+  ]
+}

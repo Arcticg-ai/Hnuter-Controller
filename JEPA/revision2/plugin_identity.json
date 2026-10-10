@@ -1,0 +1,50 @@
+{
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so.8": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so.8.11.0",
+    "sha256": "4634631fdd5213d61b52f7a2c59ff96687950c882dfa7449781c6ff472e7ee3f"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so.8.11.0",
+    "sha256": "4634631fdd5213d61b52f7a2c59ff96687950c882dfa7449781c6ff472e7ee3f"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim-multicopter-motor-model-system.so": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so.8.11.0",
+    "sha256": "4634631fdd5213d61b52f7a2c59ff96687950c882dfa7449781c6ff472e7ee3f"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so.8.11.0": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-multicopter-motor-model-system.so.8.11.0",
+    "sha256": "4634631fdd5213d61b52f7a2c59ff96687950c882dfa7449781c6ff472e7ee3f"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so.8": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so.8.11.0",
+    "sha256": "d54c5aef3926112cf75e77bd242e503c5c8b721bf4f6dba4f3d08681cd50f326"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so.8.11.0": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so.8.11.0",
+    "sha256": "d54c5aef3926112cf75e77bd242e503c5c8b721bf4f6dba4f3d08681cd50f326"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim-joint-state-publisher-system.so": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so.8.11.0",
+    "sha256": "d54c5aef3926112cf75e77bd242e503c5c8b721bf4f6dba4f3d08681cd50f326"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-state-publisher-system.so.8.11.0",
+    "sha256": "d54c5aef3926112cf75e77bd242e503c5c8b721bf4f6dba4f3d08681cd50f326"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so.8": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so.8.11.0",
+    "sha256": "66357654410e668bf3f72dad325e0e8eed8becf5660e3e64e1329463196cd16c"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim-joint-position-controller-system.so": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so.8.11.0",
+    "sha256": "66357654410e668bf3f72dad325e0e8eed8becf5660e3e64e1329463196cd16c"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so.8.11.0": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so.8.11.0",
+    "sha256": "66357654410e668bf3f72dad325e0e8eed8becf5660e3e64e1329463196cd16c"
+  },
+  "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so": {
+    "realpath": "/usr/lib/x86_64-linux-gnu/gz-sim-8/plugins/libgz-sim8-joint-position-controller-system.so.8.11.0",
+    "sha256": "66357654410e668bf3f72dad325e0e8eed8becf5660e3e64e1329463196cd16c"
+  }
+}

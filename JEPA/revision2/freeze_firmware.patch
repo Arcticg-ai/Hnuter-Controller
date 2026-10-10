@@ -1,0 +1,20 @@
+--- a/src/modules/mc_rate_control/HnuterControl.cpp
++++ b/src/modules/mc_rate_control/HnuterControl.cpp
+@@ -168,8 +168,15 @@
+ 	    && PX4_ISFINITE(mass_request.param1)
+ 	    && mass_request.param1 >= 3.5f && mass_request.param1 <= 7.f
+ 	    && mass_request.timestamp <= now && now - mass_request.timestamp < 500000) {
+-		_jepa_mass_target = mass_request.param1;
+-		_jepa_mass_request_time = now;
++		// SITL-only explicit cancellation: stop the ramp when recovery begins.
++		// Keep effective mass and integral unchanged, preserving current force.
++		if (PX4_ISFINITE(mass_request.param3) && fabsf(mass_request.param3 - 1.f) < 0.1f) {
++			_jepa_mass_target = mass;
++			_jepa_mass_request_time = 0;
++		} else if (PX4_ISFINITE(mass_request.param3) && fabsf(mass_request.param3) < 0.1f) {
++			_jepa_mass_target = mass_request.param1;
++			_jepa_mass_request_time = now;
++		}
+ 	}
+ 	// Loss of the acceptance heartbeat freezes the current mass, no parameter write.
+ 	if (now - _jepa_mass_request_time > 500000) {

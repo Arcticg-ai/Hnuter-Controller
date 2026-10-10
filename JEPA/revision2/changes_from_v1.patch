@@ -1,0 +1,297 @@
+--- v1/actuator_sensors.py
++++ revision2/actuator_sensors.py
+@@ -2,6 +2,7 @@
+ import json
+ from pathlib import Path
+ import threading
++import time
+ from collections import deque
+ import numpy as np
+ from gz.transport13 import Node
+@@ -35,12 +36,30 @@
+         self.samples=deque(maxlen=3000)
+         self.lock=threading.Lock()
+         self.node=Node()
+-        self.node.subscribe(Model,topic,self.callback)
++        self.topic=topic
++        self.diagnostics=dict(callbacks=0,invalid=0,reversals=0,first_stamp=None,last_stamp=None,first_wall=None,last_wall=None,subscribe_ok=None,missing=[])
++        self.diagnostics['subscribe_ok']=self.node.subscribe(Model,topic,self.callback)
+ 
+     def callback(self,msg):
+         stamp=msg.header.stamp.sec+msg.header.stamp.nsec*1e-9
+         joints={j.name:(j.axis1.position,j.axis1.velocity) for j in msg.joint}
+-        with self.lock:self.samples.append((stamp,joints))
++        with self.lock:
++            d=self.diagnostics;wall=time.monotonic();d['callbacks']+=1
++            d['missing']=[n for n in self.geometry['joints'] if n not in joints]
++            if d['missing'] or not np.isfinite(stamp) or not all(np.isfinite(x) for p in joints.values() for x in p):
++                d['invalid']+=1;return
++            if d['last_stamp'] is not None and stamp<=d['last_stamp']:
++                d['reversals']+=1;return
++            if d['first_stamp'] is None:d['first_stamp']=stamp;d['first_wall']=wall
++            d['last_stamp']=stamp;d['last_wall']=wall
++            self.samples.append((stamp,joints))
++
++    def snapshot(self):
++        with self.lock:return dict(self.diagnostics)
++
++    def raw_at(self,t):
++        with self.lock:valid=[s for s in self.samples if 0<=t-s[0]<.025]
++        return valid[-1] if valid else None
+ 
+     def at(self,t,rng=None):
+         with self.lock:
+@@ -84,4 +103,5 @@
+         sample=self.at(t,rng)
+         if sample is None:return None
+         stamp,omega,axes,k=sample
+-        return dict(sensor_t=stamp,thrust_up=thrust_up_from_rotors(omega,axes,rotation,k),omega=omega.tolist())
++        raw=self.raw_at(t)
++        return dict(sensor_t=stamp,thrust_up=thrust_up_from_rotors(omega,axes,rotation,k),omega=omega.tolist(),joints=raw[1] if raw else {})
+--- v1/run_sitl.py
++++ revision2/run_sitl.py
+@@ -28,6 +28,11 @@
+     p.add_argument('--noise',choices=['native','zero','low_noise','noisy_delayed'],default='native')
+     p.add_argument('--seed',type=int,default=0)
+     p.add_argument('--instance',type=int,default=0)
++    p.add_argument('--attitude-reference',choices=['legacy','level'],default='level')
++    p.add_argument('--discovery',choices=['shared','isolated'],default='shared')
++    p.add_argument('--startup-only',action='store_true')
++    p.add_argument('--omit-joint-telemetry',action='store_true')
++    p.add_argument('--inject-exit-at',type=float,default=0.)
+     args=p.parse_args()
+     # No reuse or attach to an existing instance. PX4 itself enforces its lock.
+     if not 0<=args.instance<=4:p.error('instance must be 0..4')
+@@ -47,7 +52,7 @@
+     if args.instrument or args.loaded:
+         from actuator_sensors import export_geometry
+         source=PX4/'Tools/simulation/gz/models/hnuter/model.sdf'
+-        if args.loaded:source=ROOT/'generated/native_noise/hnuter_mass_cal_payload/model.sdf'
++        if args.loaded:source=ROOT.parent/'generated/native_noise/hnuter_mass_cal_payload/model.sdf'
+         tree=ET.parse(source);model=tree.getroot().find('model')
+         if args.noise in ('zero','low_noise'):
+             for noise in model.findall('.//sensor//noise'):
+@@ -59,8 +64,9 @@
+         for uri in model.findall('.//mesh/uri'):
+             if not uri.text.startswith(('/', 'model://', 'file://')):
+                 uri.text=str(source.parent/uri.text)
+-        plugin=ET.SubElement(model,'plugin',filename='gz-sim-joint-state-publisher-system',name='gz::sim::systems::JointStatePublisher')
+-        ET.SubElement(plugin,'topic').text='/jepa_joint_sensors'
++        if not args.omit_joint_telemetry:
++            plugin=ET.SubElement(model,'plugin',filename='gz-sim-joint-state-publisher-system',name='gz::sim::systems::JointStatePublisher')
++            ET.SubElement(plugin,'topic').text='/jepa_joint_sensors'
+         models=out/'models';folder=models/model_name;folder.mkdir(parents=True)
+         tree.write(folder/'model.sdf',encoding='utf-8',xml_declaration=True)
+         export_geometry(PX4/'Tools/simulation/gz/models/hnuter/model.sdf',out/'actuator_geometry.json')
+@@ -83,6 +89,12 @@
+                FASTDDS_DEFAULT_PROFILES_FILE=str(profile),FASTRTPS_DEFAULT_PROFILES_FILE=str(profile),
+                RMW_IMPLEMENTATION='rmw_fastrtps_cpp',ROS_LOG_DIR=str(out/'ros_logs'),JEPA_RUN_DIR=str(out),
+                PYTHONUNBUFFERED='1',SDL_VIDEODRIVER='dummy',SDL_AUDIODRIVER='dummy')
++    if args.discovery=='isolated':
++        env['GZ_DISCOVERY_MSG_PORT']=str(29800+2*args.instance)
++        env['GZ_DISCOVERY_SRV_PORT']=str(29801+2*args.instance)
++    env['JEPA_ATTITUDE_REFERENCE']=args.attitude_reference
++    env['JEPA_STARTUP_ONLY']=str(int(args.startup_only))
++    env['JEPA_INJECT_EXIT_AT']=str(args.inject_exit_at)
+     env['JEPA_SMOOTH_TAKEOFF']='1' if args.smooth_takeoff else '0'
+     env['JEPA_GROUP']=args.group;env['JEPA_NOISE']=args.noise;env['JEPA_SEED']=str(args.seed)
+     if args.group=='D':env['PX4_PARAM_HNTR_MASS']='5.39999998' if args.loaded else '4.49999998'
+@@ -97,7 +109,7 @@
+     try:
+         launch('agent',['MicroXRCEAgent','udp4','-p',str(port),'-v','4'],out)
+         px=launch('px4',[str(BUILD/'bin/px4'),'-i',str(args.instance),'-w',str(rootfs)],rootfs)
+-        manifest=dict(kind='owned_local_sitl',namespace=token,GZ_PARTITION=token,environment={k:v for k,v in env.items() if k in ['ROS_DOMAIN_ID','ROS_AUTOMATIC_DISCOVERY_RANGE','PX4_UXRCE_DDS_PORT','GZ_IP','PX4_SIM_MODEL']},
++        manifest=dict(kind='owned_local_sitl',namespace=token,GZ_PARTITION=token,environment={k:v for k,v in env.items() if k in ['ROS_DOMAIN_ID','ROS_AUTOMATIC_DISCOVERY_RANGE','PX4_UXRCE_DDS_PORT','GZ_IP','PX4_SIM_MODEL','GZ_DISCOVERY_MSG_PORT','GZ_DISCOVERY_SRV_PORT']},
+                       pids={n:x.pid for n,x in procs.items()},commands=commands,source_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=PX4,text=True).strip())
+         manifest.update(experiment=vars(args),binary_sha256=hashlib.sha256((BUILD/'bin/px4').read_bytes()).hexdigest())
+         manifest['controller_sources_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in ROOT.glob('*.py')}
+@@ -112,7 +124,7 @@
+         else: raise RuntimeError('PX4 startup timeout')
+         px.stdin.write('ver all\nparam show HNTR_*\nparam show CA_AIRFRAME\nparam show UXRCE_DDS_*\n');px.stdin.flush()
+         time.sleep(3)
+-        cmd=['bash','-c',f'source /opt/ros/jazzy/setup.bash\nsource {ROOT.parent}/install/setup.bash\nexec python3 {ROOT}/sitl_position_probe.py']
++        cmd=['bash','-c',f'source /opt/ros/jazzy/setup.bash\nsource {ROOT.parent.parent}/install/setup.bash\nexec python3 {ROOT}/sitl_position_probe.py']
+         node=launch('controller',cmd,out)
+         manifest['commands']=commands;manifest['pids']={n:x.pid for n,x in procs.items()}
+         (out/'launch.json').write_text(json.dumps(manifest,indent=2)+'\n')
+--- v1/sitl_position_probe.py
++++ revision2/sitl_position_probe.py
+@@ -13,7 +13,7 @@
+ import numpy as np
+ 
+ ROOT = Path(__file__).resolve().parent
+-sys.path.insert(0, str(ROOT.parent))
++sys.path.insert(0, str(ROOT.parent.parent))
+ import hnuter_external_controller_px4_position as base
+ from estimator import vertical_reference,MassEstimator
+ from px4_msgs.msg import VehicleLandDetected, ActuatorMotors
+@@ -58,6 +58,16 @@
+         self.last_error=0.;self.last_tilt=0.
+         self.saturated_since=None
+         self.init_wall=time.monotonic()
++        self.readiness=[]
++        self.last_aligned_wall=0.
++        self.last_alignment_age=None
++        self.aligned_count=0
++        self.ready_at=None
++        self.startup_only=os.environ.get('JEPA_STARTUP_ONLY')=='1'
++        self.inject_exit_at=float(os.environ.get('JEPA_INJECT_EXIT_AT','0'))
++        self.recovery_rows=[]
++        self.rotor_response_lost_since=None
++        self.last_omega=None
+         self.offboard_landing=False
+         if (out/'actuator_geometry.json').exists():
+             from actuator_sensors import JointSensors
+@@ -89,10 +99,14 @@
+             rotations=[q for stamp,q in self.attitudes if 0<=t-stamp<.025]
+             measurement=self.sensors.thrust(t,rotations[-1],self.rng if self.noisy else None) if rotations else None
+             if measurement is not None:
++                self.last_aligned_wall=time.monotonic();self.aligned_count+=1
++                self.last_alignment_age=t-measurement['sensor_t']
++                self.last_omega=np.array(measurement['omega'])
+                 if self.noisy:vz+=self.rng.normal(0,.01)
+                 self.sensor_rows.append(dict(t=t,sensor_t=measurement['sensor_t'],vz_ned=vz,
+                                              thrust_up=measurement['thrust_up'],phase=phase,
+-                                             **{f'omega{i}':v for i,v in enumerate(measurement['omega'])}))
++                                             **{f'omega{i}':v for i,v in enumerate(measurement['omega'])},
++                                             **{f'{name}_{kind}':v for name,pair in measurement['joints'].items() for kind,v in zip(('angle','velocity'),pair)}))
+                 if phase=='CALIBRATION' and self.group in ('B','C','C_shadow'):
+                     self.estimator.push(t,vz,measurement['thrust_up'],eligible=eligible)
+                     if self.estimator.accepted and self.accepted_at is None:self.accepted_at=t
+@@ -107,6 +121,20 @@
+                                     [2*(x*z-w*y),2*(y*z+w*x),1-2*(x*x+y*y)]])
+         self.attitudes.append((msg.timestamp*1e-6,self.rotation_ned.copy()))
+         super().attitude_callback(msg)
++
++    def publish_px4_trajectory_setpoint(self):
++        if os.environ.get('JEPA_ATTITUDE_REFERENCE','level')=='legacy' and self.phase!='LAND':
++            return super().publish_px4_trajectory_setpoint()
++        # Existing Hnuter TrajectorySetpoint extension: jerk[0:2] are roll/pitch.
++        # Explicit level body reference avoids inheriting mc_pos_control tilt.
++        msg=base.TrajectorySetpoint();msg.timestamp=self.timestamp_now_us()
++        z=float(self._z0+self.target_position[2]) if self._z0_initialized else float(self.position[2])
++        msg.position=[float(self.target_position[1]),float(self.target_position[0]),-z]
++        msg.velocity=[float(self.target_velocity[1]),float(self.target_velocity[0]),float(-self.target_velocity[2])]
++        msg.acceleration=[float(self.target_acceleration[1]),float(self.target_acceleration[0]),float(-self.target_acceleration[2])]
++        msg.jerk=[0.,0.,float('nan')]
++        msg.yaw=self._yaw_enu_to_ned(self.manual_des_yaw);msg.yawspeed=float(-self.target_attitude_rate[2])
++        self.trajectory_setpoint_pub.publish(msg)
+ 
+     def publish_direct_actuator_setpoint(self,*a,**kw):
+         raise RuntimeError('Direct actuator control forbidden')
+@@ -145,7 +173,11 @@
+         self.failure = reason
+         self.phase = 'LAND'
+         self.land_started = time.monotonic()
+-        if reason is None:
++        self.publish_mass_request(freeze=True)
++        if self.valid and time.monotonic()-self.last_pos_wall<.2 and time.monotonic()-self.last_att_wall<.2:
++            # Keep the proven position-only descent chain alive for recoverable limits.
++            # Never resume mass updates or excitation after entering LAND.
++            self.flight_origin=self.position[:2].copy()
+             self.offboard_landing=True
+             self.landing_start_px4=self.px4_timestamp*1e-6
+             self.landing_initial_z=float(self.position[2]-self._z0)
+@@ -157,20 +189,37 @@
+         now = time.monotonic()
+         if self.phase == 'WAIT':
+             if now-self.init_wall>45:
+-                self.failure='no_valid_state_before_arming';self.finished=True
++                self.failure='prearm_stream_readiness_timeout';self.finished=True
+                 return
+-            if self.valid and self.data_received and now-self.last_pos_wall<.2 and now-self.last_att_wall<.2:
++            ready=self.valid and self.data_received and now-self.last_pos_wall<.2 and now-self.last_att_wall<.2 and np.all(np.isfinite(self.velocity)) and now-self.last_aligned_wall<.2 and self.aligned_count>=25
++            diag=self.sensors.snapshot() if self.sensors else {}
++            self.readiness.append(dict(wall_s=now-self.init_wall,px4_s=self.px4_timestamp*1e-6,ready=bool(ready),aligned_count=self.aligned_count,alignment_age_s=self.last_alignment_age,pos_age_s=now-self.last_pos_wall,att_age_s=now-self.last_att_wall,sensors=diag))
++            if ready:
+                 if self.stable_since is None: self.stable_since=now
+                 if now-self.stable_since>3.:
++                    self.ready_at=now-self.init_wall
++                    if self.startup_only:self.finished=True;return
+                     self.takeoff_requested=True
+                     self.phase='ARM_WAIT'
+             else: self.stable_since=None
+         if self.armed: self.had_armed=True
+         if self.armed and self.phase != 'LAND':
++            if now-self.last_aligned_wall>.5:
++                self.land('joint_telemetry_stale')
++            # Rotor motion is checked only after a nonzero final motor command.
++            # This catches command-delivery loss that passive prearm sensors cannot.
++            command_active=np.all(np.isfinite(self.motor)) and float(np.max(np.abs(self.motor)))>.15
++            response_absent=self.last_omega is not None and float(np.max(np.abs(self.last_omega)))<50.
++            if command_active and response_absent:
++                if self.rotor_response_lost_since is None:self.rotor_response_lost_since=now
++                if now-self.rotor_response_lost_since>.5:self.land('motor_command_without_rotor_response')
++            else:self.rotor_response_lost_since=None
+             if not self.valid or max(now-self.last_pos_wall,now-self.last_att_wall)>.5:
+                 self.land('invalid_or_stale_state')
+         if self.phase == 'LAND':
+-            if not self.armed and self.had_armed:
++            self.publish_mass_request(freeze=True)
++            self.recovery_rows.append(dict(wall_s=now-self.land_started,px4_s=self.px4_timestamp*1e-6,landed=self.landed,armed=self.armed,position=self.position.tolist(),velocity=self.velocity.tolist(),offboard_landing=self.offboard_landing))
++            if not self.armed and self.landed and self.had_armed:
+                 self.finished=True
+             elif now-self.land_started>35:
+                 self.failure=self.failure or 'landing_timeout'
+@@ -179,11 +228,15 @@
+             self.failure='unexpected_disarm'
+             self.finished=True
+         if self.group in ('B','C') and self.estimator.accepted and self.phase in ('CHECK','EVALUATION','FINAL_HOVER') and self.started is not None and self.px4_timestamp*1e-6-self.sim_start_time_s-self.started>=35. and self.armed and self.valid and not self.landed and self.last_error<.3 and self.last_tilt<math.radians(20) and float(np.nanmax(np.abs(self.motor)))<.9:
+-            request=base.VehicleCommand()
+-            request.command=31000;request.param1=float(self.estimator.mass);request.param2=54123.
+-            request.target_system=1;request.target_component=1;request.source_system=73;request.source_component=1
+-            request.from_external=True;request.timestamp=self.timestamp_now_us()
+-            self.vehicle_command_pub.publish(request)
++            self.publish_mass_request()
++
++    def publish_mass_request(self,freeze=False):
++        request=base.VehicleCommand()
++        request.command=31000;request.param1=float(self.estimator.mass);request.param2=54123.
++        request.param3=1. if freeze else 0.
++        request.target_system=1;request.target_component=1;request.source_system=73;request.source_component=1
++        request.from_external=True;request.timestamp=self.timestamp_now_us()
++        self.vehicle_command_pub.publish(request)
+ 
+     def update_trajectory(self,current_time,dt):
+         # Use baseline takeoff/hover implementation unchanged until stable hover.
+@@ -237,7 +290,9 @@
+                              vz_up=self.velocity[2],vz_ref=self.target_velocity[2],az_ref=self.target_acceleration[2],
+                              error=float(np.linalg.norm(err)),tilt_deg=math.degrees(tilt),landed=self.landed,
+                              motor_max=float(np.nanmax(np.abs(self.motor))),valid=self.valid))
+-        if tilt>math.radians(25) or np.linalg.norm(position[:2]-self.flight_origin)>1.0:
++        if self.inject_exit_at and elapsed>=self.inject_exit_at:
++            self.land('injected_recovery_test')
++        elif tilt>math.radians(25) or np.linalg.norm(position[:2]-self.flight_origin)>1.0:
+             self.land('attitude_or_horizontal_limit')
+         elif elapsed>12 and (np.linalg.norm(err)>.5 or np.linalg.norm(self.velocity)>1.5 or self.landed):
+             self.land('tracking_velocity_or_contact_limit')
+@@ -274,9 +329,15 @@
+                 with (out/(name+'.csv')).open('w') as f:
+                     w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
+         rows=[r for r in node.rows if r['phase']=='EVALUATION']
++        (out/'readiness.json').write_text(json.dumps(node.readiness,indent=2)+'\n')
++        (out/'recovery.json').write_text(json.dumps(node.recovery_rows,indent=2)+'\n')
++        if node.sensors is not None:
++            discovery=dict(topic='/jepa_joint_sensors',advertised_topics=node.sensors.node.topic_list(),topic_info=str(node.sensors.node.topic_info('/jepa_joint_sensors')))
++            (out/'discovery.json').write_text(json.dumps(discovery,indent=2)+'\n')
++        (out/'sensor_diagnostics.json').write_text(json.dumps(node.sensors.snapshot() if node.sensors else {},indent=2)+'\n')
+         if node.finished and node.failure is None and (not node.landed or node.armed):node.failure='landing_unconfirmed'
+         result=dict(status='PASS' if node.finished and node.failure is None and rows and rows[-1]['t']-rows[0]['t']>15.9 else 'FAIL',
+-                    failure=node.failure,phase=node.phase,samples=len(node.rows),evaluation_samples=len(rows),
++                    failure=node.failure,ready_at_wall_s=node.ready_at,startup_only=node.startup_only,attitude_reference=os.environ.get('JEPA_ATTITUDE_REFERENCE'),phase=node.phase,samples=len(node.rows),evaluation_samples=len(rows),
+                     landed=node.landed,disarmed=not node.armed,
+                     sensor_samples=len(node.sensor_rows),mass_estimate_kg=node.estimator.mass if node.group in ('B','C','C_shadow') else None,
+                     mass_accepted=node.estimator.accepted if node.group in ('B','C','C_shadow') else None,
+@@ -286,10 +347,11 @@
+                     last_joint_timestamp_s=node.sensors.samples[-1][0] if node.sensors and node.sensors.samples else None,
+                     position_rmse_m=float(np.sqrt(np.mean([r['error']**2 for r in rows]))) if rows else None,
+                     max_position_error_m=max([r['error'] for r in rows],default=None))
++        if node.startup_only and node.ready_at is not None and not node.armed:result['status']='READY_UNARMED'
+         (out/'flight_result.json').write_text(json.dumps(result,indent=2)+'\n')
+         print(json.dumps(result),flush=True)
+         node.destroy_node();base.rclpy.shutdown()
+-    return 0 if result['status']=='PASS' else 1
++    return 0 if result['status'] in ('PASS','READY_UNARMED') else 1
+ 
+ 
+ if __name__=='__main__': raise SystemExit(main())

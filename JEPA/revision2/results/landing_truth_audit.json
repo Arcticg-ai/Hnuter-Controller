@@ -1,0 +1,514 @@
+[
+  {
+    "run": "sitl_matrix_10_A_s2_20261010_190441",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -3.993511199951172e-06,
+    "final_true_vertical_speed_m_s": -2.2754033125238493e-05
+  },
+  {
+    "run": "sitl_matrix_8_D_s1_20261010_190318",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -6.020069122314453e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_1_B_s0_20261010_190011",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.8185377120949475e-05,
+    "final_true_vertical_speed_m_s": -1.1886162610608153e-05
+  },
+  {
+    "run": "sitl_matrix_24_C_shadow_s4_20261010_191136",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 2.682209014892578e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_13_D_s2_20261010_192009",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.0788440704345703e-05,
+    "final_true_vertical_speed_m_s": -2.9036576961516403e-05
+  },
+  {
+    "run": "sitl_matrix_11_B_s2_20261010_191824",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.4901161193847656e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_16_B_s3_20261010_190752",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -5.0067901611328125e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_21_B_s4_20261010_191001",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 8.940696716308594e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_15_A_s3_20261010_190648",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 4.76837158203125e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_6_B_s1_20261010_191649",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 1.4901161193847656e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_7_C_s1_20261010_190305",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 2.9802322387695312e-08,
+    "final_true_vertical_speed_m_s": -3.380497946636751e-05
+  },
+  {
+    "run": "sitl_matrix_16_B_s3_20261010_192144",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.2964010238647461e-05,
+    "final_true_vertical_speed_m_s": -4.274462116882205e-05
+  },
+  {
+    "run": "sitl_matrix_0_A_s0_20261010_190011",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.9802322387695312e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_17_C_s3_20261010_190808",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.7285346984863281e-06,
+    "final_true_vertical_speed_m_s": -2.1915122488280758e-05
+  },
+  {
+    "run": "sitl_matrix_14_C_shadow_s2_20261010_190632",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 3.5762786865234375e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_21_B_s4_20261010_192446",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -5.364418029785156e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_9_C_shadow_s1_20261010_191824",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 0.0,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_20_A_s4_20261010_192311",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -5.662441253662109e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_ablation_2_C_shadow_s3_20261010_185127",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 5.066394805908203e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_14_C_shadow_s2_20261010_192000",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 7.152557373046875e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_12_C_s2_20261010_190527",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -7.718801498413086e-06,
+    "final_true_vertical_speed_m_s": -2.1931125957053155e-05
+  },
+  {
+    "run": "sitl_targeted_3_D_s2_20261010_184736",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -8.976459503151624e-06,
+    "final_true_vertical_speed_m_s": -5.008442167309113e-05
+  },
+  {
+    "run": "sitl_matrix_3_D_s0_20261010_190143",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -8.845329284690173e-06,
+    "final_true_vertical_speed_m_s": -2.7086589398095384e-05
+  },
+  {
+    "run": "sitl_recovery_0_A_s0_20261010_185352",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -8.940696716308594e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_targeted_1_B_s1_20261010_184600",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.7404556274414062e-05,
+    "final_true_vertical_speed_m_s": -5.6576525821583346e-05
+  },
+  {
+    "run": "sitl_matrix_13_D_s2_20261010_190617",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.8894672393798828e-05,
+    "final_true_vertical_speed_m_s": -5.080627670395188e-05
+  },
+  {
+    "run": "sitl_matrix_5_A_s1_20261010_191514",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -8.642673492431641e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_targeted_6_C_shadow_s3_20261010_184911",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -5.602836608886719e-06,
+    "final_true_vertical_speed_m_s": -4.8475718358531594e-05
+  },
+  {
+    "run": "sitl_matrix_18_D_s3_20261010_190825",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -6.616115570068359e-06,
+    "final_true_vertical_speed_m_s": -2.049178146990016e-05
+  },
+  {
+    "run": "sitl_matrix_0_A_s0_20261010_191338",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -8.58306884765625e-06,
+    "final_true_vertical_speed_m_s": -2.411442983429879e-05
+  },
+  {
+    "run": "sitl_matrix_7_C_s1_20261010_191649",
+    "status": "FAIL",
+    "landed": false,
+    "disarmed": false,
+    "final_true_height_relative_arm_m": 557.5081502795219,
+    "final_true_vertical_speed_m_s": -34812.62890625
+  },
+  {
+    "run": "sitl_targeted_2_C_s3_20261010_184600",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.9878149032592773e-05,
+    "final_true_vertical_speed_m_s": -5.329046689439565e-05
+  },
+  {
+    "run": "sitl_matrix_10_A_s2_20261010_191833",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 7.748603820800781e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_2_C_s0_20261010_191338",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -5.877017974831311e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_11_B_s2_20261010_190454",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 3.5762786865234375e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_4_C_shadow_s0_20261010_190129",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.9802322387695312e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_22_C_s4_20261010_191104",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -3.3676624298095703e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_20_A_s4_20261010_190944",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 2.086162567138672e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_9_C_shadow_s1_20261010_190352",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -3.5762786865234375e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_3_D_s0_20261010_191514",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.571344375612572e-05,
+    "final_true_vertical_speed_m_s": -5.023362609790638e-05
+  },
+  {
+    "run": "sitl_matrix_5_A_s1_20261010_190143",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.0907649993896484e-05,
+    "final_true_vertical_speed_m_s": -4.906849790131673e-05
+  },
+  {
+    "run": "sitl_matrix_4_C_shadow_s0_20261010_191513",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 4.470348358154297e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_8_D_s1_20261010_191649",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.7464160919189453e-05,
+    "final_true_vertical_speed_m_s": -5.681062611984089e-05
+  },
+  {
+    "run": "sitl_targeted_0_A_s3_20261010_184600",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.9802322387695312e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_recovery_1_C_s0_20261010_185832",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 4.470348358154297e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_recovery_1_C_s0_20261010_185352",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.6093254089355469e-06,
+    "final_true_vertical_speed_m_s": -2.5345818357891403e-05
+  },
+  {
+    "run": "sitl_matrix_12_C_s2_20261010_191959",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -4.082918167114258e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_24_C_shadow_s4_20261010_192621",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 2.9802322387695312e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_23_D_s4_20261010_191119",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 1.1920928955078125e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_2_C_s0_20261010_190011",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.537799835205078e-05,
+    "final_true_vertical_speed_m_s": -2.478324131516274e-05
+  },
+  {
+    "run": "sitl_targeted_5_C_s4_20261010_184736",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -7.927417755126953e-06,
+    "final_true_vertical_speed_m_s": -3.185295645380393e-05
+  },
+  {
+    "run": "sitl_ablation_0_B_s4_20261010_185127",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.950429916381836e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_recovery_0_A_s0_20261010_185832",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 8.940696716308594e-08,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_17_C_s3_20261010_192135",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.0056962966918945e-05,
+    "final_true_vertical_speed_m_s": -5.377887646318413e-05
+  },
+  {
+    "run": "sitl_matrix_19_C_shadow_s3_20261010_190928",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -1.2713670730579718e-05,
+    "final_true_vertical_speed_m_s": -2.0681611204054207e-05
+  },
+  {
+    "run": "sitl_matrix_18_D_s3_20261010_192310",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -6.532669067360608e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_ablation_1_C_s4_20261010_185127",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -3.248453140258789e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_23_D_s4_20261010_192446",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.0658969879128186e-05,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_19_C_shadow_s3_20261010_192322",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -2.384185791015625e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_targeted_4_B_s4_20261010_184736",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -3.072619438171387e-05,
+    "final_true_vertical_speed_m_s": -6.466946069849655e-05
+  },
+  {
+    "run": "sitl_matrix_1_B_s0_20261010_191338",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": -5.155801773071289e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_15_A_s3_20261010_192135",
+    "status": "PASS",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 1.043081283569336e-06,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_22_C_s4_20261010_192457",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 3.3378601071998304e-07,
+    "final_true_vertical_speed_m_s": 0.0
+  },
+  {
+    "run": "sitl_matrix_6_B_s1_20261010_190318",
+    "status": "FAIL",
+    "landed": true,
+    "disarmed": true,
+    "final_true_height_relative_arm_m": 0.0,
+    "final_true_vertical_speed_m_s": 0.0
+  }
+]

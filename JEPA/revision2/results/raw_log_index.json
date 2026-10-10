@@ -1,0 +1,961 @@
+[
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127/rootfs/log/2026-10-10/10_51_39.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127/rootfs/log/2026-10-10/10_51_39.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127/rootfs/log/2026-10-10/10_51_39.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011/rootfs/log/2026-10-10/11_00_19.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441/rootfs/log/2026-10-10/11_04_52.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833/rootfs/log/2026-10-10/11_18_44.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454/rootfs/log/2026-10-10/11_05_05.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824/rootfs/log/2026-10-10/11_18_35.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527/rootfs/log/2026-10-10/11_05_39.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959/rootfs/log/2026-10-10/11_20_11.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617/rootfs/log/2026-10-10/11_06_28.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009/rootfs/log/2026-10-10/11_20_20.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632/rootfs/log/2026-10-10/11_06_44.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000/rootfs/log/2026-10-10/11_20_11.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648/rootfs/log/2026-10-10/11_06_59.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135/rootfs/log/2026-10-10/11_21_46.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752/rootfs/log/2026-10-10/11_08_04.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144/rootfs/log/2026-10-10/11_21_55.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808/rootfs/log/2026-10-10/11_08_20.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135/rootfs/log/2026-10-10/11_21_47.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825/rootfs/log/2026-10-10/11_08_36.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310/rootfs/log/2026-10-10/11_23_22.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928/rootfs/log/2026-10-10/11_09_39.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322/rootfs/log/2026-10-10/11_23_33.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011/rootfs/log/2026-10-10/11_00_19.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944/rootfs/log/2026-10-10/11_09_55.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311/rootfs/log/2026-10-10/11_23_22.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001/rootfs/log/2026-10-10/11_10_12.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446/rootfs/log/2026-10-10/11_24_57.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104/rootfs/log/2026-10-10/11_11_15.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457/rootfs/log/2026-10-10/11_25_09.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119/rootfs/log/2026-10-10/11_11_31.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446/rootfs/log/2026-10-10/11_24_58.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136/rootfs/log/2026-10-10/11_11_48.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621/rootfs/log/2026-10-10/11_26_32.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011/rootfs/log/2026-10-10/11_00_19.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/rootfs/log/2026-10-10/11_13_49.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143/rootfs/log/2026-10-10/11_01_54.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514/rootfs/log/2026-10-10/11_15_25.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129/rootfs/log/2026-10-10/11_01_41.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513/rootfs/log/2026-10-10/11_15_25.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143/rootfs/log/2026-10-10/11_01_54.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514/rootfs/log/2026-10-10/11_15_25.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318/rootfs/log/2026-10-10/11_03_29.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649/rootfs/log/2026-10-10/11_17_00.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305/rootfs/log/2026-10-10/11_03_16.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/rootfs/log/2026-10-10/11_17_00.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318/rootfs/log/2026-10-10/11_03_30.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649/rootfs/log/2026-10-10/11_17_00.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352/rootfs/log/2026-10-10/11_04_03.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824/rootfs/log/2026-10-10/11_18_35.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_negative_missing_telemetry_20261010_185352",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_negative_missing_telemetry_20261010_185352/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_negative_missing_telemetry_20261010_185352/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_negative_missing_telemetry_20261010_185352/rootfs/log/2026-10-10/10_54_03.ulg"
+    ],
+    "csv": []
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_0_A_s3_20261010_185532",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_0_A_s3_20261010_185532/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_0_A_s3_20261010_185532/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_0_A_s3_20261010_185532/rootfs/log/2026-10-10/10_55_43.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_0_A_s3_20261010_185532/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_10_A_s3_20261010_185651",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_10_A_s3_20261010_185651/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_10_A_s3_20261010_185651/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_10_A_s3_20261010_185651/rootfs/log/2026-10-10/10_56_59.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_10_A_s3_20261010_185651/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_11_A_s2_20261010_185651",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_11_A_s2_20261010_185651/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_11_A_s2_20261010_185651/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_11_A_s2_20261010_185651/rootfs/log/2026-10-10/10_57_02.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_11_A_s2_20261010_185651/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_1_A_s1_20261010_185532",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_1_A_s1_20261010_185532/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_1_A_s1_20261010_185532/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_1_A_s1_20261010_185532/rootfs/log/2026-10-10/10_55_43.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_1_A_s1_20261010_185532/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_2_A_s3_20261010_185532",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_2_A_s3_20261010_185532/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_2_A_s3_20261010_185532/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_2_A_s3_20261010_185532/rootfs/log/2026-10-10/10_55_43.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_2_A_s3_20261010_185532/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_3_A_s2_20261010_185558",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_3_A_s2_20261010_185558/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_3_A_s2_20261010_185558/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_3_A_s2_20261010_185558/rootfs/log/2026-10-10/10_56_10.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_3_A_s2_20261010_185558/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_4_A_s3_20261010_185558",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_4_A_s3_20261010_185558/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_4_A_s3_20261010_185558/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_4_A_s3_20261010_185558/rootfs/log/2026-10-10/10_56_10.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_4_A_s3_20261010_185558/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_5_A_s1_20261010_185559",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_5_A_s1_20261010_185559/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_5_A_s1_20261010_185559/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_5_A_s1_20261010_185559/rootfs/log/2026-10-10/10_56_10.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_5_A_s1_20261010_185559/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_6_A_s3_20261010_185625",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_6_A_s3_20261010_185625/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_6_A_s3_20261010_185625/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_6_A_s3_20261010_185625/rootfs/log/2026-10-10/10_56_36.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_6_A_s3_20261010_185625/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_7_A_s2_20261010_185625",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_7_A_s2_20261010_185625/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_7_A_s2_20261010_185625/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_7_A_s2_20261010_185625/rootfs/log/2026-10-10/10_56_36.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_7_A_s2_20261010_185625/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_8_A_s3_20261010_185625",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_8_A_s3_20261010_185625/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_8_A_s3_20261010_185625/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_8_A_s3_20261010_185625/rootfs/log/2026-10-10/10_56_36.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_8_A_s3_20261010_185625/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_9_A_s1_20261010_185651",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_9_A_s1_20261010_185651/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_9_A_s1_20261010_185651/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_9_A_s1_20261010_185651/rootfs/log/2026-10-10/10_57_02.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_9_A_s1_20261010_185651/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_shared_s3_20261010_184511",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_shared_s3_20261010_184511/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_shared_s3_20261010_184511/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_shared_s3_20261010_184511/rootfs/log/2026-10-10/10_45_22.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_shared_s3_20261010_184511/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352/rootfs/log/2026-10-10/10_54_03.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832/rootfs/log/2026-10-10/10_58_39.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352/rootfs/log/2026-10-10/10_54_03.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832/rootfs/log/2026-10-10/10_58_40.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600/rootfs/log/2026-10-10/10_46_12.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600/rootfs/log/2026-10-10/10_46_12.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600/rootfs/log/2026-10-10/10_46_12.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736/rootfs/log/2026-10-10/10_47_47.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736/actuator_sensor.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736/rootfs/log/2026-10-10/10_47_47.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736/rootfs/log/2026-10-10/10_47_47.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736/mass_windows.csv"
+    ]
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911",
+    "launch": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911/launch.json",
+    "result": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911/flight_result.json",
+    "ulog": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911/rootfs/log/2026-10-10/10_49_22.ulg"
+    ],
+    "csv": [
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911/trajectory.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911/actuator_sensor.csv",
+      "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911/mass_windows.csv"
+    ]
+  }
+]

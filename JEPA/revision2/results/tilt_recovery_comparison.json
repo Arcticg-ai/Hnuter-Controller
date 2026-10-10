@@ -1,0 +1,22 @@
+[
+  {
+    "run": "sitl_matrix_7_C_s1_20261010_191649",
+    "angular_rate_last_rad_s": [
+      -1.8624893426895142,
+      -0.2622793912887573,
+      -0.24928991496562958
+    ],
+    "max_rate_last_half_second_rad_s": 2.376746654510498,
+    "physics_assertion": true
+  },
+  {
+    "run": "sitl_matrix_22_C_s4_20261010_192457",
+    "angular_rate_last_rad_s": [
+      -0.16245248913764954,
+      0.3270294964313507,
+      0.15457171201705933
+    ],
+    "max_rate_last_half_second_rad_s": 0.3965243101119995,
+    "physics_assertion": false
+  }
+]

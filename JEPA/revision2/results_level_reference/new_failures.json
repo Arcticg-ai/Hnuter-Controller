@@ -1,0 +1,221 @@
+[
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527",
+    "result": {
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "ready_at_wall_s": 8.432345858003828,
+      "startup_only": false,
+      "attitude_reference": "level",
+      "phase": "LAND",
+      "samples": 11501,
+      "evaluation_samples": 1501,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 2930,
+      "mass_estimate_kg": 5.399769191046618,
+      "mass_accepted": true,
+      "mass_reason": "accepted",
+      "group": "C",
+      "noise": "noisy_delayed",
+      "mass_accepted_at_px4_s": 45.623999999999995,
+      "last_px4_timestamp_s": 69.87599999999999,
+      "last_joint_timestamp_s": 70.064,
+      "position_rmse_m": 0.26000507190510447,
+      "max_position_error_m": 0.5025977641828012
+    },
+    "last_reference": {
+      "t": "46.004",
+      "px4_time_s": "63.608",
+      "phase": "EVALUATION",
+      "x": "-0.3658488392829895",
+      "y": "-0.3587673008441925",
+      "z_up": "1.414751946926117",
+      "x_ref": "0.03059779666364193",
+      "y_ref": "-0.05003621056675911",
+      "z_ref": "1.4038115948176624",
+      "vz_up": "-0.010066916234791279",
+      "vz_ref": "-0.03151830267147621",
+      "az_ref": "-0.41899198355277895",
+      "error": "0.5025977641828012",
+      "tilt_deg": "0.762264408475415",
+      "landed": "False",
+      "motor_max": "0.7356001138687134",
+      "valid": "True"
+    },
+    "desired_force_last_second_mean_N": [
+      3.1635687351226807,
+      0.09114401042461395,
+      -52.28355407714844
+    ],
+    "effective_mass_at_exit": 5.399769306182861,
+    "seconds_since_last_mass_update": 7.936,
+    "true_displacement_m": [
+      -0.4389188289420733,
+      -0.5564114046904364,
+      -1.4230447173118592
+    ],
+    "actual_rotor_speed_mean_rad_s": [
+      363.151529889528,
+      363.32154106926714,
+      364.77515700574395,
+      364.82437777349185,
+      749.7030429946842
+    ],
+    "measured_thrust_up_mean_N": 52.31645450480262,
+    "esc_command_echo_mean_NOT_measured_rpm": [
+      362.6608187134503,
+      362.6608187134503,
+      364.36842105263156,
+      364.36842105263156,
+      747.7485380116959
+    ],
+    "recovery_wall_s": 6.268088460012223
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011",
+    "result": {
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "ready_at_wall_s": 9.336708738002926,
+      "startup_only": false,
+      "attitude_reference": "level",
+      "phase": "LAND",
+      "samples": 11862,
+      "evaluation_samples": 1866,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 3007,
+      "mass_estimate_kg": 5.392455081865955,
+      "mass_accepted": true,
+      "mass_reason": "accepted",
+      "group": "B",
+      "noise": "noisy_delayed",
+      "mass_accepted_at_px4_s": 42.756,
+      "last_px4_timestamp_s": 68.50399999999999,
+      "last_joint_timestamp_s": 68.7,
+      "position_rmse_m": 0.27060729070124745,
+      "max_position_error_m": 0.5015291540086472
+    },
+    "last_reference": {
+      "t": "47.46000000000001",
+      "px4_time_s": "62.199999999999996",
+      "phase": "EVALUATION",
+      "x": "0.46368175745010376",
+      "y": "0.13670264184474945",
+      "z_up": "1.2067970633506775",
+      "x_ref": "-0.0050415764562785625",
+      "y_ref": "-0.033640459179878235",
+      "z_ref": "1.1537578655284169",
+      "vz_up": "-0.14693424105644226",
+      "vz_ref": "-0.033047869462789654",
+      "az_ref": "0.5379115142572883",
+      "error": "0.5015291540086472",
+      "tilt_deg": "1.4997336753243333",
+      "landed": "False",
+      "motor_max": "0.769669234752655",
+      "valid": "True"
+    },
+    "desired_force_last_second_mean_N": [
+      -4.263158798217773,
+      1.6777933835983276,
+      -53.4497184753418
+    ],
+    "effective_mass_at_exit": 5.392455101013184,
+    "seconds_since_last_mass_update": 9.415999999999997,
+    "true_displacement_m": [
+      0.18880282850681104,
+      0.6247717761346471,
+      -1.3496354579925538
+    ],
+    "actual_rotor_speed_mean_rad_s": [
+      368.2523151025842,
+      367.75287897487846,
+      369.6198565492348,
+      369.5756351561108,
+      753.9801155968687
+    ],
+    "measured_thrust_up_mean_N": 53.53689464231044,
+    "esc_command_echo_mean_NOT_measured_rpm": [
+      367.78306878306876,
+      367.78306878306876,
+      369.46031746031747,
+      369.46031746031747,
+      754.1851851851852
+    ],
+    "recovery_wall_s": 6.30575729899283
+  },
+  {
+    "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318",
+    "result": {
+      "status": "FAIL",
+      "failure": "motor_command_without_rotor_response",
+      "ready_at_wall_s": 9.63385497800482,
+      "startup_only": false,
+      "attitude_reference": "level",
+      "phase": "LAND",
+      "samples": 167,
+      "evaluation_samples": 0,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 622,
+      "mass_estimate_kg": 4.5,
+      "mass_accepted": false,
+      "mass_reason": "insufficient_windows",
+      "group": "B",
+      "noise": "noisy_delayed",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 23.747999999999998,
+      "last_joint_timestamp_s": 23.768,
+      "position_rmse_m": null,
+      "max_position_error_m": null
+    },
+    "last_reference": {
+      "t": "0.6639999999999979",
+      "px4_time_s": "19.648",
+      "phase": "TAKEOFF",
+      "x": "-0.011672108434140682",
+      "y": "-0.011088840663433075",
+      "z_up": "0.010472893714904785",
+      "x_ref": "-0.003686516545712948",
+      "y_ref": "-0.00047082113451324403",
+      "z_ref": "0.0034368229802443757",
+      "vz_up": "0.0005139608401805162",
+      "vz_ref": "0.01498726725709815",
+      "az_ref": "0.0419317313126399",
+      "error": "0.015033905278010448",
+      "tilt_deg": "0.03161159211225764",
+      "landed": "False",
+      "motor_max": "0.6838988065719604",
+      "valid": "True"
+    },
+    "desired_force_last_second_mean_N": [
+      0.0,
+      0.0,
+      -44.12999725341797
+    ],
+    "effective_mass_at_exit": 4.5,
+    "seconds_since_last_mass_update": null,
+    "true_displacement_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "actual_rotor_speed_mean_rad_s": [
+      0.03750431950321868,
+      0.22612122833408285,
+      -0.23427884022444906,
+      -0.09617688797487808,
+      0.14650169849774583
+    ],
+    "measured_thrust_up_mean_N": 4.055760147541575e-05,
+    "esc_command_echo_mean_NOT_measured_rpm": [
+      221.7287234042553,
+      221.7287234042553,
+      221.72340425531914,
+      221.72340425531914,
+      454.468085106383
+    ],
+    "recovery_wall_s": 4.099979680002434
+  }
+]

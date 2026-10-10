@@ -1,0 +1,2825 @@
+{
+  "preservation": {
+    "user_dirty_files": {
+      "README.md": true,
+      "config/hnuter_drcda_hardware_tuning.json": true,
+      "docs/iebc_hardware.md": true,
+      "hnuter_external_controller_px4_position_iebc_hardware.py": true,
+      "hnuter_external_controller_px4_position_iebc_simulation.py": true,
+      "hnuter_external_direct_drcda_hardware.py": true,
+      "tests/test_hnuter_external_controller_px4_position_iebc_hardware.py": true,
+      "tests/test_hnuter_external_controller_px4_position_iebc_simulation.py": true,
+      "tests/test_hnuter_external_direct_drcda_hardware.py": true
+    },
+    "position_entry": true,
+    "original_model": true
+  },
+  "frozen_files_unchanged": {
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4": true,
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/src/modules/mc_rate_control/HnuterControl.cpp": true,
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/src/modules/mc_rate_control/HnuterControl.hpp": true,
+    "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/msg/HnuterControlStatus.msg": true,
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/run_sitl.py": true,
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/sitl_position_probe.py": true,
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/actuator_sensors.py": true,
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/estimator.py": true,
+    "/home/hnuter/px4_ws_ros2/JEPA/revision2/model_audit.py": true,
+    "/home/hnuter/px4_ws_ros2/hnuter_external_controller_px4_position.py": true
+  },
+  "identity": {
+    "runs": 50,
+    "binaries": [
+      "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    ],
+    "online_sources": {
+      "run_sitl.py": [
+        "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6"
+      ],
+      "sitl_position_probe.py": [
+        "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d"
+      ],
+      "actuator_sensors.py": [
+        "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08"
+      ],
+      "estimator.py": [
+        "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4"
+      ]
+    },
+    "identical_gains": true
+  },
+  "total_launches": 78,
+  "launches": [
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_0_B_s4_20261010_185127",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "ablation_0_B_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_1_C_s4_20261010_185127",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "ablation_1_C_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_ablation_2_C_shadow_s3_20261010_185127",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "ablation_2_C_shadow_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_0_A_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_0_A_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_10_A_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_10_A_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_11_B_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_11_B_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527",
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_12_C_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_12_C_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_13_D_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_13_D_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_14_C_shadow_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_14_C_shadow_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_15_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_15_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_16_B_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_16_B_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_17_C_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_17_C_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_18_D_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_18_D_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_19_C_shadow_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_19_C_shadow_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011",
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_1_B_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_1_B_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_20_A_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_20_A_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_21_B_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_21_B_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_22_C_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457",
+      "status": "FAIL",
+      "failure": "attitude_or_horizontal_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_22_C_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_23_D_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_23_D_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_24_C_shadow_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_24_C_shadow_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_2_C_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_2_C_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_3_D_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_3_D_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_4_C_shadow_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_4_C_shadow_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_5_A_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_5_A_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318",
+      "status": "FAIL",
+      "failure": "motor_command_without_rotor_response",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_6_B_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_6_B_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_7_C_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649",
+      "status": "FAIL",
+      "failure": "attitude_or_horizontal_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_7_C_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_8_D_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_8_D_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 2,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_9_C_shadow_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_9_C_shadow_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_negative_missing_telemetry_20261010_185352",
+      "status": "FAIL",
+      "failure": "prearm_stream_readiness_timeout",
+      "cleanup": true,
+      "experiment": {
+        "label": "negative_missing_telemetry",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": true,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_0_A_s3_20261010_185532",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_0_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_10_A_s3_20261010_185651",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_10_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_11_A_s2_20261010_185651",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_11_A_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_1_A_s1_20261010_185532",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_1_A_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_2_A_s3_20261010_185532",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_2_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_3_A_s2_20261010_185558",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_3_A_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_4_A_s3_20261010_185558",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_4_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_5_A_s1_20261010_185559",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_5_A_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_6_A_s3_20261010_185625",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_6_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_7_A_s2_20261010_185625",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_7_A_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_8_A_s3_20261010_185625",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_8_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_9_A_s1_20261010_185651",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_9_A_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_readiness_shared_s3_20261010_184511",
+      "status": "READY_UNARMED",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "readiness_shared_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_0_A_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 7.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_0_A_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 7.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_1_C_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 36.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_1_C_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 36.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_0_A_s3_20261010_184600",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_0_A_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_1_B_s1_20261010_184600",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_1_B_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_2_C_s3_20261010_184600",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_2_C_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_3_D_s2_20261010_184736",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_3_D_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_4_B_s4_20261010_184736",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_4_B_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_5_C_s4_20261010_184736",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_5_C_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_targeted_6_C_shadow_s3_20261010_184911",
+      "status": "PASS",
+      "failure": null,
+      "cleanup": true,
+      "experiment": {
+        "label": "targeted_6_C_shadow_s3",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C_shadow",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    }
+  ],
+  "all_failures_including_injected": [
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527",
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_12_C_s2",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 2,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011",
+      "status": "FAIL",
+      "failure": "tracking_velocity_or_contact_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_1_B_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457",
+      "status": "FAIL",
+      "failure": "attitude_or_horizontal_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_22_C_s4",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 4,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318",
+      "status": "FAIL",
+      "failure": "motor_command_without_rotor_response",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_6_B_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649",
+      "status": "FAIL",
+      "failure": "attitude_or_horizontal_limit",
+      "cleanup": true,
+      "experiment": {
+        "label": "matrix_7_C_s1",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 1,
+        "instance": 1,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_negative_missing_telemetry_20261010_185352",
+      "status": "FAIL",
+      "failure": "prearm_stream_readiness_timeout",
+      "cleanup": true,
+      "experiment": {
+        "label": "negative_missing_telemetry",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 3,
+        "instance": 2,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": true,
+        "omit_joint_telemetry": true,
+        "inject_exit_at": 0.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185352",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_0_A_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 7.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_0_A_s0_20261010_185832",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_0_A_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 7.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185352",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_1_C_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 36.0
+      },
+      "binary_sha256": "c0343c17bb32500d34f909225e0997f31eff400b37928ccae6aba0db33fdeaa7"
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_recovery_1_C_s0_20261010_185832",
+      "status": "FAIL",
+      "failure": "injected_recovery_test",
+      "cleanup": true,
+      "experiment": {
+        "label": "recovery_1_C_s0",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "noisy_delayed",
+        "seed": 0,
+        "instance": 1,
+        "attitude_reference": "level",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 36.0
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad"
+    }
+  ],
+  "sensor_timestamp_checks": [
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011",
+      "n": 3688,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338",
+      "n": 3680,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441",
+      "n": 3676,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833",
+      "n": 3776,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.023999999999999133,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454",
+      "n": 3807,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824",
+      "n": 3686,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527",
+      "n": 2930,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959",
+      "n": 3684,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617",
+      "n": 3676,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009",
+      "n": 3673,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632",
+      "n": 3684,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000",
+      "n": 3693,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648",
+      "n": 3737,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135",
+      "n": 3676,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752",
+      "n": 3680,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144",
+      "n": 3790,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808",
+      "n": 3678,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135",
+      "n": 3687,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825",
+      "n": 3675,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310",
+      "n": 3685,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928",
+      "n": 3687,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322",
+      "n": 3683,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011",
+      "n": 3007,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338",
+      "n": 3677,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944",
+      "n": 3670,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311",
+      "n": 3693,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001",
+      "n": 3689,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446",
+      "n": 3689,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104",
+      "n": 3679,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457",
+      "n": 1728,
+      "min_age": -7.105427357601002e-15,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119",
+      "n": 3750,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446",
+      "n": 3696,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136",
+      "n": 3689,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621",
+      "n": 3687,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011",
+      "n": 3682,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338",
+      "n": 3684,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143",
+      "n": 3672,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514",
+      "n": 3672,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129",
+      "n": 3681,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513",
+      "n": 3690,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143",
+      "n": 3687,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514",
+      "n": 3688,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318",
+      "n": 622,
+      "min_age": -3.552713678800501e-15,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649",
+      "n": 3684,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305",
+      "n": 3696,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649",
+      "n": 2647,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318",
+      "n": 3688,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649",
+      "n": 3677,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352",
+      "n": 3670,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.0,
+      "future_count": 0,
+      "stale_count": 0
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824",
+      "n": 3820,
+      "min_age": -1.4210854715202004e-14,
+      "max_age": 0.019999999999999574,
+      "future_count": 0,
+      "stale_count": 0
+    }
+  ],
+  "prearm": [
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_190011",
+      "ready_at": 9.343367294000927,
+      "first_ready": 6.243441546001122,
+      "last_ready": 9.343367294000927,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_0_A_s0_20261010_191338",
+      "ready_at": 8.428693904992542,
+      "first_ready": 5.428536969993729,
+      "last_ready": 8.428693904992542,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_190441",
+      "ready_at": 8.717962681010249,
+      "first_ready": 5.7171386120026,
+      "last_ready": 8.717962681010249,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_10_A_s2_20261010_191833",
+      "ready_at": 8.736894734000089,
+      "first_ready": 5.636927436993574,
+      "last_ready": 8.736894734000089,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_190454",
+      "ready_at": 10.938860697002383,
+      "first_ready": 7.838861979995272,
+      "last_ready": 10.938860697002383,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_11_B_s2_20261010_191824",
+      "ready_at": 8.63006133599265,
+      "first_ready": 5.530020138990949,
+      "last_ready": 8.63006133599265,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_190527",
+      "ready_at": 8.432345858003828,
+      "first_ready": 5.43223568200483,
+      "last_ready": 8.432345858003828,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_12_C_s2_20261010_191959",
+      "ready_at": 8.618720575002953,
+      "first_ready": 5.618704214997706,
+      "last_ready": 8.618720575002953,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_190617",
+      "ready_at": 8.727552866999758,
+      "first_ready": 5.727509806994931,
+      "last_ready": 8.727552866999758,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_13_D_s2_20261010_192009",
+      "ready_at": 8.43472690800263,
+      "first_ready": 5.43472654899233,
+      "last_ready": 8.43472690800263,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_190632",
+      "ready_at": 8.626807185006328,
+      "first_ready": 5.52693623000232,
+      "last_ready": 8.626807185006328,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_14_C_shadow_s2_20261010_192000",
+      "ready_at": 8.615111289997003,
+      "first_ready": 5.515122703000088,
+      "last_ready": 8.615111289997003,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_190648",
+      "ready_at": 9.935476601007394,
+      "first_ready": 6.835886699002003,
+      "last_ready": 9.935476601007394,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_15_A_s3_20261010_192135",
+      "ready_at": 8.628330385996378,
+      "first_ready": 5.628019530005986,
+      "last_ready": 8.628330385996378,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_190752",
+      "ready_at": 8.722628774004988,
+      "first_ready": 5.7225406789948465,
+      "last_ready": 8.722628774004988,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_16_B_s3_20261010_192144",
+      "ready_at": 10.829136825996102,
+      "first_ready": 7.82906556299713,
+      "last_ready": 10.829136825996102,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_190808",
+      "ready_at": 8.723292870010482,
+      "first_ready": 5.723262154002441,
+      "last_ready": 8.723292870010482,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_17_C_s3_20261010_192135",
+      "ready_at": 8.623516411011224,
+      "first_ready": 5.5236993090074975,
+      "last_ready": 8.623516411011224,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_190825",
+      "ready_at": 8.630289818000165,
+      "first_ready": 5.630263781000394,
+      "last_ready": 8.630289818000165,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_18_D_s3_20261010_192310",
+      "ready_at": 8.81419443699997,
+      "first_ready": 5.714415476002614,
+      "last_ready": 8.81419443699997,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_190928",
+      "ready_at": 8.723041806995752,
+      "first_ready": 5.722346252005082,
+      "last_ready": 8.723041806995752,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_19_C_shadow_s3_20261010_192322",
+      "ready_at": 8.464048872003332,
+      "first_ready": 5.46219163799833,
+      "last_ready": 8.464048872003332,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_190011",
+      "ready_at": 9.336708738002926,
+      "first_ready": 6.336638075998053,
+      "last_ready": 9.336708738002926,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_1_B_s0_20261010_191338",
+      "ready_at": 9.327656619003392,
+      "first_ready": 6.3276449690019945,
+      "last_ready": 9.327656619003392,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_190944",
+      "ready_at": 8.62557774799643,
+      "first_ready": 5.625532363992534,
+      "last_ready": 8.62557774799643,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_20_A_s4_20261010_192311",
+      "ready_at": 9.614068766997661,
+      "first_ready": 6.515039935999084,
+      "last_ready": 9.614068766997661,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_191001",
+      "ready_at": 8.532612434995826,
+      "first_ready": 5.532517005995032,
+      "last_ready": 8.532612434995826,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_21_B_s4_20261010_192446",
+      "ready_at": 8.715131178993033,
+      "first_ready": 5.6151702139904955,
+      "last_ready": 8.715131178993033,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_191104",
+      "ready_at": 8.624903149990132,
+      "first_ready": 5.6248803380003665,
+      "last_ready": 8.624903149990132,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_22_C_s4_20261010_192457",
+      "ready_at": 8.538915219003684,
+      "first_ready": 5.538887428003363,
+      "last_ready": 8.538915219003684,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_191119",
+      "ready_at": 10.124115591999725,
+      "first_ready": 7.024471957993228,
+      "last_ready": 10.124115591999725,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_23_D_s4_20261010_192446",
+      "ready_at": 8.50802443199791,
+      "first_ready": 5.508024092996493,
+      "last_ready": 8.50802443199791,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_191136",
+      "ready_at": 8.72922336999909,
+      "first_ready": 5.629262495000148,
+      "last_ready": 8.72922336999909,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_24_C_shadow_s4_20261010_192621",
+      "ready_at": 9.51092820901249,
+      "first_ready": 6.411098543001572,
+      "last_ready": 9.51092820901249,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_190011",
+      "ready_at": 9.333042226004181,
+      "first_ready": 6.233108924003318,
+      "last_ready": 9.333042226004181,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_2_C_s0_20261010_191338",
+      "ready_at": 9.328744889004156,
+      "first_ready": 6.328670741000678,
+      "last_ready": 9.328744889004156,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_190143",
+      "ready_at": 8.429411524004536,
+      "first_ready": 5.42939748900244,
+      "last_ready": 8.429411524004536,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_3_D_s0_20261010_191514",
+      "ready_at": 9.232185782006127,
+      "first_ready": 6.232046671997523,
+      "last_ready": 9.232185782006127,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_190129",
+      "ready_at": 8.716321894011344,
+      "first_ready": 5.716291098011425,
+      "last_ready": 8.716321894011344,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_4_C_shadow_s0_20261010_191513",
+      "ready_at": 8.523925626999699,
+      "first_ready": 5.423904490002315,
+      "last_ready": 8.523925626999699,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_190143",
+      "ready_at": 9.428839288986637,
+      "first_ready": 6.329025412996998,
+      "last_ready": 9.428839288986637,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_5_A_s1_20261010_191514",
+      "ready_at": 9.331005187996197,
+      "first_ready": 6.231005540990736,
+      "last_ready": 9.331005187996197,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_190318",
+      "ready_at": 9.63385497800482,
+      "first_ready": 6.633841353992466,
+      "last_ready": 9.63385497800482,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_6_B_s1_20261010_191649",
+      "ready_at": 9.427010257000802,
+      "first_ready": 6.326920136998524,
+      "last_ready": 9.427010257000802,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_190305",
+      "ready_at": 8.91001412300102,
+      "first_ready": 5.81006311699457,
+      "last_ready": 8.91001412300102,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_7_C_s1_20261010_191649",
+      "ready_at": 8.528046740000718,
+      "first_ready": 5.528041543002473,
+      "last_ready": 8.528046740000718,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_190318",
+      "ready_at": 8.535010656007216,
+      "first_ready": 5.435096329005319,
+      "last_ready": 8.535010656007216,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_8_D_s1_20261010_191649",
+      "ready_at": 8.52718758500123,
+      "first_ready": 5.4270357380009955,
+      "last_ready": 8.52718758500123,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_190352",
+      "ready_at": 8.628566515995772,
+      "first_ready": 5.628561047997209,
+      "last_ready": 8.628566515995772,
+      "ever_armed": true
+    },
+    {
+      "run": "/home/hnuter/px4_ws_ros2/JEPA/revision2/runs/sitl_matrix_9_C_shadow_s1_20261010_191824",
+      "ready_at": 9.426055058007478,
+      "first_ready": 6.42589536801097,
+      "last_ready": 9.426055058007478,
+      "ever_armed": true
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+[
+  {
+    "case": "sitl_noisy_C_shadow_s3_20261010_173019",
+    "fallback_difference_median_deg": 0.09691327810287476,
+    "fallback_difference_max_deg": 0.5828248262405396,
+    "desired_tilt_max_deg": 17.45761489868164,
+    "expected_force_up_mean_N": 83.93497467041016,
+    "sensor_force_up_mean_N": 0.00014658782179351935,
+    "sensor_rotor_omega_mean": [
+      0.143653952120879,
+      0.21534084775989817,
+      0.05654421688532044,
+      0.1149421873014631,
+      0.19131044541731343
+    ],
+    "vehicle_land_detected": {
+      "landed": 0.0,
+      "ground_contact": 0.0,
+      "maybe_landed": 0.0
+    },
+    "actuator_motors": {
+      "control[0]": 0.46811264753341675,
+      "control[1]": 0.46811264753341675,
+      "control[2]": 0.48413074016571045,
+      "control[3]": 0.48413074016571045,
+      "control[4]": 0.6020380258560181
+    }
+  },
+  {
+    "case": "sitl_noisy_C_s4_20261010_173110",
+    "fallback_difference_median_deg": 0.7219228744506836,
+    "fallback_difference_max_deg": 27.431859970092773,
+    "desired_tilt_max_deg": 33.96063995361328,
+    "expected_force_up_mean_N": 52.2869987487793,
+    "sensor_force_up_mean_N": 52.45956622562415,
+    "sensor_rotor_omega_mean": [
+      364.41283339048954,
+      364.4433682280854,
+      367.9567561287198,
+      368.0703160489786,
+      729.7920406364212
+    ],
+    "vehicle_land_detected": {
+      "landed": 0.0,
+      "ground_contact": 0.0,
+      "maybe_landed": 0.0
+    },
+    "actuator_motors": {
+      "control[0]": 0.3580540418624878,
+      "control[1]": 0.3580540418624878,
+      "control[2]": 0.3614342510700226,
+      "control[3]": 0.3614342510700226,
+      "control[4]": 0.7317605018615723
+    }
+  },
+  {
+    "case": "sitl_noisy_B_s4_20261010_173202",
+    "fallback_difference_median_deg": 1.6197509765625,
+    "fallback_difference_max_deg": 16.422138214111328,
+    "desired_tilt_max_deg": 45.000003814697266,
+    "expected_force_up_mean_N": 52.759124755859375,
+    "sensor_force_up_mean_N": 52.87987463032515,
+    "sensor_rotor_omega_mean": [
+      365.24277000752863,
+      365.3210586208092,
+      367.3712659905783,
+      367.53294679972146,
+      750.1947381295049
+    ],
+    "vehicle_land_detected": {
+      "landed": 0.0,
+      "ground_contact": 0.0,
+      "maybe_landed": 0.0
+    },
+    "actuator_motors": {
+      "control[0]": 0.3591902554035187,
+      "control[1]": 0.3591902554035187,
+      "control[2]": 0.3606386184692383,
+      "control[3]": 0.3606386184692383,
+      "control[4]": 0.7500231266021729
+    }
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "run": "sitl_recovery_1_C_s0_20261010_185832",
+    "landed_disarmed": true,
+    "recovery_wall_s": 6.172673099004896,
+    "mass_updates_after_exit": 1,
+    "last_update_after_exit_s": 0.0,
+    "mass_at_exit": 4.777245998382568,
+    "max_mass_after_exit": 4.778446197509766
+  },
+  {
+    "run": "sitl_recovery_0_A_s0_20261010_185832",
+    "landed_disarmed": true,
+    "recovery_wall_s": 5.469321046010009,
+    "mass_updates_after_exit": 0,
+    "last_update_after_exit_s": null,
+    "mass_at_exit": 4.5,
+    "max_mass_after_exit": 4.5
+  }
+]
