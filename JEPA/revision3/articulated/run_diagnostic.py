@@ -42,7 +42,13 @@ def main():
     p.add_argument('--inject-exit-at',type=float,default=0.)
     p.add_argument('--source-model',type=Path)
     p.add_argument('--physics-step',type=float,default=.004)
+    p.add_argument('--spatial-case',choices=['offset_y','symmetric_inertia'])
+    p.add_argument('--shadow-only',action='store_true')
     args=p.parse_args()
+    assert not args.shadow_only or (args.spatial_case and args.group in ('B','C')), 'shadow-only is restricted to spatial B/C'
+    if args.spatial_case and args.group in ('B','C') and not args.shadow_only:
+        gate=json.loads((ROOT/'results/consumer_gate.json').read_text())
+        assert gate.get('oracle_consumer_pass'), 'Oracle consumer gate must pass before estimator groups'
     # No reuse or attach to an existing instance. PX4 itself enforces its lock.
     if not 0<=args.instance<=4:p.error('instance must be 0..4')
     port=28888+args.instance
@@ -63,6 +69,7 @@ def main():
         source=PX4/'Tools/simulation/gz/models/hnuter/model.sdf'
         if args.loaded:source=ROOT.parents[1]/'generated/native_noise/hnuter_mass_cal_payload/model.sdf'
         if args.source_model:source=args.source_model.resolve()
+        if args.spatial_case:source=ROOT.parent/'generated'/args.spatial_case/'model.sdf'
         tree=ET.parse(source);model=tree.getroot().find('model')
         if args.noise in ('zero','low_noise'):
             for noise in model.findall('.//sensor//noise'):
@@ -70,6 +77,9 @@ def main():
                     if child.tag in ('mean','stddev','bias_mean','bias_stddev','dynamic_bias_stddev'):
                         # Exact-zero gyro/accel/baro/mag trip unchanged-value validators.
                         child.text=str(float(child.text)*.01) if args.noise=='low_noise' and child.tag=='stddev' else '0'
+        if args.spatial_case:
+            imu_rate=float(model.find("link/sensor[@type='imu']/update_rate").text)
+            assert abs(imu_rate*args.physics_step-1.)<1e-9, 'IMU must sample every physics step'
         model_name='hnuter_jepa';model.set('name',model_name)
         for uri in model.findall('.//mesh/uri'):
             if not uri.text.startswith(('/', 'model://', 'file://')):
@@ -116,8 +126,18 @@ def main():
     env['JEPA_STARTUP_ONLY']=str(int(args.startup_only))
     env['JEPA_INJECT_EXIT_AT']=str(args.inject_exit_at)
     env['JEPA_SMOOTH_TAKEOFF']='1' if args.smooth_takeoff else '0'
+    env['JEPA_SHADOW_ONLY']=str(int(args.shadow_only))
     env['JEPA_GROUP']=args.group;env['JEPA_NOISE']=args.noise;env['JEPA_SEED']=str(args.seed)
     if args.group=='D':env['PX4_PARAM_HNTR_MASS']='5.39999998' if args.loaded else '4.49999998'
+    if args.spatial_case:
+        assert args.physics_step==.004, '250 Hz IMU requires matched 4 ms physics for discrete estimator'
+        env['PX4_PARAM_HNTR_MASS']='5.4'
+        if args.group=='D':
+            import numpy as np
+            truth=json.loads((ROOT.parent/'generated/truth_for_evaluation_only.json').read_text())
+            case=truth[args.spatial_case];nom=truth['nominal']
+            request=dict(delta_com=(np.array(case['c'])-nom['c']).tolist(),delta_inertia=(np.diag(case['j'])-np.diag(nom['j'])).tolist())
+            (out/'oracle_request.json').write_text(json.dumps(request,indent=2)+'\n')
     startup=rootfs/'etc/init.d-posix/px4-rc.gzsim'
     startup.write_text(startup.read_text().replace('--verbose=${GZ_VERBOSE:=1} -r -s',f'--seed {args.seed} --verbose=${{GZ_VERBOSE:=1}} -r -s'))
     if args.speed!=1.:env['PX4_SIM_SPEED_FACTOR']=str(args.speed)
@@ -133,6 +153,11 @@ def main():
                       pids={n:x.pid for n,x in procs.items()},commands=commands,source_head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=PX4,text=True).strip())
         manifest.update(experiment={k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()},binary_sha256=hashlib.sha256((BUILD/'bin/px4').read_bytes()).hexdigest())
         manifest['controller_sources_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in REV2.glob('*.py')}
+        snapshot=out/'source_snapshot';snapshot.mkdir()
+        for file in [*ROOT.glob('*.py'),ROOT/'nominal_calibration.json']:
+            shutil.copy2(file,snapshot/file.name)
+        manifest['px4_consumer_sources_sha256']={str(p.relative_to(PX4)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [PX4/'src/modules/mc_rate_control/HnuterControl.cpp',PX4/'src/modules/mc_rate_control/HnuterControl.hpp',PX4/'msg/HnuterControlStatus.msg']}
+        manifest['revision3_sources_sha256']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in snapshot.iterdir()}
         manifest['truth_recorder_sha256']=hashlib.sha256((ROOT/'build/libJepaTruthRecorder.so').read_bytes()).hexdigest()
         (out/'launch.json').write_text(json.dumps(manifest,indent=2)+'\n')
         (ROOT/'latest_sitl_run.txt').write_text(str(out)+'\n')
@@ -146,7 +171,8 @@ def main():
         px.stdin.write('ver all\nparam show HNTR_*\nparam show CA_AIRFRAME\nparam show UXRCE_DDS_*\n');px.stdin.flush()
         sensor=launch('sensors',['python3',str(ROOT/'record_sensors.py')],out)
         time.sleep(3)
-        cmd=['bash','-c',f'source /opt/ros/jazzy/setup.bash\nsource {REV2.parent.parent}/install/setup.bash\nexec python3 {REV2}/sitl_position_probe.py']
+        probe=ROOT/'spatial_probe.py' if args.spatial_case else REV2/'sitl_position_probe.py'
+        cmd=['bash','-c',f'source /opt/ros/jazzy/setup.bash\nsource {REV2.parent.parent}/install/setup.bash\nexec python3 {probe}']
         node=launch('controller',cmd,out)
         manifest['commands']=commands;manifest['pids']={n:x.pid for n,x in procs.items()}
         (out/'launch.json').write_text(json.dumps(manifest,indent=2)+'\n')

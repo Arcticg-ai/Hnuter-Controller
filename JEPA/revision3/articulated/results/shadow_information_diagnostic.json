@@ -1,0 +1,78 @@
+{
+  "B": {
+    "replay_matches_online_rank_and_reason": true,
+    "rank": 5,
+    "window_count": 40,
+    "individual_window_rejections": 0,
+    "unused_tail_s": 0.0,
+    "training_column_norms": [
+      46.21648957254063,
+      46.09816329373149,
+      5.860466632970538,
+      1.1190900807877344,
+      2.352355079591695,
+      5.971973730385553,
+      6.314638442501756,
+      2.605760601398746
+    ],
+    "supported_projector_diagonal": [
+      0.9999872945289997,
+      0.9999998689882997,
+      0.9998521857454129,
+      6.168557074254127e-05,
+      0.010260399415298006,
+      0.9859538639388697,
+      0.9897898327600392,
+      0.014094869052335056
+    ],
+    "measured_rate_rms_rad_s": [
+      0.06968537211468023,
+      0.024360514670733524,
+      0.03637460545181012
+    ],
+    "training_endpoint_world_rate_change_rms_rad_s": [
+      0.021439406022967063,
+      0.10582973333980271,
+      0.044045405992208395
+    ],
+    "note": "Data-only information, prior excluded; endpoint changes determine inertia information in integral windows."
+  },
+  "C": {
+    "replay_matches_online_rank_and_reason": true,
+    "rank": 2,
+    "window_count": 39,
+    "individual_window_rejections": 0,
+    "unused_tail_s": 0.3960000000000008,
+    "training_column_norms": [
+      45.02201990557217,
+      44.997207571343345,
+      2.2338092200968207,
+      1.4528981886963215,
+      1.7686428791868232,
+      2.6647526087674795,
+      2.8443696049070484,
+      2.2764335629393475
+    ],
+    "supported_projector_diagonal": [
+      0.9999619808045731,
+      0.9999594379902838,
+      1.64045560863445e-05,
+      2.042274863593674e-05,
+      1.667089629802902e-07,
+      3.985180913692621e-05,
+      7.949741547365087e-07,
+      9.404081666141102e-07
+    ],
+    "measured_rate_rms_rad_s": [
+      0.04729843947401876,
+      0.04230267227762705,
+      0.03095525040677164
+    ],
+    "training_endpoint_world_rate_change_rms_rad_s": [
+      0.027258833660276715,
+      0.04284610648483777,
+      0.03250565144302966
+    ],
+    "note": "Data-only information, prior excluded; endpoint changes determine inertia information in integral windows."
+  }
+}

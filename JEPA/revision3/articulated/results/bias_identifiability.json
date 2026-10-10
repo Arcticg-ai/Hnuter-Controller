@@ -1,0 +1,33 @@
+{
+  "unknowns": [
+    "hx",
+    "hy",
+    "JOxx",
+    "JOyy",
+    "JOzz",
+    "JOxy",
+    "JOxz",
+    "JOyz",
+    "bias_x",
+    "bias_y",
+    "bias_z"
+  ],
+  "scaled_singular_values": [
+    72.87292597521595,
+    71.41831914288431,
+    18.08064097839105,
+    16.90481486632819,
+    15.418141469586402,
+    9.954724983665512,
+    7.583695419128761,
+    6.844206807889772,
+    6.084675907900355,
+    0.19258817396145425,
+    0.0679255951299734
+  ],
+  "retained_rank": 9,
+  "dimension": 11,
+  "hover_hxy_and_bias_rank": 3,
+  "hover_hxy_and_bias_dimension": 5,
+  "conclusion": "Unknown constant body torque is not independently identifiable with all spatial parameters in this recording. Default estimator rejects absent independent torque-bias bound."
+}

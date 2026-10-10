@@ -1,0 +1,25 @@
+{
+  "checkpoint": "bounded_closure",
+  "attempts": 8,
+  "landed_disarmed": 8,
+  "safety_exits": 0,
+  "process_exit_recorded": 8,
+  "consumer_flights": 5,
+  "shadow_estimate_acceptances": 0,
+  "shadow_attempts": 2,
+  "unknown_estimate_actuation_count": 0,
+  "controller_gains_matched": true,
+  "spatial_source_no_truth_imports": true,
+  "interface_transition_checks_pass": true,
+  "overall_tracking_benefit_pass": false,
+  "original_two_payload_four_group_matrix_completed": false,
+  "tests": {
+    "spatial_physics": 3,
+    "consumer_calibration_transition": 6,
+    "phase1_mass_regression": 10,
+    "revision2_mass_regression": 10
+  },
+  "unit_test_evidence": "results/test_consumer.log, prior test_spatial tool result, regression_phase1.log, regression_revision2.log",
+  "evidence_files": 194,
+  "evidence_size_bytes": 2099565116
+}

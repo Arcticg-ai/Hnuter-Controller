@@ -1,0 +1,96 @@
+{
+  "new_sitl_attempts": 8,
+  "completed_flights": 8,
+  "dynamics_diagnostics": 3,
+  "consumer_and_shadow_attempts": 5,
+  "original_comparison_matrix_completed": false,
+  "reason_matrix_not_expanded": "Oracle overall position-tracking benefit not demonstrated; B/C are shadow only and the second payload matrix is gated.",
+  "model_closure_pass_4ms": true,
+  "known_parameter_consumer_exercised": true,
+  "consumer_gate": {
+    "oracle_consumer_pass": false,
+    "interface_transition_and_freeze_pass": true,
+    "overall_tracking_benefit_verified": false,
+    "reason": "Oracle attitude improved but position tracking benefit was not demonstrated; estimated compensation remains disabled.",
+    "baseline_position_rmse_m": 0.03645388409353104,
+    "oracle_position_rmse_m": 0.05458563500368027,
+    "oracle_transition_bias_at_evaluation": 0.0,
+    "first_D_preserved": "sitl_offset_D_20261010_213142",
+    "recheck": "sitl_offset_D_transition_recheck_20261010_213745"
+  },
+  "shadow": {
+    "B": {
+      "accepted": false,
+      "theta": [
+        -0.5665525567908773,
+        -0.005921416679574448,
+        0.24572578001144899,
+        0.18708762895483888,
+        0.3858925136500688,
+        0.011948894151695469,
+        0.0002449584183930628,
+        7.650997106586923e-05
+      ],
+      "train_windows": 20,
+      "holdout_windows": 20,
+      "rank": 5,
+      "singular_values": [
+        46.219372225058784,
+        46.09754227626675,
+        6.4705866217006625,
+        6.004151256941579,
+        5.705142881821896,
+        2.614896795092582,
+        2.196462507583884,
+        1.0591536354438822
+      ],
+      "reason": "incomplete_spatial_information",
+      "input_interval": [
+        35.616,
+        51.616
+      ],
+      "sensor_only": true,
+      "application_disabled": true,
+      "decision_phase_elapsed_s": 42.064
+    },
+    "C": {
+      "accepted": false,
+      "theta": [
+        -0.5665525567908773,
+        -0.005921416679574448,
+        0.24572578001144899,
+        0.18708762895483888,
+        0.3858925136500688,
+        0.011948894151695469,
+        0.0002449584183930628,
+        7.650997106586923e-05
+      ],
+      "train_windows": 19,
+      "holdout_windows": 20,
+      "rank": 2,
+      "singular_values": [
+        45.02340107956794,
+        44.99759125452635,
+        3.0975158663138083,
+        2.6384153589638477,
+        2.329620894297414,
+        2.088940384265748,
+        1.6570331208678264,
+        1.162371221800031
+      ],
+      "reason": "incomplete_spatial_information",
+      "input_interval": [
+        35.688,
+        51.684
+      ],
+      "sensor_only": true,
+      "application_disabled": true,
+      "decision_phase_elapsed_s": 41.85999999999999
+    }
+  },
+  "unknown_torque_bias_identifiable": false,
+  "augmented_information_rank": 9,
+  "augmented_dimension": 11,
+  "no_hardware": true,
+  "no_neural_training": true
+}

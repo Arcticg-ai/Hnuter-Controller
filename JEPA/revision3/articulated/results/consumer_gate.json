@@ -1,0 +1,11 @@
+{
+  "oracle_consumer_pass": false,
+  "interface_transition_and_freeze_pass": true,
+  "overall_tracking_benefit_verified": false,
+  "reason": "Oracle attitude improved but position tracking benefit was not demonstrated; estimated compensation remains disabled.",
+  "baseline_position_rmse_m": 0.03645388409353104,
+  "oracle_position_rmse_m": 0.05458563500368027,
+  "oracle_transition_bias_at_evaluation": 0.0,
+  "first_D_preserved": "sitl_offset_D_20261010_213142",
+  "recheck": "sitl_offset_D_transition_recheck_20261010_213745"
+}

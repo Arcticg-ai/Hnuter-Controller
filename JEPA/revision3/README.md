@@ -1,3 +1,5 @@
+> 后续现有机型完整倾转验证已执行：见 [articulated 完整报告](articulated/results/closure/REPORT.md)。下文及原 results 保留为第一阶段门槛失败的历史记录，不代表后续尚未运行。
+
 # Revision3：CoM / 惯量辨识的有界第一步
 
 **状态：离线验证已完成；模型门槛未通过，没有启动新 SITL、没有改动 PX4 固件或将估计值入环。**

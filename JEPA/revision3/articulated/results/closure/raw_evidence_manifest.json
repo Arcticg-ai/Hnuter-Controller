@@ -1,0 +1,778 @@
+{
+  "runs/sitl_balance_4ms_20261010_211040/truth_diagnostic.csv": {
+    "sha256": "21d259ee6ce2481187dd9213a559f3e4b9300259b4944a3bbe7a373be9d05aa8",
+    "size_bytes": 166376350
+  },
+  "runs/sitl_balance_4ms_20261010_211040/trajectory.csv": {
+    "sha256": "3951349618ace53eb3912ed71cae6b85d7ae17dd3b0cb232b848f7e7d50d2906",
+    "size_bytes": 3975822
+  },
+  "runs/sitl_balance_4ms_20261010_211040/actuator_sensor.csv": {
+    "sha256": "8538d394f835affc5f9136f41c9da0620f3a5b5f02db2aa79a0009893a937f7d",
+    "size_bytes": 1924694
+  },
+  "runs/sitl_balance_4ms_20261010_211040/readiness.json": {
+    "sha256": "06be737a5f3895ac844597749fc6007e1147e390718288f94c1fae8bebf6e3f3",
+    "size_bytes": 45221
+  },
+  "runs/sitl_balance_4ms_20261010_211040/rate_timing_diagnostic.json": {
+    "sha256": "c0655f7fab5b78fcca8603ac7cd0781d730c63b9e5fdccf1d9a01e0e8310583f",
+    "size_bytes": 2318
+  },
+  "runs/sitl_balance_4ms_20261010_211040/process_exit.json": {
+    "sha256": "55c507b99aac1dcb372c17c6361baf5d8ebffcfea969255655b7905194347bc8",
+    "size_bytes": 50
+  },
+  "runs/sitl_balance_4ms_20261010_211040/flight_result.json": {
+    "sha256": "cf52e4f2257db9d4c1ab6a5a04f1fdd881250d673ed7a5b515f4d65de1e71702",
+    "size_bytes": 590
+  },
+  "runs/sitl_balance_4ms_20261010_211040/balance_analysis.json": {
+    "sha256": "f2954cac24d4e70c197e18e2ac1fb64b8a873c38f138058837264838f372e662",
+    "size_bytes": 913212
+  },
+  "runs/sitl_balance_4ms_20261010_211040/launch.json": {
+    "sha256": "ea7dc9740b12a63c44a1db5d2b05979c86c3839a00baa7a218cecc1d183542e3",
+    "size_bytes": 3566
+  },
+  "runs/sitl_balance_4ms_20261010_211040/recovery.json": {
+    "sha256": "ed50dcd331251946750912e3811d7b6aaadedf50411e6f59e03f4301f092ab60",
+    "size_bytes": 22244
+  },
+  "runs/sitl_balance_4ms_20261010_211040/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_balance_4ms_20261010_211040/discovery.json": {
+    "sha256": "6f38d204179d375a78ae6d54b4f1c9ff4d42529e6fa7ecd2c842aca0c3358969",
+    "size_bytes": 1354
+  },
+  "runs/sitl_balance_4ms_20261010_211040/sensor_diagnostics.json": {
+    "sha256": "9821fb39d0288b9306886f72552c20314793ba7cf8a2e3d42662f04def5c6732",
+    "size_bytes": 215
+  },
+  "runs/sitl_balance_4ms_20261010_211040/controller.log": {
+    "sha256": "9ec523ca8fea1a63e14ee9f7635628c58f29030805899b28d2bedce3502ebbf3",
+    "size_bytes": 19432
+  },
+  "runs/sitl_balance_4ms_20261010_211040/agent.log": {
+    "sha256": "70290cfa60a1acb9d4ae379d08908f0b112131b0e5144df495fb59bb40b7b5f9",
+    "size_bytes": 45918
+  },
+  "runs/sitl_balance_4ms_20261010_211040/px4.log": {
+    "sha256": "51b6d752d9a4e0d2faea771fdf1e6c0cd6e7b1648b033225206a3a3f3d144bda",
+    "size_bytes": 15547
+  },
+  "runs/sitl_balance_4ms_20261010_211040/rootfs/log/2026-10-10/13_10_51.ulg": {
+    "sha256": "ac30af417b44760ae0d253231a537ca09d914fed24d5dc5a235066a4977cf514",
+    "size_bytes": 23521124
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/imu_native.csv": {
+    "sha256": "f65564e0b521601a0aff49d7f7d73489113b7b736f55e01b47768fd5f2f0d701",
+    "size_bytes": 3201418
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/truth_diagnostic.csv": {
+    "sha256": "9998c47e63bcbfc192bc98de34187d4b36d199a99ea07a8bce1ec585c65cb1f8",
+    "size_bytes": 350591030
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/trajectory.csv": {
+    "sha256": "4ffbce9a5890e7b4f377d9316c0e176ebb40961536e048ba35708a8d8d3ab4ee",
+    "size_bytes": 3960326
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/actuator_sensor.csv": {
+    "sha256": "2044037f2c746b5093a2fff140577d9cf5a8d3bff6cdd28d57ac6c230538481e",
+    "size_bytes": 2060320
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/joints_native.csv": {
+    "sha256": "a1999abc110ee775f72205b03ed2da054876786fe5d890a674f08b294fd1eca1",
+    "size_bytes": 17224732
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/native_sensor_counts.json": {
+    "sha256": "a1d3abf9fb0b2639ea4aa44295167ee7d66df559dabd1958b94f7aebf07e9db0",
+    "size_bytes": 38
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/readiness.json": {
+    "sha256": "0a70daf476041bbc7db9d3ac110cf09d41932e3acea2661cf98083244958e8f8",
+    "size_bytes": 44718
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/sensor_balance_discrete.json": {
+    "sha256": "01e44c727bd4dccb9bdebd7641a93d23770ef06df4cd4178f23596dc77935ff1",
+    "size_bytes": 41823
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/flight_result.json": {
+    "sha256": "c4e185004143a748d038f9c50cde5d788f155f29724930fbc018590e28916d71",
+    "size_bytes": 600
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/balance_analysis.json": {
+    "sha256": "9c4a348edd423a27e7b7fbde98231fabbe0fa91f521d242253069462c6d436e3",
+    "size_bytes": 1792408
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/launch.json": {
+    "sha256": "c1bae8d4794c8f74e3cbc122549da6ec1311a18e3884de5f688cf7311b95fab5",
+    "size_bytes": 3718
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/recovery.json": {
+    "sha256": "7e4e6133a0cbb138569263e9c4074ffbd32768c7820e4dea121ab7a3422cc150",
+    "size_bytes": 39896
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/discovery.json": {
+    "sha256": "65efe2d618eb21e4f3ae41c11185f0f4944ecd9c4c8ce0bc4c8749ef5c3d051e",
+    "size_bytes": 1423
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/sensor_diagnostics.json": {
+    "sha256": "0bac181bc585ed2928d8dafda960796cf783f0aa14350d5627758d55e1e16f90",
+    "size_bytes": 214
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/controller.log": {
+    "sha256": "797668d72380b8658e778ce4cbdf6474dfce1252d17239a88d0007e36495b304",
+    "size_bytes": 20185
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/agent.log": {
+    "sha256": "17409be5495701e1709e7c2555d25f6a4892b69eaa83bfd66bbd8911c433caf6",
+    "size_bytes": 45918
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/px4.log": {
+    "sha256": "86b1cdafa2b98fab2edcd5692eeae507ed1764de1b4a67731efbb2099d6e6b48",
+    "size_bytes": 18254
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/sensor_windows_discrete.npz": {
+    "sha256": "03dc875fbc0d85b473bc6c2634b4557b12afe48648dbd17b3418c2c26b46ff7f",
+    "size_bytes": 20230
+  },
+  "runs/sitl_native_stamp_2ms_20261010_211729/rootfs/log/2026-10-10/13_17_40.ulg": {
+    "sha256": "450e09965dbafadbbd545289cc0c4cddf233b6ec2242c66e5e9b2df6d28736a9",
+    "size_bytes": 25021939
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/imu_native.csv": {
+    "sha256": "9b31a2581a969052694846a5314d6aa080dc9ab7f38a885fa85018d4756ccfd9",
+    "size_bytes": 3023043
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/truth_diagnostic.csv": {
+    "sha256": "6294045f30ab15af942e09daad495d10f9d2c5af22aed226487cdb8d5a07dbfe",
+    "size_bytes": 166544568
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/trajectory.csv": {
+    "sha256": "0e985b079fcca7f0dd47fd6f99134c3ff865c445298019d0ad459abedcef8a81",
+    "size_bytes": 3929468
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/actuator_sensor.csv": {
+    "sha256": "9a50445b7ec9361e6f8ba8ffad9637d0de3087172483bb9ba03262d833dc9a82",
+    "size_bytes": 1928457
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/joints_native.csv": {
+    "sha256": "8683f873782b2bfd3f5737eca4b7660026179de8b2267b9449cdf500fecf31ee",
+    "size_bytes": 8101477
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/native_sensor_counts.json": {
+    "sha256": "812e30d077f165a4d29c190a174f8836a21598ff8a549147f9a746af869a494d",
+    "size_bytes": 38
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/readiness.json": {
+    "sha256": "33d8f48612d468b5b23781d91db84f5f5efb1af755134d794dbaca73c40e5985",
+    "size_bytes": 45838
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/sensor_balance_discrete.json": {
+    "sha256": "eac4e7647b8007ac3f2cb61ef6ec59825aafdfd0750506deb4f97570be040b49",
+    "size_bytes": 43950
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/flight_result.json": {
+    "sha256": "3fb9c924c84ce2e0d0db611dd601da1e4c95cc2b6255ae33673416244d0c3945",
+    "size_bytes": 590
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/balance_analysis.json": {
+    "sha256": "877dfed883d9e8b6c421f80196be82c055b15e4505c4087c06ff3ac9e8e44c11",
+    "size_bytes": 912426
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/sensor_balance.json": {
+    "sha256": "efab308f0c2fbc26bd110f4a83017b0b899a937e50916022d83f4bed44ca1fb2",
+    "size_bytes": 41665
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/launch.json": {
+    "sha256": "bc2fd9478fedb05d2ece7a0828ca5bb229f19b097f9b33a63108fe097bb9dde7",
+    "size_bytes": 3718
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/recovery.json": {
+    "sha256": "dcc296edced9330c0bd2d4d35632ab12636e95bd500229964d27b2b91f4d1064",
+    "size_bytes": 22155
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/discovery.json": {
+    "sha256": "f380b9af47d1f3f90a3799c28b9f5a92d6e822826b06c42cd65bea2241aa8cf3",
+    "size_bytes": 1354
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/native_rate_identity.json": {
+    "sha256": "1109c92c7c2f0531a91b43479203d3a7638132b42e302f84b1b52a33441428c0",
+    "size_bytes": 232
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/sensor_diagnostics.json": {
+    "sha256": "d83f10a162a97015f5a60a448bb3bb180f21028d027a9ebb8d086115326b04b0",
+    "size_bytes": 215
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/controller.log": {
+    "sha256": "93f8128f0f6a0b700363baf3453a7083ee36c828568b6245df465421c565c86d",
+    "size_bytes": 19405
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/agent.log": {
+    "sha256": "ff690c9798be96a6f630db12bcb361880ca2cf9941dddbfc55e368a74f5bd097",
+    "size_bytes": 45918
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/px4.log": {
+    "sha256": "70e943d702ab333f18398fa28fc938e554bf957eb03872a685fae71b0dc8aaf9",
+    "size_bytes": 15547
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/sensor_windows.npz": {
+    "sha256": "b357004caab3cefc67691ca8d7341062eaea579e1179b54771b46e9483a54519",
+    "size_bytes": 20474
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/sensor_windows_discrete.npz": {
+    "sha256": "8f8efae1b9eedf04a2f7f5f7dde05b18a8d860c70128435f31da28e307f1f425",
+    "size_bytes": 20459
+  },
+  "runs/sitl_native_stamp_4ms_20261010_211352/rootfs/log/2026-10-10/13_14_03.ulg": {
+    "sha256": "b48b99f0870faa106a2b88b6b99f7311756496213546c2391fab8567ef9a8cf3",
+    "size_bytes": 23517772
+  },
+  "runs/sitl_offset_A_20261010_212934/imu_native.csv": {
+    "sha256": "9ad05177154ff01acc8ecd85d0e7a129f7433318dc6fa292a46e67f2656040de",
+    "size_bytes": 3792047
+  },
+  "runs/sitl_offset_A_20261010_212934/truth_diagnostic.csv": {
+    "sha256": "85109e7da732b2a9efd03321a8cea6fcdd7ddb593bdbb7eb6dbdc260c31c066d",
+    "size_bytes": 206554180
+  },
+  "runs/sitl_offset_A_20261010_212934/trajectory.csv": {
+    "sha256": "c7bd770434460d77a37a97d25189ddece6970c0289fdae5dbddc86860a5e907d",
+    "size_bytes": 5369232
+  },
+  "runs/sitl_offset_A_20261010_212934/actuator_sensor.csv": {
+    "sha256": "c1d9eec9c0304636213edff5892b84a87df29f6ff600a0ef232c2bced5ef8e17",
+    "size_bytes": 2458827
+  },
+  "runs/sitl_offset_A_20261010_212934/joints_native.csv": {
+    "sha256": "2da570516e1334810065c30566cabb023e898c032d210c95d0865d941fc9fbc8",
+    "size_bytes": 10098766
+  },
+  "runs/sitl_offset_A_20261010_212934/consumer_analysis.json": {
+    "sha256": "0852e7cf8f11f5b82ec077f83ec2ab02570c5c2b56f0110f97ca66e50202702c",
+    "size_bytes": 2487
+  },
+  "runs/sitl_offset_A_20261010_212934/native_sensor_counts.json": {
+    "sha256": "df7417f7ee876cda3de4c6338b8c805c7dcc9238c09ef87c156bd17f62b729c5",
+    "size_bytes": 38
+  },
+  "runs/sitl_offset_A_20261010_212934/readiness.json": {
+    "sha256": "25daeef4eb7d2c91e7c06818163c6e253e93d18cb902c54e39238f0c3e070e43",
+    "size_bytes": 45612
+  },
+  "runs/sitl_offset_A_20261010_212934/sensor_balance_discrete.json": {
+    "sha256": "83e7311d5c8be638ebe1f6d9ea6c46d2d03f3c1076072be6ccbb29acabaf370c",
+    "size_bytes": 65125
+  },
+  "runs/sitl_offset_A_20261010_212934/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_offset_A_20261010_212934/flight_result.json": {
+    "sha256": "265cf0e0a30419415bef02c783eb3d03a4cb9be8868a5c03510fd83afc3741f4",
+    "size_bytes": 600
+  },
+  "runs/sitl_offset_A_20261010_212934/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_offset_A_20261010_212934/shadow_calibration_only_check.json": {
+    "sha256": "64a721dcd36f2ffd23e2ff573f62df65204524d9816e76f50e4616d88df2d938",
+    "size_bytes": 641
+  },
+  "runs/sitl_offset_A_20261010_212934/launch.json": {
+    "sha256": "477104fcf56b599672a2d6607df3bdf75e20db5c2c6a9bd34cf03f6897da8b7f",
+    "size_bytes": 3740
+  },
+  "runs/sitl_offset_A_20261010_212934/recovery.json": {
+    "sha256": "fb3e4a7141299e451c748f6bb2e180c009172da5de215309203bd61cb215ba13",
+    "size_bytes": 22288
+  },
+  "runs/sitl_offset_A_20261010_212934/spatial_events.json": {
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "size_bytes": 3
+  },
+  "runs/sitl_offset_A_20261010_212934/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_offset_A_20261010_212934/discovery.json": {
+    "sha256": "8dc98d7d3edf83f4174e04e35a1d351d67bdf4fbbbe2fcec2154983f76b1214c",
+    "size_bytes": 1354
+  },
+  "runs/sitl_offset_A_20261010_212934/sensor_diagnostics.json": {
+    "sha256": "1568ee2375d9b2f537f4b9060506bb87b92c3219be81e6d43dd61b288969a835",
+    "size_bytes": 214
+  },
+  "runs/sitl_offset_A_20261010_212934/controller.log": {
+    "sha256": "ea48b97955c214aaaf8c2c9f7741981728edae517c7758796c0c20b7eae1e9f0",
+    "size_bytes": 24715
+  },
+  "runs/sitl_offset_A_20261010_212934/analyze_consumer.log": {
+    "sha256": "0852e7cf8f11f5b82ec077f83ec2ab02570c5c2b56f0110f97ca66e50202702c",
+    "size_bytes": 2487
+  },
+  "runs/sitl_offset_A_20261010_212934/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_offset_A_20261010_212934/agent.log": {
+    "sha256": "9e777a61be414edfceb40364c22f7890b512f6c01bcdfe916997a7c8ebb46d65",
+    "size_bytes": 45918
+  },
+  "runs/sitl_offset_A_20261010_212934/px4.log": {
+    "sha256": "a4deb49503e345023d55313c2d0bb44efa3749c3fcf0dc23cad256207d44bdcd",
+    "size_bytes": 12493
+  },
+  "runs/sitl_offset_A_20261010_212934/sensor_windows_discrete.npz": {
+    "sha256": "cbccdcc181dd2fdf74e7edba933134493d53ff51eb3c0b88701eaccc53cd5d58",
+    "size_bytes": 30785
+  },
+  "runs/sitl_offset_A_20261010_212934/ros_sensor_capture_offline_check.npz": {
+    "sha256": "d4106f965c64206ca0f55f2bba8300fb609e536fd0e25052f88c80ec6be3eb2e",
+    "size_bytes": 579919
+  },
+  "runs/sitl_offset_A_20261010_212934/rootfs/log/2026-10-10/13_29_45.ulg": {
+    "sha256": "6e9fc74d65c23d36029005ca2fe0d149340a7bd994044bcd43773aa3a0bb39e0",
+    "size_bytes": 29615400
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/imu_native.csv": {
+    "sha256": "add74e77ea717c8f79f0978edbfcbdd6b5ac92ec97c5db92f8dcacd52f327276",
+    "size_bytes": 3791536
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/truth_diagnostic.csv": {
+    "sha256": "939e4535a0bbd8ebed2fd51d1eae8cd7aa13cc43b916640a5928f009ed055467",
+    "size_bytes": 206315268
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/trajectory.csv": {
+    "sha256": "0b552394e2ad9e71147114ebde33c3669654a3d0c0caad2ccc5f825c16e1ff86",
+    "size_bytes": 5320954
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/actuator_sensor.csv": {
+    "sha256": "db03ca2984c3c00e410e86ab47681414b9d41b4ad9b6f412f91ed9b995a90731",
+    "size_bytes": 2456065
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/joints_native.csv": {
+    "sha256": "23a74bcffb9eb232c97af35c011bedc9ed82bc88297cabff3a314ba20f7020ef",
+    "size_bytes": 10090404
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/consumer_analysis.json": {
+    "sha256": "2145f7e0495b85d67dae0d41d1529b55139fc6102069b05d949780b94333e845",
+    "size_bytes": 3303
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/native_sensor_counts.json": {
+    "sha256": "9903dbb78979c36198accdb0ac5c8873978f008f1a007071b4b6d264979c8490",
+    "size_bytes": 38
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/readiness.json": {
+    "sha256": "d19d8a45892052306ff762f3ce1cdafcd3205ef596e72c30987386c92776c313",
+    "size_bytes": 44992
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/online_shadow.json": {
+    "sha256": "80fbe4aa75d4734bcbcdad51133cae6722c26411226bab8155112307c825953a",
+    "size_bytes": 711
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/flight_result.json": {
+    "sha256": "9c2b7ed4a1a708dfc82fe1915177935d3b359cb2ac9aa6e825e7f55f89bb2c5c",
+    "size_bytes": 614
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/launch.json": {
+    "sha256": "81c648fcd636d31fc301bef9f0a6f920120bc37e8992c8d81ec6f56e4c6fae8e",
+    "size_bytes": 5328
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/recovery.json": {
+    "sha256": "dc08ae1a6b158a8188c2c72906416f7e82733afaedb73eab26889f3f5c84b263",
+    "size_bytes": 22620
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/spatial_events.json": {
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "size_bytes": 3
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/discovery.json": {
+    "sha256": "21037cd348a1ab740956ce632d91b57a3dd5b74b6e3f316e1f2bcfbb16095da9",
+    "size_bytes": 1354
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/sensor_diagnostics.json": {
+    "sha256": "a8b868e9a75fc0c81a5dd76f0f00e74237c68a009c336607dddc1cc70e905caf",
+    "size_bytes": 213
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/shadow_worker.log": {
+    "sha256": "06f447eb6d3436dedcc680a6cf20fc996f7c0b836d237eb7ace05cb990b6e28c",
+    "size_bytes": 537
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/controller.log": {
+    "sha256": "81cff58daa290c596cbecab933d6877fc2b17fa7c8dc04d6188cdd4a002401fa",
+    "size_bytes": 24669
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/analyze_consumer.log": {
+    "sha256": "2145f7e0495b85d67dae0d41d1529b55139fc6102069b05d949780b94333e845",
+    "size_bytes": 3303
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/agent.log": {
+    "sha256": "905d5c22afce5bba042fe0b0611a3e9ccc89df9b529193c8183a448fc9c3cb29",
+    "size_bytes": 45918
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/px4.log": {
+    "sha256": "72d9a189dff8f30ef19fa1d249a14de86dcb2ab3ce0c459d26aaf6202ae16311",
+    "size_bytes": 12493
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/ros_sensor_capture.npz": {
+    "sha256": "a5b12b4ee690e53eb33ca2b03b36559973ce3c8032515a71387922501da16b9d",
+    "size_bytes": 214629
+  },
+  "runs/sitl_offset_B_shadow_20261010_214130/rootfs/log/2026-10-10/13_41_41.ulg": {
+    "sha256": "43a6e79d77c990b891644ef24d051605beb6ec8975a0717341cab9ab808c6c44",
+    "size_bytes": 29613323
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/imu_native.csv": {
+    "sha256": "1f41c400ecb3ff7b27d639c7cfeaa1aafeed9e79bd9c928e74ce3f4f05e7dd30",
+    "size_bytes": 3765095
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/truth_diagnostic.csv": {
+    "sha256": "499c8d5903efa1c665e980531aab58f8a6ccaec2d80262a445c6117d4c5717e0",
+    "size_bytes": 206258975
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/trajectory.csv": {
+    "sha256": "9c5be9a7cf66cbaa89dbc0db4b13dae4074d2f316a1d30a0ba1a36b9b4d6b20f",
+    "size_bytes": 5712356
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/actuator_sensor.csv": {
+    "sha256": "bc1b27cd9803c16142218fb2e7971ca53483196c77659151a99134a5c698bd26",
+    "size_bytes": 2451365
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/joints_native.csv": {
+    "sha256": "a98260189cbaf8f9a4eb815135bfd8535b040fa18c809f2dee66c3578d5f9648",
+    "size_bytes": 9975462
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/consumer_analysis.json": {
+    "sha256": "52b15affe9e7ffc8e7048e09bfb4cea081a1e9d13455cf88ad235a6ed2d0e6ca",
+    "size_bytes": 3337
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/native_sensor_counts.json": {
+    "sha256": "56e90cdd0a51ffe6f4aff718a186683617f20022333611d1063fa4afd409f783",
+    "size_bytes": 38
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/readiness.json": {
+    "sha256": "06d2f3fff33c8f51b3235ff1cc6cef4d30e89837fa6b79ba8c90adf12d30f115",
+    "size_bytes": 40908
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/online_shadow.json": {
+    "sha256": "652769648f415bd15a29dd3ca10abfebaa1a0a30af240e9f3bd8b91fc6ad752b",
+    "size_bytes": 722
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/flight_result.json": {
+    "sha256": "f533cc5775c504fc561a12247797ae1a1d59690288d51c0902a00ab6d5f87e5e",
+    "size_bytes": 603
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/launch.json": {
+    "sha256": "564254cb6b6b740bd74bf856c5df159e04d732e7eb0d23f2f4d7ea2965d3ec99",
+    "size_bytes": 5712
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/recovery.json": {
+    "sha256": "5ea0aab8d97b3d1dfd51ba6d6b11c2253923e72cd5eaa3b4b16580023023892b",
+    "size_bytes": 21915
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/spatial_events.json": {
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "size_bytes": 3
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/discovery.json": {
+    "sha256": "981c0e3d36d0d265a197a3a84ff554c3c560806ed0eca34b0ad60c3415823587",
+    "size_bytes": 1354
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/sensor_diagnostics.json": {
+    "sha256": "903bf2ef2e77d4a4159787ed66941d218254d3794c06805f0887c2ced6630e97",
+    "size_bytes": 214
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/shadow_worker.log": {
+    "sha256": "53998838366c103e80b41f95eb95c159dacf08e333a439cd7674825cc8d0b98d",
+    "size_bytes": 537
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/controller.log": {
+    "sha256": "bbe249d7a2a622182ab02c586ee3c4d6e3d4931c39d7eb7c8939da9d04bfb820",
+    "size_bytes": 24560
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/analyze_consumer.log": {
+    "sha256": "52b15affe9e7ffc8e7048e09bfb4cea081a1e9d13455cf88ad235a6ed2d0e6ca",
+    "size_bytes": 3337
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/agent.log": {
+    "sha256": "68e44769ebf9762d13087ac6b20916afcc4406a78eb78594a3642d0161268224",
+    "size_bytes": 45918
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/px4.log": {
+    "sha256": "54b635f070d082bf5a070e913e1b61bfa3750f8a8c6bb2a74b504ddef9c87d59",
+    "size_bytes": 12493
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/ros_sensor_capture.npz": {
+    "sha256": "42d6b60a694a31f166bf1e6ee26472a0fba011b27f6dae6609199a1d78101c85",
+    "size_bytes": 215022
+  },
+  "runs/sitl_offset_C_shadow_20261010_214338/rootfs/log/2026-10-10/13_43_49.ulg": {
+    "sha256": "0e668b4eb64affb224ef32b283c55f01c3148013305fe8d538f558f68bf69512",
+    "size_bytes": 29615667
+  },
+  "runs/sitl_offset_D_20261010_213142/imu_native.csv": {
+    "sha256": "9a1c1b44daef860bcf3af4fe00e565b48805717f7f4ce0e0fbd37a29e81582fd",
+    "size_bytes": 3789687
+  },
+  "runs/sitl_offset_D_20261010_213142/truth_diagnostic.csv": {
+    "sha256": "440f6220a4cd1087fead8edf4e0f8d30b96fd5550495b3f88c6c73fd222da53d",
+    "size_bytes": 206087848
+  },
+  "runs/sitl_offset_D_20261010_213142/trajectory.csv": {
+    "sha256": "1a4aea1b0172714092cea25b450168d6bc25a4af476edaae608dcbe378647ba9",
+    "size_bytes": 5274276
+  },
+  "runs/sitl_offset_D_20261010_213142/actuator_sensor.csv": {
+    "sha256": "21a28149c9713b3135dc25db174747ba2b9a5be559ea6b4ae8cb448657cf37c6",
+    "size_bytes": 2451428
+  },
+  "runs/sitl_offset_D_20261010_213142/joints_native.csv": {
+    "sha256": "afd1bb91233845b3562606877937e1dadc3b1cdb85f7314e858cec95860c1298",
+    "size_bytes": 10084268
+  },
+  "runs/sitl_offset_D_20261010_213142/consumer_analysis.json": {
+    "sha256": "e0405dbbae0afad1e5a23cb1f4b27fdc15a929a477c8492be801fd8fa7dd6f00",
+    "size_bytes": 3006
+  },
+  "runs/sitl_offset_D_20261010_213142/native_sensor_counts.json": {
+    "sha256": "d87df9a7942ba324663ed27d3b664da380b5406ab663fd7bfc7fa29a3134ef4b",
+    "size_bytes": 38
+  },
+  "runs/sitl_offset_D_20261010_213142/oracle_request.json": {
+    "sha256": "447574ce43dcdded2cc3def7e69042da1858e2f1e5a6dfb9f31281271f0a39c1",
+    "size_bytes": 174
+  },
+  "runs/sitl_offset_D_20261010_213142/readiness.json": {
+    "sha256": "6f14473273e3162264f144ece6adf4f1a41a7f280571e89b0360182021d799d3",
+    "size_bytes": 44965
+  },
+  "runs/sitl_offset_D_20261010_213142/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_offset_D_20261010_213142/flight_result.json": {
+    "sha256": "2414e5ff7d712e1e19d0cc3afe65d8fdf13378ad236faa87db5b70139e8267aa",
+    "size_bytes": 591
+  },
+  "runs/sitl_offset_D_20261010_213142/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_offset_D_20261010_213142/launch.json": {
+    "sha256": "a4a90b0b75eb09f4dc2cacd0e3ed47778b7323459e7617d3347d9b478b8d4113",
+    "size_bytes": 3740
+  },
+  "runs/sitl_offset_D_20261010_213142/recovery.json": {
+    "sha256": "677ac7b2352cf58162f50bc7d59d99c62bd5b98c1197a2ee486fc07de9314144",
+    "size_bytes": 21746
+  },
+  "runs/sitl_offset_D_20261010_213142/spatial_events.json": {
+    "sha256": "8bc69395fb610c342a68bb10049ce900cc9601142b0835644d44cadd68df43c8",
+    "size_bytes": 110173
+  },
+  "runs/sitl_offset_D_20261010_213142/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_offset_D_20261010_213142/discovery.json": {
+    "sha256": "c58e6406ddb6230c3d4690915c3a18bc02d6ed59b680f5276a58d4ebf7b4fef2",
+    "size_bytes": 1354
+  },
+  "runs/sitl_offset_D_20261010_213142/envelope_diagnostic.json": {
+    "sha256": "a9e2e2011e3d7160c5e8f141741834e74bf28caf9265469db2301ac8e44d81b4",
+    "size_bytes": 1196
+  },
+  "runs/sitl_offset_D_20261010_213142/sensor_diagnostics.json": {
+    "sha256": "6304e42be2bec4464a61a10a91a9f60f78727a83f0d2724faf7777c2a3b2a944",
+    "size_bytes": 215
+  },
+  "runs/sitl_offset_D_20261010_213142/controller.log": {
+    "sha256": "d9571e6a3ded2604b670fee48e311f4c90bb9e25fe74ffb0d991356b4a38a377",
+    "size_bytes": 24532
+  },
+  "runs/sitl_offset_D_20261010_213142/analyze_consumer.log": {
+    "sha256": "e0405dbbae0afad1e5a23cb1f4b27fdc15a929a477c8492be801fd8fa7dd6f00",
+    "size_bytes": 3006
+  },
+  "runs/sitl_offset_D_20261010_213142/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_offset_D_20261010_213142/agent.log": {
+    "sha256": "51b285397cdf9890969504aaded9f85e73c49ccde5e1910501f5b36ee36dd24d",
+    "size_bytes": 45917
+  },
+  "runs/sitl_offset_D_20261010_213142/px4.log": {
+    "sha256": "dc5595a914154f745225dda48cd75d3c80b4b10e7bef96dfc67ae3bd15572b86",
+    "size_bytes": 37835
+  },
+  "runs/sitl_offset_D_20261010_213142/rootfs/log/2026-10-10/13_31_54.ulg": {
+    "sha256": "fd038a7ecd2ca8adb9e41061a08c2b86f72810a3f1f2f36f474009c7264b638d",
+    "size_bytes": 29689080
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/imu_native.csv": {
+    "sha256": "5721caf82318decf3ad82b18c30c9893ca613419e13c125b9ee29b7456c349ff",
+    "size_bytes": 3784648
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/truth_diagnostic.csv": {
+    "sha256": "4e5f6ce04b02f952d6080b3fabd0d3740298e071bfc6466e0b992a7740370cb5",
+    "size_bytes": 206213847
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/trajectory.csv": {
+    "sha256": "b16f18b4ab81e37f6ce93bc52b11933d03d151c20a270ae2cc3477bd9f041ca7",
+    "size_bytes": 5274806
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/actuator_sensor.csv": {
+    "sha256": "05c64bb7df75727cb9bc716e9b69c3f4eafd2288aa773e5a292ef0edd43a76f5",
+    "size_bytes": 2454970
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/joints_native.csv": {
+    "sha256": "17eb3657b17f915635a28bc0be93e8c94dc6405793b17c60ee02c97362820a42",
+    "size_bytes": 10089507
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/consumer_analysis.json": {
+    "sha256": "576aa67e203ab9381048cf28a68ce0497016cf0396874310cdf1a7129f629781",
+    "size_bytes": 3003
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/native_sensor_counts.json": {
+    "sha256": "532c8a8b014a9303cd047df6ad44a5c3c687670f261f21c203f43797c3c317af",
+    "size_bytes": 38
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/oracle_request.json": {
+    "sha256": "447574ce43dcdded2cc3def7e69042da1858e2f1e5a6dfb9f31281271f0a39c1",
+    "size_bytes": 174
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/readiness.json": {
+    "sha256": "19850124df657cf907d2e4c8ec677ff0a6d700fe88d1cee180e4219286be0d52",
+    "size_bytes": 45714
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/process_exit.json": {
+    "sha256": "2ff41b524d52391fcf595d9f20eb13882af85ce4acd6af647e6f85718bcdd233",
+    "size_bytes": 66
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/flight_result.json": {
+    "sha256": "ad91127826a836f9709315022d31ec0da3c32adc8a34a684c4203477d012cdce",
+    "size_bytes": 591
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/native_sensor_topics.json": {
+    "sha256": "7ac05de1fc00c64881bbc15d882c011c35c88914f67807d62fc1c13376055727",
+    "size_bytes": 116
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/launch.json": {
+    "sha256": "c928cb840c39bd8caf8c0292097e001521e8038ebf0d4f2c602c5c93c9966c59",
+    "size_bytes": 5327
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/recovery.json": {
+    "sha256": "1172f8c68bac5caa59ee8d85dc6b20aebdd3c8caa7e58ef936bc4bfc42126b72",
+    "size_bytes": 21940
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/spatial_events.json": {
+    "sha256": "ed4583d28fc955161950c3c37903563d751f004c3da256c6fbfb8e4e5f95c9cf",
+    "size_bytes": 111466
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/actuator_geometry.json": {
+    "sha256": "40fd34798cd5c56e85050f3a770ed058509a6203576df73aba0af68fee2eabac",
+    "size_bytes": 10082
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/discovery.json": {
+    "sha256": "76d8a9354e027565e02169c0d603fb620fc73638411544fa20edc7bda45a0a68",
+    "size_bytes": 1354
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/sensor_diagnostics.json": {
+    "sha256": "91421223ffaa7b7fe5ae700fca19e1b9e4ce75a6262c9caef8e2aa0de8575372",
+    "size_bytes": 216
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/controller.log": {
+    "sha256": "9abcfac1803ff47229f5a3560d54674aa9ebc21ea85e669c24099a55e17bfd3c",
+    "size_bytes": 24505
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/analyze_consumer.log": {
+    "sha256": "576aa67e203ab9381048cf28a68ce0497016cf0396874310cdf1a7129f629781",
+    "size_bytes": 3003
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/sensors.log": {
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/agent.log": {
+    "sha256": "ffe8ece3e32dafa3904a90a4a969e4b7839d2193ae41bc1a389566baa744d324",
+    "size_bytes": 45918
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/px4.log": {
+    "sha256": "0373dee391b1add362eeff747532a05549b4740c7e39c12ff5629715e74c2a38",
+    "size_bytes": 37800
+  },
+  "runs/sitl_offset_D_transition_recheck_20261010_213745/rootfs/log/2026-10-10/13_37_56.ulg": {
+    "sha256": "11822ebd7834d911f13803a803d48cbd668536a4695fada33e40f778c6e79e69",
+    "size_bytes": 29642929
+  }
+}

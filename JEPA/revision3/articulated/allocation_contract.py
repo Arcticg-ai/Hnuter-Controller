@@ -5,6 +5,7 @@ small-signal calibration, not a command publisher or a replacement allocator.
 """
 import sys
 import json
+import itertools
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -41,14 +42,14 @@ def jacobian(n,f,t):
 def main():
     n=Assembly(SOURCE);f=np.array([0.,0.,-5.4*9.81]);t=np.array([0.,-.105*5.4*9.81,0.])
     g=jacobian(n,f,t);rng=np.random.default_rng(14);errors=[]
-    for _ in range(100):
-        ff=f+rng.uniform([-2,-2,-3],[2,2,3]);tt=t+rng.uniform([-.4,-.3,-.2],[.4,.3,.2])
+    for signs in itertools.product((-1.,0.,1.),repeat=6):
+        ff=f+np.array(signs[:3])*[6,6,3];tt=t+np.array(signs[3:])*[.85,.6,.6]
         gg=jacobian(n,ff,tt);errors.append(float(np.linalg.norm(gg@np.linalg.inv(g)-np.eye(3),2)))
     report=dict(kind='static_nominal_geometry_calibration_only',center_jacobian=g.tolist(),inverse=np.linalg.inv(g).tolist(),
         max_relative_operator_error=max(errors),identity_mapping_error=float(np.linalg.norm(g-np.eye(3),2)),
-        envelope=dict(force_delta_bounds_N=[2,2,3],torque_delta_bounds_Nm=[.4,.3,.2]),
+        envelope=dict(force_delta_bounds_N=[6,6,3],torque_delta_bounds_Nm=[.85,.6,.6],grid_count=729),
         caveat='Excludes actuator lag, saturation, rate limiting, and large tilt. Actual consumer still requires SITL oracle.')
-    path=Path(__file__).resolve().parent/'results/allocation_contract.json';path.write_text(json.dumps(report,indent=2)+'\n')
+    path=Path(__file__).resolve().parent/'results/allocation_contract_expanded.json';path.write_text(json.dumps(report,indent=2)+'\n')
     print(json.dumps(report,indent=2))
 
 

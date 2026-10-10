@@ -1,0 +1,2057 @@
+[
+  {
+    "run": "sitl_balance_4ms_20261010_211040",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_11c1867b57ff",
+      "GZ_PARTITION": "jepa_11c1867b57ff",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 410634,
+        "px4": 410635,
+        "controller": 411425
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_balance_4ms_20261010_211040/rootfs"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision2/sitl_position_probe.py"
+        ]
+      },
+      "source_head": "c0d57b046f3512c172fb96760c8ec57f5e0aa974",
+      "experiment": {
+        "label": "balance_4ms",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.411637732002418,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 15249,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 3685,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "A",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 84.908,
+      "last_joint_timestamp_s": 85.128,
+      "position_rmse_m": 0.027582818821598944,
+      "max_position_error_m": 0.04424533555875021
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "controller": 0
+    }
+  },
+  {
+    "run": "sitl_native_stamp_2ms_20261010_211729",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_11a18e6d9be5",
+      "GZ_PARTITION": "jepa_11a18e6d9be5",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 413504,
+        "px4": 413505,
+        "sensors": 414277,
+        "controller": 414284
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_native_stamp_2ms_20261010_211729/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision2/sitl_position_probe.py"
+        ]
+      },
+      "source_head": "c0d57b046f3512c172fb96760c8ec57f5e0aa974",
+      "experiment": {
+        "label": "native_stamp_2ms",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.002
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.324822203998337,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 15250,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 3942,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "A",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 90.03999999999999,
+      "last_joint_timestamp_s": 90.27,
+      "position_rmse_m": 0.046461728754534574,
+      "max_position_error_m": 0.10071331985058991
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "sensor_balance_discrete": {
+      "kind": "SENSOR_ONLY_WINDOWS_WITH_OFFLINE_TRUTH_SCORING",
+      "run": "JEPA/revision3/articulated/runs/sitl_native_stamp_2ms_20261010_211729",
+      "timing": {
+        "joint_samples": 43879,
+        "imu_samples": 21940,
+        "joint_max_gap": 0.0020000000000095497,
+        "imu_max_gap": 0.0040000000000048885
+      },
+      "n_windows": 94,
+      "fit_windows": 47,
+      "holdout_windows": 47,
+      "train": {
+        "corrected_Nm": [
+          0.047933227713964424,
+          0.019273971819148986,
+          0.09232986549543085
+        ],
+        "rigid_Nm": [
+          0.048611897100233614,
+          0.020360248507472877,
+          0.09236645172531392
+        ],
+        "no_internal_Nm": [
+          0.047732697973127694,
+          0.02072143331219093,
+          0.09239675299789221
+        ]
+      },
+      "holdout": {
+        "corrected_Nm": [
+          0.040353293532623694,
+          0.020018055259318136,
+          0.09754165417046708
+        ],
+        "rigid_Nm": [
+          0.04138515245276268,
+          0.021675276017327758,
+          0.09738886190713757
+        ],
+        "no_internal_Nm": [
+          0.04090901174835573,
+          0.021769152328026044,
+          0.09745569497313539
+        ]
+      },
+      "oracle_residual_gate_pass": false,
+      "data_singular_values": [
+        72.2446492553311,
+        70.27231285655799,
+        17.992187324341618,
+        16.629215895835976,
+        15.31640378944649,
+        9.106475369890132,
+        7.0669303909904055,
+        4.026725759366121
+      ],
+      "retained_rank": 7,
+      "quadrature": "derived_semiimplicit",
+      "shadow": {
+        "accepted": false,
+        "theta": [
+          -0.5665525567908773,
+          -0.005921416679574448,
+          0.24572578001144899,
+          0.18708762895483888,
+          0.3858925136500688,
+          0.011948894151695469,
+          0.0002449584183930628,
+          7.650997106586923e-05
+        ],
+        "train_windows": 47,
+        "holdout_windows": 47,
+        "rank": 7,
+        "singular_values": [
+          68.27231921885246,
+          66.39037858586354,
+          17.047219214656007,
+          15.749613577068912,
+          14.51742937823312,
+          8.637424633388685,
+          6.671065589672108,
+          3.8244567656060418
+        ],
+        "reason": "incomplete_spatial_information"
+      },
+      "bias_missing_negative_control": "unverified_constant_torque_bias",
+      "offline_fit_error": {
+        "theta": [
+          -0.0027198723115035017,
+          -0.00019228384077425893,
+          -0.0040651927086085005,
+          0.07153368538613059,
+          0.33048208675299207,
+          0.05080603228503665,
+          0.0473043605083657,
+          0.13027260727775827
+        ],
+        "note": "Truth scoring only; not an accepted online update."
+      }
+    }
+  },
+  {
+    "run": "sitl_native_stamp_4ms_20261010_211352",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_5a390f7ccbc5",
+      "GZ_PARTITION": "jepa_5a390f7ccbc5",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 412109,
+        "px4": 412110,
+        "sensors": 412880,
+        "controller": 412888
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_native_stamp_4ms_20261010_211352/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision2/sitl_position_probe.py"
+        ]
+      },
+      "source_head": "c0d57b046f3512c172fb96760c8ec57f5e0aa974",
+      "experiment": {
+        "label": "native_stamp_4ms",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004
+      },
+      "binary_sha256": "4692fec677f8399be752bfcfa76df12779bfb0408779926608033455e3e933ad",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.506300458000624,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 15251,
+      "evaluation_samples": 4001,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 3691,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "A",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 84.996,
+      "last_joint_timestamp_s": 85.228,
+      "position_rmse_m": 0.039103615661099114,
+      "max_position_error_m": 0.06899101311870483
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "sensor_balance_discrete": {
+      "kind": "SENSOR_ONLY_WINDOWS_WITH_OFFLINE_TRUTH_SCORING",
+      "run": "JEPA/revision3/articulated/runs/sitl_native_stamp_4ms_20261010_211352",
+      "timing": {
+        "joint_samples": 20676,
+        "imu_samples": 20676,
+        "joint_max_gap": 0.0040000000000048885,
+        "imu_max_gap": 0.0040000000000048885
+      },
+      "n_windows": 95,
+      "fit_windows": 47,
+      "holdout_windows": 48,
+      "train": {
+        "corrected_Nm": [
+          0.00023686925481279284,
+          0.00014877461756321504,
+          0.0002667556930637718
+        ],
+        "rigid_Nm": [
+          0.018030529040258817,
+          0.06135880489513956,
+          0.004035025630892469
+        ],
+        "no_internal_Nm": [
+          0.017991178552546012,
+          0.0614911600665615,
+          0.004343991532930621
+        ]
+      },
+      "holdout": {
+        "corrected_Nm": [
+          0.00023027595232281718,
+          0.00015518888769127298,
+          0.00043520854869888784
+        ],
+        "rigid_Nm": [
+          0.023713475899386233,
+          0.06846997332590668,
+          0.005284298021386242
+        ],
+        "no_internal_Nm": [
+          0.023685959792169777,
+          0.06858291670760015,
+          0.005718952174309101
+        ]
+      },
+      "oracle_residual_gate_pass": true,
+      "data_singular_values": [
+        72.54990659050249,
+        71.08873471615235,
+        18.080535265791887,
+        16.904634758081116,
+        15.418123056588717,
+        9.953028448701113,
+        7.576165493745045,
+        6.084872998855417
+      ],
+      "retained_rank": 8,
+      "quadrature": "derived_semiimplicit",
+      "shadow": {
+        "accepted": true,
+        "theta": [
+          -0.5665526909329414,
+          -0.005920318798181007,
+          0.24732694955799603,
+          0.1881598806671629,
+          0.38784801916662137,
+          0.01192715288579799,
+          0.0002607897188170553,
+          7.17280645944882e-05
+        ],
+        "train_windows": 47,
+        "holdout_windows": 48,
+        "rank": 8,
+        "singular_values": [
+          68.5627357277543,
+          67.19398419552294,
+          17.067056993374056,
+          15.916552124064886,
+          14.518318846886899,
+          9.46331163376439,
+          7.217130134570305,
+          5.7357912851653445
+        ],
+        "holdout_axis_rms_Nms": [
+          0.0001086654068722452,
+          6.0513641584745267e-05,
+          0.00017257919681877264
+        ],
+        "split_delta_normalized": 0.013398669547251779,
+        "reason": "shadow_accepted_only",
+        "com": [
+          -0.10491716498758173,
+          -0.0010963553329964828,
+          0.00404264499928476
+        ],
+        "inertia": [
+          [
+            0.2472322067005213,
+            0.012548295949925828,
+            -0.0020295816840143243
+          ],
+          [
+            0.012548295949925828,
+            0.1286305264340058,
+            4.7794317410850184e-05
+          ],
+          [
+            -0.0020295816840143243,
+            4.7794317410850184e-05,
+            0.3284004262447641
+          ]
+        ]
+      },
+      "bias_missing_negative_control": "unverified_constant_torque_bias",
+      "shadow_truth_error": {
+        "com_m": [
+          -2.484112297806984e-08,
+          2.033113691555545e-07,
+          0.0
+        ],
+        "inertia_diag_kg_m2": [
+          4.117195410649477e-05,
+          -0.00048777643528277737,
+          -0.00020452022349481958
+        ],
+        "inertia_frobenius": 0.0005319321129826435
+      },
+      "offline_fit_error": {
+        "theta": [
+          -1.8969927040313195e-07,
+          1.221578579021533e-06,
+          3.7384392258171806e-05,
+          -0.000479220951231929,
+          -0.0002129384411198587,
+          -2.1833260102074176e-05,
+          1.978634129115532e-05,
+          -3.1827707689781944e-06
+        ],
+        "note": "Truth scoring only; not an accepted online update."
+      }
+    }
+  },
+  {
+    "run": "sitl_offset_A_20261010_212934",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_3ff106330809",
+      "GZ_PARTITION": "jepa_3ff106330809",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 418192,
+        "px4": 418193,
+        "sensors": 418980,
+        "controller": 418991
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_offset_A_20261010_212934/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/spatial_probe.py"
+        ]
+      },
+      "source_head": "c0d57b046f3512c172fb96760c8ec57f5e0aa974",
+      "experiment": {
+        "label": "offset_A",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "A",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004,
+        "spatial_case": "offset_y"
+      },
+      "binary_sha256": "3382d7269ce9220317b1889e2785a3e7411fc4a6c4b423a794d53c167938a764",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.519379681005375,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20251,
+      "evaluation_samples": 4001,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4691,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "A",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 105.01599999999999,
+      "last_joint_timestamp_s": 105.3,
+      "position_rmse_m": 0.03645388409353104,
+      "max_position_error_m": 0.06984518805536166
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "consumer_analysis": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.519379681005375,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20251,
+      "evaluation_samples": 4001,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4691,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "A",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 105.01599999999999,
+      "last_joint_timestamp_s": 105.3,
+      "position_rmse_m": 0.03645388409353104,
+      "max_position_error_m": 0.06984518805536166,
+      "run": "sitl_offset_A_20261010_212934",
+      "case": "offset_y",
+      "legacy_mass_estimator_fields_unused": true,
+      "evaluation_attitude_rmse_deg": 6.598155975341797,
+      "evaluation_attitude_axis_rmse_deg": [
+        2.021723985671997,
+        0.8141179084777832,
+        6.2278008460998535
+      ],
+      "evaluation_torque_saturation_fraction": 0.0,
+      "max_parameter_transition_error_Nm": 0.0,
+      "effective_delta_com_at_eval_start": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_inertia_at_eval_start": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_com_final": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_inertia_final": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_effective_delta_com_norm_m": 0.0,
+      "max_effective_delta_inertia_norm_kg_m2": 0.0,
+      "tracking_bias_max_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "correction_mean_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "update_rejection_fraction": 0.0,
+      "hntr_mass": 5.400000095367432,
+      "gains": {
+        "HNTR_ATT_D_P": 2.0,
+        "HNTR_ATT_D_R": 2.0,
+        "HNTR_ATT_D_Y": 2.200000047683716,
+        "HNTR_ATT_ILIM_P": 0.0,
+        "HNTR_ATT_ILIM_R": 0.0,
+        "HNTR_ATT_ILIM_Y": 0.0,
+        "HNTR_ATT_I_P": 0.0,
+        "HNTR_ATT_I_R": 0.0,
+        "HNTR_ATT_I_Y": 0.0,
+        "HNTR_ATT_KR_P": 8.0,
+        "HNTR_ATT_KR_R": 8.0,
+        "HNTR_ATT_KR_Y": 3.200000047683716
+      },
+      "calibration": {
+        "duration_s": 15.996000000000002,
+        "position_rmse_m": 0.029193631744139616,
+        "max_error_m": 0.0617842219253995,
+        "vertical_reference_velocity_cost_m2_s": 0.0,
+        "vertical_reference_acceleration_cost_m2_s3": 0.0,
+        "attitude_rmse_deg": 4.683237075805664,
+        "update_rejection_fraction": 0.0
+      },
+      "evaluation_update_rejection_fraction": 0.0,
+      "check_update_rejection_fraction": 0.0,
+      "com_max_logged_change_rate": 0.0,
+      "com_rate_bound": 0.002,
+      "inertia_max_logged_change_rate": 0.0,
+      "inertia_rate_bound": 0.01,
+      "freeze_sent": false
+    },
+    "sensor_balance_discrete": {
+      "kind": "SENSOR_ONLY_WINDOWS_WITH_OFFLINE_TRUTH_SCORING",
+      "run": "JEPA/revision3/articulated/runs/sitl_offset_A_20261010_212934",
+      "timing": {
+        "joint_samples": 25694,
+        "imu_samples": 25694,
+        "joint_max_gap": 0.0040000000000048885,
+        "imu_max_gap": 0.0040000000000048885
+      },
+      "n_windows": 145,
+      "fit_windows": 72,
+      "holdout_windows": 73,
+      "train": {
+        "corrected_Nm": [
+          0.00015152162291188137,
+          0.00012865110863205924,
+          0.00023447056075237186
+        ],
+        "rigid_Nm": [
+          0.006251015330265431,
+          0.02500205333557493,
+          0.0006915383540448193
+        ],
+        "no_internal_Nm": [
+          0.0062492486837593345,
+          0.02491929363497975,
+          0.0006938703025496729
+        ]
+      },
+      "holdout": {
+        "corrected_Nm": [
+          0.00011960034784246018,
+          0.0001313851074245891,
+          0.00022563251478279817
+        ],
+        "rigid_Nm": [
+          0.007527357923474124,
+          0.02051556100571952,
+          0.0005473184382984318
+        ],
+        "no_internal_Nm": [
+          0.007525765942653677,
+          0.020460778257360025,
+          0.0005502310380646051
+        ]
+      },
+      "oracle_residual_gate_pass": true,
+      "data_singular_values": [
+        89.79852978220512,
+        89.4235366639264,
+        12.441998991857602,
+        11.875048914926001,
+        11.127201236070684,
+        6.011637690517407,
+        4.97044570281021,
+        3.2278951822823445
+      ],
+      "retained_rank": 6,
+      "quadrature": "derived_semiimplicit",
+      "shadow": {
+        "accepted": false,
+        "theta": [
+          -0.5665525567908773,
+          -0.005921416679574448,
+          0.24572578001144899,
+          0.18708762895483888,
+          0.3858925136500688,
+          0.011948894151695469,
+          0.0002449584183930628,
+          7.650997106586923e-05
+        ],
+        "train_windows": 72,
+        "holdout_windows": 73,
+        "rank": 6,
+        "singular_values": [
+          82.37680975447519,
+          82.02806077376202,
+          11.385143685839898,
+          10.805357576481207,
+          10.137342795536828,
+          5.533890130642899,
+          4.585775987481751,
+          2.9461287215061125
+        ],
+        "reason": "incomplete_spatial_information"
+      },
+      "bias_missing_negative_control": "unverified_constant_torque_bias",
+      "offline_fit_error": {
+        "theta": [
+          -1.0172648476913793e-06,
+          -5.153049958614431e-07,
+          -0.00010500490865669732,
+          -0.00013000216750974625,
+          -0.00011769565710600949,
+          7.96044718804137e-07,
+          2.195898906713048e-05,
+          6.0017765403561974e-05
+        ],
+        "note": "Truth scoring only; not an accepted online update."
+      }
+    }
+  },
+  {
+    "run": "sitl_offset_B_shadow_20261010_214130",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_d94a81cf959f",
+      "GZ_PARTITION": "jepa_d94a81cf959f",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 423566,
+        "px4": 423567,
+        "sensors": 424348,
+        "controller": 424356
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_offset_B_shadow_20261010_214130/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/spatial_probe.py"
+        ]
+      },
+      "source_head": "b233b951d4f78968ec7932f96afe4b2dff1ee633",
+      "experiment": {
+        "label": "offset_B_shadow",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "B",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004,
+        "spatial_case": "offset_y",
+        "shadow_only": true
+      },
+      "binary_sha256": "079e16726c159d070c57e11213eaf63611a7030b46031585fd9cd96645234b10",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "revision3_sources_sha256": {
+        "nominal_dynamics.py": "259a63f0e8233bcd62818ca507f8e8bf9dd89779962288bb98298296ec1bb442",
+        "spatial_probe.py": "5ef3b0fb73f96c2c77be87117d5c710d6032e2ded1a45fe5fe5887920f42ef23",
+        "analyze_balance.py": "06386c8387819044e5adc96f758994d8d8f8d432f22b4335cce2ed14ce0faf30",
+        "allocation_contract.py": "0087187fda3fb2d7a1c31064c1f0178926778ee0efd78af7f3325b70f20f9e5a",
+        "run_diagnostic.py": "c0c5e053b48a4d1f0b535a2144613151e1efb18c665652dc395f76655317cd83",
+        "spatial_model.py": "6f7646ee9159b7bde5d1f97d24f7fbd7ba4c927b2e35d3b619bb64589e75935e",
+        "sensor_balance.py": "48db5ff0e94d559ea2457e30c41c7e5e6ddb7a656522a66993669cb47135d7d3",
+        "online_shadow.py": "f5fc95bca48e67a3ddd838a2d378f1edacc398fe094db0d5e77467cb30bfb120",
+        "record_sensors.py": "02c11de43a5f1038bafd53963d5bc143a77976ffe8eb637631cd94bebf547155",
+        "analyze_consumer.py": "efab8b23263fabbb5bc2ace0b4d521f26c144fd96d0c04f37a12926a450d0752",
+        "nominal_calibration.json": "f27cd926f3cbd40a5c49a77d597647ef45a4aaa905a4e8c9bed200a85aaff3a9",
+        "diagnose_timing.py": "ecc2848ca27f38b7fa45763ca2f67f6536c0b7c4cd016f7ba93a72904b296e3b",
+        "prepare_spatial_firmware.py": "6e40deb5168fcb7430c3a4ef6a044a4af60e2061dd895ca525e3479897e922d9",
+        "test_consumer.py": "96984910b1f9b6d9169c7d05f9de01016a1ec8348f0bfe779ef85d16122b7f42",
+        "test_spatial.py": "4b1c613ac634dbc8f7532256ce2ed8c333e8cc6d5169f44b64d2df106aca6d0b",
+        "spatial_estimator.py": "7d64d27c8724fddf018f94b7dd382acf10d653c1cf3a699fa650f9d327e39015"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.407801748995553,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20245,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4688,
+      "mass_estimate_kg": 4.5,
+      "mass_accepted": false,
+      "mass_reason": "insufficient_windows",
+      "group": "B",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.97999999999999,
+      "last_joint_timestamp_s": 105.26,
+      "position_rmse_m": 0.044440618660447406,
+      "max_position_error_m": 0.10078494456570396
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "consumer_analysis": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.407801748995553,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20245,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4688,
+      "mass_estimate_kg": 4.5,
+      "mass_accepted": false,
+      "mass_reason": "insufficient_windows",
+      "group": "B",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.97999999999999,
+      "last_joint_timestamp_s": 105.26,
+      "position_rmse_m": 0.044440618660447406,
+      "max_position_error_m": 0.10078494456570396,
+      "run": "sitl_offset_B_shadow_20261010_214130",
+      "case": "offset_y",
+      "legacy_mass_estimator_fields_unused": true,
+      "evaluation_attitude_rmse_deg": 6.728034973144531,
+      "evaluation_attitude_axis_rmse_deg": [
+        2.037992000579834,
+        0.7912420034408569,
+        6.362936019897461
+      ],
+      "evaluation_torque_saturation_fraction": 0.0,
+      "max_parameter_transition_error_Nm": 0.0,
+      "effective_delta_com_at_eval_start": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_inertia_at_eval_start": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_com_final": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_inertia_final": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_effective_delta_com_norm_m": 0.0,
+      "max_effective_delta_inertia_norm_kg_m2": 0.0,
+      "tracking_bias_max_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "correction_mean_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "update_rejection_fraction": 0.0,
+      "hntr_mass": 5.400000095367432,
+      "gains": {
+        "HNTR_ATT_D_P": 2.0,
+        "HNTR_ATT_D_R": 2.0,
+        "HNTR_ATT_D_Y": 2.200000047683716,
+        "HNTR_ATT_ILIM_P": 0.0,
+        "HNTR_ATT_ILIM_R": 0.0,
+        "HNTR_ATT_ILIM_Y": 0.0,
+        "HNTR_ATT_I_P": 0.0,
+        "HNTR_ATT_I_R": 0.0,
+        "HNTR_ATT_I_Y": 0.0,
+        "HNTR_ATT_KR_P": 8.0,
+        "HNTR_ATT_KR_R": 8.0,
+        "HNTR_ATT_KR_Y": 3.200000047683716
+      },
+      "calibration": {
+        "duration_s": 15.996000000000002,
+        "position_rmse_m": 0.02704121815162093,
+        "max_error_m": 0.048647229906878,
+        "vertical_reference_velocity_cost_m2_s": 0.0,
+        "vertical_reference_acceleration_cost_m2_s3": 0.0,
+        "attitude_rmse_deg": 3.9066433906555176,
+        "update_rejection_fraction": 0.0
+      },
+      "evaluation_update_rejection_fraction": 0.0,
+      "check_update_rejection_fraction": 0.0,
+      "com_max_logged_change_rate": 0.0,
+      "com_rate_bound": 0.002,
+      "inertia_max_logged_change_rate": 0.0,
+      "inertia_rate_bound": 0.01,
+      "freeze_sent": false,
+      "online_shadow": {
+        "accepted": false,
+        "theta": [
+          -0.5665525567908773,
+          -0.005921416679574448,
+          0.24572578001144899,
+          0.18708762895483888,
+          0.3858925136500688,
+          0.011948894151695469,
+          0.0002449584183930628,
+          7.650997106586923e-05
+        ],
+        "train_windows": 20,
+        "holdout_windows": 20,
+        "rank": 5,
+        "singular_values": [
+          46.219372225058784,
+          46.09754227626675,
+          6.4705866217006625,
+          6.004151256941579,
+          5.705142881821896,
+          2.614896795092582,
+          2.196462507583884,
+          1.0591536354438822
+        ],
+        "reason": "incomplete_spatial_information",
+        "input_interval": [
+          35.616,
+          51.616
+        ],
+        "sensor_only": true,
+        "application_disabled": true,
+        "decision_phase_elapsed_s": 42.064
+      }
+    },
+    "online_shadow": {
+      "accepted": false,
+      "theta": [
+        -0.5665525567908773,
+        -0.005921416679574448,
+        0.24572578001144899,
+        0.18708762895483888,
+        0.3858925136500688,
+        0.011948894151695469,
+        0.0002449584183930628,
+        7.650997106586923e-05
+      ],
+      "train_windows": 20,
+      "holdout_windows": 20,
+      "rank": 5,
+      "singular_values": [
+        46.219372225058784,
+        46.09754227626675,
+        6.4705866217006625,
+        6.004151256941579,
+        5.705142881821896,
+        2.614896795092582,
+        2.196462507583884,
+        1.0591536354438822
+      ],
+      "reason": "incomplete_spatial_information",
+      "input_interval": [
+        35.616,
+        51.616
+      ],
+      "sensor_only": true,
+      "application_disabled": true,
+      "decision_phase_elapsed_s": 42.064
+    }
+  },
+  {
+    "run": "sitl_offset_C_shadow_20261010_214338",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_274d3a4edb74",
+      "GZ_PARTITION": "jepa_274d3a4edb74",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 424706,
+        "px4": 424707,
+        "sensors": 425536,
+        "controller": 425546
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_offset_C_shadow_20261010_214338/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/spatial_probe.py"
+        ]
+      },
+      "source_head": "b233b951d4f78968ec7932f96afe4b2dff1ee633",
+      "experiment": {
+        "label": "offset_C_shadow",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "C",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004,
+        "spatial_case": "offset_y",
+        "shadow_only": true
+      },
+      "binary_sha256": "079e16726c159d070c57e11213eaf63611a7030b46031585fd9cd96645234b10",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "px4_consumer_sources_sha256": {
+        "src/modules/mc_rate_control/HnuterControl.cpp": "33162736d8e7fdcad763da3905fad6550592d584fd00fe34e7adab7eb9da286e",
+        "src/modules/mc_rate_control/HnuterControl.hpp": "b63b73a75501bb0bf8af9ce55cc092eab5fb1c71c79c0d8f631944c15116acbc",
+        "msg/HnuterControlStatus.msg": "d116abd3d4f273b7dc16808094c9ee7ecb7511ccd44b4be76d6409d4f036c307"
+      },
+      "revision3_sources_sha256": {
+        "nominal_dynamics.py": "259a63f0e8233bcd62818ca507f8e8bf9dd89779962288bb98298296ec1bb442",
+        "spatial_probe.py": "5ef3b0fb73f96c2c77be87117d5c710d6032e2ded1a45fe5fe5887920f42ef23",
+        "analyze_balance.py": "06386c8387819044e5adc96f758994d8d8f8d432f22b4335cce2ed14ce0faf30",
+        "allocation_contract.py": "0087187fda3fb2d7a1c31064c1f0178926778ee0efd78af7f3325b70f20f9e5a",
+        "run_diagnostic.py": "2d6fefdb683ca8734e897e9a82501caf01887ed485fc945bc13bfa5aa545103b",
+        "spatial_model.py": "6f7646ee9159b7bde5d1f97d24f7fbd7ba4c927b2e35d3b619bb64589e75935e",
+        "sensor_balance.py": "48db5ff0e94d559ea2457e30c41c7e5e6ddb7a656522a66993669cb47135d7d3",
+        "online_shadow.py": "f5fc95bca48e67a3ddd838a2d378f1edacc398fe094db0d5e77467cb30bfb120",
+        "record_sensors.py": "02c11de43a5f1038bafd53963d5bc143a77976ffe8eb637631cd94bebf547155",
+        "analyze_consumer.py": "efab8b23263fabbb5bc2ace0b4d521f26c144fd96d0c04f37a12926a450d0752",
+        "nominal_calibration.json": "f27cd926f3cbd40a5c49a77d597647ef45a4aaa905a4e8c9bed200a85aaff3a9",
+        "diagnose_timing.py": "ecc2848ca27f38b7fa45763ca2f67f6536c0b7c4cd016f7ba93a72904b296e3b",
+        "prepare_spatial_firmware.py": "6e40deb5168fcb7430c3a4ef6a044a4af60e2061dd895ca525e3479897e922d9",
+        "test_consumer.py": "df52963b93aa64caf3b602cdbca81c41d369a4cc48c954000f1a58806b057e40",
+        "test_spatial.py": "4b1c613ac634dbc8f7532256ce2ed8c333e8cc6d5169f44b64d2df106aca6d0b",
+        "spatial_estimator.py": "7d64d27c8724fddf018f94b7dd382acf10d653c1cf3a699fa650f9d327e39015"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 8.509880726996926,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20246,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4682,
+      "mass_estimate_kg": 4.5,
+      "mass_accepted": false,
+      "mass_reason": "insufficient_windows",
+      "group": "C",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.844,
+      "last_joint_timestamp_s": 105.132,
+      "position_rmse_m": 0.04296482849639644,
+      "max_position_error_m": 0.07732366824881982
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "consumer_analysis": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 8.509880726996926,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20246,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4682,
+      "mass_estimate_kg": 4.5,
+      "mass_accepted": false,
+      "mass_reason": "insufficient_windows",
+      "group": "C",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.844,
+      "last_joint_timestamp_s": 105.132,
+      "position_rmse_m": 0.04296482849639644,
+      "max_position_error_m": 0.07732366824881982,
+      "run": "sitl_offset_C_shadow_20261010_214338",
+      "case": "offset_y",
+      "legacy_mass_estimator_fields_unused": true,
+      "evaluation_attitude_rmse_deg": 6.5205912590026855,
+      "evaluation_attitude_axis_rmse_deg": [
+        2.0325372219085693,
+        0.8244065642356873,
+        6.140624046325684
+      ],
+      "evaluation_torque_saturation_fraction": 0.0,
+      "max_parameter_transition_error_Nm": 0.0,
+      "effective_delta_com_at_eval_start": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_inertia_at_eval_start": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_com_final": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "effective_delta_inertia_final": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "max_effective_delta_com_norm_m": 0.0,
+      "max_effective_delta_inertia_norm_kg_m2": 0.0,
+      "tracking_bias_max_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "correction_mean_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "update_rejection_fraction": 0.0,
+      "hntr_mass": 5.400000095367432,
+      "gains": {
+        "HNTR_ATT_D_P": 2.0,
+        "HNTR_ATT_D_R": 2.0,
+        "HNTR_ATT_D_Y": 2.200000047683716,
+        "HNTR_ATT_ILIM_P": 0.0,
+        "HNTR_ATT_ILIM_R": 0.0,
+        "HNTR_ATT_ILIM_Y": 0.0,
+        "HNTR_ATT_I_P": 0.0,
+        "HNTR_ATT_I_R": 0.0,
+        "HNTR_ATT_I_Y": 0.0,
+        "HNTR_ATT_KR_P": 8.0,
+        "HNTR_ATT_KR_R": 8.0,
+        "HNTR_ATT_KR_Y": 3.200000047683716
+      },
+      "calibration": {
+        "duration_s": 15.996000000000002,
+        "position_rmse_m": 0.045896531681823824,
+        "max_error_m": 0.0909927500240245,
+        "vertical_reference_velocity_cost_m2_s": 0.08966535626118216,
+        "vertical_reference_acceleration_cost_m2_s3": 0.6056434574691762,
+        "attitude_rmse_deg": 6.573075771331787,
+        "update_rejection_fraction": 0.0
+      },
+      "evaluation_update_rejection_fraction": 0.0,
+      "check_update_rejection_fraction": 0.0,
+      "com_max_logged_change_rate": 0.0,
+      "com_rate_bound": 0.002,
+      "inertia_max_logged_change_rate": 0.0,
+      "inertia_rate_bound": 0.01,
+      "freeze_sent": false,
+      "online_shadow": {
+        "accepted": false,
+        "theta": [
+          -0.5665525567908773,
+          -0.005921416679574448,
+          0.24572578001144899,
+          0.18708762895483888,
+          0.3858925136500688,
+          0.011948894151695469,
+          0.0002449584183930628,
+          7.650997106586923e-05
+        ],
+        "train_windows": 19,
+        "holdout_windows": 20,
+        "rank": 2,
+        "singular_values": [
+          45.02340107956794,
+          44.99759125452635,
+          3.0975158663138083,
+          2.6384153589638477,
+          2.329620894297414,
+          2.088940384265748,
+          1.6570331208678264,
+          1.162371221800031
+        ],
+        "reason": "incomplete_spatial_information",
+        "input_interval": [
+          35.688,
+          51.684
+        ],
+        "sensor_only": true,
+        "application_disabled": true,
+        "decision_phase_elapsed_s": 41.85999999999999
+      }
+    },
+    "online_shadow": {
+      "accepted": false,
+      "theta": [
+        -0.5665525567908773,
+        -0.005921416679574448,
+        0.24572578001144899,
+        0.18708762895483888,
+        0.3858925136500688,
+        0.011948894151695469,
+        0.0002449584183930628,
+        7.650997106586923e-05
+      ],
+      "train_windows": 19,
+      "holdout_windows": 20,
+      "rank": 2,
+      "singular_values": [
+        45.02340107956794,
+        44.99759125452635,
+        3.0975158663138083,
+        2.6384153589638477,
+        2.329620894297414,
+        2.088940384265748,
+        1.6570331208678264,
+        1.162371221800031
+      ],
+      "reason": "incomplete_spatial_information",
+      "input_interval": [
+        35.688,
+        51.684
+      ],
+      "sensor_only": true,
+      "application_disabled": true,
+      "decision_phase_elapsed_s": 41.85999999999999
+    }
+  },
+  {
+    "run": "sitl_offset_D_20261010_213142",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_277432a5c449",
+      "GZ_PARTITION": "jepa_277432a5c449",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 419208,
+        "px4": 419209,
+        "sensors": 419988,
+        "controller": 419996
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_offset_D_20261010_213142/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/spatial_probe.py"
+        ]
+      },
+      "source_head": "c0d57b046f3512c172fb96760c8ec57f5e0aa974",
+      "experiment": {
+        "label": "offset_D",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004,
+        "spatial_case": "offset_y"
+      },
+      "binary_sha256": "3382d7269ce9220317b1889e2785a3e7411fc4a6c4b423a794d53c167938a764",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.407332429997041,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20248,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4680,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "D",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.792,
+      "last_joint_timestamp_s": 105.072,
+      "position_rmse_m": 0.05244363619437607,
+      "max_position_error_m": 0.10479079021054803
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "consumer_analysis": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.407332429997041,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20248,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4680,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "D",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.792,
+      "last_joint_timestamp_s": 105.072,
+      "position_rmse_m": 0.05244363619437607,
+      "max_position_error_m": 0.10479079021054803,
+      "run": "sitl_offset_D_20261010_213142",
+      "case": "offset_y",
+      "legacy_mass_estimator_fields_unused": true,
+      "evaluation_attitude_rmse_deg": 5.224020957946777,
+      "evaluation_attitude_axis_rmse_deg": [
+        1.1908470392227173,
+        0.8183659911155701,
+        5.020213603973389
+      ],
+      "evaluation_torque_saturation_fraction": 0.0,
+      "max_parameter_transition_error_Nm": 2.9103830456733704e-11,
+      "effective_delta_com_at_eval_start": [
+        0.0,
+        -0.006666666828095913,
+        0.0
+      ],
+      "effective_delta_inertia_at_eval_start": [
+        0.0017999999690800905,
+        0.0008699999889358878,
+        0.0024300001095980406
+      ],
+      "effective_delta_com_final": [
+        0.0,
+        -0.006666666828095913,
+        0.0
+      ],
+      "effective_delta_inertia_final": [
+        0.0017999999690800905,
+        0.0008699999889358878,
+        0.0024300001095980406
+      ],
+      "max_effective_delta_com_norm_m": 0.006666666828095913,
+      "max_effective_delta_inertia_norm_kg_m2": 0.0031467126682400703,
+      "tracking_bias_max_evaluation_Nm": [
+        0.1616433709859848,
+        0.0,
+        0.0
+      ],
+      "correction_mean_evaluation_Nm": [
+        0.13907018303871155,
+        -0.00026073685148730874,
+        0.0017724815988913178
+      ],
+      "update_rejection_fraction": 0.45511193168705283,
+      "hntr_mass": 5.400000095367432,
+      "gains": {
+        "HNTR_ATT_D_P": 2.0,
+        "HNTR_ATT_D_R": 2.0,
+        "HNTR_ATT_D_Y": 2.200000047683716,
+        "HNTR_ATT_ILIM_P": 0.0,
+        "HNTR_ATT_ILIM_R": 0.0,
+        "HNTR_ATT_ILIM_Y": 0.0,
+        "HNTR_ATT_I_P": 0.0,
+        "HNTR_ATT_I_R": 0.0,
+        "HNTR_ATT_I_Y": 0.0,
+        "HNTR_ATT_KR_P": 8.0,
+        "HNTR_ATT_KR_R": 8.0,
+        "HNTR_ATT_KR_Y": 3.200000047683716
+      },
+      "calibration": {
+        "duration_s": 15.996000000000002,
+        "position_rmse_m": 0.03564271535802838,
+        "max_error_m": 0.0748384220030883,
+        "vertical_reference_velocity_cost_m2_s": 0.0,
+        "vertical_reference_acceleration_cost_m2_s3": 0.0,
+        "attitude_rmse_deg": 5.348701000213623,
+        "update_rejection_fraction": 0.0
+      },
+      "evaluation_update_rejection_fraction": 0.915,
+      "check_update_rejection_fraction": 0.7615384615384615,
+      "com_max_logged_change_rate": 0.0020000152289871382,
+      "com_rate_bound": 0.002,
+      "inertia_max_logged_change_rate": 0.010000013571700208,
+      "inertia_rate_bound": 0.01,
+      "first_update_px4_s": 52.175999999999995,
+      "first_update_correction_norm_Nm": 8.685223292559385e-05,
+      "first_update_logged_torque_step_Nm": 0.205250084400177,
+      "freeze_sent": true,
+      "frozen_parameter_span": 0.0
+    },
+    "envelope_diagnostic": {
+      "force_x": {
+        "reject_fraction": 0.0,
+        "percentiles": [
+          0.32012222707271576,
+          0.8802228182554244,
+          1.147796392440796
+        ],
+        "limit": 2
+      },
+      "force_y": {
+        "reject_fraction": 0.704,
+        "percentiles": [
+          2.8200749158859253,
+          4.935004711151123,
+          5.388936519622803
+        ],
+        "limit": 2
+      },
+      "force_z": {
+        "reject_fraction": 0.0,
+        "percentiles": [
+          0.12402153015136719,
+          0.9698537826538076,
+          2.2821998596191406
+        ],
+        "limit": 3
+      },
+      "rates": {
+        "reject_fraction": 0.0,
+        "percentiles": [
+          0.05749922215277692,
+          0.1275040132651347,
+          0.2651344644005562
+        ],
+        "limit": 0.6
+      },
+      "pd_roll": {
+        "reject_fraction": 0.1704,
+        "percentiles": [
+          0.3102549612522125,
+          0.4718948557972908,
+          0.6225201487541199
+        ],
+        "limit": 0.4
+      },
+      "pd_pitch": {
+        "reject_fraction": 0.0,
+        "percentiles": [
+          0.0427606962621212,
+          0.11633222550153727,
+          0.20779109001159668
+        ],
+        "limit": 0.3
+      },
+      "pd_yaw": {
+        "reject_fraction": 0.3376,
+        "percentiles": [
+          0.13578925281763077,
+          0.3948597133159637,
+          0.4650422930717468
+        ],
+        "limit": 0.2
+      }
+    }
+  },
+  {
+    "run": "sitl_offset_D_transition_recheck_20261010_213745",
+    "launch": {
+      "kind": "owned_local_sitl",
+      "namespace": "jepa_2805d6c6a505",
+      "GZ_PARTITION": "jepa_2805d6c6a505",
+      "environment": {
+        "PX4_SIM_MODEL": "gz_hnuter_jepa",
+        "GZ_IP": "127.0.0.1",
+        "ROS_DOMAIN_ID": "73",
+        "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+        "PX4_UXRCE_DDS_PORT": "28888"
+      },
+      "pids": {
+        "agent": 421135,
+        "px4": 421136,
+        "sensors": 421901,
+        "controller": 421909
+      },
+      "commands": {
+        "agent": [
+          "MicroXRCEAgent",
+          "udp4",
+          "-p",
+          "28888",
+          "-v",
+          "4"
+        ],
+        "px4": [
+          "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/bin/px4",
+          "-i",
+          "0",
+          "-w",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/runs/sitl_offset_D_transition_recheck_20261010_213745/rootfs"
+        ],
+        "sensors": [
+          "python3",
+          "/home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/record_sensors.py"
+        ],
+        "controller": [
+          "bash",
+          "-c",
+          "source /opt/ros/jazzy/setup.bash\nsource /home/hnuter/px4_ws_ros2/install/setup.bash\nexec python3 /home/hnuter/px4_ws_ros2/JEPA/revision3/articulated/spatial_probe.py"
+        ]
+      },
+      "source_head": "b233b951d4f78968ec7932f96afe4b2dff1ee633",
+      "experiment": {
+        "label": "offset_D_transition_recheck",
+        "loaded": true,
+        "instrument": true,
+        "speed": 1.0,
+        "smooth_takeoff": true,
+        "group": "D",
+        "noise": "low_noise",
+        "seed": 0,
+        "instance": 0,
+        "attitude_reference": "legacy",
+        "discovery": "shared",
+        "startup_only": false,
+        "omit_joint_telemetry": false,
+        "inject_exit_at": 0.0,
+        "source_model": null,
+        "physics_step": 0.004,
+        "spatial_case": "offset_y"
+      },
+      "binary_sha256": "079e16726c159d070c57e11213eaf63611a7030b46031585fd9cd96645234b10",
+      "controller_sources_sha256": {
+        "actuator_sensors.py": "d34e213ec8aa2946607cc9784c86f99fea0d486b375f8e0c30a3253a75028a08",
+        "run_sitl.py": "1fb920ac2bc80ec4e486bc268a9bc5a9e838994727bbd7e76ab7ce7c1d1d6db6",
+        "analyze_failure_cause.py": "6d2b63c3cc4b7f92d8f59b814a6d61b933725277743e34ab8020e4ce1883ec74",
+        "plot_outcomes.py": "bb1af15b5e158e2d7da71c783120ac962d7478e251d7d4cdbcb8605582f69bdd",
+        "test_offline.py": "c1cb4313de1c2495c44f3247ec8b15d98d9d458ff014bb6f8517e69807622249",
+        "audit_release.py": "ec4d7e23d6aa80c7a8eb81b7c67440e0b527ab2a9f7e884bb2c6305e7c860b85",
+        "audit_transitions.py": "692afbccf0064fcd457fc3bda9b5af2e334f85bbcc06748b73169afc64b91aa7",
+        "estimator.py": "f4b7f218e78eaab28bffdd64cf94aa3a878d2a44066812863362fc0b4ceda7c4",
+        "sitl_position_probe.py": "bcafb2d6244584721acee2a765fea58cb2e245f9445ccbd1cb990f15bb2deb5d",
+        "write_report.py": "9c3767d5a7d4d1f40c5e93306f1f6ce1e79714a4debefc927e4923dac92e0875",
+        "diagnose_new_failures.py": "cab3799d92ff244291e40f28c5e598260dab69ee695b632bd0fdcdcbd4ba3b5a",
+        "audit_wrench_axes.py": "55cf4bf1f7580260b1b560280d7da49d3a865266c4c4eba697b455e5a55354d1",
+        "run_matrix.py": "ad943b59877b55bf49ea12f8826963a22de4c84fcd9bb97f8218af50d7f3cb38",
+        "plot_revision.py": "47e5463bd0aa965487a628f2dbd1b3d8824f3ef4669a32f2449d2fc690cb5cac",
+        "inspect_failures.py": "f5374ac009b8d39b224dae16156329421b314bf3e1d6e37bb9bd2da8cfc7b0a4",
+        "run_regression.py": "553527e20499bb6bc6dba95ae8a6765e92429f13aaedcb401a9200ed6717e3b0",
+        "analyze_sitl.py": "a366a31cfebfc3c4c875a0a49b778f806189016957ed5f89f2704fc4bbf50d32",
+        "model_audit.py": "db75265bf1f9474fe58bbfb23b56394ab2fd553b9dcfe6686109122f7bfa4b34",
+        "audit_landings.py": "b074604b78711b5f04d81168f28be781f347b35e051cf8ba7bedbcb5daabb766",
+        "summarize_revision.py": "8d378b332682aaa4719703ffcc37d9968cb318e25e50f3faef16a12a4f4fea70"
+      },
+      "revision3_sources_sha256": {
+        "nominal_dynamics.py": "259a63f0e8233bcd62818ca507f8e8bf9dd89779962288bb98298296ec1bb442",
+        "spatial_probe.py": "5d7f92e755031abe56e36c45ea51149095ec7fa9f391b5adc5e3e1c45b3b3009",
+        "analyze_balance.py": "06386c8387819044e5adc96f758994d8d8f8d432f22b4335cce2ed14ce0faf30",
+        "allocation_contract.py": "0087187fda3fb2d7a1c31064c1f0178926778ee0efd78af7f3325b70f20f9e5a",
+        "run_diagnostic.py": "44046d2016e3f69744179277bc9d0973558d90e8a51c9a837f94e27f898aabcf",
+        "spatial_model.py": "6f7646ee9159b7bde5d1f97d24f7fbd7ba4c927b2e35d3b619bb64589e75935e",
+        "sensor_balance.py": "48db5ff0e94d559ea2457e30c41c7e5e6ddb7a656522a66993669cb47135d7d3",
+        "online_shadow.py": "f5fc95bca48e67a3ddd838a2d378f1edacc398fe094db0d5e77467cb30bfb120",
+        "record_sensors.py": "02c11de43a5f1038bafd53963d5bc143a77976ffe8eb637631cd94bebf547155",
+        "analyze_consumer.py": "efab8b23263fabbb5bc2ace0b4d521f26c144fd96d0c04f37a12926a450d0752",
+        "nominal_calibration.json": "f27cd926f3cbd40a5c49a77d597647ef45a4aaa905a4e8c9bed200a85aaff3a9",
+        "diagnose_timing.py": "ecc2848ca27f38b7fa45763ca2f67f6536c0b7c4cd016f7ba93a72904b296e3b",
+        "prepare_spatial_firmware.py": "ccb9b96b971f52a6876839afb15cc03d0f39e20cc3f23c343379680fb591bf22",
+        "test_consumer.py": "96984910b1f9b6d9169c7d05f9de01016a1ec8348f0bfe779ef85d16122b7f42",
+        "test_spatial.py": "4b1c613ac634dbc8f7532256ce2ed8c333e8cc6d5169f44b64d2df106aca6d0b",
+        "spatial_estimator.py": "7d64d27c8724fddf018f94b7dd382acf10d653c1cf3a699fa650f9d327e39015"
+      },
+      "truth_recorder_sha256": "2bd892ca38df66ed409220ecb8b27969d7aa547f360302125d91b58e02faddf6"
+    },
+    "flight_result": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.504416812007548,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20247,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4683,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "D",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.856,
+      "last_joint_timestamp_s": 105.136,
+      "position_rmse_m": 0.05458563500368027,
+      "max_position_error_m": 0.11280292131060854
+    },
+    "process_exit": {
+      "agent": -15,
+      "px4": 0,
+      "sensors": 0,
+      "controller": 0
+    },
+    "consumer_analysis": {
+      "status": "PASS",
+      "failure": null,
+      "ready_at_wall_s": 9.504416812007548,
+      "startup_only": false,
+      "attitude_reference": "legacy",
+      "phase": "LAND",
+      "samples": 20247,
+      "evaluation_samples": 4000,
+      "landed": true,
+      "disarmed": true,
+      "sensor_samples": 4683,
+      "mass_estimate_kg": null,
+      "mass_accepted": null,
+      "mass_reason": "disabled",
+      "group": "D",
+      "noise": "low_noise",
+      "mass_accepted_at_px4_s": null,
+      "last_px4_timestamp_s": 104.856,
+      "last_joint_timestamp_s": 105.136,
+      "position_rmse_m": 0.05458563500368027,
+      "max_position_error_m": 0.11280292131060854,
+      "run": "sitl_offset_D_transition_recheck_20261010_213745",
+      "case": "offset_y",
+      "legacy_mass_estimator_fields_unused": true,
+      "evaluation_attitude_rmse_deg": 4.057538032531738,
+      "evaluation_attitude_axis_rmse_deg": [
+        0.6902779936790466,
+        0.7813297510147095,
+        3.921307325363159
+      ],
+      "evaluation_torque_saturation_fraction": 0.0,
+      "max_parameter_transition_error_Nm": 1.1175870895385742e-08,
+      "effective_delta_com_at_eval_start": [
+        0.0,
+        -0.006666666828095913,
+        0.0
+      ],
+      "effective_delta_inertia_at_eval_start": [
+        0.0017999999690800905,
+        0.0008699999889358878,
+        0.0024300001095980406
+      ],
+      "effective_delta_com_final": [
+        0.0,
+        -0.006666666828095913,
+        0.0
+      ],
+      "effective_delta_inertia_final": [
+        0.0017999999690800905,
+        0.0008699999889358878,
+        0.0024300001095980406
+      ],
+      "max_effective_delta_com_norm_m": 0.006666666828095913,
+      "max_effective_delta_inertia_norm_kg_m2": 0.0031467126682400703,
+      "tracking_bias_max_evaluation_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "correction_mean_evaluation_Nm": [
+        0.2843708097934723,
+        -0.00020193401724100113,
+        0.002039504237473011
+      ],
+      "update_rejection_fraction": 0.043869776033248674,
+      "hntr_mass": 5.400000095367432,
+      "gains": {
+        "HNTR_ATT_D_P": 2.0,
+        "HNTR_ATT_D_R": 2.0,
+        "HNTR_ATT_D_Y": 2.200000047683716,
+        "HNTR_ATT_ILIM_P": 0.0,
+        "HNTR_ATT_ILIM_R": 0.0,
+        "HNTR_ATT_ILIM_Y": 0.0,
+        "HNTR_ATT_I_P": 0.0,
+        "HNTR_ATT_I_R": 0.0,
+        "HNTR_ATT_I_Y": 0.0,
+        "HNTR_ATT_KR_P": 8.0,
+        "HNTR_ATT_KR_R": 8.0,
+        "HNTR_ATT_KR_Y": 3.200000047683716
+      },
+      "calibration": {
+        "duration_s": 15.995999999999995,
+        "position_rmse_m": 0.03200889472698005,
+        "max_error_m": 0.0790169824656448,
+        "vertical_reference_velocity_cost_m2_s": 0.0,
+        "vertical_reference_acceleration_cost_m2_s3": 0.0,
+        "attitude_rmse_deg": 5.057530403137207,
+        "update_rejection_fraction": 0.0
+      },
+      "evaluation_update_rejection_fraction": 0.0075,
+      "check_update_rejection_fraction": 0.14153846153846153,
+      "com_max_logged_change_rate": 0.0020000152289871382,
+      "com_rate_bound": 0.002,
+      "inertia_max_logged_change_rate": 0.010000013571700208,
+      "inertia_rate_bound": 0.01,
+      "first_update_px4_s": 51.772,
+      "first_update_correction_norm_Nm": 0.00021756882779300213,
+      "first_update_logged_torque_step_Nm": 0.004586416762322187,
+      "freeze_sent": true,
+      "frozen_parameter_span": 0.0
+    }
+  }
+]
