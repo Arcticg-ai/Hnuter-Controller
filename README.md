@@ -147,6 +147,11 @@ both mappings internally.
 
 Run the standalone experimental hardware DRCDA controller with:
 
+For the newer standalone hardware packaging with the current bounded allocator,
+explicit output opt-in, telemetry freshness checks, and optional calibrated joint
+feedback, see [DRCDA Hardware v2](docs/drcda_v2_hardware.md). Its default mode is
+monitor-only; it has not been flight-validated. The older entry below is retained.
+
 ```bash
 cd ~/px4_ws_ros2
 source /opt/ros/jazzy/setup.bash

@@ -1,0 +1,493 @@
+# Appended to the hardware base and current allocator by build_hardware_drcda_v2.py.
+CoreDRCDAAllocator = DRCDAAllocator
+
+
+class DRCDAAllocator(CoreDRCDAAllocator):
+    """Hardware no-preview objective; no unmeasured future reference is invented."""
+
+    def allocate(self, desired_wrench, dt, preferred_command=None,
+                 active_angle_limits=None, future_wrench_references=None):
+        desired = np.asarray(desired_wrench, dtype=float)
+        if not np.all(np.isfinite(desired)):
+            raise ValueError('nonfinite requested wrench')
+        horizon = self.config.horizon_s
+        result = super().allocate(
+            desired, dt, preferred_command, active_angle_limits,
+            [(0.5 * horizon, desired, 0.4), (horizon, desired, 1.0)],
+        )
+        if result.status != 'solved' or not all(np.all(np.isfinite(a)) for a in (
+                result.command, result.predicted_state, result.predicted_wrench)):
+            raise RuntimeError('allocator failed: ' + result.status)
+        return result
+
+    def accept_published_command(self, command):
+        # The next model step must propagate the blended command actually sent,
+        # not the unblended optimum. This is command history, NOT angle sensing.
+        self.command = np.asarray(command, dtype=float).copy()
+        self._delayed_servo_command[:] = self.command[:4]
+        self._pending_servo_commands = [[] for _ in range(4)]
+
+    def _advance_state(self, dt):
+        super()._advance_state(dt)
+        measured = getattr(self, 'measured_joint_angles', None)
+        if measured is not None:
+            self.state[:4] = measured
+
+
+class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
+    """Experimental real-aircraft entry; output requires explicit operator opt-in."""
+
+    def __init__(self):
+        self._received = {}
+        self._sample_stamps = {}
+        self._hardware_fault = ''
+        self._gate_reason = 'waiting for telemetry'
+        self._status_armed = False
+        self._position_resets = None
+        self._attitude_reset_counter = None
+        self._joint_feedback_enabled = bool(os.environ.get('HNUTER_HARDWARE_JOINT_TOPIC'))
+        self._joint_names = ()
+        self._tasks_enabled = os.environ.get('HNUTER_HARDWARE_TASKS') == '1'
+        self._tuning_locked = False
+        self._output_enabled = os.environ.get('HNUTER_HARDWARE_DRCDA_ENABLE') == '1'
+        if os.environ.get('HNUTER_DRCDA_VARIANT', 'full') != 'full':
+            raise ValueError('Hardware v2 supports only constrained DRCDA, not ablations')
+        if os.environ.get('HNUTER_DRCDA_SERVO_MODEL', 'hardware_rate_limited') not in (
+                'hardware', 'hardware_rate_limited'):
+            raise ValueError('Hardware v2 does not accept SITL/ideal servo profiles')
+        os.environ.setdefault('HNUTER_TUNING_FILE', str(log_path(
+            'config', 'hnuter_drcda_v2_hardware_tuning.json')))
+        super().__init__()
+        self.use_px4_position_takeoff = False
+        self.debug_control_mode = 'direct'
+        self.direct_safety_shutdown_enabled = True
+        self.publish_allocator_setpoints_in_direct = False
+        self.preflight_tilt_test_enabled = False
+        self._tuning_locked = True
+        if self._joint_feedback_enabled:
+            from sensor_msgs.msg import JointState
+            self._joint_names = tuple(json.loads(os.environ.get('HNUTER_HARDWARE_JOINT_NAMES', '[]')))
+            if len(self._joint_names) != 4 or len(set(self._joint_names)) != 4:
+                raise ValueError('provide four distinct physical joint names in [aL,bL,aR,bR] order')
+            self.joint_feedback_sub = self.create_subscription(
+                JointState, os.environ['HNUTER_HARDWARE_JOINT_TOPIC'], self.joint_feedback_callback,
+                QoSProfile(depth=1, reliability=ReliabilityPolicy.BEST_EFFORT))
+        snapshot = {
+            'build_inputs_sha256': HARDWARE_V2_BUILD_INPUTS,
+            'tuning': json.loads(Path(self.tuning_path).read_text()),
+            'effective_allocator': {k: v.tolist() if isinstance(v, np.ndarray) else v
+                                    for k, v in vars(self.drcda.config).items()},
+            'joint_feedback_enabled': self._joint_feedback_enabled,
+            'joint_names': self._joint_names,
+            'output_enabled': self._output_enabled,
+            'tasks_enabled': self._tasks_enabled,
+            'joint_state_is_measured': self._joint_feedback_enabled,
+        }
+        log_path('config', 'drcda_v2.runtime.json').write_text(json.dumps(snapshot, indent=2))
+        self.get_logger().warn(
+            'HARDWARE V2: ' + ('OUTPUT ENABLED' if self._output_enabled else 'MONITOR ONLY')
+            + f'; joint feedback={self._joint_feedback_enabled}; no pure delay, no future-reference preview. '
+            'No automatic Arm/Disarm/mode changes. Validate prop-off first.'
+        )
+
+    def _node_name(self):
+        return 'hnuter_hardware_drcda_v2'
+
+    def _use_px4_position_mode(self):
+        return False
+
+    def _diagnostic_file_prefix(self):
+        return 'hardware/drcda_v2/hnuter'
+
+    def _write_tuning_file_if_missing(self):
+        path = Path(self.tuning_path)
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open('x', encoding='utf-8') as handle:
+                json.dump(HARDWARE_V2_DEFAULT_CONFIG, handle, indent=2)
+
+    @staticmethod
+    def validate_hardware_config(data):
+        missing = set(HARDWARE_V2_DEFAULT_CONFIG) - set(data)
+        if missing:
+            raise ValueError('incomplete hardware config: ' + ', '.join(sorted(missing)))
+        for key, value in data.items():
+            if isinstance(value, (int, float, list)):
+                if not np.all(np.isfinite(np.asarray(value, dtype=float))):
+                    raise ValueError('nonfinite config: ' + key)
+            if 'delay' in key and np.any(np.asarray(value, dtype=float) != 0.0):
+                raise ValueError('pure delay is not supported on this hardware entry')
+        if [data[k] for k in ('servo_pwm_min_us', 'servo_pwm_trim_us',
+                             'servo_pwm_max_us')] != [500, 1500, 2500]:
+            raise ValueError('this entry requires the 500/1500/2500 servo PWM profile')
+        for key in ('HNTR_MASS', 'HNTR_L1', 'HNTR_L2', 'HNTR_S2_GEAR',
+                    'HNTR_S1_RATE', 'HNTR_S2_RATE', 'HNTR_MAX_ARM_T',
+                    'HNTR_TAIL_T_POS', 'HNTR_TAIL_T_NEG', 'HNTR_MOT_EXPO',
+                    'HNTR_TAIL_EXP_P', 'HNTR_TAIL_EXP_N',
+                    'primary_servo_angle_max_deg', 'secondary_servo_angle_max_deg'):
+            if data[key] <= 0:
+                raise ValueError('hardware parameter must be positive: ' + key)
+        if not 0 < data['HNTR_MOT_HOV'] < 1:
+            raise ValueError('HNTR_MOT_HOV must be between zero and one')
+        if data['drcda_horizon_s'] != 0.1 or data['drcda_antiwindup_gain'] != 0:
+            raise ValueError('v2 initial hardware profile fixes H=0.1 and residual antiwindup=0')
+        if not data['direct_safety_attitude_check_enabled']:
+            raise ValueError('hardware attitude protection must stay enabled')
+        if not 0 < data['rc_attitude_angle_limit_deg'] < data['direct_safety_attitude_limit_deg'] <= 45:
+            raise ValueError('RC attitude limit must stay inside the safety envelope (<=45 deg)')
+        for key in ('hardware_servo_tau_positive_s', 'hardware_servo_tau_negative_s'):
+            value = np.asarray(data[key], dtype=float)
+            if value.shape != (4,) or np.any(value < 0) or np.any(value > 2):
+                raise ValueError(key + ' requires four calibrated values in [0,2] s')
+        if not 0 < data['alpha_limit_deg'] <= data['primary_servo_angle_max_deg']:
+            raise ValueError('primary angle limit exceeds servo travel')
+        if not 0 < data['theta_limit_deg'] <= data['secondary_servo_angle_max_deg'] / data['HNTR_S2_GEAR']:
+            raise ValueError('secondary angle limit exceeds geared joint travel')
+
+    def _load_tuning_file(self, force=False):
+        # Freeze a session's calibration; no silent partial live reload in flight.
+        if self._tuning_locked:
+            return
+        with open(self.tuning_path, encoding='utf-8') as handle:
+            data = json.load(handle)
+        self.validate_hardware_config(data)
+        self._apply_tuning(data)
+        self._last_tuning_mtime_ns = os.stat(self.tuning_path).st_mtime_ns
+        self.tuning_status_path = log_path('config', 'drcda_v2.applied.json')
+        self._write_tuning_apply_status(data, self._last_tuning_mtime_ns)
+
+    def _apply_tuning(self, data):
+        super()._apply_tuning(data)
+        self.publish_allocator_setpoints_in_direct = False
+        if not getattr(self, '_drcda_ready', False):
+            return
+        cfg = self.drcda.config
+        cfg.bounded_solver = True
+        cfg.immediate_wrench_weight = cfg.wrench_weight.copy()
+        cfg.servo_gain_positive[:] = 1.0
+        cfg.servo_gain_negative[:] = 1.0
+        cfg.servo_delay_positive_s[:] = 0.0
+        cfg.servo_delay_negative_s[:] = 0.0
+        cfg.servo_tau_positive_s[:] = data['hardware_servo_tau_positive_s']
+        cfg.servo_tau_negative_s[:] = data['hardware_servo_tau_negative_s']
+        cfg.motor_tau_up_s[:] = 0.0
+        cfg.motor_tau_down_s[:] = 0.0
+
+    def _record_sample(self, name, message, valid=True):
+        stamp = int(getattr(message, 'timestamp', 0))
+        previous = self._sample_stamps.get(name, 0)
+        if not valid or stamp <= 0 or stamp < previous:
+            self._received.pop(name, None)
+            if self._hardware_control_active:
+                self._latch_fault('invalid or reset telemetry: ' + name)
+            return False
+        if stamp == previous:
+            return False
+        self._sample_stamps[name] = stamp
+        self._received[name] = time.monotonic()
+        return True
+
+    def local_position_callback(self, msg):
+        valid = all(bool(getattr(msg, key, False)) for key in
+                    ('xy_valid', 'z_valid', 'v_xy_valid', 'v_z_valid'))
+        valid = valid and np.all(np.isfinite([msg.x, msg.y, msg.z, msg.vx, msg.vy, msg.vz]))
+        resets = tuple(getattr(msg, key, 0) for key in
+                       ('xy_reset_counter', 'z_reset_counter', 'vxy_reset_counter', 'vz_reset_counter'))
+        if self._hardware_control_active and resets != self._position_resets:
+            self._latch_fault('estimator position/velocity reset')
+        self._position_resets = resets
+        if self._record_sample('position', msg, valid):
+            super().local_position_callback(msg)
+
+    def attitude_callback(self, msg):
+        q = np.asarray(msg.q, dtype=float)
+        valid = q.shape == (4,) and np.all(np.isfinite(q)) and abs(np.linalg.norm(q) - 1) < 0.01
+        if not self._record_sample('attitude', msg, valid):
+            return
+        counter = int(getattr(msg, 'quat_reset_counter', 0))
+        if self._hardware_control_active and counter != self._attitude_reset_counter:
+            self._latch_fault('estimator attitude reset')
+        self._attitude_reset_counter = counter
+        # PX4 supplies NED/FRD. Do not use the legacy simulator's 180-degree
+        # frame-selection heuristic on a real aircraft.
+        w, x, y, z = q / np.linalg.norm(q)
+        self.R_ned_frd = np.array([
+            [1-2*(y*y+z*z), 2*(x*y-w*z), 2*(x*z+w*y)],
+            [2*(x*y+w*z), 1-2*(x*x+z*z), 2*(y*z-w*x)],
+            [2*(x*z-w*y), 2*(y*z+w*x), 1-2*(x*x+y*y)],
+        ])
+        self._attitude_canonical_initialized = True
+        super().attitude_callback(msg)
+
+    def angular_velocity_callback(self, msg):
+        if self._record_sample('rates', msg, np.all(np.isfinite(msg.xyz))):
+            super().angular_velocity_callback(msg)
+
+    def status_callback(self, msg):
+        if self._record_sample('status', msg):
+            self._status_armed = int(msg.arming_state) == self.ARMING_STATE_ARMED
+            self.armed = self._status_armed
+            super().status_callback(msg)
+
+    def control_mode_callback(self, msg):
+        if self._record_sample('mode', msg):
+            super().control_mode_callback(msg)
+
+    def vehicle_command_ack_callback(self, msg):
+        # We send no VehicleCommand. Another client's ACK must not arm our gate.
+        pass
+
+    def joint_feedback_callback(self, msg):
+        try:
+            if len(set(msg.name)) != len(msg.name) or len(msg.name) != len(msg.position):
+                raise ValueError('ambiguous joint feedback')
+            values = dict(zip(msg.name, msg.position))
+            angles = np.array([values[name] for name in self._joint_names], dtype=float)
+            if (not np.all(np.isfinite(angles)) or
+                    np.any(np.abs(angles) > self.drcda.config.servo_state_limit_rad + 0.01)):
+                raise ValueError('joint feedback outside calibrated travel')
+            stamp = int(msg.header.stamp.sec) * 1_000_000_000 + int(msg.header.stamp.nanosec)
+            # This opt-in interface requires ROS-clock timestamps, not PX4 boot time.
+            age = (self.get_clock().now().nanoseconds - stamp) * 1e-9
+            if not -0.02 <= age <= 0.15:
+                raise ValueError('joint feedback timestamp stale or clock mismatch')
+            if self._record_sample('joints', type('Stamp', (), {'timestamp': stamp})()):
+                self.drcda.measured_joint_angles = angles
+        except (KeyError, ValueError, TypeError) as exc:
+            self._received.pop('joints', None)
+            if self._hardware_control_active:
+                self._latch_fault(str(exc))
+
+    def px4_actuator_motors_callback(self, msg):
+        if self._record_sample('motors', msg, np.all(np.isfinite(msg.control[:5]))):
+            super().px4_actuator_motors_callback(msg)
+
+    def px4_actuator_servos_callback(self, msg):
+        if self._record_sample('servos', msg, np.all(np.isfinite(msg.control[:4]))):
+            super().px4_actuator_servos_callback(msg)
+
+    def _readiness_reason(self, handover=False):
+        now = time.monotonic()
+        limits = {'position': 0.3, 'attitude': 0.15, 'rates': 0.15,
+                  'status': 1.5, 'mode': 1.5}
+        if self._joint_feedback_enabled:
+            limits['joints'] = 0.15
+        if handover:
+            limits.update(motors=0.3, servos=0.3)
+        for name, limit in limits.items():
+            if now - self._received.get(name, -math.inf) > limit:
+                return 'missing/stale ' + name
+        if not self.rc_input.valid:
+            return 'missing/stale RC'
+        if math.acos(float(np.clip(self.R_ned_frd[2, 2], -1, 1))) > self.direct_safety_pitch_limit_rad:
+            return 'attitude outside hardware envelope'
+        if handover:
+            motors, servos = self.px4_out_motor_cmd[:5], self.px4_out_servo_cmd[:4]
+            if (len(motors) != 5 or len(servos) != 4 or
+                    not np.all(np.isfinite(np.r_[motors, servos])) or
+                    np.any(np.abs(servos) > 1) or np.any(motors[:4] < 0) or
+                    np.any(np.abs(motors) > 1)):
+                return 'invalid actuator command snapshot'
+            for timestamp in (self.px4_out_motor_timestamp, self.px4_out_servo_timestamp):
+                if abs(self._px4_topic_age_s(timestamp)) > self.hardware_handover_snapshot_max_age_s:
+                    return 'actuator snapshot PX4 clock mismatch'
+        return ''
+
+    def _latch_fault(self, reason):
+        if not self._hardware_fault:
+            self._hardware_fault = str(reason)
+            self.get_logger().error('DRCDA OUTPUT WITHDRAWN: ' + str(reason)
+                                    + '; pilot takeover required; PX4 Offboard-loss failsafe applies.')
+        if self._hardware_control_active:
+            self._end_hardware_control()
+
+    def _update_hardware_control_gate(self):
+        self._gate_reason = self._readiness_reason(not self._hardware_control_active)
+        pilot_active = self.armed and self._status_armed and self.is_offboard()
+        if self._hardware_control_active and not pilot_active:
+            self._end_hardware_control()
+        elif self._hardware_control_active and self._gate_reason:
+            self._latch_fault(self._gate_reason)
+        elif (pilot_active and self._output_enabled and not self._hardware_fault
+              and not self._gate_reason and not self._hardware_control_active):
+            self._begin_hardware_control()
+
+    def _end_hardware_control(self):
+        super()._end_hardware_control()
+        if self._drcda_ready:
+            self.drcda.reset()
+            self._drcda_accumulated_dt_s = 0.0
+
+    def offboard_startup_tick(self):
+        self._update_hardware_control_gate()
+        self.publish_offboard_control_mode()
+
+    def publish_offboard_control_mode(self):
+        if (self._output_enabled and not self._hardware_fault
+                and not self._readiness_reason(not self._hardware_control_active)):
+            super().publish_offboard_control_mode()
+
+    def _publish_normalized_direct_actuator_setpoint(self, motor_controls, servo_controls):
+        if not (self._output_enabled and self._hardware_control_active
+                and self.armed and self._status_armed and self.is_offboard()
+                and not self._hardware_fault):
+            return
+        reason = self._readiness_reason()
+        motors, servos = np.asarray(motor_controls), np.asarray(servo_controls)
+        if (motors.shape != (5,) or servos.shape != (4,) or
+                not np.all(np.isfinite(np.r_[motors, servos]))):
+            reason = 'nonfinite/invalid actuator output'
+        elif (np.any(motors[:4] < 0) or np.any(np.abs(motors) > 1) or
+              np.any(np.abs(servos) > 1) or (not self.allow_tail_reverse and motors[4] < 0)):
+            reason = 'normalized actuator output outside limits'
+        if reason:
+            self._latch_fault(reason)
+            return
+        super()._publish_normalized_direct_actuator_setpoint(motors, servos)
+        if self._drcda_ready:
+            command = self._preferred_drcda_command(
+                self.last_motor_cmd[:5],
+                self.last_servo_cmd[1] * self.primary_servo_angle_max_rad,
+                self.last_servo_cmd[0] * self.primary_servo_angle_max_rad,
+                self.last_servo_cmd[3] * self.secondary_servo_angle_max_rad / self.secondary_servo_gear_ratio,
+                self.last_servo_cmd[2] * self.secondary_servo_angle_max_rad / self.secondary_servo_gear_ratio,
+            )
+            self.drcda.accept_published_command(command)
+
+    def _direct_safety_violation_reason(self):
+        if not self._hardware_control_active:
+            return ''
+        tilt = math.acos(float(np.clip(self.R_ned_frd[2, 2], -1, 1)))
+        if tilt > self.direct_safety_pitch_limit_rad:
+            return f'tilt {math.degrees(tilt):.1f} deg exceeds hardware envelope'
+        if np.linalg.norm(self.velocity[:2]) > self.direct_safety_speed_xy_limit:
+            return 'horizontal speed exceeds hardware envelope'
+        return ''
+
+    def _publish_direct_safety_cutoff(self, current_time):
+        self._latch_fault(self._direct_safety_violation_reason() or 'direct safety request')
+        self._write_diagnostic_row(current_time, 'hardware_fault')
+
+    def control_loop(self):
+        try:
+            if self._hardware_control_active and self.px4_timestamp / 1e6 - self._last_timestamp_s > 0.05:
+                self._latch_fault('control sample gap exceeds 50 ms')
+                return
+            super().control_loop()
+        except (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError) as exc:
+            self._latch_fault(str(exc))
+
+    def poll_keyboard_commands(self):
+        # Keep legacy trajectories in the source for reproducibility, but do not
+        # expose 90/180-degree simulation tasks during initial hardware testing.
+        if self._tasks_enabled:
+            return super().poll_keyboard_commands()
+        for key in self.keyboard.get_commands():
+            if key in ('1', '2', '3', 'o', 'O'):
+                self.get_logger().warn('Hardware v2 initial validation: RC hold/control only; keyboard task disabled.')
+
+    def _start_auto_trajectory(self, mode, current_time):
+        if self._tasks_enabled:
+            # Rebase on measured position at every start/restart. The base
+            # startup height clamp must not turn a relative task into a climb.
+            self.manual_des_pos = self.position.copy()
+            self.manual_des_pos[2] -= self._z0
+            saved = self.takeoff_height, self.min_altitude, self.max_altitude
+            self.takeoff_height = -math.inf
+            self.min_altitude, self.max_altitude = -math.inf, math.inf
+            try:
+                return super()._start_auto_trajectory(mode, current_time)
+            finally:
+                self.takeoff_height, self.min_altitude, self.max_altitude = saved
+        self.pending_auto_traj_mode = None
+        self.get_logger().warn('Automated trajectories are disabled in hardware v2 initial validation.')
+
+    def _lissajous_reference(self, elapsed):
+        saved = self.min_altitude, self.max_altitude
+        self.min_altitude, self.max_altitude = -math.inf, math.inf
+        try:
+            return super()._lissajous_reference(elapsed)
+        finally:
+            self.min_altitude, self.max_altitude = saved
+
+    def update_trajectory(self, current_time, dt):
+        # Hardware Z=0 is the handover height, not the floor. Negative relative
+        # height is valid; releasing the stick must not command an automatic climb.
+        if not self._hardware_control_active:
+            return
+        if self.pending_auto_traj_mode and self._hardware_handover_blend >= 1.0:
+            self._start_auto_trajectory(self.pending_auto_traj_mode, current_time)
+            self.pending_auto_traj_mode = None
+        if self.auto_traj_mode != 'hover' and self._update_auto_trajectory(current_time):
+            return
+        cmds = (self.rc_input.get_velocity_commands(dt)
+                if self._manual_command_input_enabled() else self._zero_manual_cmd())
+        self._last_manual_cmd = cmds.copy()
+        previous = self.manual_des_pos.copy()
+        yaw = self._current_yaw_enu()
+        velocity = np.array([
+            math.cos(yaw) * cmds['vx_b'] - math.sin(yaw) * cmds['vy_b'],
+            math.sin(yaw) * cmds['vx_b'] + math.cos(yaw) * cmds['vy_b'],
+            cmds['vz'],
+        ])
+        self.manual_des_pos += dt * velocity
+        current = self.position.copy()
+        current[2] -= self._z0
+        if np.linalg.norm(velocity[:2]) > 1e-5:
+            error = self.manual_des_pos[:2] - current[:2]
+            scale = min(1.0, self.manual_max_position_lead_xy / max(np.linalg.norm(error), 1e-8))
+            self.manual_des_pos[:2] = current[:2] + scale * error
+        if abs(velocity[2]) > 1e-5:
+            self.manual_des_pos[2] = current[2] + np.clip(
+                self.manual_des_pos[2] - current[2],
+                -self.manual_max_position_lead_z, self.manual_max_position_lead_z)
+        self.manual_des_yaw = self._wrap_angle_rad(self.manual_des_yaw + dt * cmds['yaw_rate'])
+        if abs(cmds['yaw_rate']) > 1e-5:
+            self.manual_des_yaw = self._wrap_angle_rad(yaw + np.clip(
+                self._wrap_angle_rad(self.manual_des_yaw - yaw),
+                -self.manual_max_yaw_lead_rad, self.manual_max_yaw_lead_rad))
+        old_angles = np.array([self.manual_des_roll, self.manual_des_pitch])
+        limits = np.minimum([self.manual_roll_limit_rad, self.manual_pitch_limit_rad],
+                            self.rc_input.max_attitude_angle_rad)
+        angles = np.clip(old_angles + dt * np.array([cmds['roll_rate'], cmds['pitch_rate']]),
+                         -limits, limits)
+        self.manual_des_roll, self.manual_des_pitch = angles
+        self.target_position = self.manual_des_pos.copy()
+        self.target_velocity = (self.manual_des_pos - previous) / max(dt, 1e-6)
+        self.target_acceleration = np.zeros(3)
+        self.target_attitude = np.r_[angles, self.manual_des_yaw]
+        self.target_attitude_rate = np.r_[(angles - old_angles) / max(dt, 1e-6), cmds['yaw_rate']]
+        self.target_R_des_ned_frd = None
+
+    def _diagnostic_extra_header(self):
+        return super()._diagnostic_extra_header() + [
+            'v2_output_enabled', 'v2_fault', 'v2_gate_reason', 'v2_joint_state_source']
+
+    def _diagnostic_extra_values(self):
+        return super()._diagnostic_extra_values() + [
+            int(self._output_enabled), self._hardware_fault, self._gate_reason,
+            'measured_joints' if self._joint_feedback_enabled else 'command_model_only']
+
+    def print_status(self):
+        super().print_status()
+        self.get_logger().info(f'V2 output={self._output_enabled}; gate={self._gate_reason or "ready"}; '
+                               f'fault={self._hardware_fault or "none"}; joint feedback={self._joint_feedback_enabled}')
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    controller = None
+    try:
+        controller = HnuterHardwareDRCDAV2Controller()
+        rclpy.spin(controller)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        if controller is not None:
+            controller.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
