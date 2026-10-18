@@ -1,0 +1,10 @@
+{
+  "stage": "completed",
+  "completed": [
+    "s2_00_hover_d110",
+    "s2_00_hover_d0",
+    "s2_00_active_d110",
+    "s2_00_active_d0"
+  ],
+  "audit_fix": "startup duplicate parameter record; no repeated flight"
+}

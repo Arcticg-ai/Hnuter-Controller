@@ -1,0 +1,36 @@
+{
+  "removed_owned_stopped_containers": [
+    {
+      "id": "001e0cba1cd9",
+      "name": "/jepa-recovery-r7-s2-00-active-d0",
+      "exit": 0,
+      "running": false
+    },
+    {
+      "id": "041bdad605a8",
+      "name": "/jepa-recovery-r7-s2-00-active-d110",
+      "exit": 0,
+      "running": false
+    },
+    {
+      "id": "37846f568592",
+      "name": "/jepa-recovery-r7-s2-00-hover-d0",
+      "exit": 0,
+      "running": false
+    },
+    {
+      "id": "80f390b9b916",
+      "name": "/jepa-recovery-r7-s2-00-hover-d110",
+      "exit": 0,
+      "running": false
+    },
+    {
+      "id": "df7fe6f0e2f6",
+      "name": "/jepa-recovery-r7-unarmed",
+      "exit": 0,
+      "running": false
+    }
+  ],
+  "other_running_containers": [],
+  "raw_files_preserved": true
+}

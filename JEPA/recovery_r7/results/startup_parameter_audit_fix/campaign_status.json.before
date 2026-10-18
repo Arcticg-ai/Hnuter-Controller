@@ -1,0 +1,10 @@
+{
+  "stage": "stopped",
+  "run": "s2_00_hover_d0",
+  "failed_step": "audit",
+  "completed": [
+    "s2_00_hover_d110"
+  ],
+  "returncode": 1,
+  "wall_s": 142.19116339500033
+}

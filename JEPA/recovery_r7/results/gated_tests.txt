@@ -1,0 +1,9 @@
+test_after_id_frozen_and_no_target_required_for_prediction (test_gated_adapter.GateBehavior.test_after_id_frozen_and_no_target_required_for_prediction) ... ok
+test_consistent_effect_can_update (test_gated_adapter.GateBehavior.test_consistent_effect_can_update) ... ok
+test_correlated_disturbance_indistinguishable (test_gated_adapter.GateBehavior.test_correlated_disturbance_indistinguishable) ... ok
+test_reversing_effect_keeps_slow_coefficients (test_gated_adapter.GateBehavior.test_reversing_effect_keeps_slow_coefficients) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.031s
+
+OK

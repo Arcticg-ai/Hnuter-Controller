@@ -1,0 +1,5 @@
+__pycache__/
+runtime/results/experiment/runs/
+runtime/results/unarmed/run/
+runtime/anchors/
+results/*_timeseries.npz

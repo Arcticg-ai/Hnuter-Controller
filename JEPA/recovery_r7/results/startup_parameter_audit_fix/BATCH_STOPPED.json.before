@@ -1,0 +1,12 @@
+{
+  "run": "s2_00_hover_d0",
+  "reason": "post_run_gate",
+  "failed_checks": [
+    "gps_delay_unchanged"
+  ],
+  "no_repeats": true,
+  "remaining_slots_not_run": [
+    "s2_00_active_d110",
+    "s2_00_active_d0"
+  ]
+}

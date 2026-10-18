@@ -1,0 +1,34 @@
+{
+  "r6_worktree": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-active-adapt-r6-worktree/JEPA/active_adapt_r6",
+  "r6_commit": "aef21a1ca96941d0f1f08e46f854e195512a990e",
+  "backup": "/home/hnuter/Documents/Codex/2026-10-13/task/audit/r7_start_backup.zip",
+  "backup_sha256": "146b6437e593e399b3e5f2a26cedb62e4c9072f19bfcd0cf6ae6db52fc27134f",
+  "originals_protection": {
+    "controller": {
+      "root": "/home/hnuter/px4_ws_ros2",
+      "head": "79319d4d7d3e2e99260d3ae84a064c494303c5c4",
+      "dirty_hashes": {
+        "README.md": "43f7df720baaaa1ccad6f8511d3562e4b16e1f3f2d79868b02c672eecf287d18",
+        "config/hnuter_drcda_hardware_tuning.json": "d6082f724b4c067d7be4bdcfc1ded0cd7970661dc9ce1892b58da4cab7ad79c7",
+        "docs/iebc_hardware.md": "7e78b9439178c146f414a5fec7a293203c211d3995b45ad9b3a3ad22cf110f40",
+        "hnuter_external_controller_px4_position_iebc_hardware.py": "3cf8b888cda47ad307b88bf8eacb4cae26899fcab61afcaa9add4eacffdd5082",
+        "hnuter_external_controller_px4_position_iebc_simulation.py": "5aee2f449aa229f045afba11f8b0cd00b7909de462aa98f95099f9923da6102f",
+        "hnuter_external_direct_drcda_hardware.py": "d470c8dad0ac363d77fe5bd997c55193400f8e655251e297cf50ee1fea8a95e5",
+        "tests/test_hnuter_external_controller_px4_position_iebc_hardware.py": "a54909d563b29c368fee3e3a68d05590c268031e2e6d5b4bbe2d5d66860082f6",
+        "tests/test_hnuter_external_controller_px4_position_iebc_simulation.py": "998d106ff604372c4fa4a92e3c53cf962cd6688968e156c0511ca5d135e0f8cb",
+        "tests/test_hnuter_external_direct_drcda_hardware.py": "13ac0ec760c049a5e9cdbecfe4cc5767478bb6e7196fcbffc1a20a461d466148"
+      }
+    },
+    "px4": {
+      "root": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+      "head": "53266349b9c65001b72e8f2d437b7340c8c4756f",
+      "dirty_hashes": {
+        "Tools/simulation/gz/server.config": "b9a778e6c7a1e8a64e00ccd1aeee81e0ff99f3725ad177055def5dbbedb711a5",
+        "src/modules/land_detector/MulticopterLandDetector.cpp": "17663a2bc1288b3143358616f94ddfa45ef414793273fef80eea4f7b100c01bf",
+        "src/modules/land_detector/MulticopterLandDetector.h": "034f33d638eaaa58255c853eaace9e4fd499551633ea399189d8f8bd19693a99",
+        "src/modules/simulation/gz_bridge/GZBridge.cpp": "0d065f1aae1ac2ac04c900b6d5e540c7f3b9dead0185782cbcd49fdc10efa30f",
+        "src/modules/simulation/gz_bridge/server.config": "b9a778e6c7a1e8a64e00ccd1aeee81e0ff99f3725ad177055def5dbbedb711a5"
+      }
+    }
+  }
+}

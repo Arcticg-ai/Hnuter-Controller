@@ -1,0 +1,362 @@
+{
+  "run": "s2_00_active_d110",
+  "seed": 2,
+  "continue_batch": true,
+  "checks": {
+    "effective_seed": true,
+    "gps_private_rng": true,
+    "px4_normal_exit": true,
+    "no_forced_cleanup": true,
+    "container_closed": true,
+    "async_log_complete": true,
+    "resources": true,
+    "physical_start": true,
+    "native_pre": true,
+    "runtime_pre": true,
+    "initialization": true,
+    "native_landed_disarmed": true,
+    "native_finite": true,
+    "constant_mass": true,
+    "normal_application_exit": true,
+    "servo_data": true,
+    "physical_bounds_rj2": true,
+    "physical_bounds_lj2": true,
+    "physical_bounds_rj1": true,
+    "physical_bounds_lj1": true,
+    "registered_external_force": true,
+    "learning_off": true,
+    "bounded_ff": true,
+    "zero_ff_when_disabled": true,
+    "zero_compensation": true,
+    "excitation_published": true,
+    "no_adaptation_worker": true,
+    "requested_gps_delay": true,
+    "gps_delay_unchanged": true,
+    "full_extended_hover": true,
+    "truth_100hz_1ms_physics": true,
+    "actuator_callback_coverage": true
+  },
+  "failed_checks": [],
+  "flight_result": {
+    "status": "PASS",
+    "failure": null,
+    "ready_at_wall_s": 28.112826664999375,
+    "startup_only": false,
+    "attitude_reference": "legacy",
+    "phase": "LAND",
+    "samples": 23000,
+    "evaluation_samples": 5000,
+    "landed": true,
+    "disarmed": true,
+    "sensor_samples": 6265,
+    "mass_estimate_kg": null,
+    "mass_accepted": null,
+    "mass_reason": "disabled",
+    "group": "A",
+    "noise": "native",
+    "mass_accepted_at_px4_s": null,
+    "last_px4_timestamp_s": 130.33599999999998,
+    "last_joint_timestamp_s": 130.708,
+    "position_rmse_m": 0.023763527017544795,
+    "max_position_error_m": 0.04585919568133424
+  },
+  "initialization": {
+    "passed": true,
+    "role": "anchor_candidate",
+    "checks": {},
+    "paired": false,
+    "summary": {
+      "position_error_mean_enu": [
+        0.003293149110041365,
+        0.004049482554197311,
+        0.002181454499562659
+      ],
+      "velocity_mean_ned": [
+        0.007504227834678154,
+        -0.0032377959242185705,
+        0.00560114313816454
+      ],
+      "integral_mean_ned": [
+        -0.24956634212956727,
+        -0.013439291763618012,
+        -0.2685698366690382
+      ],
+      "joint_angle_mean_deg": [
+        2.3971559490261054,
+        1.3329469899212607,
+        1.9702758027587148,
+        1.9301753543609435
+      ],
+      "joint_rate_mean_deg_s": [
+        0.18177683023721694,
+        0.12325630597813016,
+        0.12005250647580858,
+        0.12006025443115755
+      ],
+      "source_ranges": {
+        "pose": [
+          75.092,
+          78.088,
+          750
+        ],
+        "diag": [
+          75.092,
+          78.088,
+          749
+        ],
+        "joints": [
+          75.092,
+          78.09100000000001,
+          3000
+        ]
+      }
+    },
+    "epoch": 30.092,
+    "reason": "paired",
+    "attempts": 1,
+    "last_error": null,
+    "analysis_wall_s": 0.182125651,
+    "completed_monotonic_ns": 9493359932741,
+    "seed": 2,
+    "anchor_sha256": null,
+    "final_clock_receipt": {
+      "ns": 78377000000,
+      "wall_ns": 9493359329142,
+      "count": 75822,
+      "reversals": 0,
+      "subscribed": true,
+      "fresh": true
+    },
+    "completed_elapsed": 48.28500000000001
+  },
+  "physical_start": {
+    "physical_s": 30.049000000000003,
+    "wall_s": 28.112826664999375,
+    "ready": true,
+    "action": "release",
+    "counts": {
+      "position": 1252,
+      "attitude": 6264,
+      "rate": 2505
+    },
+    "aligned_count": 1250,
+    "source_age_s": {
+      "attitude": 0.0010000000000047748,
+      "rate": 0.009000000000003894,
+      "position": 0.02100000000000435
+    },
+    "stable_since_physical_s": 11.552000000000001,
+    "clock": {
+      "ns": 30049000000,
+      "wall_ns": 9445018927545,
+      "count": 27798,
+      "reversals": 0,
+      "subscribed": true,
+      "fresh": true
+    },
+    "yaw_reference_capture": {
+      "old_initial_yaw_rad": 0.04469587924069692,
+      "old_manual_yaw_rad": 0.04469587924069692,
+      "captured_yaw_rad": -0.015766201674303856,
+      "source_attitude": {
+        "receive_monotonic_ns": 9445018670640,
+        "receive_wall_ns": 1792337701966993290,
+        "source_publish_us": 30048000,
+        "source_sample_us": 30048000,
+        "has_sample_timestamp": true
+      },
+      "release_physical_s": 30.049000000000003,
+      "R_flu_enu": [
+        [
+          0.9998758435249329,
+          0.015765644654214706,
+          -0.0002017161314142868
+        ],
+        [
+          -0.015765550517261806,
+          0.9998757243156433,
+          0.00046005661715753376
+        ],
+        [
+          0.00020894405315630138,
+          -0.0004568193107843399,
+          0.9999998738292586
+        ]
+      ],
+      "capture_monotonic_ns": 9445019944282,
+      "first_attitude": {
+        "receipt": {
+          "receive_monotonic_ns": 9419964506391,
+          "receive_wall_ns": 1792337676912829542,
+          "source_publish_us": 4996000,
+          "source_sample_us": 4996000,
+          "has_sample_timestamp": true
+        },
+        "q_ned_frd": [
+          0.7227312922477722,
+          -8.855771739035845e-06,
+          -2.86519862129353e-05,
+          0.6911291480064392
+        ],
+        "initial_yaw_enu_rad": 0.04469587924069692,
+        "current_yaw_enu_rad": 0.04469587924069692,
+        "quat_reset_counter": 1
+      },
+      "truth_used": false,
+      "integrals_modified": false
+    }
+  },
+  "details": {
+    "gps_noise_audit": {
+      "passed": true,
+      "checks": {
+        "audit_close_ack": true,
+        "complete_last_row": true,
+        "finite_all_fields": true,
+        "nonempty": true,
+        "seed_recorded": true,
+        "six_normals_per_callback": true,
+        "contiguous_callback_index": true,
+        "strictly_increasing_source_ns": true,
+        "finite_noise": true,
+        "new_rng_log": true
+      },
+      "callbacks_logged": 3934,
+      "first_source_ns": 1221000000,
+      "last_source_ns": 131010000000,
+      "receive_minus_source_ms": {
+        "min": 0.0,
+        "median": 0.0,
+        "max": 0.0,
+        "negative_count": 0
+      },
+      "note": "Source and receipt are distinct; delay statistics are diagnostic, no timestamp rewriting."
+    },
+    "last_native_status": {
+      "arming": 1,
+      "landed": true
+    },
+    "servo_audit": {
+      "passed": true,
+      "joints": {
+        "rj2": {
+          "passed": true,
+          "checks": {
+            "samples": true,
+            "finite": true,
+            "physics_1ms": true,
+            "clock_1ms": true,
+            "command_sequence_monotonic": true,
+            "received_before_consumption": true,
+            "target_error": true,
+            "pid_formula": true,
+            "sim_velocity_bound": true
+          },
+          "samples": 130808,
+          "sim_range_s": [
+            0.234,
+            131.041
+          ],
+          "force_formula_max_error": 5.440092820663267e-15,
+          "rate_peak_deg_s": 78.95433167447393,
+          "target_change_count": 726,
+          "receipt_to_consumption_max_wall_ms": 107.323589
+        },
+        "lj2": {
+          "passed": true,
+          "checks": {
+            "samples": true,
+            "finite": true,
+            "physics_1ms": true,
+            "clock_1ms": true,
+            "command_sequence_monotonic": true,
+            "received_before_consumption": true,
+            "target_error": true,
+            "pid_formula": true,
+            "sim_velocity_bound": true
+          },
+          "samples": 130808,
+          "sim_range_s": [
+            0.234,
+            131.041
+          ],
+          "force_formula_max_error": 5.412337245047638e-15,
+          "rate_peak_deg_s": 64.79266225186082,
+          "target_change_count": 689,
+          "receipt_to_consumption_max_wall_ms": 107.313621
+        },
+        "rj1": {
+          "passed": true,
+          "checks": {
+            "samples": true,
+            "finite": true,
+            "physics_1ms": true,
+            "clock_1ms": true,
+            "command_sequence_monotonic": true,
+            "received_before_consumption": true,
+            "target_error": true,
+            "pid_formula": true,
+            "sim_velocity_bound": true
+          },
+          "samples": 130808,
+          "sim_range_s": [
+            0.234,
+            131.041
+          ],
+          "force_formula_max_error": 8.382183835919932e-15,
+          "rate_peak_deg_s": 76.67947998010965,
+          "target_change_count": 848,
+          "receipt_to_consumption_max_wall_ms": 107.304383
+        },
+        "lj1": {
+          "passed": true,
+          "checks": {
+            "samples": true,
+            "finite": true,
+            "physics_1ms": true,
+            "clock_1ms": true,
+            "command_sequence_monotonic": true,
+            "received_before_consumption": true,
+            "target_error": true,
+            "pid_formula": true,
+            "sim_velocity_bound": true
+          },
+          "samples": 130808,
+          "sim_range_s": [
+            0.234,
+            131.041
+          ],
+          "force_formula_max_error": 8.548717289613705e-15,
+          "rate_peak_deg_s": 76.68527993549634,
+          "target_change_count": 982,
+          "receipt_to_consumption_max_wall_ms": 107.295126
+        }
+      }
+    },
+    "collection": {
+      "checks": {
+        "excitation_published": true,
+        "no_adaptation_worker": true,
+        "requested_gps_delay": true,
+        "gps_delay_unchanged": true,
+        "full_extended_hover": true,
+        "truth_100hz_1ms_physics": true,
+        "actuator_callback_coverage": true
+      },
+      "details": {
+        "excitation_error": 9.254379207401797e-10,
+        "actual_gps_delay_ms": 110.0,
+        "gps_delay_records": [],
+        "callback_intervals_p99_s": {
+          "motor": 0.016,
+          "servo": 0.016,
+          "position": 0.024,
+          "attitude": 0.004,
+          "rate": 0.016
+        }
+      },
+      "passed": true
+    }
+  },
+  "closure_distinct_from_admission": true
+}

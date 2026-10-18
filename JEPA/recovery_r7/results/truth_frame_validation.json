@@ -1,0 +1,22 @@
+[
+  {
+    "run": "s2_00_active_d0",
+    "projection_vs_gazebo_motion_centered_rmse_m": 6.705774729907798e-05,
+    "max_m": 0.00015768249057002457
+  },
+  {
+    "run": "s2_00_hover_d0",
+    "projection_vs_gazebo_motion_centered_rmse_m": 6.666007407828481e-05,
+    "max_m": 0.00013590046974697767
+  },
+  {
+    "run": "s2_00_hover_d110",
+    "projection_vs_gazebo_motion_centered_rmse_m": 6.14211255914748e-05,
+    "max_m": 0.00012578624764118037
+  },
+  {
+    "run": "s2_00_active_d110",
+    "projection_vs_gazebo_motion_centered_rmse_m": 6.197837054096652e-05,
+    "max_m": 0.00015007129148255654
+  }
+]

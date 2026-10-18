@@ -1,0 +1,2594 @@
+[
+  {
+    "run": "s0_00_mass_active",
+    "original_final_pass": true,
+    "original_position_bound_m": 0.024734314196352768,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.022485740178502515,
+        "estimated_position_peak_m": 0.030212619280883302,
+        "position_out_fraction": 0.20266666666666666,
+        "speed_peak_m_s": 0.02709399349987507,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.051740837846164206,
+        "true_local_command_peak_m": 0.059499745658512466,
+        "true_error_mean_enu_m": [
+          0.030849613746617485,
+          -0.006345467852068526,
+          0.03835208190011455
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.01681027332130236,
+          0.0072758201407966796,
+          -0.027438455721834183
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0025220231669903707,
+          -0.00493641244247555,
+          0.0021058495814021594
+        ],
+        "gps_position_noise_mean_neu": [
+          0.005039732643306524,
+          -0.01755796458474921,
+          -0.011803930505066269
+        ],
+        "integral_mean_ned": [
+          -0.24672339856624603,
+          -0.013256697915494442,
+          -0.2691677212715149
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.020005354654673176,
+        "estimated_position_peak_m": 0.03511068430748659,
+        "position_out_fraction": 0.25690276110444177,
+        "speed_peak_m_s": 0.032958123832941055,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.028717704485363767,
+        "true_local_command_peak_m": 0.05201986598790493,
+        "true_error_mean_enu_m": [
+          0.009816022153728607,
+          0.00962742868314623,
+          -0.0017382639795295797
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.006880045517780938,
+          -0.009171675977836963,
+          0.0003518470080427763
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.0013676476868471933,
+          -0.002932822005976933,
+          -0.003471383868744307
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.006331061333233079,
+          -0.003235829170770622,
+          0.0087388751122045
+        ],
+        "integral_mean_ned": [
+          -0.25241196155548096,
+          -0.01547926478087902,
+          -0.27072763442993164
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.016238732916287763,
+        "estimated_position_peak_m": 0.024115282526748816,
+        "position_out_fraction": 0.0,
+        "speed_peak_m_s": 0.029631875455379486,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.023930194870027448,
+        "true_local_command_peak_m": 0.02970574589843009,
+        "true_error_mean_enu_m": [
+          0.014703615200378745,
+          0.014210096582545276,
+          0.009620691618571701
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.006986249939376074,
+          -0.015307799333636577,
+          -0.0019778110397361917
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.011003769530604258,
+          0.015759742849816853,
+          0.00020700822933577683
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.021732737333513753,
+          0.03705790185679987,
+          0.030426970434685525
+        ],
+        "integral_mean_ned": [
+          -0.2532230615615845,
+          -0.016336409375071526,
+          -0.2651837170124054
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.016547085106470644,
+        "estimated_position_peak_m": 0.02901902148477623,
+        "position_out_fraction": 0.072,
+        "speed_peak_m_s": 0.02430104836821556,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.031033840353425483,
+        "true_local_command_peak_m": 0.04606116244591357,
+        "true_error_mean_enu_m": [
+          -0.007859911486466153,
+          -0.012410909100021163,
+          0.013398712205857333
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.008312011486601175,
+          0.01452990734098345,
+          -0.011660575651542186
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0006523340788328731,
+          0.004104057747237498,
+          -0.0035870358608770573
+        ],
+        "gps_position_noise_mean_neu": [
+          0.006165090025605352,
+          0.0019702467150684924,
+          0.003879097735010955
+        ],
+        "integral_mean_ned": [
+          -0.24095620214939117,
+          -0.009670216590166092,
+          -0.2720772624015808
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.020437226742918216,
+        "speed_max_m_s": 0.011963443830609322,
+        "passed": true
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.020437226742918216,
+        "speed_max_m_s": 0.017453337088227272,
+        "passed": true
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.010860462105037124,
+        "speed_max_m_s": 0.016507167369127274,
+        "passed": true
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.010291888442773477,
+        "speed_max_m_s": 0.016168585047125816,
+        "passed": true
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.023853161603378695,
+        "speed_max_m_s": 0.015095321461558342,
+        "passed": true
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.02901902148477623,
+        "speed_max_m_s": 0.02395668253302574,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.019554697563111373,
+        "speed_max_m_s": 0.02430104836821556,
+        "passed": true
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.023129307687659566,
+        "speed_max_m_s": 0.018309585750102997,
+        "passed": true
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.023129307687659566,
+        "speed_max_m_s": 0.023817719891667366,
+        "passed": true
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.01710455804512803,
+        "speed_max_m_s": 0.02202092856168747,
+        "passed": true
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.017737849830507288,
+        "speed_max_m_s": 0.019928572699427605,
+        "passed": true
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.01960291506107428,
+        "speed_max_m_s": 0.021601887419819832,
+        "passed": true
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.024608234522183883,
+        "speed_max_m_s": 0.026708096265792847,
+        "passed": true
+      }
+    ],
+    "pre_excitation_pass_count": 12,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.015020348667139801,
+      0.028358892494361233,
+      0.9904577099582289,
+      4.706881907920453
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.9577371269651349,
+        0.2861378093483989,
+        0.022718273857768312,
+        -0.01867162892711655
+      ],
+      [
+        0.2864445094218875,
+        -0.9547585915206662,
+        -0.07440292397350398,
+        -0.029150983580678247
+      ],
+      [
+        -0.0007636993975034048,
+        0.07873434593410328,
+        -0.9959088221750192,
+        -0.04433889316983272
+      ],
+      [
+        -0.02624033951483057,
+        0.01902862972213426,
+        0.04597502420970606,
+        -0.9984165728702429
+      ]
+    ],
+    "regressor_rank": 2,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s0_00_mass_conventional",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.023821905831998273,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.021656278029089336,
+        "estimated_position_peak_m": 0.031357418683055416,
+        "position_out_fraction": 0.208,
+        "speed_peak_m_s": 0.02706076204776764,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.04913048861568915,
+        "true_local_command_peak_m": 0.05694669016578541,
+        "true_error_mean_enu_m": [
+          0.02895486243890499,
+          -0.006006537404550879,
+          0.03651911409182865
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.01671322557193776,
+          0.007331981576746233,
+          -0.025076663878920276
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0025220231669903707,
+          -0.00493641244247555,
+          0.0021058495814021594
+        ],
+        "gps_position_noise_mean_neu": [
+          0.005039732643306524,
+          -0.01755796458474921,
+          -0.011803930505066269
+        ],
+        "integral_mean_ned": [
+          -0.24827054142951965,
+          -0.01647908240556717,
+          -0.26846110820770264
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.019195415622400146,
+        "estimated_position_peak_m": 0.03569647876709941,
+        "position_out_fraction": 0.216,
+        "speed_peak_m_s": 0.033605266362428665,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.028767958406792346,
+        "true_local_command_peak_m": 0.05655786744581917,
+        "true_error_mean_enu_m": [
+          0.00917312565460566,
+          0.00892492851947196,
+          -0.0017081931657572842
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.006752550349442074,
+          -0.009082782993947117,
+          0.00038681002548916413
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.0013676476868471933,
+          -0.002932822005976933,
+          -0.003471383868744307
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.006331061333233079,
+          -0.003235829170770622,
+          0.0087388751122045
+        ],
+        "integral_mean_ned": [
+          -0.25486835837364197,
+          -0.017840774729847908,
+          -0.2714366614818573
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.017246422323418553,
+        "estimated_position_peak_m": 0.025488682783010645,
+        "position_out_fraction": 0.06,
+        "speed_peak_m_s": 0.03220681473612785,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.02713961594550449,
+        "true_local_command_peak_m": 0.0341829893075598,
+        "true_error_mean_enu_m": [
+          0.016217848969298062,
+          0.01629756318224566,
+          0.011370594830562708
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.0068867986545755175,
+          -0.01596950501100438,
+          -0.003803457350780907
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.011003769530604258,
+          0.015759742849816853,
+          0.00020700822933577683
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.021732737333513753,
+          0.03705790185679987,
+          0.030426970434685525
+        ],
+        "integral_mean_ned": [
+          -0.25728702545166016,
+          -0.01772499643266201,
+          -0.2653120756149292
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.01687442217135342,
+        "estimated_position_peak_m": 0.02875320749284571,
+        "position_out_fraction": 0.1184,
+        "speed_peak_m_s": 0.025699252262711525,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.0292103436457129,
+        "true_local_command_peak_m": 0.04601607789607897,
+        "true_error_mean_enu_m": [
+          -0.009064148751375014,
+          -0.012497020605638978,
+          0.00758076334378311
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.008543731423725597,
+          0.014832016242364696,
+          -0.006581692025065432
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0007426116773827949,
+          0.0042202104637614375,
+          -0.0034471340283440967
+        ],
+        "gps_position_noise_mean_neu": [
+          0.006084989266995557,
+          0.0019001104963463817,
+          0.0036364143316940578
+        ],
+        "integral_mean_ned": [
+          -0.24186915159225464,
+          -0.013635573908686638,
+          -0.27139756083488464
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.02042491735669372,
+        "speed_max_m_s": 0.013757577165961266,
+        "passed": true
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.020457642388834945,
+        "speed_max_m_s": 0.01903471164405346,
+        "passed": true
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.008285910629208457,
+        "speed_max_m_s": 0.016537370160222054,
+        "passed": true
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.009080175013009725,
+        "speed_max_m_s": 0.013901542872190475,
+        "passed": true
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.020877789310153886,
+        "speed_max_m_s": 0.017165927216410637,
+        "passed": true
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.02875320749284571,
+        "speed_max_m_s": 0.02149859070777893,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.021775553460556336,
+        "speed_max_m_s": 0.021989593282341957,
+        "passed": true
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.025905537878916234,
+        "speed_max_m_s": 0.01707419380545616,
+        "passed": false
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.025943558839326586,
+        "speed_max_m_s": 0.025699252262711525,
+        "passed": false
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.01768321001873633,
+        "speed_max_m_s": 0.02415907196700573,
+        "passed": true
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.0173843108516471,
+        "speed_max_m_s": 0.022009393200278282,
+        "passed": true
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.01985311890310553,
+        "speed_max_m_s": 0.021906830370426178,
+        "passed": true
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.023881582863789618,
+        "speed_max_m_s": 0.025481626391410828,
+        "passed": false
+      }
+    ],
+    "pre_excitation_pass_count": 9,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.020075085954162627,
+      0.07518556662179061,
+      3.510041404078129,
+      21.605073656823766
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.9996183716723455,
+        0.008090361920827996,
+        0.026151162197630185,
+        0.0037113036566801543
+      ],
+      [
+        0.008302140191512812,
+        -0.9998418297511377,
+        -0.005960326856634168,
+        -0.014555564293431189
+      ],
+      [
+        0.026166968168872644,
+        0.006459971535904052,
+        -0.9994453554096753,
+        -0.019558632228077633
+      ],
+      [
+        0.0030781910627032706,
+        0.01446133782341652,
+        0.0197375978655967,
+        -0.9996958645901435
+      ]
+    ],
+    "regressor_rank": 3,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s2_00_mass_active",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.021737228209434065,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.019761116554030966,
+        "estimated_position_peak_m": 0.03924908352150177,
+        "position_out_fraction": 0.3546666666666667,
+        "speed_peak_m_s": 0.026863252744078636,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.0481715008674154,
+        "true_local_command_peak_m": 0.07163424650678525,
+        "true_error_mean_enu_m": [
+          0.0014505023490710425,
+          0.04195655490090351,
+          -0.00027758681348390965
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.0012431225844708323,
+          -0.03778532296022811,
+          0.0012477270767583587
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.003623888596948635,
+          -0.011859785306144604,
+          0.0038708752612225065
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.007509271677178538,
+          -0.00018186775320157126,
+          0.004090460297807658
+        ],
+        "integral_mean_ned": [
+          -0.2500799596309662,
+          -0.012250108644366264,
+          -0.2682870328426361
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.02273247872677047,
+        "estimated_position_peak_m": 0.04510720101228303,
+        "position_out_fraction": 0.344,
+        "speed_peak_m_s": 0.059200648218393326,
+        "speed_out_fraction": 0.0448,
+        "true_local_command_rmse_m": 0.039498648840386986,
+        "true_local_command_peak_m": 0.05600859864767209,
+        "true_error_mean_enu_m": [
+          -0.011435864974497176,
+          0.011560554021144748,
+          -0.022144660375176286
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.008654058715464586,
+          -0.0057579808029898805,
+          0.018499551700557212
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.004149791217107847,
+          -0.0016011379796722666,
+          0.0028286922931296094
+        ],
+        "gps_position_noise_mean_neu": [
+          0.0036024101995545043,
+          -0.003236125547382849,
+          -0.005741276053518511
+        ],
+        "integral_mean_ned": [
+          -0.25661957263946533,
+          -0.015788016840815544,
+          -0.2708238661289215
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.047341144643839796,
+        "estimated_position_peak_m": 0.05055280563325516,
+        "position_out_fraction": 1.0,
+        "speed_peak_m_s": 0.04204321652650873,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.056030139378695686,
+        "true_local_command_peak_m": 0.06350154459096793,
+        "true_error_mean_enu_m": [
+          0.03276159974111625,
+          -0.04309599701963596,
+          0.011691316781986138
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.0003803084013714958,
+          0.009201112957546165,
+          -0.01290521536382926
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.01657681177265097,
+          -0.017385443867815084,
+          0.015252513435458928
+        ],
+        "gps_position_noise_mean_neu": [
+          0.009161366321589596,
+          0.003758759660300829,
+          0.010370680038073657
+        ],
+        "integral_mean_ned": [
+          -0.2547195851802826,
+          -0.020931415259838104,
+          -0.27385658025741577
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.024507629240009335,
+        "estimated_position_peak_m": 0.04294605300000894,
+        "position_out_fraction": 0.5336,
+        "speed_peak_m_s": 0.03884148970246315,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.040897140133010476,
+        "true_local_command_peak_m": 0.06861878814057254,
+        "true_error_mean_enu_m": [
+          -0.007075786672746876,
+          0.016632523207516233,
+          0.012480564105014004
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.0072680587126601305,
+          -0.010889083252746144,
+          -0.01015217514653311
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0014727723720581842,
+          0.000779138885287836,
+          -0.009345786589721863
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.016282472659206664,
+          0.004710345700280978,
+          -0.006519872448161215
+        ],
+        "integral_mean_ned": [
+          -0.24473980069160461,
+          -0.010294905863702297,
+          -0.26979777216911316
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.02528513260802833,
+        "speed_max_m_s": 0.012940539978444576,
+        "passed": false
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.02326561960475388,
+        "speed_max_m_s": 0.019795944914221764,
+        "passed": false
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.030333674009099636,
+        "speed_max_m_s": 0.035022176802158356,
+        "passed": false
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.0297930039867125,
+        "speed_max_m_s": 0.0321396067738533,
+        "passed": false
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.017079366767673538,
+        "speed_max_m_s": 0.022282492369413376,
+        "passed": true
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.03221674333453609,
+        "speed_max_m_s": 0.024403421208262444,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.04294605300000894,
+        "speed_max_m_s": 0.03742893412709236,
+        "passed": false
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.03053386378141916,
+        "speed_max_m_s": 0.03884148970246315,
+        "passed": false
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.024896708514059573,
+        "speed_max_m_s": 0.02893684059381485,
+        "passed": false
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.034595157996986876,
+        "speed_max_m_s": 0.030155811458826065,
+        "passed": false
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.02785569190104611,
+        "speed_max_m_s": 0.031016744673252106,
+        "passed": false
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.02822851603027481,
+        "speed_max_m_s": 0.026863252744078636,
+        "passed": false
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.00982809702885827,
+        "speed_max_m_s": 0.019960811361670494,
+        "passed": true
+      }
+    ],
+    "pre_excitation_pass_count": 2,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.011660407720430165,
+      0.02508008135358419,
+      0.659310248465282,
+      4.742038028393757
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.3402606961093456,
+        -0.9339003118970001,
+        0.10883345555850231,
+        -0.01442723372878629
+      ],
+      [
+        -0.9347457376843981,
+        -0.34853738410455404,
+        -0.0654492377986966,
+        0.02210192376186393
+      ],
+      [
+        0.10220293887616894,
+        -0.07757267646538407,
+        -0.94551607619516,
+        0.2992263170370886
+      ],
+      [
+        -0.005255839524617112,
+        0.01828603801367157,
+        0.29978496606613625,
+        0.9538170532577933
+      ]
+    ],
+    "regressor_rank": 2,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s2_00_mass_conventional",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.021654820037807172,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.019686200034370153,
+        "estimated_position_peak_m": 0.037754936673258785,
+        "position_out_fraction": 0.36666666666666664,
+        "speed_peak_m_s": 0.027481937780976295,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.04687067059457071,
+        "true_local_command_peak_m": 0.07126393424245513,
+        "true_error_mean_enu_m": [
+          0.000517928844293846,
+          0.0399468607242843,
+          -0.0019086702818890341
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.0012533915953957294,
+          -0.03755355332458351,
+          0.002593847779700377
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.0024687634457342743,
+          -0.01261927211109628,
+          0.004358171614572644
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.007460998476385039,
+          -0.0013684740125017273,
+          0.004894315795064643
+        ],
+        "integral_mean_ned": [
+          -0.24915288388729095,
+          -0.012945675291121006,
+          -0.26735737919807434
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.0226600268295565,
+        "estimated_position_peak_m": 0.04415948033879613,
+        "position_out_fraction": 0.3984,
+        "speed_peak_m_s": 0.05979972332715988,
+        "speed_out_fraction": 0.0464,
+        "true_local_command_rmse_m": 0.037352560001737097,
+        "true_local_command_peak_m": 0.053814343958447614,
+        "true_error_mean_enu_m": [
+          -0.011883724104036734,
+          0.010650669433718181,
+          -0.01647455513280611
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.008803332386861913,
+          -0.005809666086505318,
+          0.01424468202952898
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.004254413828201486,
+          -0.001968925040777733,
+          0.0032330741656317065
+        ],
+        "gps_position_noise_mean_neu": [
+          0.0036901805355762374,
+          -0.003221517486927389,
+          -0.005722950142587334
+        ],
+        "integral_mean_ned": [
+          -0.2571496069431305,
+          -0.012900198809802532,
+          -0.27076607942581177
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.04571265398592329,
+        "estimated_position_peak_m": 0.04879415596027059,
+        "position_out_fraction": 1.0,
+        "speed_peak_m_s": 0.036159906536340714,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.056711057488224956,
+        "true_local_command_peak_m": 0.06313920583623026,
+        "true_error_mean_enu_m": [
+          0.03151928377314254,
+          -0.044126930583944755,
+          0.014803063341726852
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.0011933326059154134,
+          0.010191582072892029,
+          -0.015420305201162792
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.01733864989364516,
+          -0.018733738005782142,
+          0.0164190308190882
+        ],
+        "gps_position_noise_mean_neu": [
+          0.010108955528509465,
+          0.002869907923741267,
+          0.010248148950631718
+        ],
+        "integral_mean_ned": [
+          -0.2547762393951416,
+          -0.01742592826485634,
+          -0.2731279134750366
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.024492326430623476,
+        "estimated_position_peak_m": 0.04235045748928381,
+        "position_out_fraction": 0.5356,
+        "speed_peak_m_s": 0.03755113109946251,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.04069301922720269,
+        "true_local_command_peak_m": 0.06933045182957205,
+        "true_error_mean_enu_m": [
+          -0.007755669150379513,
+          0.01669300561000834,
+          0.010772875599292641
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.007406161185277142,
+          -0.010862617396577347,
+          -0.008881523436789858
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0013174212750173477,
+          0.0010053291375112597,
+          -0.009088509201829804
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.016412192471125575,
+          0.00480551044938842,
+          -0.006352324222011653
+        ],
+        "integral_mean_ned": [
+          -0.24417224526405334,
+          -0.011513086967170238,
+          -0.26936572790145874
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.02462588036197139,
+        "speed_max_m_s": 0.011281040497124195,
+        "passed": false
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.023427178446813784,
+        "speed_max_m_s": 0.019143519923090935,
+        "passed": false
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.030226176716736074,
+        "speed_max_m_s": 0.03505690395832062,
+        "passed": false
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.02986461272673516,
+        "speed_max_m_s": 0.03323141112923622,
+        "passed": false
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.01696377377276386,
+        "speed_max_m_s": 0.023120876401662827,
+        "passed": true
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.03074098175026887,
+        "speed_max_m_s": 0.022200552746653557,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.04235045748928381,
+        "speed_max_m_s": 0.032666563987731934,
+        "passed": false
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.03241622847677321,
+        "speed_max_m_s": 0.03755113109946251,
+        "passed": false
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.023360441697559974,
+        "speed_max_m_s": 0.028285542502999306,
+        "passed": false
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.03526588904483052,
+        "speed_max_m_s": 0.031403664499521255,
+        "passed": false
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.027940608893120784,
+        "speed_max_m_s": 0.033579885959625244,
+        "passed": false
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.028481271084090546,
+        "speed_max_m_s": 0.027481937780976295,
+        "passed": false
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.010307229469078357,
+        "speed_max_m_s": 0.021443095058202744,
+        "passed": true
+      }
+    ],
+    "pre_excitation_pass_count": 2,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.01796859031310882,
+      0.08458597868415553,
+      3.951198349366456,
+      19.0625250808858
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.9977197932087429,
+        0.05941501277526681,
+        0.03165598651559551,
+        0.004792599935634254
+      ],
+      [
+        0.05979782680962048,
+        -0.998074497896142,
+        -0.00934493131828773,
+        -0.013571618063718649
+      ],
+      [
+        0.03100152037690554,
+        0.011078080579671967,
+        -0.9994073605803486,
+        0.010055321119257554
+      ],
+      [
+        0.004282508922426605,
+        0.013943781300261748,
+        -0.009772327982712159,
+        -0.9998458544626656
+      ]
+    ],
+    "regressor_rank": 3,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s0_00_com_active",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.021214213838833693,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.019285648944394263,
+        "estimated_position_peak_m": 0.025282954181360087,
+        "position_out_fraction": 0.28933333333333333,
+        "speed_peak_m_s": 0.028329119086265564,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.04204342355352904,
+        "true_local_command_peak_m": 0.048862106908887926,
+        "true_error_mean_enu_m": [
+          0.025070075038362827,
+          -0.0068738377520613115,
+          0.030738050333009335
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.015313346004490547,
+          0.007012832590091824,
+          -0.021275902054385155
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0023891298627419376,
+          -0.004177225564330156,
+          0.0024757308765201882
+        ],
+        "gps_position_noise_mean_neu": [
+          0.005560645189889124,
+          -0.017249463303884528,
+          -0.011381295455906229
+        ],
+        "integral_mean_ned": [
+          -0.24208617210388184,
+          -0.006582933012396097,
+          0.0009783940622583032
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.018688219997459527,
+        "estimated_position_peak_m": 0.033664807723610184,
+        "position_out_fraction": 0.25690276110444177,
+        "speed_peak_m_s": 0.03542955592274666,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.028730237785950033,
+        "true_local_command_peak_m": 0.05480114881754747,
+        "true_error_mean_enu_m": [
+          0.010314246371669469,
+          0.008831415064927121,
+          -0.004805526394925691
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.0070031002543251165,
+          -0.008625255094738538,
+          0.0026486997673957806
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.001478292305013256,
+          -0.0031964230680032865,
+          -0.0036062279588576556
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.006372372175037788,
+          -0.0034365298157029898,
+          0.008529403610905146
+        ],
+        "integral_mean_ned": [
+          -0.2472519725561142,
+          -0.009100306779146194,
+          0.0007637920789420605
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.015278132086550784,
+        "estimated_position_peak_m": 0.02329133848656803,
+        "position_out_fraction": 0.052,
+        "speed_peak_m_s": 0.023278746753931046,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.026433288798602315,
+        "true_local_command_peak_m": 0.032111068990916286,
+        "true_error_mean_enu_m": [
+          0.011587449238049136,
+          0.019692455334777703,
+          0.009694343246519573
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.007001657054993723,
+          -0.01575798936517536,
+          -0.0014943688487015993
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.010000547626987079,
+          0.01794243603944775,
+          0.003122614970197904
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.021026051719672933,
+          0.03677792437374587,
+          0.03457891506453352
+        ],
+        "integral_mean_ned": [
+          -0.24915702641010284,
+          -0.008469857275485992,
+          0.0064953225664794445
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.015475198960471588,
+        "estimated_position_peak_m": 0.02808479481938988,
+        "position_out_fraction": 0.1436,
+        "speed_peak_m_s": 0.028807003051042557,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.029795993895204768,
+        "true_local_command_peak_m": 0.045139349963744156,
+        "true_error_mean_enu_m": [
+          -0.008644128757806848,
+          -0.014695950755314128,
+          0.005057773973928025
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.008503509673687204,
+          0.014787837859283916,
+          -0.004458455959021451
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0008490232177533648,
+          0.004347054944788603,
+          -0.0033393192461156898
+        ],
+        "gps_position_noise_mean_neu": [
+          0.006074593481724419,
+          0.0018387602395516314,
+          0.0034179582370336757
+        ],
+        "integral_mean_ned": [
+          -0.23737157881259918,
+          -0.004535355139523745,
+          -0.002771796425804496
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.014358918791733297,
+        "speed_max_m_s": 0.015116673894226551,
+        "passed": true
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.013094750039788586,
+        "speed_max_m_s": 0.01451769471168518,
+        "passed": true
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.012493879960971397,
+        "speed_max_m_s": 0.012951970100402832,
+        "passed": true
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.008259659240693062,
+        "speed_max_m_s": 0.008921222761273384,
+        "passed": true
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.026729388500304714,
+        "speed_max_m_s": 0.009622649289667606,
+        "passed": false
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.02808479481938988,
+        "speed_max_m_s": 0.028807003051042557,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.01738251085277879,
+        "speed_max_m_s": 0.028572918847203255,
+        "passed": true
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.021973419632415912,
+        "speed_max_m_s": 0.021684346720576286,
+        "passed": false
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.021967853130768267,
+        "speed_max_m_s": 0.025272700935602188,
+        "passed": false
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.021166732558778562,
+        "speed_max_m_s": 0.01365608535706997,
+        "passed": true
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.022966541760261718,
+        "speed_max_m_s": 0.028319822624325752,
+        "passed": false
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.01896709788949587,
+        "speed_max_m_s": 0.028329119086265564,
+        "passed": true
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.022277691223957043,
+        "speed_max_m_s": 0.016949083656072617,
+        "passed": false
+      }
+    ],
+    "pre_excitation_pass_count": 7,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.013419269395626158,
+      0.02244994852025861,
+      0.7014983562719389,
+      5.601418756852926
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.341739445372775,
+        -0.9376075544197355,
+        -0.06262518247439074,
+        -0.013576151568098632
+      ],
+      [
+        -0.9337929388977073,
+        -0.34596992609432303,
+        0.08877527579854033,
+        -0.02131919111888292
+      ],
+      [
+        0.10570854404601843,
+        -0.02298311812721375,
+        0.9690462132572037,
+        -0.22191646304115298
+      ],
+      [
+        -0.008402526808100053,
+        0.025858468912171306,
+        -0.2216900392413162,
+        -0.9747380487238307
+      ]
+    ],
+    "regressor_rank": 2,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s0_00_com_conventional",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.021504696997984272,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.019549724543622065,
+        "estimated_position_peak_m": 0.025815252336619757,
+        "position_out_fraction": 0.22266666666666668,
+        "speed_peak_m_s": 0.02353053167462349,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.04170274115321434,
+        "true_local_command_peak_m": 0.048564075712587286,
+        "true_error_mean_enu_m": [
+          0.026771241153434773,
+          -0.00462861283194178,
+          0.028478744368140515
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.015038221244219087,
+          0.006554249565028187,
+          -0.019057169003964754
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.002368616705228169,
+          -0.005801396362565369,
+          0.0022501420692776046
+        ],
+        "gps_position_noise_mean_neu": [
+          0.0046099353269680255,
+          -0.017910424924383914,
+          -0.012193193582428987
+        ],
+        "integral_mean_ned": [
+          -0.24196943640708923,
+          -0.007677785586565733,
+          0.0007442159694619477
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.01797510272705162,
+        "estimated_position_peak_m": 0.033953801437267325,
+        "position_out_fraction": 0.21208483393357344,
+        "speed_peak_m_s": 0.03458482399582863,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.029504274279339923,
+        "true_local_command_peak_m": 0.05503428017317319,
+        "true_error_mean_enu_m": [
+          0.011111173767142475,
+          0.009459822477797518,
+          -0.0077350385388722095
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.00734718518170922,
+          -0.009132534119663272,
+          0.004481736226345428
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.0012922528458808363,
+          -0.0026502791490934426,
+          -0.0034490166264263275
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.006431101469955822,
+          -0.003024295735122591,
+          0.008968402511443473
+        ],
+        "integral_mean_ned": [
+          -0.24794849753379822,
+          -0.009186304174363613,
+          -0.0009078708244487643
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.015433230451944604,
+        "estimated_position_peak_m": 0.02524422214417559,
+        "position_out_fraction": 0.124,
+        "speed_peak_m_s": 0.024271449074149132,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.024474394461676634,
+        "true_local_command_peak_m": 0.02917567998915118,
+        "true_error_mean_enu_m": [
+          0.012021270223837121,
+          0.018479109867205346,
+          0.006440201023172969
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.004731838944401764,
+          -0.014079608133603204,
+          -0.001016450895657749
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.011921893474796096,
+          0.013063359104337216,
+          -0.0004459893867944225
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.021502293616292887,
+          0.03676843108429058,
+          0.02775503044587468
+        ],
+        "integral_mean_ned": [
+          -0.24912911653518677,
+          -0.008591020479798317,
+          0.00539614399895072
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.0159181415614005,
+        "estimated_position_peak_m": 0.028346869576332173,
+        "position_out_fraction": 0.1252,
+        "speed_peak_m_s": 0.028345920145511627,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.029291572776661928,
+        "true_local_command_peak_m": 0.044829001502259054,
+        "true_error_mean_enu_m": [
+          -0.008271379664509746,
+          -0.014028970129083237,
+          0.004254828339362696
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.008175341687657964,
+          0.014944110580678856,
+          -0.0040024591259437085
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0005453438121555002,
+          0.003978370119457926,
+          -0.0036726945159394233
+        ],
+        "gps_position_noise_mean_neu": [
+          0.006244355248397857,
+          0.0020432693944481633,
+          0.004091074621593407
+        ],
+        "integral_mean_ned": [
+          -0.23578839004039764,
+          -0.00490268599241972,
+          -0.003101121634244919
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.014689483157004817,
+        "speed_max_m_s": 0.012975640594959259,
+        "passed": true
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.012591020616736686,
+        "speed_max_m_s": 0.012792414985597134,
+        "passed": true
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.014183276513412564,
+        "speed_max_m_s": 0.010409034788608551,
+        "passed": true
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.010591638617677503,
+        "speed_max_m_s": 0.008470346219837666,
+        "passed": true
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.0275948811259841,
+        "speed_max_m_s": 0.011811798438429832,
+        "passed": false
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.028346869576332173,
+        "speed_max_m_s": 0.028345920145511627,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.018136500114883696,
+        "speed_max_m_s": 0.027542756870388985,
+        "passed": true
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.021503551585957417,
+        "speed_max_m_s": 0.02229786105453968,
+        "passed": true
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.02106661322673245,
+        "speed_max_m_s": 0.02417096495628357,
+        "passed": true
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.021967817043110897,
+        "speed_max_m_s": 0.01107825618237257,
+        "passed": false
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.02203288493325079,
+        "speed_max_m_s": 0.024512583389878273,
+        "passed": false
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.019094925630177402,
+        "speed_max_m_s": 0.02353053167462349,
+        "passed": true
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.02072276954329713,
+        "speed_max_m_s": 0.01858587935566902,
+        "passed": true
+      }
+    ],
+    "pre_excitation_pass_count": 9,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.0197343287297021,
+      0.07960866938923444,
+      3.243126136185803,
+      23.19085288688168
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.9974787896382448,
+        -0.065757887533939,
+        0.026488785220140146,
+        0.0032107174365286627
+      ],
+      [
+        -0.06611621438022544,
+        -0.9977300660311464,
+        0.012727159487589956,
+        0.0011751361151164375
+      ],
+      [
+        0.02564139243878156,
+        -0.014467957869693238,
+        -0.9994214852055899,
+        -0.01702621796918019
+      ],
+      [
+        0.0026887565249715945,
+        -0.0011374355534023994,
+        0.017118953776198043,
+        -0.9998491977545012
+      ]
+    ],
+    "regressor_rank": 3,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s2_00_com_active",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.02048869871718076,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.018626089742891597,
+        "estimated_position_peak_m": 0.03724757955567823,
+        "position_out_fraction": 0.3546666666666667,
+        "speed_peak_m_s": 0.024851638823747635,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.044986916197043474,
+        "true_local_command_peak_m": 0.06927781139397665,
+        "true_error_mean_enu_m": [
+          0.0017461337400493352,
+          0.03840236839301968,
+          0.002558444974596046
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.001178739395361442,
+          -0.03729695651676042,
+          -0.0006537276248519774
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.0024687634457342743,
+          -0.01261927211109628,
+          0.004358171614572644
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.007460998476385039,
+          -0.0013684740125017273,
+          0.004894315795064643
+        ],
+        "integral_mean_ned": [
+          -0.23774108290672302,
+          -0.005996193736791611,
+          0.0014390675351023674
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.023688139946485984,
+        "estimated_position_peak_m": 0.044692940989901425,
+        "position_out_fraction": 0.40856342537014806,
+        "speed_peak_m_s": 0.06106087192893028,
+        "speed_out_fraction": 0.04801920768307323,
+        "true_local_command_rmse_m": 0.040620546654721854,
+        "true_local_command_peak_m": 0.05848590439812098,
+        "true_error_mean_enu_m": [
+          -0.013657616236698145,
+          0.012918163509276898,
+          -0.018765436227221304
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.009116848846843158,
+          -0.006137091047428352,
+          0.016182979175409052
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.004254413828201486,
+          -0.001968925040777733,
+          0.0032330741656317065
+        ],
+        "gps_position_noise_mean_neu": [
+          0.0036901805355762374,
+          -0.003221517486927389,
+          -0.005722950142587334
+        ],
+        "integral_mean_ned": [
+          -0.24799586832523346,
+          -0.006928709801286459,
+          0.00035872249281965196
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.04986097940731517,
+        "estimated_position_peak_m": 0.053871815728335624,
+        "position_out_fraction": 1.0,
+        "speed_peak_m_s": 0.0410967618227005,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.06418290368703126,
+        "true_local_command_peak_m": 0.07018226735742385,
+        "true_error_mean_enu_m": [
+          0.0325166998129196,
+          -0.049734244442236605,
+          0.022950754831394863
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.0020055479001157223,
+          0.010997495965047796,
+          -0.019767869203801962
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.016906820399115844,
+          -0.018209374629922424,
+          0.01562628195050261
+        ],
+        "gps_position_noise_mean_neu": [
+          0.009770752312878363,
+          0.003644518465960339,
+          0.010164299255965504
+        ],
+        "integral_mean_ned": [
+          -0.24402573704719543,
+          -0.010635058395564556,
+          -0.0014373533194884658
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.024614161850770956,
+        "estimated_position_peak_m": 0.043710003535155584,
+        "position_out_fraction": 0.602,
+        "speed_peak_m_s": 0.0365256741642952,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.04225917885816971,
+        "true_local_command_peak_m": 0.0685437256653553,
+        "true_error_mean_enu_m": [
+          -0.004288796465165799,
+          0.018186831785954906,
+          0.013694840096084791
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.006756545884002868,
+          -0.01126885798392029,
+          -0.011142847804420259
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0013174212750173477,
+          0.0010053291375112597,
+          -0.009088509201829804
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.016412192471125575,
+          0.00480551044938842,
+          -0.006352324222011653
+        ],
+        "integral_mean_ned": [
+          -0.23317816853523254,
+          -0.0032074488699436188,
+          -0.00010230048064840958
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.025538921590662723,
+        "speed_max_m_s": 0.012948933057487011,
+        "passed": false
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.02388333636738238,
+        "speed_max_m_s": 0.020758619531989098,
+        "passed": false
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.029474147952256165,
+        "speed_max_m_s": 0.0326799638569355,
+        "passed": false
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.02998867582392997,
+        "speed_max_m_s": 0.03003043122589588,
+        "passed": false
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.01815327531907012,
+        "speed_max_m_s": 0.02334999293088913,
+        "passed": true
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.029363492486723076,
+        "speed_max_m_s": 0.021604614332318306,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.043710003535155584,
+        "speed_max_m_s": 0.034197233617305756,
+        "passed": false
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.03414787540385234,
+        "speed_max_m_s": 0.0365256741642952,
+        "passed": false
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.02356791020330346,
+        "speed_max_m_s": 0.03065071813762188,
+        "passed": false
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.03213407191234902,
+        "speed_max_m_s": 0.027529504150152206,
+        "passed": false
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.02776284395148569,
+        "speed_max_m_s": 0.029572444036602974,
+        "passed": false
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.028097049556619715,
+        "speed_max_m_s": 0.024851638823747635,
+        "passed": false
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.00850239279827669,
+        "speed_max_m_s": 0.020902182906866074,
+        "passed": true
+      }
+    ],
+    "pre_excitation_pass_count": 2,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.013308769566824134,
+      0.03421706279017891,
+      0.8574273988578915,
+      5.972190097244819
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.8566580258006732,
+        -0.5123409052433642,
+        0.0577799894478182,
+        0.01747273490650243
+      ],
+      [
+        -0.5090213641519193,
+        -0.8584519742878247,
+        -0.062118771958513286,
+        -0.009935635290256317
+      ],
+      [
+        0.08349645935843336,
+        0.02234036313044785,
+        -0.9402594286455076,
+        -0.32930450390638316
+      ],
+      [
+        -0.00791321317907745,
+        -0.008240924156024398,
+        0.3297194835507905,
+        -0.9440098147759046
+      ]
+    ],
+    "regressor_rank": 2,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  },
+  {
+    "run": "s2_00_com_conventional",
+    "original_final_pass": false,
+    "original_position_bound_m": 0.0202699853700149,
+    "original_speed_bound_m_s": 0.05,
+    "original_final_window": [
+      71,
+      72
+    ],
+    "windows": {
+      "pre": {
+        "window": [
+          45,
+          48
+        ],
+        "estimated_position_rmse_m": 0.018427259427286274,
+        "estimated_position_peak_m": 0.0368565172681057,
+        "position_out_fraction": 0.340878828229028,
+        "speed_peak_m_s": 0.023817475885152817,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.0451467406721689,
+        "true_local_command_peak_m": 0.06971655214357696,
+        "true_error_mean_enu_m": [
+          0.00039542355392580746,
+          0.03840291935343294,
+          -0.0066647086660940645
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.0015601422519281175,
+          -0.037170502887185874,
+          0.006303892603942295
+        ],
+        "gps_velocity_noise_mean_enu": [
+          -0.0029989125169967057,
+          -0.012202588776075305,
+          0.004054226762881229
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.007455841768875179,
+          -0.0007766342157712789,
+          0.004461003040477814
+        ],
+        "integral_mean_ned": [
+          -0.23998063802719116,
+          -0.006308720912784338,
+          0.0011643212055787444
+        ]
+      },
+      "task": {
+        "window": [
+          58,
+          68
+        ],
+        "estimated_position_rmse_m": 0.022938552113760217,
+        "estimated_position_peak_m": 0.04438752816846446,
+        "position_out_fraction": 0.36214485794317725,
+        "speed_peak_m_s": 0.060758076608181,
+        "speed_out_fraction": 0.04721888755502201,
+        "true_local_command_rmse_m": 0.03901073574708386,
+        "true_local_command_peak_m": 0.057335937047737234,
+        "true_error_mean_enu_m": [
+          -0.013085946600772905,
+          0.01275924376473956,
+          -0.01908274207005996
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.00894565767806939,
+          -0.006247744271138418,
+          0.016046934352308594
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.004206720006148087,
+          -0.0017898356685685372,
+          0.0030440493519863564
+        ],
+        "gps_position_noise_mean_neu": [
+          0.00365139386418443,
+          -0.003208453825173258,
+          -0.005751531101502366
+        ],
+        "integral_mean_ned": [
+          -0.24939602613449097,
+          -0.008145375177264214,
+          0.0013291523791849613
+        ]
+      },
+      "final": {
+        "window": [
+          71,
+          72
+        ],
+        "estimated_position_rmse_m": 0.047826928559721406,
+        "estimated_position_peak_m": 0.05150847013458547,
+        "position_out_fraction": 1.0,
+        "speed_peak_m_s": 0.04022468626499176,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.05855783838224247,
+        "true_local_command_peak_m": 0.0648868782810627,
+        "true_error_mean_enu_m": [
+          0.02943198641945254,
+          -0.047933171614859216,
+          0.01429586783051493
+        ],
+        "estimator_bias_mean_enu_m": [
+          -0.0009399845834195977,
+          0.00985702228019374,
+          -0.01390994166334459
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.016616756325432372,
+          -0.018166079154858954,
+          0.015894527376318954
+        ],
+        "gps_position_noise_mean_neu": [
+          0.009609721902719052,
+          0.00320341795256051,
+          0.010334076574266254
+        ],
+        "integral_mean_ned": [
+          -0.2460048347711563,
+          -0.01207274291664362,
+          -0.0015817814273759723
+        ]
+      },
+      "negative_control": {
+        "window": [
+          34,
+          44
+        ],
+        "estimated_position_rmse_m": 0.02504113295834642,
+        "estimated_position_peak_m": 0.045853952511540556,
+        "position_out_fraction": 0.5984,
+        "speed_peak_m_s": 0.0389803908765316,
+        "speed_out_fraction": 0.0,
+        "true_local_command_rmse_m": 0.038609475992756596,
+        "true_local_command_peak_m": 0.06606354079413432,
+        "true_error_mean_enu_m": [
+          -0.00455955807125186,
+          0.015412384581705336,
+          0.008107251847291929
+        ],
+        "estimator_bias_mean_enu_m": [
+          0.00680157700615243,
+          -0.010455805141883826,
+          -0.0069598034700446365
+        ],
+        "gps_velocity_noise_mean_enu": [
+          0.0014727723720581842,
+          0.000779138885287836,
+          -0.009345786589721863
+        ],
+        "gps_position_noise_mean_neu": [
+          -0.016282472659206664,
+          0.004710345700280978,
+          -0.006519872448161215
+        ],
+        "integral_mean_ned": [
+          -0.23616506159305573,
+          -0.004134179092943668,
+          0.0011089476756751537
+        ]
+      }
+    },
+    "pre_excitation_one_second_windows": [
+      {
+        "start": 34,
+        "position_max_m": 0.02458223614086691,
+        "speed_max_m_s": 0.011785082519054413,
+        "passed": false
+      },
+      {
+        "start": 35,
+        "position_max_m": 0.024855045823600146,
+        "speed_max_m_s": 0.015784254297614098,
+        "passed": false
+      },
+      {
+        "start": 36,
+        "position_max_m": 0.03438293093843853,
+        "speed_max_m_s": 0.032443445175886154,
+        "passed": false
+      },
+      {
+        "start": 37,
+        "position_max_m": 0.034986057070502896,
+        "speed_max_m_s": 0.03189009055495262,
+        "passed": false
+      },
+      {
+        "start": 38,
+        "position_max_m": 0.01722971523326909,
+        "speed_max_m_s": 0.026252230629324913,
+        "passed": true
+      },
+      {
+        "start": 39,
+        "position_max_m": 0.029899416124566234,
+        "speed_max_m_s": 0.020252039656043053,
+        "passed": false
+      },
+      {
+        "start": 40,
+        "position_max_m": 0.045853952511540556,
+        "speed_max_m_s": 0.035142481327056885,
+        "passed": false
+      },
+      {
+        "start": 41,
+        "position_max_m": 0.03555079447974047,
+        "speed_max_m_s": 0.0389803908765316,
+        "passed": false
+      },
+      {
+        "start": 42,
+        "position_max_m": 0.021496271077249624,
+        "speed_max_m_s": 0.02690102905035019,
+        "passed": false
+      },
+      {
+        "start": 43,
+        "position_max_m": 0.02996082192248955,
+        "speed_max_m_s": 0.025769229978322983,
+        "passed": false
+      },
+      {
+        "start": 44,
+        "position_max_m": 0.027569889215257243,
+        "speed_max_m_s": 0.028298117220401764,
+        "passed": false
+      },
+      {
+        "start": 45,
+        "position_max_m": 0.02767204206063003,
+        "speed_max_m_s": 0.023817475885152817,
+        "passed": false
+      },
+      {
+        "start": 46,
+        "position_max_m": 0.008041114190873366,
+        "speed_max_m_s": 0.020041724666953087,
+        "passed": true
+      }
+    ],
+    "pre_excitation_pass_count": 2,
+    "safety_stop_reason": null,
+    "safety_limit_triggered": false,
+    "saturation": {
+      "torque": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "allocator": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "acceleration": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "motor_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      },
+      "servo_sampled": {
+        "fraction": 0.0,
+        "longest_s": 0.0
+      }
+    },
+    "publisher_learning_side_effect": false,
+    "native_parameter_side_effect": false,
+    "all_methods_share_same_control_trajectory": true,
+    "causal_cpu_counterfactual_not_proven": true,
+    "gps_delay_parameter_ms": 110.0,
+    "gps_recorded_latency_ms": {
+      "min": 0.0,
+      "max": 0.0,
+      "median": 0.0
+    },
+    "estimator_reset_during_eval": {
+      "xy_reset_counter": 0,
+      "z_reset_counter": 0,
+      "vxy_reset_counter": 0,
+      "vz_reset_counter": 0,
+      "heading_reset_counter": 0
+    },
+    "regressor_eigenvalues": [
+      0.02137850192379888,
+      0.10192681131224385,
+      3.7353639527716225,
+      19.56472881546346
+    ],
+    "regressor_eigenvectors": [
+      [
+        0.9992728374717592,
+        0.008154064781926164,
+        0.03691098151823328,
+        -0.004988683396677435
+      ],
+      [
+        -0.00784221488792199,
+        0.9998958927018825,
+        -0.007270968340701289,
+        0.009686921231534584
+      ],
+      [
+        0.03710348594753733,
+        -0.007262064722351025,
+        -0.998837216100182,
+        0.029913366238985717
+      ],
+      [
+        0.0039531363917841515,
+        -0.009432783332946615,
+        0.03014843604546663,
+        0.9994931050864104
+      ]
+    ],
+    "regressor_rank": 3,
+    "slow_parameter_count": 24,
+    "initialization_bias_and_center_statistics": 10,
+    "network_backbone_unchanged": true,
+    "truth_coordinate_method": "Noise-free navsat lat/lon mapped with PX4 azimuthal projection and contemporaneous EKF ref origin; compared to actual published NED position command, offline only. Base-link navsat has zero sensor pose.",
+    "classification": "baseline/reference/estimator recovery observation; not JEPA-induced; timing/config hypothesis requires intervention"
+  }
+]

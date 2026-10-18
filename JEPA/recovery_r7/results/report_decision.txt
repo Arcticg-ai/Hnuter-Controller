@@ -1,0 +1,54 @@
+{
+  "control_enabled": false,
+  "baseline_old_passes": 0,
+  "baseline_extended_passes": 0,
+  "gated_updated_combinations": 0,
+  "aggregate_prediction_gates": [
+    {
+      "family": "physics",
+      "kind": "original",
+      "velocity_improvement_pct": 5.330242145678654,
+      "omega_improvement_pct": 1.8074639343605758,
+      "aggregate_both_10pct": false
+    },
+    {
+      "family": "physics",
+      "kind": "gated",
+      "velocity_improvement_pct": 0.0,
+      "omega_improvement_pct": 0.0,
+      "aggregate_both_10pct": false
+    },
+    {
+      "family": "supervised",
+      "kind": "original",
+      "velocity_improvement_pct": 3.411646634835841,
+      "omega_improvement_pct": -0.6111638583484735,
+      "aggregate_both_10pct": false
+    },
+    {
+      "family": "supervised",
+      "kind": "gated",
+      "velocity_improvement_pct": 0.0,
+      "omega_improvement_pct": 0.0,
+      "aggregate_both_10pct": false
+    },
+    {
+      "family": "jepa",
+      "kind": "original",
+      "velocity_improvement_pct": 3.788937914928725,
+      "omega_improvement_pct": 1.5318255892222798,
+      "aggregate_both_10pct": false
+    },
+    {
+      "family": "jepa",
+      "kind": "gated",
+      "velocity_improvement_pct": 0.0,
+      "omega_improvement_pct": 0.0,
+      "aggregate_both_10pct": false
+    }
+  ],
+  "goal_complete": false,
+  "stage_complete": true,
+  "independent_new_flights": 4,
+  "new_training_steps": 0
+}

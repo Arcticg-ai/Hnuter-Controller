@@ -1,0 +1,110 @@
+[
+  {
+    "id": "s2_00_hover_d110",
+    "seed": 2,
+    "excitation": "hover",
+    "split": "development_diagnostic_reuse",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s2_00_hover_d110/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738",
+    "gps_delay_ms": 110,
+    "shadow_process": false
+  },
+  {
+    "id": "s2_00_hover_d0",
+    "seed": 2,
+    "excitation": "hover",
+    "split": "development_diagnostic_reuse",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s2_00_hover_d0/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738",
+    "gps_delay_ms": 0,
+    "shadow_process": false
+  },
+  {
+    "id": "s2_00_active_d110",
+    "seed": 2,
+    "excitation": "active",
+    "split": "development_diagnostic_reuse",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s2_00_active_d110/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738",
+    "gps_delay_ms": 110,
+    "shadow_process": false
+  },
+  {
+    "id": "s2_00_active_d0",
+    "seed": 2,
+    "excitation": "active",
+    "split": "development_diagnostic_reuse",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s2_00_active_d0/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738",
+    "gps_delay_ms": 0,
+    "shadow_process": false
+  }
+]

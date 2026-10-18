@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "flight_count": 4,
+  "unarmed_count": 1,
+  "flight_wall_s": 553.128809537,
+  "flight_wall_budget_s": 720,
+  "raw_bytes": 1744122618,
+  "raw_budget_gib": 2.5,
+  "source_hashes_unchanged": true,
+  "offline_hashes_unchanged": true,
+  "protected": {
+    "controller": {
+      "head_unchanged": true,
+      "dirty_files": {
+        "README.md": true,
+        "config/hnuter_drcda_hardware_tuning.json": true,
+        "docs/iebc_hardware.md": true,
+        "hnuter_external_controller_px4_position_iebc_hardware.py": true,
+        "hnuter_external_controller_px4_position_iebc_simulation.py": true,
+        "hnuter_external_direct_drcda_hardware.py": true,
+        "tests/test_hnuter_external_controller_px4_position_iebc_hardware.py": true,
+        "tests/test_hnuter_external_controller_px4_position_iebc_simulation.py": true,
+        "tests/test_hnuter_external_direct_drcda_hardware.py": true
+      }
+    },
+    "px4": {
+      "head_unchanged": true,
+      "dirty_files": {
+        "Tools/simulation/gz/server.config": true,
+        "src/modules/land_detector/MulticopterLandDetector.cpp": true,
+        "src/modules/land_detector/MulticopterLandDetector.h": true,
+        "src/modules/simulation/gz_bridge/GZBridge.cpp": true,
+        "src/modules/simulation/gz_bridge/server.config": true
+      }
+    }
+  },
+  "no_control_enabled": true,
+  "performance_pass_is_separate": true,
+  "failed_audit_preserved": true
+}

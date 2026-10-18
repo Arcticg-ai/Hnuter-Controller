@@ -1,0 +1,4 @@
+{
+  "passed": true,
+  "scope": "safety/data/initialization completed; performance gate decided separately; no full-state equivalence"
+}
