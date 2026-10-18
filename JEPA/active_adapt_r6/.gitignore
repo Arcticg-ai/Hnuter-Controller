@@ -1,0 +1,8 @@
+__pycache__/
+runtime/__pycache__/
+runtime/fixed/__pycache__/
+runtime/results/experiment/runs/
+runtime/results/unarmed/run/
+runtime/anchors/
+results/data/*.npz
+results/*_predictions.csv

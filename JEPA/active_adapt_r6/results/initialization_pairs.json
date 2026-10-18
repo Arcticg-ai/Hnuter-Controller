@@ -1,0 +1,150 @@
+[
+  {
+    "active": "s0_00_mass_active",
+    "conventional": "s0_00_mass_conventional",
+    "comparison": {
+      "passed": true,
+      "role": "paired_member",
+      "checks": {
+        "position_error_mean_enu": {
+          "difference": 0.0020325425807561277,
+          "limit": 0.015,
+          "passed": true
+        },
+        "velocity_mean_ned": {
+          "difference": 0.0017828705762716623,
+          "limit": 0.025,
+          "passed": true
+        },
+        "integral_mean_ned": {
+          "difference": 0.003654511702462845,
+          "limit": 0.03,
+          "passed": true
+        },
+        "joint_angle_mean_deg": {
+          "difference": 0.03730902632366684,
+          "limit": 2.0,
+          "passed": true
+        },
+        "joint_rate_mean_deg_s": {
+          "difference": 0.11194009951323616,
+          "limit": 5.0,
+          "passed": true
+        }
+      },
+      "paired": true
+    },
+    "same_seed_not_exact_state_branching": true
+  },
+  {
+    "active": "s2_00_mass_active",
+    "conventional": "s2_00_mass_conventional",
+    "comparison": {
+      "passed": true,
+      "role": "paired_member",
+      "checks": {
+        "position_error_mean_enu": {
+          "difference": 0.00184064538453554,
+          "limit": 0.015,
+          "passed": true
+        },
+        "velocity_mean_ned": {
+          "difference": 0.001005383830046799,
+          "limit": 0.025,
+          "passed": true
+        },
+        "integral_mean_ned": {
+          "difference": 0.001485780376927296,
+          "limit": 0.03,
+          "passed": true
+        },
+        "joint_angle_mean_deg": {
+          "difference": 0.016451693428972902,
+          "limit": 2.0,
+          "passed": true
+        },
+        "joint_rate_mean_deg_s": {
+          "difference": 0.02152083470236027,
+          "limit": 5.0,
+          "passed": true
+        }
+      },
+      "paired": true
+    },
+    "same_seed_not_exact_state_branching": true
+  },
+  {
+    "active": "s0_00_com_active",
+    "conventional": "s0_00_com_conventional",
+    "comparison": {
+      "passed": true,
+      "role": "paired_member",
+      "checks": {
+        "position_error_mean_enu": {
+          "difference": 0.002619540726716837,
+          "limit": 0.015,
+          "passed": true
+        },
+        "velocity_mean_ned": {
+          "difference": 0.0017930352990107418,
+          "limit": 0.025,
+          "passed": true
+        },
+        "integral_mean_ned": {
+          "difference": 0.0011253489408359955,
+          "limit": 0.03,
+          "passed": true
+        },
+        "joint_angle_mean_deg": {
+          "difference": 0.03218955257260303,
+          "limit": 2.0,
+          "passed": true
+        },
+        "joint_rate_mean_deg_s": {
+          "difference": 0.054622006158975306,
+          "limit": 5.0,
+          "passed": true
+        }
+      },
+      "paired": true
+    },
+    "same_seed_not_exact_state_branching": true
+  },
+  {
+    "active": "s2_00_com_active",
+    "conventional": "s2_00_com_conventional",
+    "comparison": {
+      "passed": true,
+      "role": "paired_member",
+      "checks": {
+        "position_error_mean_enu": {
+          "difference": 0.0024056977914342875,
+          "limit": 0.015,
+          "passed": true
+        },
+        "velocity_mean_ned": {
+          "difference": 0.0028649476529169584,
+          "limit": 0.025,
+          "passed": true
+        },
+        "integral_mean_ned": {
+          "difference": 0.0022861896088869926,
+          "limit": 0.03,
+          "passed": true
+        },
+        "joint_angle_mean_deg": {
+          "difference": 0.05245943544416387,
+          "limit": 2.0,
+          "passed": true
+        },
+        "joint_rate_mean_deg_s": {
+          "difference": 0.0037220210751509886,
+          "limit": 5.0,
+          "passed": true
+        }
+      },
+      "paired": true
+    },
+    "same_seed_not_exact_state_branching": true
+  }
+]

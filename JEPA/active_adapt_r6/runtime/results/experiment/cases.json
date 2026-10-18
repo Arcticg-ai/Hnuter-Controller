@@ -1,0 +1,202 @@
+[
+  {
+    "id": "s0_00_mass_active",
+    "seed": 0,
+    "excitation": "active",
+    "split": "sealed_test",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s0_00_mass_active/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738"
+  },
+  {
+    "id": "s0_00_mass_conventional",
+    "seed": 0,
+    "excitation": "conventional",
+    "split": "sealed_test",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s0_00_mass_conventional/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738"
+  },
+  {
+    "id": "s2_00_mass_active",
+    "seed": 2,
+    "excitation": "active",
+    "split": "sealed_test",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s2_00_mass_active/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738"
+  },
+  {
+    "id": "s2_00_mass_conventional",
+    "seed": 2,
+    "excitation": "conventional",
+    "split": "sealed_test",
+    "family": "mass",
+    "model": "/work/results/experiment/models/s2_00_mass_conventional/model.sdf",
+    "truth": {
+      "mass": 5.54999998,
+      "payload_mass": 1.05,
+      "payload_offset_y": 0.0,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e70373e44f13aba388d5c4d1d9632780226dc5c6cfaff78d964fabfbffe3c738"
+  },
+  {
+    "id": "s0_00_com_active",
+    "seed": 0,
+    "excitation": "active",
+    "split": "sealed_test",
+    "family": "com",
+    "model": "/work/results/experiment/models/s0_00_com_active/model.sdf",
+    "truth": {
+      "mass": 5.3999999800000005,
+      "payload_mass": 0.9,
+      "payload_offset_y": -0.025,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e51ddaa71799a44edd95039b159c9970b20c9998d533a7c837f963bbdf9e7968"
+  },
+  {
+    "id": "s0_00_com_conventional",
+    "seed": 0,
+    "excitation": "conventional",
+    "split": "sealed_test",
+    "family": "com",
+    "model": "/work/results/experiment/models/s0_00_com_conventional/model.sdf",
+    "truth": {
+      "mass": 5.3999999800000005,
+      "payload_mass": 0.9,
+      "payload_offset_y": -0.025,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e51ddaa71799a44edd95039b159c9970b20c9998d533a7c837f963bbdf9e7968"
+  },
+  {
+    "id": "s2_00_com_active",
+    "seed": 2,
+    "excitation": "active",
+    "split": "sealed_test",
+    "family": "com",
+    "model": "/work/results/experiment/models/s2_00_com_active/model.sdf",
+    "truth": {
+      "mass": 5.3999999800000005,
+      "payload_mass": 0.9,
+      "payload_offset_y": -0.025,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e51ddaa71799a44edd95039b159c9970b20c9998d533a7c837f963bbdf9e7968"
+  },
+  {
+    "id": "s2_00_com_conventional",
+    "seed": 2,
+    "excitation": "conventional",
+    "split": "sealed_test",
+    "family": "com",
+    "model": "/work/results/experiment/models/s2_00_com_conventional/model.sdf",
+    "truth": {
+      "mass": 5.3999999800000005,
+      "payload_mass": 0.9,
+      "payload_offset_y": -0.025,
+      "payload_size": [
+        0.1,
+        0.08,
+        0.04
+      ]
+    },
+    "target": null,
+    "disturbance": {
+      "start": 50,
+      "end": 58,
+      "force_y": 0
+    },
+    "model_sha256": "e51ddaa71799a44edd95039b159c9970b20c9998d533a7c837f963bbdf9e7968"
+  }
+]

@@ -1,0 +1,3319 @@
+{
+  "run": "s2_00_mass_conventional",
+  "metrics": [
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.003377040079224667,
+      "omega_rmse_rad_s": 0.013408353204854357
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013421961106855427,
+      "omega_rmse_rad_s": 0.012872815178295815
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0028720508399967763,
+      "omega_rmse_rad_s": 0.012794215671876533
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006554124453393806,
+      "omega_rmse_rad_s": 0.024591234862996754
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014521813520235453,
+      "omega_rmse_rad_s": 0.023740245206485742
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.005529642227357411,
+      "omega_rmse_rad_s": 0.023465838792880462
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013813183271442304,
+      "omega_rmse_rad_s": 0.040926297540797345
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.01875500706121162,
+      "omega_rmse_rad_s": 0.03988617153080892
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.011793397345642147,
+      "omega_rmse_rad_s": 0.03923278935352003
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0037428477156281055,
+      "omega_rmse_rad_s": 0.009616106643014644
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013724058996613418,
+      "omega_rmse_rad_s": 0.009661059647897796
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.002971745275441103,
+      "omega_rmse_rad_s": 0.009476883367402586
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.007413972369862133,
+      "omega_rmse_rad_s": 0.01745329921277442
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014818114797539656,
+      "omega_rmse_rad_s": 0.017374027947747464
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.005867141536809007,
+      "omega_rmse_rad_s": 0.017178867013241606
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016153756367334814,
+      "omega_rmse_rad_s": 0.031155819179854067
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.020214374028080694,
+      "omega_rmse_rad_s": 0.03093359853215684
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013484198026011309,
+      "omega_rmse_rad_s": 0.03069588708743507
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0032877120918029116,
+      "omega_rmse_rad_s": 0.012356288026917914
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013380035440787892,
+      "omega_rmse_rad_s": 0.012401806088136458
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0027842847532741875,
+      "omega_rmse_rad_s": 0.011791140455748774
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006401115263667708,
+      "omega_rmse_rad_s": 0.0226803320581434
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014419219405188866,
+      "omega_rmse_rad_s": 0.022386651474444238
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.005369901355459781,
+      "omega_rmse_rad_s": 0.021649126976171
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013372193534287629,
+      "omega_rmse_rad_s": 0.0385471708907855
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.018410688865441466,
+      "omega_rmse_rad_s": 0.03781627528093027
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.011323046957957265,
+      "omega_rmse_rad_s": 0.037021734159002964
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0034703588403709267,
+      "omega_rmse_rad_s": 0.00987481983580312
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013658530153265265,
+      "omega_rmse_rad_s": 0.010198854661480579
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0026731004552963686,
+      "omega_rmse_rad_s": 0.009783323306329597
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.006873364639442465,
+      "omega_rmse_rad_s": 0.017988726203617966
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014579193331555784,
+      "omega_rmse_rad_s": 0.018220145843950993
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.005265473929233222,
+      "omega_rmse_rad_s": 0.017808776870395244
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01537345335299469,
+      "omega_rmse_rad_s": 0.03223617924665113
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.019657841729953492,
+      "omega_rmse_rad_s": 0.03230676206058247
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0126696729831898,
+      "omega_rmse_rad_s": 0.031932055599064604
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.005274145211338006,
+      "omega_rmse_rad_s": 0.02275666134021175
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.01403513391749751,
+      "omega_rmse_rad_s": 0.022717641739369316
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.004739359961698643,
+      "omega_rmse_rad_s": 0.02265075841042794
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013049629064504404,
+      "omega_rmse_rad_s": 0.05077098059523618
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.018219933935759814,
+      "omega_rmse_rad_s": 0.050741179759599735
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.012273436001525376,
+      "omega_rmse_rad_s": 0.050589441894826837
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.04016778178910577,
+      "omega_rmse_rad_s": 0.1235087152594263
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.041760695728424765,
+      "omega_rmse_rad_s": 0.12337404296691232
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.03940895482382787,
+      "omega_rmse_rad_s": 0.12312382707310526
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.005107801168233717,
+      "omega_rmse_rad_s": 0.019702741110914412
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01410720534544761,
+      "omega_rmse_rad_s": 0.019788203413937
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004568938502813111,
+      "omega_rmse_rad_s": 0.019748921087742597
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.012677279809431617,
+      "omega_rmse_rad_s": 0.04560714529836831
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016165231669234212,
+      "omega_rmse_rad_s": 0.0457641655512134
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.012020611688530546,
+      "omega_rmse_rad_s": 0.04570346102824038
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.041124000668499576,
+      "omega_rmse_rad_s": 0.12020236458561602
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.038856872551565204,
+      "omega_rmse_rad_s": 0.120435976993311
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.04087123588279786,
+      "omega_rmse_rad_s": 0.12033286906472487
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0054464922551648335,
+      "omega_rmse_rad_s": 0.02478356170935565
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0140771466600616,
+      "omega_rmse_rad_s": 0.024995510262757297
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.004863445836460353,
+      "omega_rmse_rad_s": 0.024738361092853774
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013402412662102391,
+      "omega_rmse_rad_s": 0.054617005856246376
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.018385546993998338,
+      "omega_rmse_rad_s": 0.05480381148034831
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.012535484745355542,
+      "omega_rmse_rad_s": 0.054526695938195036
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.04050261555085186,
+      "omega_rmse_rad_s": 0.1270534664444264
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.041936347908741255,
+      "omega_rmse_rad_s": 0.1270248057236878
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.03963458581326864,
+      "omega_rmse_rad_s": 0.1267573680573054
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0050269315355523005,
+      "omega_rmse_rad_s": 0.020453902623352754
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014093858746616585,
+      "omega_rmse_rad_s": 0.020612111159426374
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004510035626862882,
+      "omega_rmse_rad_s": 0.020510024176975256
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01244891094371939,
+      "omega_rmse_rad_s": 0.046420812858671674
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016023845964247777,
+      "omega_rmse_rad_s": 0.04664245622578544
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.011825412227033892,
+      "omega_rmse_rad_s": 0.046534641317403626
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.040503631115089034,
+      "omega_rmse_rad_s": 0.11954589376368144
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.038239588108480084,
+      "omega_rmse_rad_s": 0.11982328791331741
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.040292441355382284,
+      "omega_rmse_rad_s": 0.11970052281671002
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.004749290346589715,
+      "omega_rmse_rad_s": 0.01680506386720207
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013408826919017356,
+      "omega_rmse_rad_s": 0.01675423169250383
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0045113183277764955,
+      "omega_rmse_rad_s": 0.0165742515615073
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.010406712900666967,
+      "omega_rmse_rad_s": 0.03332291457915387
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.015944478527333633,
+      "omega_rmse_rad_s": 0.03317740954962235
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.009939754536244162,
+      "omega_rmse_rad_s": 0.03287604829979691
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.02583008227447574,
+      "omega_rmse_rad_s": 0.07046264245453807
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.028100708804558977,
+      "omega_rmse_rad_s": 0.07008690632286076
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.025083503539348642,
+      "omega_rmse_rad_s": 0.06963680819547294
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.005876928860891023,
+      "omega_rmse_rad_s": 0.016510585977887123
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013741819062347022,
+      "omega_rmse_rad_s": 0.016562981223890605
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.005341273970781718,
+      "omega_rmse_rad_s": 0.016545803777852374
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.012951082211225453,
+      "omega_rmse_rad_s": 0.034889049517657464
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016740104496616337,
+      "omega_rmse_rad_s": 0.03498090199033009
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.011956332867928028,
+      "omega_rmse_rad_s": 0.03496948412821797
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03169676731523919,
+      "omega_rmse_rad_s": 0.08031936769643469
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.031237081129682792,
+      "omega_rmse_rad_s": 0.08048242958550138
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.030079724857400365,
+      "omega_rmse_rad_s": 0.08046136730641927
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.005092587135800358,
+      "omega_rmse_rad_s": 0.016953930395702317
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013486641656818196,
+      "omega_rmse_rad_s": 0.01727443755536377
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.00485366297949548,
+      "omega_rmse_rad_s": 0.016792160990411246
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.010894950701038133,
+      "omega_rmse_rad_s": 0.03417307823615173
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.016165411291562234,
+      "omega_rmse_rad_s": 0.03437695130687567
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.010419278425527347,
+      "omega_rmse_rad_s": 0.03385188007059387
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.02575428891949262,
+      "omega_rmse_rad_s": 0.07291344369545284
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.027905005581097927,
+      "omega_rmse_rad_s": 0.0727231626949727
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.02496704321353935,
+      "omega_rmse_rad_s": 0.07224666368645738
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.005844706113354182,
+      "omega_rmse_rad_s": 0.01743687065101971
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013721502264055711,
+      "omega_rmse_rad_s": 0.017587563285837843
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.00534094907756183,
+      "omega_rmse_rad_s": 0.017480737189478807
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.012850839929255559,
+      "omega_rmse_rad_s": 0.036507638928512345
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016665506805641755,
+      "omega_rmse_rad_s": 0.036689045198494696
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.011910683323517924,
+      "omega_rmse_rad_s": 0.03660414380005904
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03144175755037428,
+      "omega_rmse_rad_s": 0.08221976786041951
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.031006285382802787,
+      "omega_rmse_rad_s": 0.08244489936124783
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.029908647752500392,
+      "omega_rmse_rad_s": 0.08238869583596906
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0034443895679626643,
+      "omega_rmse_rad_s": 0.019364692896483238
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013377168457002167,
+      "omega_rmse_rad_s": 0.01921579233069536
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0031225334160092178,
+      "omega_rmse_rad_s": 0.0192018134500105
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.007085279732615776,
+      "omega_rmse_rad_s": 0.034768125183157854
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014532930411471339,
+      "omega_rmse_rad_s": 0.034573422886427424
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.00631244485954085,
+      "omega_rmse_rad_s": 0.03443990938648762
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.015675209477566204,
+      "omega_rmse_rad_s": 0.059684187479975156
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.019553167750062352,
+      "omega_rmse_rad_s": 0.05928138271953684
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013788633073894852,
+      "omega_rmse_rad_s": 0.05892276670939096
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0037507990364229232,
+      "omega_rmse_rad_s": 0.01443250636165771
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013670041588315304,
+      "omega_rmse_rad_s": 0.014430857318804122
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0030356948613322952,
+      "omega_rmse_rad_s": 0.014412013858783585
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.007671657544001575,
+      "omega_rmse_rad_s": 0.025156347883947622
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014903000338174533,
+      "omega_rmse_rad_s": 0.025092303948006763
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.006185402255634802,
+      "omega_rmse_rad_s": 0.02507708517810803
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016884862927952594,
+      "omega_rmse_rad_s": 0.04620615425869759
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.02075246287995954,
+      "omega_rmse_rad_s": 0.046063107905725126
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014205551064686864,
+      "omega_rmse_rad_s": 0.046017833354832345
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0034063877283098598,
+      "omega_rmse_rad_s": 0.02100209844804936
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013346328585745703,
+      "omega_rmse_rad_s": 0.021219335760338187
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0031452258629940584,
+      "omega_rmse_rad_s": 0.020923307835685915
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006971673014472849,
+      "omega_rmse_rad_s": 0.03844815201261228
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014470124754311696,
+      "omega_rmse_rad_s": 0.038640287416395074
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006304853786784693,
+      "omega_rmse_rad_s": 0.03828541760730045
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.015173002188220186,
+      "omega_rmse_rad_s": 0.06471670518482979
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.01924841533461578,
+      "omega_rmse_rad_s": 0.06458724587297919
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013407623107020443,
+      "omega_rmse_rad_s": 0.06420213141027108
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.003545730727884056,
+      "omega_rmse_rad_s": 0.014480291546195456
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0136246329432684,
+      "omega_rmse_rad_s": 0.014657952514951392
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0028303890733916534,
+      "omega_rmse_rad_s": 0.014487702943100802
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.007266051251574198,
+      "omega_rmse_rad_s": 0.02532542400119584
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014727920457108372,
+      "omega_rmse_rad_s": 0.025466750830134572
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.00576908372298938,
+      "omega_rmse_rad_s": 0.025305028851674297
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.016313002329605916,
+      "omega_rmse_rad_s": 0.04639154886308334
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.020358466967569436,
+      "omega_rmse_rad_s": 0.04643706637299585
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01365403760798368,
+      "omega_rmse_rad_s": 0.04630054292540157
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.005410210375260687,
+      "omega_rmse_rad_s": 0.023048418007969848
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014014619361405817,
+      "omega_rmse_rad_s": 0.02312453418395454
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.004882656146149903,
+      "omega_rmse_rad_s": 0.02285652068586677
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.012210721554653534,
+      "omega_rmse_rad_s": 0.04343120157266554
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.017630695422822123,
+      "omega_rmse_rad_s": 0.0434627626126808
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.011210219524090006,
+      "omega_rmse_rad_s": 0.04308495603509042
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0314630003420629,
+      "omega_rmse_rad_s": 0.08465450378549595
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.03349292572340481,
+      "omega_rmse_rad_s": 0.08437299904167969
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.029833065969489397,
+      "omega_rmse_rad_s": 0.08384637326137662
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004712081741652579,
+      "omega_rmse_rad_s": 0.013580723253058442
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01363037020121668,
+      "omega_rmse_rad_s": 0.013699819235106304
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004350441716459705,
+      "omega_rmse_rad_s": 0.01364227356616969
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.00950382524812954,
+      "omega_rmse_rad_s": 0.025407754688757816
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.015670772799493284,
+      "omega_rmse_rad_s": 0.02558276135930215
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.00885843050921786,
+      "omega_rmse_rad_s": 0.02555949993013325
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.02076285092751625,
+      "omega_rmse_rad_s": 0.04626809683336229
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.023821270571163164,
+      "omega_rmse_rad_s": 0.04646601489058196
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.019329688363942412,
+      "omega_rmse_rad_s": 0.04644465479904334
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.005390337175694415,
+      "omega_rmse_rad_s": 0.023216084346751348
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014026492243182465,
+      "omega_rmse_rad_s": 0.023517347336893712
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.004837852021273046,
+      "omega_rmse_rad_s": 0.023069977366034077
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.012191763688762723,
+      "omega_rmse_rad_s": 0.04430810398145736
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.017631045255510902,
+      "omega_rmse_rad_s": 0.04456288888731975
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.011141557810226872,
+      "omega_rmse_rad_s": 0.0440490623653605
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0313495585057335,
+      "omega_rmse_rad_s": 0.08708318618736081
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.033364771021830344,
+      "omega_rmse_rad_s": 0.0869317198882205
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.029661968431063827,
+      "omega_rmse_rad_s": 0.08639392574132665
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004549131433347361,
+      "omega_rmse_rad_s": 0.014764047440947465
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.013607231158860521,
+      "omega_rmse_rad_s": 0.015000458563251913
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004198064582597665,
+      "omega_rmse_rad_s": 0.014836467329404709
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.009220417012057976,
+      "omega_rmse_rad_s": 0.028176389656785518
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.015562307583125642,
+      "omega_rmse_rad_s": 0.028463421853556988
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.008595568437438809,
+      "omega_rmse_rad_s": 0.02834418123235279
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.020356326945304138,
+      "omega_rmse_rad_s": 0.05214120872657903
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.023553843109579788,
+      "omega_rmse_rad_s": 0.052434914603607226
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.018944196731023058,
+      "omega_rmse_rad_s": 0.052357073135152046
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.003555358468246938,
+      "omega_rmse_rad_s": 0.020453960453487366
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.013320356212299793,
+      "omega_rmse_rad_s": 0.020503666876559534
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0031671264234072985,
+      "omega_rmse_rad_s": 0.020342234792432037
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.008104547794292679,
+      "omega_rmse_rad_s": 0.03870411947224637
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014894886205228053,
+      "omega_rmse_rad_s": 0.03881404967707673
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.007197735832283063,
+      "omega_rmse_rad_s": 0.0385462148694941
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.026513792003836835,
+      "omega_rmse_rad_s": 0.082670198145616
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.028760144860596224,
+      "omega_rmse_rad_s": 0.08253172584726741
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.025107985927277365,
+      "omega_rmse_rad_s": 0.08213056559797173
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.003969673127963123,
+      "omega_rmse_rad_s": 0.01762808491432877
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014150201863571521,
+      "omega_rmse_rad_s": 0.017711686836792473
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0034452433784303844,
+      "omega_rmse_rad_s": 0.017716419990114723
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.008015781102744817,
+      "omega_rmse_rad_s": 0.032645187260655434
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.015353196190473388,
+      "omega_rmse_rad_s": 0.03280958943076035
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.007084540393980354,
+      "omega_rmse_rad_s": 0.032831655057183017
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.02095756992729034,
+      "omega_rmse_rad_s": 0.06350274693368049
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.02326855622462951,
+      "omega_rmse_rad_s": 0.06371179143002907
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.019875968156088906,
+      "omega_rmse_rad_s": 0.06371055122810879
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.003554544002975995,
+      "omega_rmse_rad_s": 0.020919271550039295
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.01331735836738643,
+      "omega_rmse_rad_s": 0.021243957129934522
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.003117573146496541,
+      "omega_rmse_rad_s": 0.020864930956669622
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.008121658056243016,
+      "omega_rmse_rad_s": 0.04027331979697601
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.014855514043200421,
+      "omega_rmse_rad_s": 0.04065557233561904
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.007123432979965243,
+      "omega_rmse_rad_s": 0.040222258735925775
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.02638504582245329,
+      "omega_rmse_rad_s": 0.08540327410852808
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.028531105869230695,
+      "omega_rmse_rad_s": 0.08541334695765924
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.02488097220687492,
+      "omega_rmse_rad_s": 0.0849926712543905
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0038201351458444954,
+      "omega_rmse_rad_s": 0.018092076946939862
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.014099379985775363,
+      "omega_rmse_rad_s": 0.018264851086440662
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0033167283158794573,
+      "omega_rmse_rad_s": 0.01818585317218149
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.007700504742940596,
+      "omega_rmse_rad_s": 0.033856167209009
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01518695824077328,
+      "omega_rmse_rad_s": 0.034108979250633824
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.006809303301575711,
+      "omega_rmse_rad_s": 0.034053540054895345
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.020450028012107796,
+      "omega_rmse_rad_s": 0.06602633480309743
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.022838924891131693,
+      "omega_rmse_rad_s": 0.06630647007325974
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.019444687886192046,
+      "omega_rmse_rad_s": 0.0662610544321287
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006787740817533846,
+      "omega_rmse_rad_s": 0.024541677506542275
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.01473439886481911,
+      "omega_rmse_rad_s": 0.024684417354083027
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006436093103802319,
+      "omega_rmse_rad_s": 0.024535669958978542
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.016930968200328696,
+      "omega_rmse_rad_s": 0.05298216498581043
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.021271795927571124,
+      "omega_rmse_rad_s": 0.05316603693876952
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.016199314452851794,
+      "omega_rmse_rad_s": 0.05291624013346022
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.045625216474982896,
+      "omega_rmse_rad_s": 0.12948297985025925
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.046826312027377734,
+      "omega_rmse_rad_s": 0.12943428344436125
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.044404539105207814,
+      "omega_rmse_rad_s": 0.12908188265975498
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0048467181575959,
+      "omega_rmse_rad_s": 0.01688937129792524
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01478332836445012,
+      "omega_rmse_rad_s": 0.01696403167089638
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.00453391640635492,
+      "omega_rmse_rad_s": 0.016961127502053277
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.011175820451834349,
+      "omega_rmse_rad_s": 0.033706624805209855
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.017582794687465847,
+      "omega_rmse_rad_s": 0.03387151665511262
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.0104944098957154,
+      "omega_rmse_rad_s": 0.033876097052872915
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03363139114765773,
+      "omega_rmse_rad_s": 0.08655508482238024
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03448828772492777,
+      "omega_rmse_rad_s": 0.08682058285984141
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "off",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03251511542159601,
+      "omega_rmse_rad_s": 0.08681239066019825
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.007034823939227189,
+      "omega_rmse_rad_s": 0.026201381247791627
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.0148166796259511,
+      "omega_rmse_rad_s": 0.026567093580382263
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.006672856879682349,
+      "omega_rmse_rad_s": 0.026247200098978064
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.017209454073614412,
+      "omega_rmse_rad_s": 0.05600839352790247
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.02144473678331436,
+      "omega_rmse_rad_s": 0.05639514513756921
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.016449953153869653,
+      "omega_rmse_rad_s": 0.056029316024337035
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 75,
+      "velocity_rmse_m_s": 0.045183192850968674,
+      "omega_rmse_rad_s": 0.13108880220057567
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 75,
+      "velocity_rmse_m_s": 0.04633463663747772,
+      "omega_rmse_rad_s": 0.13114457471934396
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "identification",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 75,
+      "velocity_rmse_m_s": 0.04389699842346569,
+      "omega_rmse_rad_s": 0.13077301597142033
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.004885852474639843,
+      "omega_rmse_rad_s": 0.018114992997813672
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01480512367636078,
+      "omega_rmse_rad_s": 0.018259298016542285
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.1,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.00459355653106827,
+      "omega_rmse_rad_s": 0.018189940736799044
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.01114832915633078,
+      "omega_rmse_rad_s": 0.03593777996575833
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.017587323889387472,
+      "omega_rmse_rad_s": 0.036166102782574656
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.2,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.010496151709070046,
+      "omega_rmse_rad_s": 0.03611355401062066
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "estimator",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03318717661732684,
+      "omega_rmse_rad_s": 0.0879825113565038
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_absolute",
+      "n": 95,
+      "velocity_rmse_m_s": 0.03409294151885918,
+      "omega_rmse_rad_s": 0.0882924335989386
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "update": "on",
+      "phase": "independent_task",
+      "horizon_s": 0.4,
+      "target": "truth_increment",
+      "n": 95,
+      "velocity_rmse_m_s": 0.032098180803885906,
+      "omega_rmse_rad_s": 0.08826175299194272
+    }
+  ],
+  "adaptation": [
+    {
+      "method": "physics",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    },
+    {
+      "method": "jepa_17",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    },
+    {
+      "method": "jepa_29",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    },
+    {
+      "method": "jepa_43",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    },
+    {
+      "method": "supervised_17",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    },
+    {
+      "method": "supervised_29",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    },
+    {
+      "method": "supervised_43",
+      "first_sustained_2s_improvement_s": null,
+      "right_censored_s": 8,
+      "samples_to_first": null,
+      "definition": "both velocity and omega trailing1s error improve10percent, sustained2s; ID-window only"
+    }
+  ],
+  "control": {
+    "pre": {
+      "position_rmse_m": 0.019686200034370153,
+      "position_peak_m": 0.037754936673258785,
+      "tilt_peak_deg": 1.7270114017062828,
+      "motor_max": 0.7648153305053711,
+      "samples": 750
+    },
+    "id": {
+      "position_rmse_m": 0.023510410879934874,
+      "position_peak_m": 0.04277351032020704,
+      "tilt_peak_deg": 2.707907654627791,
+      "motor_max": 0.769248902797699,
+      "samples": 2000
+    },
+    "task": {
+      "position_rmse_m": 0.022660026829556496,
+      "position_peak_m": 0.04415948033879613,
+      "tilt_peak_deg": 2.975009235917401,
+      "motor_max": 0.7672009468078613,
+      "samples": 2500
+    },
+    "final_hover": {
+      "position_rmse_m": 0.03023204291121129,
+      "position_peak_m": 0.04879415596027059,
+      "tilt_peak_deg": 1.6831833176771442,
+      "motor_max": 0.7655425071716309,
+      "samples": 1000
+    }
+  },
+  "commanded_angle_energy_rad2_s": 0.0010280837917801416,
+  "online_offline_max_difference": 1.3950142374596908e-08,
+  "online": {
+    "intervals": 1031,
+    "alignment_rejects": 0,
+    "frozen_backbone_files_unchanged": true,
+    "hashes": {
+      "jepa_17.pt": "538c8680cb09fa5711346cfcdcc9daab26d522cc87b9958d7521bd6253117833",
+      "jepa_29.pt": "40e5ea213c625ef2f4b1c58c17c1b548a0c04aeb3477e5cf211ae582f70d9a41",
+      "jepa_43.pt": "bf7638217985bdfd4d5429ed57240fc9408621ce9607e2418caa272c0a82c706",
+      "supervised_17.pt": "6db40564948308a6ebff510f629bc491f1e0d64007b1deb7d914de4bd9d156cb",
+      "supervised_29.pt": "12f722bfeb6e6980768ac61c82e9585ff3583ca9bff959d0483a3ba5b752f3a0",
+      "supervised_43.pt": "d6d5d433e6a94d73d6ccba3c90712b9580279c39d8a0022a548ae0018d50269d"
+    },
+    "control_enabled": false,
+    "adapters": {
+      "physics": {
+        "W": [
+          [
+            0.0013218104789722688,
+            0.011768154136337161,
+            -0.06471982911377941,
+            -0.003757941871414078
+          ],
+          [
+            0.006905142560306089,
+            -0.12911130468430507,
+            0.027737842375475174,
+            -0.00671037861321324
+          ],
+          [
+            -0.0029352879996199467,
+            0.046965338632259025,
+            0.0037050235663799954,
+            0.0012395506718197043
+          ],
+          [
+            0.001259894285165452,
+            -0.01765846966859626,
+            -0.0060096260094498226,
+            -0.0034502698704437012
+          ],
+          [
+            0.0009689395490005793,
+            -0.007065404744486229,
+            -0.015478202328058107,
+            -0.01503476431809209
+          ],
+          [
+            0.05105233414400338,
+            -0.8789009840099006,
+            0.06968614856365772,
+            -0.12607842851333992
+          ]
+        ],
+        "bias": [
+          -0.010606682076140937,
+          -0.023187127015839512,
+          -0.25824608474917055,
+          -0.01493412734185695,
+          -0.011786100375276408,
+          -0.22923127632069523
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      },
+      "jepa_17": {
+        "W": [
+          [
+            0.0026548199025116246,
+            -0.014813545976182995,
+            -0.05547336406174725,
+            -0.010085181809727405
+          ],
+          [
+            0.01278535305262412,
+            -0.2103209411249799,
+            -0.0036879598913967205,
+            -0.015208894924546327
+          ],
+          [
+            -0.003472363004536774,
+            0.06043421984961517,
+            -0.005772986518169982,
+            0.006907550364702258
+          ],
+          [
+            -0.006282240684626712,
+            0.08474162298452603,
+            0.040090122664715025,
+            -0.009878268442781576
+          ],
+          [
+            -0.0028914475426967193,
+            0.0518784633017545,
+            -0.005890747772185245,
+            -0.008112716827679795
+          ],
+          [
+            0.04305758033677652,
+            -0.7413468768735515,
+            0.057268524437084786,
+            -0.09430904526932152
+          ]
+        ],
+        "bias": [
+          0.0035103928659335685,
+          -0.052532234887298516,
+          -0.24898452117220274,
+          0.2899035916086979,
+          0.019582175812533135,
+          -0.0006780781124196233
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      },
+      "jepa_29": {
+        "W": [
+          [
+            0.00377064898928313,
+            -0.04090245283772268,
+            -0.04105390967027463,
+            -0.01014352160467487
+          ],
+          [
+            0.0141578375955732,
+            -0.22277498820222008,
+            -0.026577195945764853,
+            0.004632528717710744
+          ],
+          [
+            -0.0002734694913008476,
+            -9.852354111415153e-05,
+            0.009391770942463665,
+            -0.0029005801307664157
+          ],
+          [
+            -0.011045167971876442,
+            0.17599625980084146,
+            0.01626532062001575,
+            -0.001975670488230264
+          ],
+          [
+            -0.005906340930476558,
+            0.09924774265939156,
+            0.00047776446550897066,
+            -0.013248658871997273
+          ],
+          [
+            0.042029187794184734,
+            -0.7009270448060226,
+            0.013315206436189464,
+            -0.10092919238217303
+          ]
+        ],
+        "bias": [
+          0.0017166101188618487,
+          -0.03187806674485806,
+          -0.23664683918022283,
+          0.04209468203865912,
+          -0.007374038141650532,
+          0.0008299140053651768
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      },
+      "jepa_43": {
+        "W": [
+          [
+            0.0008679449345157639,
+            0.016111809418975106,
+            -0.05868045368501999,
+            -0.0023896620766689
+          ],
+          [
+            0.008666871285669741,
+            -0.15824615093734407,
+            0.026440992272982355,
+            -0.0009443204146344542
+          ],
+          [
+            -0.002094254409272596,
+            0.0319581552718591,
+            0.00612789270971937,
+            -0.00269074714664354
+          ],
+          [
+            -0.004755797156433067,
+            0.08472854740657788,
+            -0.00691843468639845,
+            -0.02501992552131173
+          ],
+          [
+            -0.0013947121405476803,
+            0.035874669077841675,
+            -0.02150433156981622,
+            -0.02032181792012827
+          ],
+          [
+            0.044830831675172565,
+            -0.7695575703499367,
+            0.05689801966876865,
+            -0.11083757705499389
+          ]
+        ],
+        "bias": [
+          -0.005984552073380927,
+          0.0052585356328338426,
+          -0.2562292124881618,
+          0.02177771793453346,
+          -0.011451050778565572,
+          0.01081743269291171
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      },
+      "supervised_17": {
+        "W": [
+          [
+            0.003233889895235688,
+            -0.024516263492388373,
+            -0.056664034516798155,
+            -0.0008932750769764655
+          ],
+          [
+            0.013827423173805318,
+            -0.25497903810791794,
+            0.04712150872797847,
+            -0.0022276291565703817
+          ],
+          [
+            0.00230108312273289,
+            -0.03833137338758838,
+            -0.0014824066059472827,
+            0.009866531326200047
+          ],
+          [
+            -0.015758129556197396,
+            0.27533935614813326,
+            -0.021996123088438516,
+            -0.01414687362266414
+          ],
+          [
+            -0.007220053374848583,
+            0.13818206995251364,
+            -0.031479779287045956,
+            -0.019492383924822762
+          ],
+          [
+            0.048565248071509144,
+            -0.8098729069415114,
+            0.008965510011794206,
+            -0.07094296422220275
+          ]
+        ],
+        "bias": [
+          0.0023767535301725123,
+          -0.011265042416201201,
+          -0.2410734990132527,
+          0.04850299922231379,
+          -0.010036779812597934,
+          0.036202290875690026
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      },
+      "supervised_29": {
+        "W": [
+          [
+            -2.490785352799528e-05,
+            0.029830857183730047,
+            -0.05527658582672784,
+            -0.010580519954933369
+          ],
+          [
+            0.009202102460406796,
+            -0.1590783471354597,
+            0.010188971560819503,
+            0.0036301332007299815
+          ],
+          [
+            -0.003654730969658577,
+            0.05826771887453211,
+            0.004947537220943623,
+            0.0020392927645985475
+          ],
+          [
+            -0.015380725715627921,
+            0.257529376124589,
+            0.0004940973053664293,
+            -0.01619618789545986
+          ],
+          [
+            -0.004643499910248398,
+            0.08548483160599148,
+            -0.012482846744611222,
+            -0.02146128798719984
+          ],
+          [
+            0.03640404780770445,
+            -0.5897761842943103,
+            -0.023668334159426957,
+            -0.07471101353406592
+          ]
+        ],
+        "bias": [
+          0.00015517798731165113,
+          -0.002929139518211406,
+          -0.24932371575242093,
+          0.07837784763195063,
+          -0.012598210789308117,
+          0.03931370672828016
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      },
+      "supervised_43": {
+        "W": [
+          [
+            -0.0004591655708537786,
+            0.04018098146746567,
+            -0.06222378001238095,
+            -0.0036392238128786056
+          ],
+          [
+            0.028699316323729046,
+            -0.4838769668249426,
+            0.006762856048714086,
+            0.021309072245241853
+          ],
+          [
+            -0.0006871664390509284,
+            0.012284082620375447,
+            -0.0024131813868221224,
+            0.006036275656767905
+          ],
+          [
+            -0.017824255989998424,
+            0.28948956846847534,
+            0.018382083037048372,
+            -0.02267516580368207
+          ],
+          [
+            -0.00944800193619378,
+            0.162018147660395,
+            -0.0045172821977481755,
+            -0.02844873925586694
+          ],
+          [
+            0.03439343308530253,
+            -0.5758843715906257,
+            0.015010730078711254,
+            -0.0802638106533145
+          ]
+        ],
+        "bias": [
+          0.0037581455938407613,
+          -0.03361974116795177,
+          -0.24578178989188704,
+          0.11034598680625454,
+          -0.008470812615016293,
+          -0.020890949547896033
+        ],
+        "phi0": [
+          2.869633594677858,
+          -0.5786218545945896,
+          -0.15301465710962073,
+          -0.06885515107572075
+        ],
+        "rank": 3,
+        "updates": 49,
+        "reasons": {
+          "outside_id_window": 851,
+          "trim": 100,
+          "insufficient_samples": 31,
+          "updated": 49
+        }
+      }
+    },
+    "completed": true,
+    "partial_line": false,
+    "wall_s": 107.20324620899919
+  },
+  "measured_truth_target_gap": {
+    "velocity_m_s": 0.013433633838756585,
+    "omega_rad_s": 0.0018330323596789323
+  },
+  "prediction_semantics": "completed-interval executed-action conditioned; not prospective",
+  "truth_evaluation_only": true
+}

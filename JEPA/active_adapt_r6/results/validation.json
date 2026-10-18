@@ -1,0 +1,116 @@
+{
+  "trajectory": "R4_combo_validation_only",
+  "horizons_s": [
+    0.1,
+    0.2,
+    0.4
+  ],
+  "selection_used": false,
+  "models": [
+    {
+      "method": "physics",
+      "velocity_rmse": [
+        0.0189429372549057,
+        0.039420370012521744,
+        0.1060500219464302
+      ],
+      "omega_rmse": [
+        0.06812350451946259,
+        0.13614033162593842,
+        0.2721593976020813
+      ],
+      "latent_effective_rank": null,
+      "action_perturbation_changes_output": null
+    },
+    {
+      "method": "jepa_17",
+      "velocity_rmse": [
+        0.0067253963504398,
+        0.015915181711558996,
+        0.06921182140930077
+      ],
+      "omega_rmse": [
+        0.06052142345058682,
+        0.12133939050796148,
+        0.2416488304976441
+      ],
+      "latent_effective_rank": 5.278664190476273,
+      "action_perturbation_changes_output": 0.0018756389617919922
+    },
+    {
+      "method": "jepa_29",
+      "velocity_rmse": [
+        0.0053915810533798035,
+        0.009747055080965825,
+        0.058113595595866874
+      ],
+      "omega_rmse": [
+        0.05432864654065648,
+        0.11412360933773241,
+        0.23616335361151763
+      ],
+      "latent_effective_rank": 6.239897189777686,
+      "action_perturbation_changes_output": 0.001754462718963623
+    },
+    {
+      "method": "jepa_43",
+      "velocity_rmse": [
+        0.007705447413779054,
+        0.019759858037221197,
+        0.07848356618628241
+      ],
+      "omega_rmse": [
+        0.053674281923730485,
+        0.114823974793442,
+        0.24700581495635396
+      ],
+      "latent_effective_rank": 4.963032174603813,
+      "action_perturbation_changes_output": 0.00271528959274292
+    },
+    {
+      "method": "supervised_17",
+      "velocity_rmse": [
+        0.005649205269325332,
+        0.01137787758985208,
+        0.06303972076494482
+      ],
+      "omega_rmse": [
+        0.05183630099870186,
+        0.11141871123877566,
+        0.23840818877831185
+      ],
+      "latent_effective_rank": 9.62264516021331,
+      "action_perturbation_changes_output": 0.003923669457435608
+    },
+    {
+      "method": "supervised_29",
+      "velocity_rmse": [
+        0.004664418141014381,
+        0.012490013945581161,
+        0.06623390487961435
+      ],
+      "omega_rmse": [
+        0.0582322272041209,
+        0.12030191219356844,
+        0.24509402806803948
+      ],
+      "latent_effective_rank": 7.302898916972642,
+      "action_perturbation_changes_output": 0.003894627094268799
+    },
+    {
+      "method": "supervised_43",
+      "velocity_rmse": [
+        0.00788470618735279,
+        0.01683156664767042,
+        0.06477436364865007
+      ],
+      "omega_rmse": [
+        0.05847545360653315,
+        0.12015369712239413,
+        0.2418476954021484
+      ],
+      "latent_effective_rank": 8.071718005476177,
+      "action_perturbation_changes_output": 0.001263737678527832
+    }
+  ]
+}

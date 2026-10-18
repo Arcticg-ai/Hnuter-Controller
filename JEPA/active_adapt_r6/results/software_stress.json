@@ -1,0 +1,734 @@
+{
+  "rows": [
+    {
+      "run": "s0_00_com_active",
+      "method": "physics",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.22391621500869313,
+      "independent_task_rate_correction_rms_difference": 0.0296441639239673,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_active",
+      "method": "jepa_17",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.22391621500869338,
+      "independent_task_rate_correction_rms_difference": 0.029644163923967296,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_active",
+      "method": "jepa_29",
+      "replay_W_max_difference": 5.898059818321144e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.22391621500869321,
+      "independent_task_rate_correction_rms_difference": 0.029644163923967296,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_active",
+      "method": "jepa_43",
+      "replay_W_max_difference": 2.7755575615628914e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.22391621500869333,
+      "independent_task_rate_correction_rms_difference": 0.029644163923967303,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_active",
+      "method": "supervised_17",
+      "replay_W_max_difference": 6.938893903907228e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.2239162150086934,
+      "independent_task_rate_correction_rms_difference": 0.02964416392396731,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_active",
+      "method": "supervised_29",
+      "replay_W_max_difference": 6.938893903907228e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.2239162150086932,
+      "independent_task_rate_correction_rms_difference": 0.02964416392396729,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_active",
+      "method": "supervised_43",
+      "replay_W_max_difference": 9.71445146547012e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.22391621500869308,
+      "independent_task_rate_correction_rms_difference": 0.029644163923967282,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "physics",
+      "replay_W_max_difference": 6.938893903907228e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.10536597162618364,
+      "independent_task_rate_correction_rms_difference": 0.010817590690302633,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "jepa_17",
+      "replay_W_max_difference": 9.71445146547012e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1053659716261837,
+      "independent_task_rate_correction_rms_difference": 0.01081759069030264,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "jepa_29",
+      "replay_W_max_difference": 2.220446049250313e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.10536597162618373,
+      "independent_task_rate_correction_rms_difference": 0.010817590690302645,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "jepa_43",
+      "replay_W_max_difference": 5.204170427930421e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1053659716261837,
+      "independent_task_rate_correction_rms_difference": 0.010817590690302642,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "supervised_17",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.10536597162618368,
+      "independent_task_rate_correction_rms_difference": 0.010817590690302636,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "supervised_29",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.10536597162618362,
+      "independent_task_rate_correction_rms_difference": 0.010817590690302633,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_com_conventional",
+      "method": "supervised_43",
+      "replay_W_max_difference": 3.885780586188048e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.10536597162618362,
+      "independent_task_rate_correction_rms_difference": 0.010817590690302631,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "physics",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1819543531157519,
+      "independent_task_rate_correction_rms_difference": 0.031127757675052777,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "jepa_17",
+      "replay_W_max_difference": 3.9898639947466563e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.18195435311575167,
+      "independent_task_rate_correction_rms_difference": 0.03112775767505275,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "jepa_29",
+      "replay_W_max_difference": 2.7755575615628914e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.18195435311575187,
+      "independent_task_rate_correction_rms_difference": 0.031127757675052783,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "jepa_43",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.18195435311575187,
+      "independent_task_rate_correction_rms_difference": 0.031127757675052777,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "supervised_17",
+      "replay_W_max_difference": 4.163336342344337e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.18195435311575187,
+      "independent_task_rate_correction_rms_difference": 0.03112775767505278,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "supervised_29",
+      "replay_W_max_difference": 4.163336342344337e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1819543531157517,
+      "independent_task_rate_correction_rms_difference": 0.031127757675052766,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_active",
+      "method": "supervised_43",
+      "replay_W_max_difference": 2.7755575615628914e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.18195435311575175,
+      "independent_task_rate_correction_rms_difference": 0.031127757675052763,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "physics",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04917831720035632,
+      "independent_task_rate_correction_rms_difference": 0.0038760407392093095,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "jepa_17",
+      "replay_W_max_difference": 7.632783294297951e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04917831720035627,
+      "independent_task_rate_correction_rms_difference": 0.0038760407392093047,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "jepa_29",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04917831720035628,
+      "independent_task_rate_correction_rms_difference": 0.0038760407392093034,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "jepa_43",
+      "replay_W_max_difference": 2.7755575615628914e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.049178317200356314,
+      "independent_task_rate_correction_rms_difference": 0.0038760407392093056,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "supervised_17",
+      "replay_W_max_difference": 2.220446049250313e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04917831720035629,
+      "independent_task_rate_correction_rms_difference": 0.003876040739209307,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "supervised_29",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.049178317200356335,
+      "independent_task_rate_correction_rms_difference": 0.00387604073920931,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s0_00_mass_conventional",
+      "method": "supervised_43",
+      "replay_W_max_difference": 2.220446049250313e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.0491783172003563,
+      "independent_task_rate_correction_rms_difference": 0.003876040739209307,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "physics",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13975277709566833,
+      "independent_task_rate_correction_rms_difference": 0.020375831347821463,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "jepa_17",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13975277709566827,
+      "independent_task_rate_correction_rms_difference": 0.020375831347821453,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "jepa_29",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13975277709566825,
+      "independent_task_rate_correction_rms_difference": 0.020375831347821456,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "jepa_43",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1397527770956683,
+      "independent_task_rate_correction_rms_difference": 0.020375831347821456,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "supervised_17",
+      "replay_W_max_difference": 1.942890293094024e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13975277709566833,
+      "independent_task_rate_correction_rms_difference": 0.020375831347821456,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "supervised_29",
+      "replay_W_max_difference": 9.71445146547012e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13975277709566825,
+      "independent_task_rate_correction_rms_difference": 0.020375831347821463,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_active",
+      "method": "supervised_43",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1397527770956684,
+      "independent_task_rate_correction_rms_difference": 0.02037583134782147,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "physics",
+      "replay_W_max_difference": 2.220446049250313e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13870027003553986,
+      "independent_task_rate_correction_rms_difference": 0.011733552167930424,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "jepa_17",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1387002700355398,
+      "independent_task_rate_correction_rms_difference": 0.011733552167930423,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "jepa_29",
+      "replay_W_max_difference": 2.7755575615628914e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13870027003553986,
+      "independent_task_rate_correction_rms_difference": 0.011733552167930426,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "jepa_43",
+      "replay_W_max_difference": 2.220446049250313e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13870027003553986,
+      "independent_task_rate_correction_rms_difference": 0.01173355216793043,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "supervised_17",
+      "replay_W_max_difference": 2.7755575615628914e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.1387002700355399,
+      "independent_task_rate_correction_rms_difference": 0.011733552167930428,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "supervised_29",
+      "replay_W_max_difference": 1.6653345369377348e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13870027003553986,
+      "independent_task_rate_correction_rms_difference": 0.011733552167930431,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_com_conventional",
+      "method": "supervised_43",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.13870027003553972,
+      "independent_task_rate_correction_rms_difference": 0.011733552167930414,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "physics",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.38837030206975715,
+      "independent_task_rate_correction_rms_difference": 0.04319302248172615,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "jepa_17",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.3883703020697568,
+      "independent_task_rate_correction_rms_difference": 0.043193022481726115,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "jepa_29",
+      "replay_W_max_difference": 4.163336342344337e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.38837030206975687,
+      "independent_task_rate_correction_rms_difference": 0.04319302248172612,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "jepa_43",
+      "replay_W_max_difference": 4.163336342344337e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.3883703020697569,
+      "independent_task_rate_correction_rms_difference": 0.04319302248172613,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "supervised_17",
+      "replay_W_max_difference": 7.632783294297951e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.3883703020697572,
+      "independent_task_rate_correction_rms_difference": 0.04319302248172616,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "supervised_29",
+      "replay_W_max_difference": 1.5265566588595902e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.388370302069757,
+      "independent_task_rate_correction_rms_difference": 0.043193022481726136,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_active",
+      "method": "supervised_43",
+      "replay_W_max_difference": 8.326672684688674e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.38837030206975687,
+      "independent_task_rate_correction_rms_difference": 0.04319302248172612,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "physics",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04016482651168001,
+      "independent_task_rate_correction_rms_difference": 0.00512457067387153,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_17",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04016482651167997,
+      "independent_task_rate_correction_rms_difference": 0.005124570673871523,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_29",
+      "replay_W_max_difference": 4.440892098500626e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04016482651167993,
+      "independent_task_rate_correction_rms_difference": 0.0051245706738715195,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "jepa_43",
+      "replay_W_max_difference": 5.551115123125783e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.040164826511679935,
+      "independent_task_rate_correction_rms_difference": 0.00512457067387152,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_17",
+      "replay_W_max_difference": 1.1102230246251565e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.040164826511679984,
+      "independent_task_rate_correction_rms_difference": 0.005124570673871526,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_29",
+      "replay_W_max_difference": 2.7755575615628914e-17,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.040164826511679984,
+      "independent_task_rate_correction_rms_difference": 0.0051245706738715265,
+      "synthetic_label_perturbation_not_physical_wind": true
+    },
+    {
+      "run": "s2_00_mass_conventional",
+      "method": "supervised_43",
+      "replay_W_max_difference": 2.220446049250313e-16,
+      "pulse_peak_rate_error_m_s2": 0.3,
+      "pulse_window_s": [
+        51,
+        53
+      ],
+      "persistent_W_difference": 0.04016482651168,
+      "independent_task_rate_correction_rms_difference": 0.005124570673871529,
+      "synthetic_label_perturbation_not_physical_wind": true
+    }
+  ],
+  "interpretation": "A short bounded residual during identification can alter frozen coefficients. Centering only removes constant offsets; disturbance/parameter separation remains unqualified. This is a software sensitivity test, not a Gazebo wind experiment.",
+  "control_release": false
+}

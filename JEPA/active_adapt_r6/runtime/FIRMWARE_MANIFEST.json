@@ -1,0 +1,8 @@
+{
+  "px4_worktree": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-px4-gps3-worktree",
+  "px4_commit": "4d99abd2f4ec5ce72a3110431c5dd2cdc00412fa",
+  "binary_sha256": "81ad7bc89db42a7113cdc8ba4e6a798b5e8d67e318fb5d769807549ddca6bdcb",
+  "source_baseline": "7e556eac79d061053ec750c1170dd63832f772a5",
+  "main_logic_unchanged": true,
+  "build_before_commit": true
+}

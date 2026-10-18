@@ -1,0 +1,22 @@
+{
+  "AuditedJointPositionController.cc": {
+    "source": "JEPA/revision17/AuditedJointPositionController.cc",
+    "source_commit": "eb638d2d99b01a6e5f60c0aa95cd28f7c2d0a1f2",
+    "sha256": "2c251aa559e89c360fa22dc2960ed02cf8bd85fd96cbee333c567c73357cd7e3"
+  },
+  "AuditedJointPositionController.hh": {
+    "source": "JEPA/revision17/AuditedJointPositionController.hh",
+    "source_commit": "eb638d2d99b01a6e5f60c0aa95cd28f7c2d0a1f2",
+    "sha256": "e257ed0e9485bac769b9814b9c35a7f3cb4d72455b8c676967a53f1ff9acd1a1"
+  },
+  "BoundedForce.cc": {
+    "source": "JEPA/revision11/BoundedForce.cc",
+    "source_commit": "eb638d2d99b01a6e5f60c0aa95cd28f7c2d0a1f2",
+    "sha256": "01ee6d12d1f0cd983f9bd10d46e8b01992cb4a5ea739c543e5e508762a4d486d"
+  },
+  "ClockAudit.cc": {
+    "source": "JEPA/revision7/ClockAudit.cc",
+    "source_commit": "eb638d2d99b01a6e5f60c0aa95cd28f7c2d0a1f2",
+    "sha256": "97baec9ab7d7c3152862ff70635d54ca0e86622b74f456204bc378b1903e6906"
+  }
+}

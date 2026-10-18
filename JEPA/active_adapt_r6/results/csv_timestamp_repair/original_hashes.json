@@ -1,0 +1,34 @@
+[
+  {
+    "file": "s2_00_com_conventional_predictions.csv",
+    "original_sha256": "44ba5baec16cc3506976f9cb05767bea88a1501cd653f52d362c42c5dde3ad56"
+  },
+  {
+    "file": "s0_00_mass_active_predictions.csv",
+    "original_sha256": "4cf4f439248f73ceebdbdb125d2193184dad9b94a0e8f2f176767017160fb25b"
+  },
+  {
+    "file": "s2_00_mass_active_predictions.csv",
+    "original_sha256": "565b33c80624a3081d992542060f60b6459fac2fd4e17294cc3ebcac9e85b792"
+  },
+  {
+    "file": "s0_00_com_conventional_predictions.csv",
+    "original_sha256": "65bf48a7c41952a8e80b2960913c696237ddd0e4924d2e2de453467e321b51a5"
+  },
+  {
+    "file": "s2_00_com_active_predictions.csv",
+    "original_sha256": "14339f0792a46797cd9f55210510d1067eb3fa4969e3126a0c2d75edf1992b99"
+  },
+  {
+    "file": "s0_00_com_active_predictions.csv",
+    "original_sha256": "ec7a80b0956ea399a4e24103ea96981447d54f1644975cc7f8eb70725a19a26e"
+  },
+  {
+    "file": "s0_00_mass_conventional_predictions.csv",
+    "original_sha256": "ea0eb93157165e7901ae332ab618bb65cce440214bacd79028d69d45e53b7701"
+  },
+  {
+    "file": "s2_00_mass_conventional_predictions.csv",
+    "original_sha256": "1b2023abcfa3cc4e6de1bfaa8d9cb94cf2d6d5de386e49546461869ac34f3343"
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "epoch": 1,
+    "stage": "latent",
+    "loss": 0.19615178661687033
+  },
+  {
+    "epoch": 2,
+    "stage": "latent",
+    "loss": 0.13893562874623708
+  },
+  {
+    "epoch": 3,
+    "stage": "latent",
+    "loss": 0.1138290741613933
+  },
+  {
+    "epoch": 4,
+    "stage": "latent",
+    "loss": 0.10139723193077814
+  },
+  {
+    "epoch": 5,
+    "stage": "latent",
+    "loss": 0.0942793179835592
+  },
+  {
+    "epoch": 6,
+    "stage": "latent",
+    "loss": 0.08858161880856469
+  },
+  {
+    "epoch": 7,
+    "stage": "latent",
+    "loss": 0.07849207023779552
+  },
+  {
+    "epoch": 8,
+    "stage": "latent",
+    "loss": 0.06831823697402364
+  },
+  {
+    "epoch": 9,
+    "stage": "latent",
+    "loss": 0.061564852794011436
+  },
+  {
+    "epoch": 10,
+    "stage": "latent",
+    "loss": 0.057418402106988994
+  },
+  {
+    "epoch": 11,
+    "stage": "latent",
+    "loss": 0.055772870601642696
+  },
+  {
+    "epoch": 12,
+    "stage": "latent",
+    "loss": 0.050152325559230077
+  },
+  {
+    "epoch": 13,
+    "stage": "joint",
+    "loss": 0.5332770886875334
+  },
+  {
+    "epoch": 14,
+    "stage": "joint",
+    "loss": 0.4024412475881122
+  },
+  {
+    "epoch": 15,
+    "stage": "joint",
+    "loss": 0.3235634494395483
+  },
+  {
+    "epoch": 16,
+    "stage": "joint",
+    "loss": 0.2624487557581493
+  },
+  {
+    "epoch": 17,
+    "stage": "joint",
+    "loss": 0.18625186880429587
+  },
+  {
+    "epoch": 18,
+    "stage": "joint",
+    "loss": 0.14844739933808646
+  },
+  {
+    "epoch": 19,
+    "stage": "joint",
+    "loss": 0.13745446361246563
+  },
+  {
+    "epoch": 20,
+    "stage": "joint",
+    "loss": 0.13189144219670976
+  },
+  {
+    "epoch": 21,
+    "stage": "joint",
+    "loss": 0.1261474099897203
+  },
+  {
+    "epoch": 22,
+    "stage": "joint",
+    "loss": 0.11872771595205579
+  },
+  {
+    "epoch": 23,
+    "stage": "joint",
+    "loss": 0.11040134408644267
+  },
+  {
+    "epoch": 24,
+    "stage": "joint",
+    "loss": 0.1022006691921325
+  }
+]

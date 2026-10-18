@@ -1,0 +1,14 @@
+{
+  "stage": "completed",
+  "completed": [
+    "s0_00_mass_active",
+    "s0_00_mass_conventional",
+    "s2_00_mass_active",
+    "s2_00_mass_conventional",
+    "s0_00_com_active",
+    "s0_00_com_conventional",
+    "s2_00_com_active",
+    "s2_00_com_conventional"
+  ],
+  "wall_s": 847.3677752989997
+}

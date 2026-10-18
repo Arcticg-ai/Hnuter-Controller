@@ -1,0 +1,49 @@
+{
+  "models": [
+    {
+      "method": "supervised",
+      "seed": 17,
+      "parameters": 8382,
+      "wall_s": 1.9879912169999443,
+      "sha256": "6db40564948308a6ebff510f629bc491f1e0d64007b1deb7d914de4bd9d156cb"
+    },
+    {
+      "method": "jepa",
+      "seed": 17,
+      "parameters": 8382,
+      "wall_s": 5.359228247000829,
+      "sha256": "538c8680cb09fa5711346cfcdcc9daab26d522cc87b9958d7521bd6253117833"
+    },
+    {
+      "method": "supervised",
+      "seed": 29,
+      "parameters": 8382,
+      "wall_s": 1.9489118600004076,
+      "sha256": "12f722bfeb6e6980768ac61c82e9585ff3583ca9bff959d0483a3ba5b752f3a0"
+    },
+    {
+      "method": "jepa",
+      "seed": 29,
+      "parameters": 8382,
+      "wall_s": 5.361380898999414,
+      "sha256": "40e5ea213c625ef2f4b1c58c17c1b548a0c04aeb3477e5cf211ae582f70d9a41"
+    },
+    {
+      "method": "supervised",
+      "seed": 43,
+      "parameters": 8382,
+      "wall_s": 1.9534590859993841,
+      "sha256": "d6d5d433e6a94d73d6ccba3c90712b9580279c39d8a0022a548ae0018d50269d"
+    },
+    {
+      "method": "jepa",
+      "seed": 43,
+      "parameters": 8382,
+      "wall_s": 5.36557296599949,
+      "sha256": "bf7638217985bdfd4d5429ed57240fc9408621ce9607e2418caa272c0a82c706"
+    }
+  ],
+  "training_trajectories": 4,
+  "validation_read": false,
+  "test_read": false
+}

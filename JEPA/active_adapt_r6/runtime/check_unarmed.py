@@ -1,0 +1,10 @@
+from pathlib import Path
+import json,math,numpy as np
+from pyulog import ULog
+R=Path(__file__).resolve().parent;p=R/'results/unarmed/run'
+h=json.loads((R/'results/unarmed_host_result.json').read_text());f=json.loads((p/'flight_result.json').read_text());s=json.loads((p/'physical_start.json').read_text());a=s['yaw_reference_capture'];log=next((p/'rootfs/log').rglob('*.ulg'));u=ULog(str(log),message_name_filter_list=['vehicle_status','vehicle_land_detected']);v=u.get_dataset('vehicle_status').data;l=u.get_dataset('vehicle_land_detected').data
+checks=dict(host_exit_zero=h.get('returncode')==0,container_stopped=not h['final_state']['Running'],no_resource_guard=not h.get('guard_stop',False),ready_unarmed=f['status']=='READY_UNARMED' and f['disarmed'] and f['landed'],native_never_armed=bool(np.all(v['arming_state']!=2)),native_landed=bool(np.all(l['landed'])),ready_release=30<=s['physical_s']<=30.25 and s['ready'],received_before_capture=a['source_attitude']['receive_monotonic_ns']<=a['capture_monotonic_ns'],rule_matches_snapshot=abs(a['captured_yaw_rad']-math.atan2(a['R_flu_enu'][1][0],a['R_flu_enu'][0][0]))<1e-12,no_truth_or_integral_reset=not a['truth_used'] and not a['integrals_modified'],first_attitude_recorded=bool(a['first_attitude']),writer_complete=json.loads((p/'async_log_result.json').read_text())['passed'],only_preserved_ground_hold=all(x['phase']=='WAIT' and not x['learned_control_enabled'] and not np.any(x['applied_ff_enu']) for x in [json.loads(line) for line in (p/'commands_causal.jsonl').read_text().splitlines()]))
+from gps_audit import audit
+exitrecord=json.loads((p/'process_exit.json').read_text());checks['px4_normal_exit']=exitrecord['processes']['px4']==0;checks['no_forced_cleanup']=not any(e['action'] in ['SIGKILL_owned_group','shutdown_wait'] for e in exitrecord['events'])
+gps=audit(p,0);checks['gps_private_rng']=gps['passed']
+out=dict(passed=all(checks.values()),checks=checks,gps=gps,capture=a,physical_s=s['physical_s'],result=f);(R/'results/unarmed_check.json').write_text(json.dumps(out,indent=2));print(json.dumps(out,indent=2));assert out['passed']

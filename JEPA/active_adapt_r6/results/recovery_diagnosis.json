@@ -1,0 +1,234 @@
+[
+  {
+    "run": "s0_00_mass_active",
+    "pre_mean_estimated_error_enu_m": [
+      0.014012210821689824,
+      0.0009150405209511714,
+      0.010910146395365446
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.007600210622767917,
+      -0.0011045399419962949,
+      0.007752323627471959
+    ],
+    "estimated_position_change_m": [
+      -0.006412000198921895,
+      -0.0020195804629474963,
+      -0.003157822767893448
+    ],
+    "physical_base_position_change_m": [
+      -0.016240019457944607,
+      0.020489256932706455,
+      -0.028724522018021892
+    ],
+    "estimated_minus_physical_change_m": [
+      0.009828019259022713,
+      -0.02250883739565395,
+      0.025566699250128444
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s0_00_mass_conventional",
+    "pre_mean_estimated_error_enu_m": [
+      0.012042585194518314,
+      0.001242941287190986,
+      0.011349604527155575
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.008649401452625154,
+      0.00025129194557671394,
+      0.008215425252914486
+    ],
+    "estimated_position_change_m": [
+      -0.0033931837418931534,
+      -0.0009916493416143105,
+      -0.0031341792742412
+    ],
+    "physical_base_position_change_m": [
+      -0.012919705766357478,
+      0.022577608881118417,
+      -0.02489061044649521
+    ],
+    "estimated_minus_physical_change_m": [
+      0.009526522024464324,
+      -0.023569258222732727,
+      0.02175643117225401
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s2_00_mass_active",
+    "pre_mean_estimated_error_enu_m": [
+      0.0028634690282245416,
+      0.003608134324351947,
+      0.0011322782834371308
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.03245756806060668,
+      -0.03398752126842737,
+      -0.001328003406524707
+    ],
+    "estimated_position_change_m": [
+      0.029594099032382144,
+      -0.03759565559277932,
+      -0.0024602816899617075
+    ],
+    "physical_base_position_change_m": [
+      0.031296246535583966,
+      -0.08471402151704954,
+      0.011958288870065337
+    ],
+    "estimated_minus_physical_change_m": [
+      -0.0017021475032018216,
+      0.047118365924270225,
+      -0.014418570560027044
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s2_00_mass_conventional",
+    "pre_mean_estimated_error_enu_m": [
+      0.0018574516743731955,
+      0.0021289654225111103,
+      0.0007652093569437568
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.030253716347739046,
+      -0.03379512129724025,
+      -0.0007100939750671537
+    ],
+    "estimated_position_change_m": [
+      0.028396264673365867,
+      -0.035924086719751364,
+      -0.0014753033320109576
+    ],
+    "physical_base_position_change_m": [
+      0.03108485823621783,
+      -0.08395329567450219,
+      0.016672963779810646
+    ],
+    "estimated_minus_physical_change_m": [
+      -0.0026885935628519625,
+      0.048029208954750824,
+      -0.018148267111821603
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s0_00_com_active",
+    "pre_mean_estimated_error_enu_m": [
+      0.00967716365993206,
+      0.00013604921909668978,
+      0.009423050324122158
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.004276946692290883,
+      0.003883158758282642,
+      0.008436090707778962
+    ],
+    "estimated_position_change_m": [
+      -0.005400216967641123,
+      0.0037471095391859548,
+      -0.0009869596163432082
+    ],
+    "physical_base_position_change_m": [
+      -0.013527107396209301,
+      0.026571585077059676,
+      -0.021073738887045224
+    ],
+    "estimated_minus_physical_change_m": [
+      0.008126890428568179,
+      -0.02282447553787372,
+      0.020086779270702015
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s0_00_com_conventional",
+    "pre_mean_estimated_error_enu_m": [
+      0.011578196928002093,
+      0.0019303501707812218,
+      0.009373800754547182
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.006991098751546805,
+      0.004317790411412728,
+      0.00563243007659908
+    ],
+    "estimated_position_change_m": [
+      -0.0045870981764552675,
+      0.002387440240631488,
+      -0.003741370677947886
+    ],
+    "physical_base_position_change_m": [
+      -0.014636940329719442,
+      0.02311363111307928,
+      -0.022374592364021728
+    ],
+    "estimated_minus_physical_change_m": [
+      0.010049842153264175,
+      -0.020726190872447793,
+      0.018633221686073842
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s2_00_com_active",
+    "pre_mean_estimated_error_enu_m": [
+      0.0029016218123336657,
+      0.00115433649470409,
+      0.0018935326735179314
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.030536502042523346,
+      -0.03876090230420231,
+      0.002970780134201018
+    ],
+    "estimated_position_change_m": [
+      0.027634880230189642,
+      -0.039915238798906405,
+      0.0010772474606830507
+    ],
+    "physical_base_position_change_m": [
+      0.03106357567565329,
+      -0.08850294888350586,
+      0.020435497008127967
+    ],
+    "estimated_minus_physical_change_m": [
+      -0.0034286954454636476,
+      0.04858771008459946,
+      -0.019358249547444917
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  },
+  {
+    "run": "s2_00_com_conventional",
+    "pre_mean_estimated_error_enu_m": [
+      0.0020025500391526885,
+      0.0010580225846421438,
+      -0.0003166277541936896
+    ],
+    "final_mean_estimated_error_enu_m": [
+      0.028443323927000146,
+      -0.03795019455626607,
+      0.00029036593437189404
+    ],
+    "estimated_position_change_m": [
+      0.02644077388784745,
+      -0.03900821714090821,
+      0.000606993688565538
+    ],
+    "physical_base_position_change_m": [
+      0.029027674011473943,
+      -0.08625421272507534,
+      0.02099033238512682
+    ],
+    "estimated_minus_physical_change_m": [
+      -0.002586900123626494,
+      0.04724599558416713,
+      -0.02038333869656128
+    ],
+    "interpretation": "Relative pre-to-final drift in established ENU convention; not absolute physical tracking error and not a unique causal diagnosis. No truth correction used online."
+  }
+]

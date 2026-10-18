@@ -1,0 +1,150 @@
+{
+  "completed_runs": 8,
+  "planned_runs": 8,
+  "safety_data_pass": true,
+  "prediction_gates": [
+    {
+      "method": "physics",
+      "family": "mass",
+      "checks": {
+        "velocity_rmse_m_s_update_benefit_10pct": false,
+        "velocity_rmse_m_s_excitation_benefit_5pct": false,
+        "velocity_rmse_m_s_each_seed_no_worse_5pct": true,
+        "omega_rmse_rad_s_update_benefit_10pct": false,
+        "omega_rmse_rad_s_excitation_benefit_5pct": false,
+        "omega_rmse_rad_s_each_seed_no_worse_5pct": true
+      },
+      "ratios": {
+        "velocity_rmse_m_s_on_over_off": 0.937936576602482,
+        "velocity_rmse_m_s_active_over_conventional": 1.0040219854340457,
+        "velocity_rmse_m_s_worst_seed_on_over_off": 0.9663323887853719,
+        "omega_rmse_rad_s_on_over_off": 0.9747239009461298,
+        "omega_rmse_rad_s_active_over_conventional": 1.0565758185559995,
+        "omega_rmse_rad_s_worst_seed_on_over_off": 0.9906146541103702
+      },
+      "passed": false
+    },
+    {
+      "method": "physics",
+      "family": "com",
+      "checks": {
+        "velocity_rmse_m_s_update_benefit_10pct": false,
+        "velocity_rmse_m_s_excitation_benefit_5pct": false,
+        "velocity_rmse_m_s_each_seed_no_worse_5pct": true,
+        "omega_rmse_rad_s_update_benefit_10pct": false,
+        "omega_rmse_rad_s_excitation_benefit_5pct": true,
+        "omega_rmse_rad_s_each_seed_no_worse_5pct": true
+      },
+      "ratios": {
+        "velocity_rmse_m_s_on_over_off": 0.9515408475006505,
+        "velocity_rmse_m_s_active_over_conventional": 1.0490140675795194,
+        "velocity_rmse_m_s_worst_seed_on_over_off": 0.9677047399710773,
+        "omega_rmse_rad_s_on_over_off": 0.9241720779318336,
+        "omega_rmse_rad_s_active_over_conventional": 0.9097884388216669,
+        "omega_rmse_rad_s_worst_seed_on_over_off": 0.9557244237815761
+      },
+      "passed": false
+    },
+    {
+      "method": "supervised",
+      "family": "mass",
+      "checks": {
+        "velocity_rmse_m_s_update_benefit_10pct": false,
+        "velocity_rmse_m_s_excitation_benefit_5pct": false,
+        "velocity_rmse_m_s_each_seed_no_worse_5pct": true,
+        "omega_rmse_rad_s_update_benefit_10pct": false,
+        "omega_rmse_rad_s_excitation_benefit_5pct": true,
+        "omega_rmse_rad_s_each_seed_no_worse_5pct": true
+      },
+      "ratios": {
+        "velocity_rmse_m_s_on_over_off": 0.9766160009638545,
+        "velocity_rmse_m_s_active_over_conventional": 0.9656650719252438,
+        "velocity_rmse_m_s_worst_seed_on_over_off": 0.981545063156212,
+        "omega_rmse_rad_s_on_over_off": 0.9767380756728812,
+        "omega_rmse_rad_s_active_over_conventional": 0.9350218708031923,
+        "omega_rmse_rad_s_worst_seed_on_over_off": 0.9795958490938007
+      },
+      "passed": false
+    },
+    {
+      "method": "supervised",
+      "family": "com",
+      "checks": {
+        "velocity_rmse_m_s_update_benefit_10pct": false,
+        "velocity_rmse_m_s_excitation_benefit_5pct": false,
+        "velocity_rmse_m_s_each_seed_no_worse_5pct": true,
+        "omega_rmse_rad_s_update_benefit_10pct": false,
+        "omega_rmse_rad_s_excitation_benefit_5pct": true,
+        "omega_rmse_rad_s_each_seed_no_worse_5pct": true
+      },
+      "ratios": {
+        "velocity_rmse_m_s_on_over_off": 0.9324863974891803,
+        "velocity_rmse_m_s_active_over_conventional": 0.9586050060588983,
+        "velocity_rmse_m_s_worst_seed_on_over_off": 0.9571133908870711,
+        "omega_rmse_rad_s_on_over_off": 0.9548264509064979,
+        "omega_rmse_rad_s_active_over_conventional": 0.9277104166799416,
+        "omega_rmse_rad_s_worst_seed_on_over_off": 0.9582240567819743
+      },
+      "passed": false
+    },
+    {
+      "method": "jepa",
+      "family": "mass",
+      "checks": {
+        "velocity_rmse_m_s_update_benefit_10pct": false,
+        "velocity_rmse_m_s_excitation_benefit_5pct": false,
+        "velocity_rmse_m_s_each_seed_no_worse_5pct": true,
+        "omega_rmse_rad_s_update_benefit_10pct": false,
+        "omega_rmse_rad_s_excitation_benefit_5pct": false,
+        "omega_rmse_rad_s_each_seed_no_worse_5pct": true
+      },
+      "ratios": {
+        "velocity_rmse_m_s_on_over_off": 0.9696286580653777,
+        "velocity_rmse_m_s_active_over_conventional": 0.975117851983717,
+        "velocity_rmse_m_s_worst_seed_on_over_off": 0.975287238303274,
+        "omega_rmse_rad_s_on_over_off": 0.9793794443428088,
+        "omega_rmse_rad_s_active_over_conventional": 0.9710683161328826,
+        "omega_rmse_rad_s_worst_seed_on_over_off": 0.9865193068147854
+      },
+      "passed": false
+    },
+    {
+      "method": "jepa",
+      "family": "com",
+      "checks": {
+        "velocity_rmse_m_s_update_benefit_10pct": false,
+        "velocity_rmse_m_s_excitation_benefit_5pct": false,
+        "velocity_rmse_m_s_each_seed_no_worse_5pct": true,
+        "omega_rmse_rad_s_update_benefit_10pct": false,
+        "omega_rmse_rad_s_excitation_benefit_5pct": true,
+        "omega_rmse_rad_s_each_seed_no_worse_5pct": true
+      },
+      "ratios": {
+        "velocity_rmse_m_s_on_over_off": 0.9397706636905354,
+        "velocity_rmse_m_s_active_over_conventional": 1.0195523044924213,
+        "velocity_rmse_m_s_worst_seed_on_over_off": 0.944872102965209,
+        "omega_rmse_rad_s_on_over_off": 0.9222242962499163,
+        "omega_rmse_rad_s_active_over_conventional": 0.9202044767946007,
+        "omega_rmse_rad_s_worst_seed_on_over_off": 0.9338351777482273
+      },
+      "passed": false
+    }
+  ],
+  "jepa_prediction_release": false,
+  "learned_control_release": false,
+  "old_oracle_recovery_gate_resolved": false,
+  "active_control_runs": 0,
+  "method": "RMS aggregation of per-flight/per-model-seed RMSE; model seeds share each physical flight and are not independent trials",
+  "max_latency_p95_ms": 57.767383099999996,
+  "max_core_p95_ms": 0.518407,
+  "max_replay_difference": 1.3950142374596908e-08,
+  "new_final_hover_failures": [
+    "s0_00_mass_conventional",
+    "s2_00_mass_active",
+    "s2_00_mass_conventional",
+    "s0_00_com_active",
+    "s0_00_com_conventional",
+    "s2_00_com_active",
+    "s2_00_com_conventional"
+  ]
+}

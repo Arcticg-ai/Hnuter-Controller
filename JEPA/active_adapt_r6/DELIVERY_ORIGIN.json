@@ -1,0 +1,12 @@
+{
+  "research_branch": "codex/jepa-active-adapt-20261018",
+  "research_commit": "aef21a1ca96941d0f1f08e46f854e195512a990e",
+  "publication_base": "79319d4d7d3e2e99260d3ae84a064c494303c5c4",
+  "publication_branch": "codex/jepa-active-adapt-r6-delivery-20261018",
+  "scope": "R6 code, small models, configuration, reports and compact numerical evidence only",
+  "raw_flight_logs_included": false,
+  "training_windows_included": false,
+  "per_window_predictions_included": false,
+  "old_unpublished_history_excluded": true,
+  "files_copied": 179
+}

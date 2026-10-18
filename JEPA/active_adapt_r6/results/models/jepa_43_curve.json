@@ -1,0 +1,122 @@
+[
+  {
+    "epoch": 1,
+    "stage": "latent",
+    "loss": 0.20921713752405985
+  },
+  {
+    "epoch": 2,
+    "stage": "latent",
+    "loss": 0.14724928495429812
+  },
+  {
+    "epoch": 3,
+    "stage": "latent",
+    "loss": 0.11811147949525289
+  },
+  {
+    "epoch": 4,
+    "stage": "latent",
+    "loss": 0.10311423242092133
+  },
+  {
+    "epoch": 5,
+    "stage": "latent",
+    "loss": 0.09477851504371279
+  },
+  {
+    "epoch": 6,
+    "stage": "latent",
+    "loss": 0.0902759734363783
+  },
+  {
+    "epoch": 7,
+    "stage": "latent",
+    "loss": 0.08642697298810595
+  },
+  {
+    "epoch": 8,
+    "stage": "latent",
+    "loss": 0.08136122957581565
+  },
+  {
+    "epoch": 9,
+    "stage": "latent",
+    "loss": 0.07206842232318152
+  },
+  {
+    "epoch": 10,
+    "stage": "latent",
+    "loss": 0.06336751136751402
+  },
+  {
+    "epoch": 11,
+    "stage": "latent",
+    "loss": 0.05780340269917533
+  },
+  {
+    "epoch": 12,
+    "stage": "latent",
+    "loss": 0.05321438291243145
+  },
+  {
+    "epoch": 13,
+    "stage": "joint",
+    "loss": 0.5447417639550709
+  },
+  {
+    "epoch": 14,
+    "stage": "joint",
+    "loss": 0.4383607975074223
+  },
+  {
+    "epoch": 15,
+    "stage": "joint",
+    "loss": 0.3347120192788896
+  },
+  {
+    "epoch": 16,
+    "stage": "joint",
+    "loss": 0.20158298597449348
+  },
+  {
+    "epoch": 17,
+    "stage": "joint",
+    "loss": 0.14860267156646365
+  },
+  {
+    "epoch": 18,
+    "stage": "joint",
+    "loss": 0.13927640269200006
+  },
+  {
+    "epoch": 19,
+    "stage": "joint",
+    "loss": 0.13482070394924708
+  },
+  {
+    "epoch": 20,
+    "stage": "joint",
+    "loss": 0.13080749341419765
+  },
+  {
+    "epoch": 21,
+    "stage": "joint",
+    "loss": 0.12653299669424692
+  },
+  {
+    "epoch": 22,
+    "stage": "joint",
+    "loss": 0.12118072523957207
+  },
+  {
+    "epoch": 23,
+    "stage": "joint",
+    "loss": 0.11554604272047679
+  },
+  {
+    "epoch": 24,
+    "stage": "joint",
+    "loss": 0.10952614531630561
+  }
+]

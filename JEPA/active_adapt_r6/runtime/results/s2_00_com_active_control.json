@@ -1,0 +1,189 @@
+{
+  "run": "s2_00_com_active",
+  "contract_passed": true,
+  "checks": {
+    "query_clock_instrumented": true,
+    "query_clock_monotonic": true,
+    "limiter_instrumented": true,
+    "force_waveform": true,
+    "ff_waveform": true,
+    "enu_ned": true,
+    "port_sum": true,
+    "consumer_payload_coverage": true,
+    "consumer_payload_error": true,
+    "control_sum": true,
+    "integral_update": true,
+    "consumer_age": true,
+    "late_ff_zero": true,
+    "output_bound": true,
+    "slew": true,
+    "same_time_hold": true,
+    "no_active_fallback": true,
+    "learned_control_disabled": true
+  },
+  "details": {
+    "consumer_age_s": {
+      "min": 0.004,
+      "p99": 0.008,
+      "max": 0.016
+    },
+    "payload_membership_error": 0.0,
+    "same_stamp_distinct_payload_groups": 14,
+    "source_clock_backsteps": 0,
+    "control_sum_max_error": 3.293964029316143e-08,
+    "integral_update_max_error": 1.4892212796269177e-08,
+    "waveform_max_error": 0.0,
+    "slew_max": 0.0,
+    "fallback_count": 1779,
+    "limited_count": 0
+  },
+  "phases": {
+    "whole": {
+      "position_rmse_m": 0.023898081183020028,
+      "position_peak_m": 0.044692940989901425,
+      "attitude_rmse_deg": 2.3401060886175875,
+      "attitude_peak_deg": 3.6135483829885304,
+      "angular_rate_rms_rad_s": 0.045943222389966364,
+      "angular_rate_peak_rad_s": 0.12519686906339259,
+      "integral_mean_ned": [
+        -0.24646549879454097,
+        -0.007392858079575479,
+        0.0001209009691017595
+      ],
+      "consumed_ff_mean_ned": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "physical_base_displacement_rms_m": 0.046448944350329716,
+      "physical_base_displacement_peak_m": 0.06906811705596895,
+      "saturation": {
+        "torque": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "allocator": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "acceleration": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "motor_sampled": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "servo_sampled": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        }
+      }
+    },
+    "identification": {
+      "position_rmse_m": 0.02382813734990258,
+      "position_peak_m": 0.0388599741597465,
+      "attitude_rmse_deg": 2.301989075400553,
+      "attitude_peak_deg": 3.2273563637912557,
+      "angular_rate_rms_rad_s": 0.04445416038364353,
+      "angular_rate_peak_rad_s": 0.10453079393959024,
+      "integral_mean_ned": [
+        -0.24421219679195402,
+        -0.007816868488857327,
+        -0.0019163269042316953
+      ],
+      "consumed_ff_mean_ned": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "physical_base_displacement_rms_m": 0.041049443531216714,
+      "physical_base_displacement_peak_m": 0.06219186013980567,
+      "saturation": {
+        "torque": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "allocator": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "acceleration": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "motor_sampled": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "servo_sampled": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        }
+      }
+    },
+    "independent_task": {
+      "position_rmse_m": 0.023688139946485984,
+      "position_peak_m": 0.044692940989901425,
+      "attitude_rmse_deg": 2.3521465336164145,
+      "attitude_peak_deg": 3.6135483829885304,
+      "angular_rate_rms_rad_s": 0.05107844908313737,
+      "angular_rate_peak_rad_s": 0.12519686906339259,
+      "integral_mean_ned": [
+        -0.24799586745361105,
+        -0.006928709521162091,
+        0.0003587224582932873
+      ],
+      "consumed_ff_mean_ned": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "physical_base_displacement_rms_m": 0.04788888895795623,
+      "physical_base_displacement_peak_m": 0.06906811705596895,
+      "saturation": {
+        "torque": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "allocator": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "acceleration": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "motor_sampled": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        },
+        "servo_sampled": {
+          "fraction": 0.0,
+          "longest_s": 0.0
+        }
+      }
+    }
+  },
+  "physical_displacement_is_not_absolute_tracking_error": true,
+  "model_inference_not_run": false,
+  "learned_control_enabled": false,
+  "old_recovery_window_not_comparable_to_R2_oracle": {
+    "first_continuous_1s_s": 0.8119999999999905,
+    "last_out_of_band_s": 9.99600000000001,
+    "stable_final_1s": false,
+    "position_bound_m": 0.02048869871718076,
+    "right_censored_s": null
+  },
+  "new_task_final_hover": {
+    "window": [
+      71,
+      72
+    ],
+    "position_bound_m": 0.02048869871718076,
+    "position_max_m": 0.053871815728335624,
+    "speed_max_m_s": 0.04201562013635233,
+    "stable_final_1s": false,
+    "not_a_retest_of_old_oracle": true
+  }
+}

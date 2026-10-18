@@ -1,0 +1,36 @@
+{
+  "files": [
+    {
+      "name": "libAuditedJointPositionController.so",
+      "sha256": "7fed0d11ae6254d47b3a9dc75e8be618628587acf756901094473292b16d8e15",
+      "compiled_and_loaded": true,
+      "source": "/r6/vendor_plugins/AuditedJointPositionController.cc"
+    },
+    {
+      "name": "libJepaBoundedForce.so",
+      "sha256": "be5fe4dc0f98dd450bddd63c85b0a1ea99d2d1a0560851ff7f4ea6917c714853",
+      "compiled_and_loaded": true,
+      "source": "/r6/vendor_plugins/BoundedForce.cc"
+    },
+    {
+      "name": "libJepaClockAudit.so",
+      "sha256": "ad97ae7b3a5f8438e03da286136627d79778dcffba61f05884067f917dbe8eac",
+      "compiled_and_loaded": true,
+      "source": "/r6/vendor_plugins/ClockAudit.cc"
+    },
+    {
+      "name": "libJepaTruthRecorder.so",
+      "sha256": "3730a2b10f0e5f8536abe3fe06735f0a004cdb6ab2e592545b9a9b5afdf99a6f",
+      "compiled_and_loaded": true,
+      "source": "/r6/runtime/TruthRecorder.cc"
+    },
+    {
+      "name": "seeded_server",
+      "sha256": "90318066dd478f3e43afe79b660ebe1828bcbb35865a2284cbb8552153cbb5f2",
+      "compiled_and_loaded": false,
+      "source": "/r6/runtime/seeded_server.cc"
+    }
+  ],
+  "used_in_R6_flights": false,
+  "byte_identical_to_original_not_required": true
+}

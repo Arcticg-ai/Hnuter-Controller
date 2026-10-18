@@ -1,0 +1,121 @@
+{
+  "passed": true,
+  "checks": {
+    "host_exit_zero": true,
+    "container_stopped": true,
+    "no_resource_guard": true,
+    "ready_unarmed": true,
+    "native_never_armed": true,
+    "native_landed": true,
+    "ready_release": true,
+    "received_before_capture": true,
+    "rule_matches_snapshot": true,
+    "no_truth_or_integral_reset": true,
+    "first_attitude_recorded": true,
+    "writer_complete": true,
+    "only_preserved_ground_hold": true,
+    "px4_normal_exit": true,
+    "no_forced_cleanup": true,
+    "gps_private_rng": true
+  },
+  "gps": {
+    "passed": true,
+    "checks": {
+      "audit_close_ack": true,
+      "complete_last_row": true,
+      "finite_all_fields": true,
+      "nonempty": true,
+      "seed_recorded": true,
+      "six_normals_per_callback": true,
+      "contiguous_callback_index": true,
+      "strictly_increasing_source_ns": true,
+      "finite_noise": true,
+      "new_rng_log": true
+    },
+    "callbacks_logged": 790,
+    "first_source_ns": 4257000000,
+    "last_source_ns": 30294000000,
+    "receive_minus_source_ms": {
+      "min": 0.0,
+      "median": 0.0,
+      "max": 0.0,
+      "negative_count": 0
+    },
+    "note": "Source and receipt are distinct; delay statistics are diagnostic, no timestamp rewriting."
+  },
+  "capture": {
+    "old_initial_yaw_rad": 1.5710013746198344,
+    "old_manual_yaw_rad": 1.5710013746198344,
+    "captured_yaw_rad": -0.014862708082546004,
+    "source_attitude": {
+      "receive_monotonic_ns": 6175941355960,
+      "receive_wall_ns": 1792334432889678630,
+      "source_publish_us": 30012000,
+      "source_sample_us": 30012000,
+      "has_sample_timestamp": true
+    },
+    "release_physical_s": 30.014000000000003,
+    "R_flu_enu": [
+      [
+        0.9998896718025208,
+        0.014862149905029876,
+        7.906407699920237e-05
+      ],
+      [
+        -0.014862162673901835,
+        0.9998896718025208,
+        0.0001634415239095688
+      ],
+      [
+        -7.662627467652783e-05,
+        -0.000164598532137461,
+        0.9999999835178704
+      ]
+    ],
+    "capture_monotonic_ns": 6175942739570,
+    "first_attitude": {
+      "receipt": {
+        "receive_monotonic_ns": 6151061936422,
+        "receive_wall_ns": 1792334408010259222,
+        "source_publish_us": 5132000,
+        "source_sample_us": 5132000,
+        "has_sample_timestamp": true
+      },
+      "q_ned_frd": [
+        1.0,
+        0.00015785179857630283,
+        -6.969687819946557e-05,
+        -0.00010251290950691327
+      ],
+      "initial_yaw_enu_rad": 1.5710013746198344,
+      "current_yaw_enu_rad": 1.5710013746198344,
+      "quat_reset_counter": 0
+    },
+    "truth_used": false,
+    "integrals_modified": false
+  },
+  "physical_s": 30.014000000000003,
+  "result": {
+    "status": "READY_UNARMED",
+    "failure": null,
+    "ready_at_wall_s": 25.01107238500026,
+    "startup_only": true,
+    "attitude_reference": "legacy",
+    "phase": "WAIT",
+    "samples": 0,
+    "evaluation_samples": 0,
+    "landed": true,
+    "disarmed": true,
+    "sensor_samples": 1240,
+    "mass_estimate_kg": null,
+    "mass_accepted": null,
+    "mass_reason": "disabled",
+    "group": "A",
+    "noise": "native",
+    "mass_accepted_at_px4_s": null,
+    "last_px4_timestamp_s": 30.011999999999997,
+    "last_joint_timestamp_s": 30.044,
+    "position_rmse_m": null,
+    "max_position_error_m": null
+  }
+}

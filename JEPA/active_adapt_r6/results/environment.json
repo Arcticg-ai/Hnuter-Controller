@@ -1,0 +1,12 @@
+{
+  "image": "hnuter-adaptation:20261013",
+  "image_id": "sha256:016e58104eea76f9b3fe4d9821fc9449f3f9e034746ea351fe31a60ec787c04d",
+  "versions": {
+    "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+    "torch": "2.6.0+cpu",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "pandas": "2.2.3"
+  },
+  "installed_extra_software": false
+}

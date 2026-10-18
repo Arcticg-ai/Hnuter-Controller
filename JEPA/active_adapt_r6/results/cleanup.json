@@ -1,0 +1,15 @@
+{
+  "removed_owned_exited_containers": [
+    "/jepa-active-adapt-r6-s2-00-com-conventional",
+    "/jepa-active-adapt-r6-s2-00-com-active",
+    "/jepa-active-adapt-r6-s0-00-com-conventional",
+    "/jepa-active-adapt-r6-s0-00-com-active",
+    "/jepa-active-adapt-r6-s2-00-mass-conventional",
+    "/jepa-active-adapt-r6-s2-00-mass-active",
+    "/jepa-active-adapt-r6-s0-00-mass-conventional",
+    "/jepa-active-adapt-r6-s0-00-mass-active",
+    "/jepa-active-adapt-r6-unarmed"
+  ],
+  "retained_raw_directory": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-active-adapt-r6-worktree/JEPA/active_adapt_r6/runtime/results",
+  "running_containers_after": []
+}

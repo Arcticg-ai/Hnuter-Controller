@@ -1,0 +1,54 @@
+{
+  "groups": [
+    {
+      "name": "s0_00_nominal",
+      "split": "train",
+      "windows": 495,
+      "trajectories": 1,
+      "rejected_grid": 0,
+      "source_sha256": "e468e1a08ea11fc9b749ba74dd020e6d26a06261d364e3c8d822c5edf147c1d1",
+      "source": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-gazebo-r6-worktree/JEPA/method_audit_r4/collection/results/experiment/runs/s0_00_nominal/deployable_observations.jsonl"
+    },
+    {
+      "name": "s1_00_mass",
+      "split": "train",
+      "windows": 495,
+      "trajectories": 1,
+      "rejected_grid": 0,
+      "source_sha256": "e30aacf002e597a7f42ec4a5774662ad5b5204e2934d1d022110f8b731dbbd7d",
+      "source": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-gazebo-r6-worktree/JEPA/method_audit_r4/collection/results/experiment/runs/s1_00_mass/deployable_observations.jsonl"
+    },
+    {
+      "name": "s2_00_com",
+      "split": "train",
+      "windows": 495,
+      "trajectories": 1,
+      "rejected_grid": 0,
+      "source_sha256": "17d31fbab43bba18c1f96eeafdd19edcd531c402274a7d85880540c8a8cb607e",
+      "source": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-gazebo-r6-worktree/JEPA/method_audit_r4/collection/results/experiment/runs/s2_00_com/deployable_observations.jsonl"
+    },
+    {
+      "name": "s3_00_inertia",
+      "split": "train",
+      "windows": 495,
+      "trajectories": 1,
+      "rejected_grid": 0,
+      "source_sha256": "50eb1da92e68140e8cc2cc93fc2f794b389a3bbc59a9764437f9482553b50041",
+      "source": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-gazebo-r6-worktree/JEPA/method_audit_r4/collection/results/experiment/runs/s3_00_inertia/deployable_observations.jsonl"
+    },
+    {
+      "name": "s4_00_combo",
+      "split": "validation",
+      "windows": 495,
+      "trajectories": 1,
+      "rejected_grid": 0,
+      "source_sha256": "6dd335e9ec456838ef536bcd6c9d9b2e96f35bb08cda9aaafcf3ddb26c325861",
+      "source": "/home/hnuter/Documents/Codex/2026-10-13/task/jepa-gazebo-r6-worktree/JEPA/method_audit_r4/collection/results/experiment/runs/s4_00_combo/deployable_observations.jsonl"
+    }
+  ],
+  "grid_s": 0.1,
+  "actions": "completed_interval_ZOH_means_2x50ms",
+  "old_action_resolution": "20Hz_snapshot_not_full_callback",
+  "truth_read": false,
+  "parameters_read": false
+}
