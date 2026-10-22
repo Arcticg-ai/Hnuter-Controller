@@ -29,7 +29,37 @@ def render():
     # These simulator-only publishers have no role on a physical vehicle.
     omitted = set()
     replacements = {}
+    additions = {}
+    trim_sites = 0
     for node in ast.walk(old_tree):
+        if (isinstance(node, ast.Constant) and isinstance(node.value, str)
+                and node.value.startswith('HARDWARE MODE:')):
+            # The old entry's always-on heartbeat instructions do not apply to
+            # v2's monitor default and must not suggest an unvalidated flight.
+            replacements[node.lineno] = ' ' * node.col_offset + repr(
+                'HARDWARE V2: monitor-only by default; no heartbeat or actuator output in monitor mode. '
+                'No automatic Arm/Disarm/mode changes. Check the explicit v2 output/gate status; '
+                'prop-off/bench validation is required before enabling takeover.')
+            omitted.update(range(node.lineno, node.end_lineno + 1))
+        if (isinstance(node, ast.Assign) and node.lineno < first
+                and any(isinstance(t, ast.Name) and t.id == 'tau_c' for t in node.targets)
+                and isinstance(node.value, ast.BinOp)):
+            indent = ' ' * node.col_offset
+            additions[node.end_lineno] = indent + 'tau_c = self._add_firmware_attitude_trim(tau_c)'
+            trim_sites += 1
+        if isinstance(node, ast.FunctionDef) and node.name == '_apply_firmware_tail_pitch_bias':
+            # V2 adds gravity and bias in physical FRD torque before saturation.
+            # Keep this legacy call site solely for the allocator sign/scale.
+            replacements[node.lineno] = (
+                '    def _apply_firmware_tail_pitch_bias(\n'
+                '        allocator_pitch_torque, max_tail_thrust, tail_arm,\n'
+                '        pitch_torque_bias, tail_torque_sign,\n'
+                '    ):\n'
+                '        scale = max(float(max_tail_thrust) * float(tail_arm), 1e-8)\n'
+                '        direction = -1.0 if tail_torque_sign < 0 else 1.0\n'
+                '        return direction * float(np.clip(allocator_pitch_torque, -scale, scale))'
+            )
+            omitted.update(range(node.lineno, node.end_lineno + 1))
         if isinstance(node, ast.FunctionDef) and node.name == 'workspace_root':
             replacements[node.lineno] = (
                 'def workspace_root() -> Path:\n'
@@ -50,7 +80,9 @@ def render():
                 {'gz_servo0_pub', 'gz_servo1_pub', 'gz_servo2_pub', 'gz_servo3_pub'}
                 for t in node.targets):
             omitted.update(range(node.lineno, node.end_lineno + 1))
-    base = '\n'.join(replacements.get(i, line)
+    if trim_sites != 2:
+        raise ValueError('Expected exactly two attitude torque construction sites')
+    base = '\n'.join(replacements.get(i, line) + ('\n' + additions[i] if i in additions else '')
                      for i, line in enumerate(old.splitlines()[:first - 2], 1)
                      if i not in omitted or i in replacements)
     core_nodes = ast.parse(core).body
@@ -65,7 +97,12 @@ def render():
     provenance = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in inputs}
     result = base + '\n\n' + allocator + '\n\n'
-    result += segment(old, 'HnuterHardwareDRCDAController') + '\n'
+    hardware_controller = segment(old, 'HnuterHardwareDRCDAController')
+    if hardware_controller.count('command = self.drcda.command') != 1:
+        raise ValueError('Expected exactly one held allocation publication site')
+    hardware_controller = hardware_controller.replace(
+        'command = self.drcda.command', 'command = self.drcda.held_solution')
+    result += hardware_controller + '\n'
     result += 'HARDWARE_V2_BUILD_INPUTS = ' + repr(provenance) + '\n'
     result += 'HARDWARE_V2_DEFAULT_CONFIG = ' + repr(config) + '\n\n'
     result += EXTRA.read_text()
