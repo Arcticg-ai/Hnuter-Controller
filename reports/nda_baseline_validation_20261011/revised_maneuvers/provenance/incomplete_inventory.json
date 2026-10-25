@@ -1,0 +1,18 @@
+[
+  {
+    "directory": "followup_20261011/pilot_raw/lissajous_5/repeat_1/full",
+    "status": "interrupted/no result"
+  },
+  {
+    "directory": "followup_20261011/pilot_raw/lissajous_7/repeat_1/no_nearfield",
+    "status": "controller telemetry startup failed"
+  },
+  {
+    "directory": "followup_20261011/pilot_raw/lissajous_7/repeat_1/full",
+    "status": "controller telemetry startup failed"
+  },
+  {
+    "directory": "followup_20261011/matched/attitude_80_180/repeat_1/direct",
+    "status": "interrupted/no result"
+  }
+]

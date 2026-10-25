@@ -1,0 +1,126 @@
+{
+  "created_at_unix_s": 1791722253.685984,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "53266349b9c65001b72e8f2d437b7340c8c4756f",
+    "branch": "codex/payload-selfcalibration-20261010",
+    "describe": "hnuter-servo-pwm-gear-20260804-11-g53266349",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "validation_policy": "no_delay_only",
+    "forbidden_actuator_tokens": [],
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "6e35ba30efbe2db717b9e62449db33b78a64fca1",
+  "controller_worktree_dirty": true,
+  "experiment": "physical_gate_fixed_attitude_minimum_jerk_A_B_A_C",
+  "methods": [
+    "paper_nda"
+  ],
+  "switch_durations_s": [
+    3.0
+  ],
+  "half_span_m": 0.0,
+  "altitude_m": 1.5,
+  "dwell_s": 0.0,
+  "repeats": 1,
+  "thresholds": {
+    "position_peak_m": 0.75,
+    "attitude_peak_deg": 8.0,
+    "roll_pitch_peak_deg": 5.0,
+    "minimum_altitude_m": 0.5,
+    "gate_clearance_m": 0.05,
+    "feedback_ratio": 0.95,
+    "target_span_m": 0.0,
+    "gate_enabled": false
+  },
+  "pure_delay_model_used": false,
+  "gazebo_gui": false,
+  "cases": [
+    {
+      "method": "paper_nda",
+      "switch_duration_s": 3.0,
+      "dwell_s": 0.0,
+      "span_m": 0.0,
+      "status": "failed",
+      "error": "did not reach target C; position peak 11.023 > 0.750; attitude peak 179.983 > 8.000; roll/pitch peak 179.837 > 5.000; minimum altitude -3.328 < 0.500",
+      "metrics": {
+        "row_count": 922,
+        "transition_row_count": 385,
+        "evaluation_row_count": 600,
+        "evaluation_window": "first_segment_through_final_hold",
+        "position_metric": "3D_Euclidean",
+        "position_error_rms_m": 4.314149071647976,
+        "position_error_peak_m": 11.022856302708705,
+        "attitude_error_rms_deg": 112.90955961202047,
+        "attitude_error_peak_deg": 179.9834847728965,
+        "roll_pitch_peak_deg": 179.83698325923837,
+        "yaw_rate_peak_rad_s": 31.802770614624023,
+        "minimum_altitude_m": -3.3280831575393677,
+        "joint_feedback_ratio": 1.0,
+        "joint_tracking_error_rms_rad": 1.4303404456893294,
+        "joint_tracking_error_peak_rad": 6.355889657010364,
+        "reachable_wrench_residual_rms": 45.10033399310136,
+        "pre_reversal_servo_reduction_rad": -0.07063126160343468,
+        "gate_sample_count": 198,
+        "minimum_gate_clearance_m": -4.985750122070312,
+        "reached_b": true,
+        "returned_to_gate_a": true,
+        "reached_c": false,
+        "target_acceptance_radius_m": 0.2,
+        "final_armed": true,
+        "safety_cutoff": false,
+        "prediction_h1_sample_count": 0,
+        "prediction_h1_fy_rmse_n": NaN,
+        "prediction_h1_wrench_rmse": NaN,
+        "prediction_h1_objective_rmse": NaN,
+        "prediction_h2_sample_count": 0,
+        "prediction_h2_fy_rmse_n": NaN,
+        "prediction_h2_wrench_rmse": NaN,
+        "prediction_h2_objective_rmse": NaN,
+        "passed": false,
+        "failures": [
+          "did not reach target C",
+          "position peak 11.023 > 0.750",
+          "attitude peak 179.983 > 8.000",
+          "roll/pitch peak 179.837 > 5.000",
+          "minimum altitude -3.328 < 0.500"
+        ]
+      },
+      "gate": {
+        "spawned": false,
+        "collision_enabled": false,
+        "reason": "open-world qualification/comparison"
+      },
+      "duration_wall_s": 50.81957103900095,
+      "csv": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/runs/hover_initialized_k6/repeat_1/runs/T_3p0/paper_nda/logs/external_control/experiments/fixed_attitude_switching/paper_nda/switching_1791722277.csv",
+      "ulog_source": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/rootfs/log/2026-10-11/12_37_45.ulg",
+      "tuning": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/runs/hover_initialized_k6/repeat_1/runs/T_3p0/paper_nda/effective_tuning.json",
+      "servo_model": "gazebo_joint_pid_no_delay",
+      "pure_delay_model_used": false,
+      "common_prelude": true,
+      "joint_model_profile": "zero_gravity_step",
+      "allocation_audit": {
+        "bounded_solver": false,
+        "immediate_objective": false,
+        "future_reference": false,
+        "nda_gain": 6.0,
+        "nda_inversion": "sampled",
+        "servo_physical_rate_rad_s": 10.0,
+        "servo_command_rate_rad_s": 50.0,
+        "feedback": "measured_joint_pose; model_estimated_motor_force",
+        "nda_scope": "Eq7-14 force-coordinate adaptation; no PDA power curves"
+      },
+      "repeat": 1
+    }
+  ],
+  "minimum_valid_switch_time_s": {
+    "direct": null,
+    "basic_da": null,
+    "full": null,
+    "no_horizon": null,
+    "no_preview": null,
+    "no_nearfield": null,
+    "with_nearfield": null,
+    "paper_nda": null
+  }
+}

@@ -1,0 +1,8 @@
+# Optional offline analysis/testing tools. Not a ROS ABI compatibility lockfile.
+numpy
+scipy
+matplotlib
+pyulog
+pytest
+pygame
+PyYAML

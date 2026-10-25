@@ -9,6 +9,8 @@ hnuter_iebc.patch
 
 *.csv
 !reports/**/metrics/*.csv
+!reports/**/metrics.csv
+!reports/**/phase_metrics.csv
 hnuter_saved_plots/
 config/**/*.applied.json
 
@@ -19,3 +21,15 @@ config/**/*.applied.json
 .venv/
 venv/
 px4-venv/
+
+# Keep private/raw evidence and migration bundles out of ordinary source commits.
+reports/**/data/
+reports/**/*.ulg
+reports/**/*.tar.gz
+reports/**/*.tar
+reports/**/*.zip
+reports/**/*.log
+reports/nda_baseline_validation_20261011/incomplete/
+reports/first_roll_diagnosis_20261012/evidence/*
+!reports/first_roll_diagnosis_20261012/evidence/figures/
+hnuter_knowledge_base_exports/

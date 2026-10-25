@@ -1,0 +1,22 @@
+{
+  "a_l": {
+    "samples": 39,
+    "q_minus_u_rms_deg": 1.1248508915183648,
+    "q_minus_Ku_rms_deg": 0.9461961594278725
+  },
+  "b_l": {
+    "samples": 58,
+    "q_minus_u_rms_deg": 1.1342232123272558,
+    "q_minus_Ku_rms_deg": 6.484145607735646
+  },
+  "a_r": {
+    "samples": 11,
+    "q_minus_u_rms_deg": 1.4196256521319015,
+    "q_minus_Ku_rms_deg": 1.340067000490592
+  },
+  "b_r": {
+    "samples": 8,
+    "q_minus_u_rms_deg": 0.9177808032604751,
+    "q_minus_Ku_rms_deg": 6.518378264488039
+  }
+}

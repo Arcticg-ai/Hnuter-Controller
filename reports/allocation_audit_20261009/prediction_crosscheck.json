@@ -1,0 +1,7 @@
+{
+  "h1_model_rmse_N": 1.5828196165542148,
+  "h1_motion_rmse_N": 2.9505789135150358,
+  "h2_model_rmse_N": 3.5996997106156368,
+  "h2_motion_rmse_N": 3.5589451254020426,
+  "caveat": "Offline 0.14 s Savitzky-Golay velocity derivative; not a force sensor or aerodynamic rotor-wrench ground truth."
+}

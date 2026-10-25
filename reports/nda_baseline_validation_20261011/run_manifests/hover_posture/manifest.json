@@ -1,0 +1,122 @@
+{
+  "created_at_unix_s": 1791722439.7514174,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "53266349b9c65001b72e8f2d437b7340c8c4756f",
+    "branch": "codex/payload-selfcalibration-20261010",
+    "describe": "hnuter-servo-pwm-gear-20260804-11-g53266349",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "validation_policy": "no_delay_only",
+    "forbidden_actuator_tokens": [],
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "6e35ba30efbe2db717b9e62449db33b78a64fca1",
+  "controller_worktree_dirty": true,
+  "experiment": "physical_gate_fixed_attitude_minimum_jerk_A_B_A_C",
+  "methods": [
+    "paper_nda"
+  ],
+  "switch_durations_s": [
+    3.0
+  ],
+  "half_span_m": 0.0,
+  "altitude_m": 1.5,
+  "dwell_s": 0.0,
+  "repeats": 1,
+  "thresholds": {
+    "position_peak_m": 0.75,
+    "attitude_peak_deg": 8.0,
+    "roll_pitch_peak_deg": 5.0,
+    "minimum_altitude_m": 0.5,
+    "gate_clearance_m": 0.05,
+    "feedback_ratio": 0.95,
+    "target_span_m": 0.0,
+    "gate_enabled": false
+  },
+  "pure_delay_model_used": false,
+  "gazebo_gui": false,
+  "cases": [
+    {
+      "method": "paper_nda",
+      "switch_duration_s": 3.0,
+      "dwell_s": 0.0,
+      "span_m": 0.0,
+      "status": "complete",
+      "error": "",
+      "metrics": {
+        "row_count": 925,
+        "transition_row_count": 385,
+        "evaluation_row_count": 601,
+        "evaluation_window": "first_segment_through_final_hold",
+        "position_metric": "3D_Euclidean",
+        "position_error_rms_m": 0.05251122642098507,
+        "position_error_peak_m": 0.08033700162243768,
+        "attitude_error_rms_deg": 0.31596064958683356,
+        "attitude_error_peak_deg": 0.6930809434038046,
+        "roll_pitch_peak_deg": 0.41801707885467754,
+        "yaw_rate_peak_rad_s": 0.030227791517972946,
+        "minimum_altitude_m": 1.486918419599533,
+        "joint_feedback_ratio": 1.0,
+        "joint_tracking_error_rms_rad": 0.007903957538157686,
+        "joint_tracking_error_peak_rad": 0.034581805065848015,
+        "reachable_wrench_residual_rms": 0.08336300715613067,
+        "pre_reversal_servo_reduction_rad": -4.821542392600964e-05,
+        "gate_sample_count": 601,
+        "minimum_gate_clearance_m": 0.2926368805766105,
+        "reached_b": true,
+        "returned_to_gate_a": true,
+        "reached_c": true,
+        "target_acceptance_radius_m": 0.2,
+        "final_armed": true,
+        "safety_cutoff": false,
+        "prediction_h1_sample_count": 0,
+        "prediction_h1_fy_rmse_n": NaN,
+        "prediction_h1_wrench_rmse": NaN,
+        "prediction_h1_objective_rmse": NaN,
+        "prediction_h2_sample_count": 0,
+        "prediction_h2_fy_rmse_n": NaN,
+        "prediction_h2_wrench_rmse": NaN,
+        "prediction_h2_objective_rmse": NaN,
+        "passed": true,
+        "failures": []
+      },
+      "gate": {
+        "spawned": false,
+        "collision_enabled": false,
+        "reason": "open-world qualification/comparison"
+      },
+      "duration_wall_s": 49.85218138399978,
+      "csv": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/runs/hover_posture/repeat_1/runs/T_3p0/paper_nda/logs/external_control/experiments/fixed_attitude_switching/paper_nda/switching_1791722463.csv",
+      "ulog_source": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/rootfs/log/2026-10-11/12_40_51.ulg",
+      "tuning": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/runs/hover_posture/repeat_1/runs/T_3p0/paper_nda/effective_tuning.json",
+      "servo_model": "gazebo_joint_pid_no_delay",
+      "pure_delay_model_used": false,
+      "common_prelude": true,
+      "joint_model_profile": "zero_gravity_step",
+      "allocation_audit": {
+        "bounded_solver": false,
+        "immediate_objective": false,
+        "future_reference": false,
+        "nda_gain": 12.0,
+        "nda_nullspace_gain": 2.0,
+        "nda_posture_gain": 2.0,
+        "nda_inversion": "sampled",
+        "servo_physical_rate_rad_s": 10.0,
+        "servo_command_rate_rad_s": 50.0,
+        "feedback": "measured_joint_pose; model_estimated_motor_force",
+        "nda_scope": "Eq7-14 force-coordinate adaptation; no PDA power curves"
+      },
+      "repeat": 1
+    }
+  ],
+  "minimum_valid_switch_time_s": {
+    "direct": null,
+    "basic_da": null,
+    "full": null,
+    "no_horizon": null,
+    "no_preview": null,
+    "no_nearfield": null,
+    "with_nearfield": null,
+    "paper_nda": 3.0
+  }
+}

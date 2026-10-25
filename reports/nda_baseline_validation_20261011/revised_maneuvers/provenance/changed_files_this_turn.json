@@ -1,0 +1,11 @@
+[
+  "controllers/experiments/drcda_closed_loop/feedback.py",
+  "controllers/experiments/maneuver_revision.py",
+  "controllers/experiments/sdf_wrench_model.py",
+  "controllers/simulation/hnuter_external_direct_controller_debug.py",
+  "tests/experiments/test_drcda_closed_loop.py",
+  "tests/experiments/test_maneuver_revision.py",
+  "tests/experiments/test_sdf_wrench_model.py",
+  "tools/experiments/run_maneuver_revision.py",
+  "tools/experiments/run_maneuver_validation.py"
+]

@@ -1,0 +1,19 @@
+{
+  "formal_runs": 40,
+  "identical_outer_runtime": true,
+  "identical_allocator_physical_models": true,
+  "identical_command_rate_caps": true,
+  "identical_controller_source": true,
+  "final_source_matches_runs": true,
+  "csv_hashes_verified": true,
+  "actual_ulog_firmware_versions_verified": true,
+  "firmware_head": "53266349b9c65001b72e8f2d437b7340c8c4756f",
+  "identical_landing_detection_parameters": true,
+  "firmware_clean": true,
+  "pure_delay_model_used": false,
+  "limitations": [
+    "Direct and differential allocators have different update intervals",
+    "Identified actuator model is approximate; motor thrust is not measured",
+    "Only two repeats per condition"
+  ]
+}

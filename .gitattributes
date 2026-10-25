@@ -1,0 +1,5 @@
+# Generated figure coordinates and archived diffs must retain their exact bytes.
+reports/**/*.svg -whitespace
+reports/**/*.patch -whitespace
+# This historical report is checksum-covered; retain its original EOF spacing.
+reports/nda_baseline_validation_20261011/extended_maneuvers/README.md -whitespace

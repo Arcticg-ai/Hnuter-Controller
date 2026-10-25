@@ -1,0 +1,65 @@
+{
+  "evaluated_run_counts": {
+    "formal": 18,
+    "landing_only": 2,
+    "pilot_raw": 4,
+    "pilot_smooth": 4,
+    "matched": 12,
+    "geometry_pilot": 4,
+    "geometry_strong_pilot": 3,
+    "unit_gain_pilot": 3,
+    "isotropic_pilot": 3,
+    "final_qualification": 2
+  },
+  "total": 55,
+  "incomplete_excluded": 4,
+  "formal_same_outer": true,
+  "formal_same_constraints": true,
+  "formal_same_controller_sources": true,
+  "current_sources_match_formal": true,
+  "firmware_and_sdf_match_formal": true,
+  "all_formal_direct_actuator": true,
+  "no_internal_px4_control_or_allocation": true,
+  "elevated_landing_disarms_formal": 0,
+  "one_step_observed_horizons": [
+    {
+      "path": "data/attitude_80_180/repeat_1/no_horizon/diagnostic.csv",
+      "h1_s": [
+        0.01
+      ]
+    },
+    {
+      "path": "data/lissajous_5/repeat_1/no_horizon/diagnostic.csv",
+      "h1_s": [
+        0.01
+      ]
+    },
+    {
+      "path": "data/lissajous_7/repeat_1/no_horizon/diagnostic.csv",
+      "h1_s": [
+        0.01
+      ]
+    }
+  ],
+  "source_change_list": [
+    "controllers/experiments/drcda_closed_loop/feedback.py",
+    "controllers/experiments/maneuver_revision.py",
+    "controllers/experiments/sdf_wrench_model.py",
+    "controllers/simulation/hnuter_external_direct_controller_debug.py",
+    "tests/experiments/test_drcda_closed_loop.py",
+    "tests/experiments/test_maneuver_revision.py",
+    "tests/experiments/test_sdf_wrench_model.py",
+    "tools/experiments/run_maneuver_revision.py",
+    "tools/experiments/run_maneuver_validation.py"
+  ],
+  "limitations": [
+    "one repetition per formal condition",
+    "not identical allocation update frequency",
+    "raw ULogs retained at source; reduced data archived",
+    "hardware not qualified"
+  ],
+  "tests_passed": 231,
+  "offline_replay_without_raw_ulog": true,
+  "cpp_landing_guard_assertions_passed": true,
+  "git_diff_check_passed": true
+}

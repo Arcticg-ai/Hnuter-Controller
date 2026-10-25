@@ -1,0 +1,110 @@
+{
+  "raw_ulogs_verified": 18,
+  "unchanged_firmware_hashes": {
+    "src/modules/simulation/gz_bridge/GZBridge.cpp": true,
+    "src/modules/simulation/gz_bridge/server.config": true,
+    "Tools/simulation/gz/server.config": true,
+    "Tools/simulation/gz/models/hnuter/model.sdf": true,
+    "src/modules/land_detector/MulticopterLandDetector.cpp": true,
+    "src/modules/land_detector/MulticopterLandDetector.h": true,
+    "src/modules/land_detector/HnuterDirectLandingGuard.hpp": true,
+    "build/px4_sitl_default/bin/px4": true
+  },
+  "regression_tests": 109,
+  "pdf_count": 18,
+  "figures_per_style": 8,
+  "png_dpi": 450,
+  "pdf_checks": [
+    {
+      "file": "publication_figures/SR/01_lissajous_7_comparison.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/02_lissajous_5_comparison.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/03_lissajous_7_ablation.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/04_lissajous_5_ablation.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/05_large_attitude_comparison.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/06_large_attitude_ablation.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/07_large_attitude_holds.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR/08_summary.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/SR_postfix_comparison.pdf",
+      "pages": 8,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/01_lissajous_7_comparison.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/02_lissajous_5_comparison.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/03_lissajous_7_ablation.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/04_lissajous_5_ablation.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/05_large_attitude_comparison.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/06_large_attitude_ablation.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/07_large_attitude_holds.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO/08_summary.pdf",
+      "pages": 1,
+      "text_in_page": true
+    },
+    {
+      "file": "publication_figures/TRO_postfix_comparison.pdf",
+      "pages": 8,
+      "text_in_page": true
+    }
+  ],
+  "scope": "Text-boundary checks supplement the separately inspected PDF raster previews."
+}

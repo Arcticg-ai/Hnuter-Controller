@@ -1,0 +1,12 @@
+{
+  "/home/hnuter/px4_ws_ros2_consolidated": {
+    "commit": "6e35ba30efbe2db717b9e62449db33b78a64fca1",
+    "branch": "codex/consolidate-main-20260830",
+    "status": " M controllers/common/hnuter_drcda.py\n M controllers/experiments/drcda_closed_loop/controller.py\n M controllers/experiments/drcda_closed_loop/feedback.py\n M controllers/experiments/drcda_v2/allocator.py\n M controllers/experiments/fixed_attitude_switching/controller.py\n M controllers/simulation/hnuter_external_direct_controller_debug.py\n M controllers/simulation/hnuter_external_direct_drcda.py\n M tests/experiments/test_drcda_closed_loop.py\n M tools/experiments/run_fixed_attitude_switching.py\n?? config/experiments/gazebo_loaded_joint_response.json\n?? controllers/experiments/fixed_attitude_switching/audit_allocator.py\n?? controllers/experiments/maneuver_revision.py\n?? controllers/experiments/maneuver_validation.py\n?? controllers/experiments/sdf_wrench_model.py\n?? reports/allocation_audit_20261009/\n?? reports/nda_baseline_validation_20261011/\n?? reports/physical_gate_fixed_attitude_20261002/predictive_upgrade/detailed_figures/\n?? tests/experiments/test_allocation_audit.py\n?? tests/experiments/test_maneuver_revision.py\n?? tests/experiments/test_maneuver_validation.py\n?? tests/experiments/test_nda_sampled.py\n?? tests/experiments/test_sdf_wrench_model.py\n?? tools/experiments/analyze_allocation_audit.py\n?? tools/experiments/fit_gazebo_joint_response.py\n?? tools/experiments/run_maneuver_revision.py\n?? tools/experiments/run_maneuver_validation.py\n?? tools/plotting/plot_predictive_drcda_detail.py\n"
+  },
+  "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl": {
+    "commit": "53266349b9c65001b72e8f2d437b7340c8c4756f",
+    "branch": "codex/payload-selfcalibration-20261010",
+    "status": " M src/modules/land_detector/MulticopterLandDetector.cpp\n M src/modules/land_detector/MulticopterLandDetector.h\n?? src/modules/land_detector/HnuterDirectLandingGuard.hpp\n"
+  }
+}

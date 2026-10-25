@@ -1,0 +1,102 @@
+{
+  "environment": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "HNUTER_NDA_GAIN": "12",
+    "HNUTER_NDA_POSTURE_GAIN": "2",
+    "HNUTER_NDA_NULL_GAIN": "2",
+    "HNUTER_NDA_INVERSION": "sampled",
+    "HNUTER_SWITCH_COMMON_PRELUDE": "1",
+    "HNUTER_SWITCH_COMMON_AW_GAIN": "0",
+    "HNUTER_DRCDA_REACTION_RATIO_M": "0.016"
+  },
+  "plan": [
+    [
+      "qualification_hover_common",
+      [
+        "--method",
+        "paper_nda",
+        "--duration",
+        "3",
+        "--span",
+        "0",
+        "--post-hold",
+        "10",
+        "--position-peak-limit",
+        ".15",
+        "--attitude-peak-limit-deg",
+        "3",
+        "--roll-pitch-peak-limit-deg",
+        "3"
+      ],
+      true
+    ],
+    [
+      "qualification_low_common",
+      [
+        "--method",
+        "paper_nda",
+        "--duration",
+        "3",
+        "--span",
+        ".4",
+        "--post-hold",
+        "5",
+        "--position-peak-limit",
+        ".25",
+        "--attitude-peak-limit-deg",
+        "5",
+        "--roll-pitch-peak-limit-deg",
+        "3"
+      ],
+      true
+    ],
+    [
+      "comparison_common",
+      [
+        "--method",
+        "paper_nda",
+        "--method",
+        "full",
+        "--method",
+        "direct",
+        "--method",
+        "no_preview",
+        "--method",
+        "no_horizon",
+        "--duration",
+        "2.0",
+        "--duration",
+        "1.5",
+        "--duration",
+        "1.1",
+        "--span",
+        "1.2",
+        "--post-hold",
+        "5"
+      ],
+      false
+    ],
+    [
+      "nda_ablations",
+      [
+        "--method",
+        "paper_nda_no_posture",
+        "--method",
+        "paper_nda_continuous",
+        "--duration",
+        "3",
+        "--span",
+        "0",
+        "--post-hold",
+        "10",
+        "--position-peak-limit",
+        ".15",
+        "--attitude-peak-limit-deg",
+        "3",
+        "--roll-pitch-peak-limit-deg",
+        "3"
+      ],
+      false
+    ]
+  ]
+}

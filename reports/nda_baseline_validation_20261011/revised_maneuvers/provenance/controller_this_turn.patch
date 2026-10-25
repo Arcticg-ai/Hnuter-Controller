@@ -1,0 +1,524 @@
+--- before/controllers/experiments/drcda_closed_loop/feedback.py
++++ after/controllers/experiments/drcda_closed_loop/feedback.py
+@@ -30,6 +30,15 @@
+ 
+ def _inverse(q: np.ndarray) -> np.ndarray:
+     return q * np.array([1.0, -1.0, -1.0, -1.0])
++
++
++def continuous_joint_angles(wrapped, previous):
++    """Preserve the physical branch across pi for joints allowed past 180 deg."""
++    wrapped = np.asarray(wrapped, dtype=float)
++    if previous is None:
++        return wrapped.copy()
++    delta = wrapped - previous
++    return previous + np.arctan2(np.sin(delta), np.cos(delta))
+ 
+ 
+ class JointAngleFeedback:
+@@ -90,7 +99,7 @@
+                 self._zero = self.relative_zero(poses)
+             angles = self.angles_from_poses(poses, self._zero)
+             if np.all(np.isfinite(angles)):
+-                self._angles = angles
++                self._angles = continuous_joint_angles(angles, self._angles)
+                 self._received_at = time.monotonic()
+ 
+     def stop_calibration(self) -> None:
+--- before/controllers/experiments/maneuver_revision.py
++++ after/controllers/experiments/maneuver_revision.py
+@@ -0,0 +1,142 @@
++"""No-delay matched follow-up: qualified handover and near-term balance."""
++import json
++import os
++from pathlib import Path
++
++import numpy as np
++import rclpy
++
++from controllers.experiments.maneuver_validation import ManeuverMixin
++from controllers.experiments.fixed_attitude_switching.controller import (
++    FixedAttitudeSwitchingMixin, controller_class,
++)
++
++
++def phase_clock(t, period, ramp):
++    """C2 phase clock; retain the original interior speed, add ramp seconds."""
++    if ramp <= 0:
++        return float(np.clip(t, 0, period)), float(0 <= t < period), 0.
++    if t <= 0:
++        return 0., 0., 0.
++    if t >= period+ramp:
++        return period, 0., 0.
++    if t < ramp:
++        s=t/ramp
++        return ramp*(s**3-.5*s**4), 3*s*s-2*s**3, (6*s-6*s*s)/ramp
++    if t < period:
++        return t-ramp/2, 1., 0.
++    s=(t-period)/ramp
++    return period-ramp/2+ramp*(s-s**3+.5*s**4), 1-3*s*s+2*s**3, (-6*s+6*s*s)/ramp
++
++
++class RevisedManeuverMixin(ManeuverMixin):
++    def __init__(self):
++        super().__init__()
++        self.attitude_segment_time_s = float(os.environ.get('HNUTER_REV_TILT_S','15'))
++        self.attitude_peak_hold_s = 5.
++        self.attitude_level_settle_s = 5.
++        if self.maneuver_attitude:
++            self.attitude_step_axis_rad = np.radians(
++                [*map(float,self.maneuver_scenario.split('_')[1:]),0.])
++        self.switch_settle_s = 5.
++        self.revision_ramp_s = float(os.environ.get('HNUTER_REV_RAMP_S','0.75'))
++        self.revision_early_handover = os.environ.get('HNUTER_REV_EARLY_HANDOVER','1')=='1'
++        self.revision_sdf_geometry = os.environ.get('HNUTER_REV_SDF_GEOMETRY','1')=='1'
++        if self.revision_sdf_geometry:
++            from controllers.experiments.sdf_wrench_model import SDFWrenchModel
++            sdf = '/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf'
++            self.revision_wrench_model = SDFWrenchModel(sdf)
++            positions = self.revision_wrench_model.positions
++            self.l1 = float((positions[:2,1].mean()-positions[2:4,1].mean())/2)
++            self.l2 = float(-positions[4,0])
++            self.allocator_front_x_m = float(positions[:4,0].mean())
++            self.allocator_front_z_m = float(positions[:4,2].mean())
++            if hasattr(self,'drcda'):
++                self.drcda.model = self.revision_wrench_model
++                if hasattr(self.drcda,'hover_front_thrust'):
++                    self.drcda.hover_front_thrust = self.mass*self.gravity*self.l2/(4*(self.allocator_front_x_m+self.l2))
++        near = float(os.environ.get('HNUTER_REV_NEAR_GAIN','0.25'))
++        if hasattr(self,'drcda'):
++            self.drcda.config.immediate_wrench_weight[:] = (
++                np.array([0.,0.,2.,12.,12.,6.])*near
++                if self._switch_method not in {'paper_nda','no_nearfield'} else np.zeros(6))
++        self._record_revision()
++
++    def _record_revision(self):
++        from dataclasses import asdict
++        path = Path(os.environ['HNUTER_LOG_DIR'])/'runtime_config.json'
++        data = json.loads(path.read_text())
++        data['allocator'] = asdict(self.drcda.config) if hasattr(self,'drcda') else None
++        data['trajectory'] = dict(tilt_s=self.attitude_segment_time_s,
++            peak_hold_s=self.attitude_peak_hold_s,level_settle_s=self.attitude_level_settle_s,
++            attitude_amplitudes_deg=np.degrees(self.attitude_step_axis_rad),
++            phase_ramp_s=self.revision_ramp_s,allocator_settle_s=self.switch_settle_s,
++            early_handover=self.revision_early_handover,takeoff_guard_end_s=12.5)
++        data['direct_output'] = dict(position=self._use_px4_position_mode(),
++            allocator_setpoints=self.publish_allocator_setpoints_in_direct,
++            landing_hint=self.publish_land_detector_thrust_setpoint)
++        data['geometry'] = dict(sdf_articulated=self.revision_sdf_geometry,
++            nominal_arm_half_span_m=self.l1,nominal_tail_x_m=-self.l2,
++            nominal_front_x_m=getattr(self,'allocator_front_x_m',.105),
++            nominal_front_z_m=getattr(self,'allocator_front_z_m',-.013))
++        path.write_text(json.dumps(data,indent=2,default=lambda x:x.tolist() if isinstance(x,np.ndarray) else x.item())+'\n')
++
++    def _start_auto_trajectory(self,mode,current_time):
++        super()._start_auto_trajectory(mode,current_time)
++        if mode=='lissajous':
++            elapsed=current_time-self._takeoff_lock_start_time_s
++            self.switch_settle_s=max(5.,12.5-elapsed-self.switch_ingress_s)
++            self._record_revision()
++
++    def _attitude_phase(self,t):
++        move,hold,settle=self.attitude_segment_time_s,self.attitude_peak_hold_s,self.attitude_level_settle_s
++        cycle=2*move+hold+settle
++        if t>=4*cycle: return 'complete'
++        axis=('roll_pos','pitch_pos','roll_neg','pitch_neg')[int(t//cycle)]
++        s=t%cycle
++        phase='out' if s<move else 'hold' if s<move+hold else 'return' if s<2*move+hold else 'level'
++        return f'{axis}_{phase}'
++
++    def _switch_reference(self,elapsed):
++        prelude=self.switch_ingress_s+self.switch_settle_s
++        if elapsed<prelude:
++            return FixedAttitudeSwitchingMixin._switch_reference(self,elapsed)
++        t=elapsed-prelude
++        if self.maneuver_attitude:
++            phase=self._attitude_phase(t)
++            return self._switch_a.copy(),np.zeros(3),np.zeros(3),phase,phase=='complete'
++        f,fd,fdd=phase_clock(t,self.lissajous_period_s,self.revision_ramp_s)
++        p,v,a,_=self._lissajous_reference(f)
++        done=t>=self.lissajous_period_s+self.revision_ramp_s
++        return p,v*fd,a*fd*fd+v*fdd,'complete' if done else 'lissajous',done
++
++    def publish_direct_actuator_setpoint(self,*args,**kwargs):
++        if (self.revision_early_handover and self.armed and self.auto_traj_mode=='fixed_switch'
++                and self._switch_elapsed_s>=self.switch_ingress_s):
++            self._switch_allocator_engaged=True
++        return super().publish_direct_actuator_setpoint(*args,**kwargs)
++
++    def _finish_switching(self):
++        # A reference ending is not an estimator reset; retain trim integrals.
++        pos,att=self.integral_pos_error.copy(),self.integral_e_R.copy()
++        previous_quaternion=self._attitude_error_quaternion
++        super()._finish_switching()
++        self.integral_pos_error[:]=pos
++        self.integral_e_R[:]=att
++        self._attitude_error_quaternion=previous_quaternion
++
++
++def main():
++    rclpy.init()
++    cls=type('RevisedManeuverController',(RevisedManeuverMixin,controller_class(os.environ['HNUTER_SWITCH_METHOD'])),{})
++    controller=cls()
++    try:
++        rclpy.spin(controller)
++    except KeyboardInterrupt:
++        pass
++    finally:
++        controller.destroy_node()
++        if rclpy.ok():rclpy.shutdown()
++
++
++if __name__=='__main__':main()
+--- before/controllers/experiments/sdf_wrench_model.py
++++ after/controllers/experiments/sdf_wrench_model.py
+@@ -0,0 +1,108 @@
++"""SITL-only articulated rotor geometry read from the actual no-delay SDF.
++
++This is an external rotor wrench model about the assembly COM, not a model
++of joint reaction inertia, aerodynamic drag, or flexible-body dynamics.
++"""
++from pathlib import Path
++import xml.etree.ElementTree as ET
++
++import numpy as np
++
++from controllers.common.hnuter_drcda import HnuterWrenchModel
++
++
++def rotation_y(angle):
++    c,s=np.cos(angle),np.sin(angle)
++    return np.array([[c,0,s],[0,1,0],[-s,0,c]])
++
++
++def rotation_y_derivative(angle):
++    c,s=np.cos(angle),np.sin(angle)
++    return np.array([[-s,0,c],[0,0,0],[-c,0,-s]])
++
++
++def pose(element):
++    p=element.find('pose')
++    values=np.zeros(6) if p is None else np.fromstring(p.text,sep=' ')
++    if values.shape!=(6,):raise ValueError('SDF pose must have six entries')
++    r,pitch,y=values[3:]
++    cr,sr,cy,sy=np.cos(r),np.sin(r),np.cos(y),np.sin(y)
++    rx=np.array([[1,0,0],[0,cr,-sr],[0,sr,cr]])
++    rz=np.array([[cy,-sy,0],[sy,cy,0],[0,0,1]])
++    return values[:3],rz@rotation_y(pitch)@rx
++
++
++class SDFWrenchModel(HnuterWrenchModel):
++    ROTORS=('xy3','xy4','xy1','xy2','xy5')
++    TILTS={'lj2':0,'lj1':1,'rj2':2,'rj1':3}
++
++    def __init__(self,path):
++        self.path=Path(path)
++        model=ET.parse(self.path).getroot().find('model')
++        self.frames=[];self.inertials=[]
++        known={'base_link'}
++        pending=[e for e in model if e.tag in ('link','joint') and e.get('name')!='base_link']
++        while pending:
++            ready=[]
++            for e in pending:
++                pe=e.find('pose');parent=pe.get('relative_to') if pe is not None else None
++                if parent not in known:continue
++                t,r=pose(e);name=e.get('name')
++                index=self.TILTS.get(name)
++                if index is not None:
++                    axis=np.fromstring(e.findtext('axis/xyz'),sep=' ')
++                    if not np.allclose(r@axis,[0,1,0],atol=1e-7):
++                        raise ValueError('joint feedback coordinates no longer match SDF')
++                self.frames.append((name,parent,t,r,index));known.add(name);ready.append(e)
++            if not ready:raise ValueError('unresolved SDF frame graph')
++            pending=[e for e in pending if e not in ready]
++        for link in model.findall('link'):
++            inertia=link.find('inertial');mass=float(inertia.findtext('mass'))
++            offset,_=pose(inertia)
++            self.inertials.append((link.get('name'),mass,offset))
++        self.mass=sum(i[1] for i in self.inertials)
++        plugins={p.findtext('linkName'):p for p in model.findall('plugin') if p.find('motorNumber') is not None}
++        self.reaction_ratios=np.array([float(plugins[n].findtext('momentConstant')) for n in self.ROTORS])
++        # Gazebo reaction opposes the propeller spin in its local thrust axis.
++        self.spin_sign=np.array([-1. if plugins[n].findtext('turningDirection')=='ccw' else 1. for n in self.ROTORS])
++        self.reaction_torque_ratio_m=float(self.reaction_ratios[0])
++        self.positions,self.zero_directions,_,_=self.geometry(np.zeros(4))
++
++    def geometry(self,angles):
++        states={'base_link':(np.eye(3),np.zeros(3),np.zeros((4,3,3)),np.zeros((4,3)))}
++        for name,parent,t,r,index in self.frames:
++            pr,pp,pdr,pdp=states[parent]
++            local=r if index is None else rotation_y(angles[index])@r
++            dr=pdr@local
++            if index is not None:dr[index]+=pr@rotation_y_derivative(angles[index])@r
++            states[name]=(pr@local,pp+pr@t,dr,pdp+pdr@t)
++        com=np.zeros(3);dcom=np.zeros((4,3))
++        for name,m,offset in self.inertials:
++            r,p,dr,dp=states[name]
++            com+=m*(p+r@offset);dcom+=m*(dp+dr@offset)
++        com/=self.mass;dcom/=self.mass
++        positions=[];directions=[];dpositions=[];ddirections=[]
++        for name in self.ROTORS:
++            r,p,dr,dp=states[name]
++            positions.append(p-com);directions.append(r[:,2])
++            dpositions.append(dp-dcom);ddirections.append(dr[:,:,2])
++        return tuple(np.asarray(a) for a in (positions,directions,dpositions,ddirections))
++
++    def _effectiveness(self,angles):
++        p,d,dp,dd=self.geometry(angles)
++        reaction=(self.spin_sign*self.reaction_ratios)[:,None]
++        moments=np.cross(p,d)+reaction*d
++        dm=np.cross(dp,d[:,None,:])+np.cross(p[:,None,:],dd)+reaction[:,None,:]*dd
++        matrix=np.concatenate((d,moments),axis=1).T
++        derivatives=np.concatenate((dd,dm),axis=2).transpose(1,2,0)
++        return matrix,derivatives
++
++    def wrench(self,state):
++        state=np.asarray(state,dtype=float)
++        matrix,_=self._effectiveness(state[:4])
++        return matrix@state[4:]
++
++    def jacobian(self,state):
++        state=np.asarray(state,dtype=float)
++        matrix,derivatives=self._effectiveness(state[:4])
++        return np.column_stack(((derivatives@state[4:]).T,matrix))
+--- before/controllers/simulation/hnuter_external_direct_controller_debug.py
++++ after/controllers/simulation/hnuter_external_direct_controller_debug.py
+@@ -2758,8 +2758,8 @@
+ 
+         max_thrust_per_arm = 85.48 * 2.0
+         max_tail_thrust = 85.48
+-        r_x = 0.105
+-        r_z = -0.013
++        r_x = getattr(self, 'allocator_front_x_m', 0.105)
++        r_z = getattr(self, 'allocator_front_z_m', -0.013)
+ 
+         W = self._allocator_wrench_from_body_force_torque(f_body, tau_c)
+         if tilt_suppress_active or vertical_only_active:
+--- before/tests/experiments/test_drcda_closed_loop.py
++++ after/tests/experiments/test_drcda_closed_loop.py
+@@ -6,7 +6,17 @@
+ import pytest
+ 
+ from controllers.common.hnuter_drcda import DRCDAConfig, HnuterWrenchModel
+-from controllers.experiments.drcda_closed_loop.feedback import JointAngleFeedback
++from controllers.experiments.drcda_closed_loop.feedback import JointAngleFeedback, continuous_joint_angles
++
++
++@pytest.mark.parametrize('sign',[-1,1])
++def test_joint_feedback_retains_branch_across_180_degrees(sign):
++    previous=None
++    for deg in [0,90,170,179,181,185,181,179,170,90,0]:
++        actual=np.radians(np.array([deg,0,-deg,0])*sign)
++        wrapped=np.arctan2(np.sin(actual),np.cos(actual))
++        previous=continuous_joint_angles(wrapped,previous)
++        np.testing.assert_allclose(previous,actual,atol=1e-12)
+ from controllers.experiments.drcda_closed_loop.governor import (
+     MeasuredDRCDAAllocator,
+     ReachableWrenchContract,
+--- before/tests/experiments/test_maneuver_revision.py
++++ after/tests/experiments/test_maneuver_revision.py
+@@ -0,0 +1,66 @@
++import numpy as np
++import pytest
++
++from controllers.experiments.maneuver_revision import phase_clock,RevisedManeuverMixin
++from controllers.experiments.fixed_attitude_switching.controller import FixedAttitudeDirectController
++from tests.experiments.test_maneuver_validation import controller
++
++
++@pytest.mark.parametrize('period',[5.,7.])
++def test_clock_endpoints_and_interior_speed(period):
++    assert phase_clock(0,period,.75)==(0.,0.,0.)
++    assert phase_clock(period+.75,period,.75)==(period,0.,0.)
++    f,v,a=phase_clock(2.,period,.75)
++    assert v==1. and a==0.
++    assert f==2.-.375
++
++
++@pytest.mark.parametrize('t',[.2,.74999,.75,2.,5.,5.4,5.74999])
++def test_clock_derivatives(t):
++    h=1e-6
++    f,v,a=phase_clock(t,5.,.75)
++    fm,vm,_=phase_clock(t-h,5.,.75)
++    fp,vp,_=phase_clock(t+h,5.,.75)
++    np.testing.assert_allclose((fp-fm)/(2*h),v,atol=1e-5)
++    np.testing.assert_allclose((vp-vm)/(2*h),a,atol=1e-5)
++
++
++def revised_controller():
++    c=controller()
++    c.__class__=type('DummyRevision',(RevisedManeuverMixin,FixedAttitudeDirectController),{})
++    c.attitude_segment_time_s,c.attitude_peak_hold_s,c.attitude_level_settle_s=15.,5.,5.
++    c.revision_ramp_s=.75
++    return c
++
++
++def test_idle_keyword_actuator_call(monkeypatch):
++    from controllers.experiments.maneuver_validation import ManeuverMixin
++    monkeypatch.setattr(ManeuverMixin,'publish_direct_actuator_setpoint',
++                        lambda self,*args,**kwargs:kwargs['motor_controls'])
++    c=revised_controller()
++    c.revision_early_handover=True
++    c.armed=False
++    assert c.publish_direct_actuator_setpoint(motor_controls=[0.]*5,alpha1=0,
++        alpha2=0,theta1=0,theta2=0)==[0.]*5
++
++
++@pytest.mark.parametrize('t,phase',[(15,'roll_pos_hold'),(20,'roll_pos_return'),
++    (35,'roll_pos_level'),(40,'pitch_pos_out'),(160,'complete')])
++def test_restored_attitude_timing(t,phase):
++    assert revised_controller()._attitude_phase(t)==phase
++
++
++def test_cartesian_reference_c2_and_derivatives():
++    c=revised_controller()
++    for t in [4.,4.+7.75]:
++        p,v,a,_,_=c._switch_reference(t)
++        np.testing.assert_allclose(p,c._switch_a,atol=1e-10)
++        np.testing.assert_allclose(v,0,atol=1e-10)
++        np.testing.assert_allclose(a,0,atol=1e-10)
++    h=1e-5
++    for t in [4.2,5.7,11.3]:
++        pm,vm,*_=c._switch_reference(t-h)
++        pp,vp,*_=c._switch_reference(t+h)
++        _,v,a,*_=c._switch_reference(t)
++        np.testing.assert_allclose((pp-pm)/(2*h),v,atol=1e-7)
++        np.testing.assert_allclose((vp-vm)/(2*h),a,atol=1e-6)
+--- before/tests/experiments/test_sdf_wrench_model.py
++++ after/tests/experiments/test_sdf_wrench_model.py
+@@ -0,0 +1,39 @@
++from pathlib import Path
++
++import numpy as np
++import pytest
++
++from controllers.experiments.sdf_wrench_model import SDFWrenchModel
++
++SDF=Path('/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf')
++
++
++@pytest.fixture
++def model():
++    if not SDF.exists():pytest.skip('no local Hnuter SITL SDF')
++    return SDFWrenchModel(SDF)
++
++
++def test_zero_geometry_matches_actual_sdf(model):
++    assert model.mass==pytest.approx(4.5,abs=1e-6)
++    assert model.positions[:2,1].mean()-model.positions[2:4,1].mean()==pytest.approx(.82,abs=1e-5)
++    np.testing.assert_allclose(model.reaction_ratios,[.016]*4+[.02112])
++    np.testing.assert_allclose(model.zero_directions[2:],[ [0,0,1] ]*3,atol=1e-7)
++    assert model.zero_directions[0,1]==pytest.approx(.0593949,abs=1e-6)
++
++
++@pytest.mark.parametrize('angles',[[0,0,0,0],[.3,-.4,.2,.5],[1.4,1.0,-1.1,-.8],[3.,.8,-3.,-.7]])
++def test_full_geometry_jacobian(model,angles):
++    q=np.array([*angles,11.,9.,12.,8.,-2.])
++    numerical=np.column_stack([(model.wrench(q+np.eye(9)[j]*1e-6)
++                               -model.wrench(q-np.eye(9)[j]*1e-6))/(2e-6) for j in range(9)])
++    np.testing.assert_allclose(model.jacobian(q),numerical,rtol=1e-6,atol=1e-7)
++
++
++def test_rotor_axes_and_moment_arm_are_not_frozen(model):
++    p,d,dp,dd=model.geometry(np.array([.4,.8,-.2,.3]))
++    assert np.linalg.norm(p-model.positions)>.01
++    np.testing.assert_allclose(np.linalg.norm(d,axis=1),1,atol=1e-12)
++    np.testing.assert_allclose(d[0],d[1],atol=1e-7)
++    np.testing.assert_allclose(np.cross(p[2]-p[3],d[2]),0,atol=1e-7)
++    assert np.linalg.norm(dp)>.01 and np.linalg.norm(dd)>.1
+--- before/tools/experiments/run_maneuver_revision.py
++++ after/tools/experiments/run_maneuver_revision.py
+@@ -0,0 +1,63 @@
++"""Explicitly configured, no-delay-only revision experiments."""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import subprocess
++import sys
++
++ROOT=Path(__file__).resolve().parents[2]
++sys.path.insert(0,str(ROOT))
++from tools.experiments.run_maneuver_validation import run_case
++from tools.experiments.run_no_delay_maneuver_experiments import DEFAULT_FIRMWARE,firmware_metadata
++
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--output',type=Path,required=True)
++    p.add_argument('--method',action='append',choices=['direct','paper_nda','full','no_preview','no_horizon','no_nearfield'])
++    p.add_argument('--scenario',action='append',choices=['lissajous_7','lissajous_5','attitude_60_60','attitude_80_180'])
++    p.add_argument('--repeat',type=int,default=1)
++    p.add_argument('--ramp',type=float,default=.75)
++    p.add_argument('--near-gain',type=float,default=.25)
++    p.add_argument('--tilt-seconds',type=float,default=15.)
++    p.add_argument('--late-handover',action='store_true')
++    p.add_argument('--legacy-geometry',action='store_true')
++    p.add_argument('--gui',action='store_true')
++    p.add_argument('--controller-python',default='/home/hnuter/px4_ws_ros2/px4-venv/bin/python')
++    a=p.parse_args()
++    if a.ramp<0 or a.ramp>=5 or a.tilt_seconds<=0: p.error('invalid trajectory timing')
++    metadata=firmware_metadata(DEFAULT_FIRMWARE)
++    if metadata['dynamic_actuator_tokens_present']:raise SystemExit('Refusing delayed firmware')
++    a.output.mkdir(parents=True,exist_ok=False)
++    os.environ.update(OPENBLAS_NUM_THREADS='1',CCACHE_DISABLE='1',HNUTER_CONTROL_MODE='direct',
++        HNUTER_DIRECT_PUBLISH_ALLOCATOR_SETPOINTS='0',HNUTER_DIRECT_PUBLISH_THRUST_SETPOINT='1',
++        HNUTER_NDA_GAIN='12',HNUTER_NDA_NULL_GAIN='2',HNUTER_NDA_POSTURE_GAIN='2',HNUTER_NDA_INVERSION='sampled',
++        HNUTER_SWITCH_COMMON_PRELUDE='1',HNUTER_SWITCH_COMMON_AW_GAIN='0',HNUTER_DRCDA_REACTION_RATIO_M='0.016',
++        HNUTER_REV_RAMP_S=str(a.ramp),HNUTER_REV_NEAR_GAIN=str(a.near_gain),
++        HNUTER_REV_TILT_S=str(a.tilt_seconds),HNUTER_REV_EARLY_HANDOVER='0' if a.late_handover else '1')
++    os.environ['HNUTER_REV_SDF_GEOMETRY']='0' if a.legacy_geometry else '1'
++    os.environ.pop('HNUTER_SWITCH_JOINT_MODEL',None)
++    fw=Path(DEFAULT_FIRMWARE)
++    files=['src/modules/land_detector/MulticopterLandDetector.cpp',
++           'src/modules/land_detector/MulticopterLandDetector.h',
++           'src/modules/land_detector/HnuterDirectLandingGuard.hpp',
++           'Tools/simulation/gz/models/hnuter/model.sdf','build/px4_sitl_default/bin/px4']
++    manifest=dict(firmware=metadata,firmware_sha256={f:hashlib.sha256((fw/f).read_bytes()).hexdigest() for f in files},
++        firmware_diff=subprocess.check_output(['git','-C',str(fw),'diff'],text=True),
++        options=vars(a).copy(),cases=[])
++    manifest['options']['output']=str(a.output)
++    for s in a.scenario or ['lissajous_7','lissajous_5','attitude_80_180']:
++        for n in range(1,a.repeat+1):
++            methods=a.method or ['direct','paper_nda','full','no_preview','no_horizon','no_nearfield']
++            for m in methods if n%2 else reversed(methods):
++                r=run_case(a.output,s,m,n,a.gui,a.controller_python,
++                    'controllers.experiments.maneuver_revision',8*a.tilt_seconds+65 if s.startswith('attitude') else 40.)
++                manifest['cases'].append(r)
++                (a.output/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
++                if not r['csv'] or not r['metrics'].get('evaluated_duration_s'):
++                    raise SystemExit('Infrastructure failure: no evaluated samples')
++
++
++if __name__=='__main__':main()
+--- before/tools/experiments/run_maneuver_validation.py
++++ after/tools/experiments/run_maneuver_validation.py
+@@ -58,7 +58,8 @@
+     return r
+ 
+ 
+-def run_case(output, scenario, method, repeat, gui=False, controller_python=sys.executable):
++def run_case(output, scenario, method, repeat, gui=False, controller_python=sys.executable,
++             controller_module='controllers.experiments.maneuver_validation', task_timeout=None):
+     root = output/scenario/f'repeat_{repeat}'/method
+     root.mkdir(parents=True, exist_ok=False)
+     tuning = effective_tuning(root)
+@@ -82,7 +83,7 @@
+         env.update(HNUTER_LOG_DIR=str(root/'logs'), HNUTER_TUNING_FILE=str(tuning),
+                    HNUTER_SWITCH_METHOD=method, HNUTER_MANEUVER_SCENARIO=scenario,
+                    HNUTER_SWITCH_ALTITUDE_M='3.0', HNUTER_PREFLIGHT_TILT_TEST='0')
+-        controller = PtyProcess([controller_python, '-m', 'controllers.experiments.maneuver_validation'],
++        controller = PtyProcess([controller_python, '-m', controller_module],
+                                 ROOT, env, root/'console/controller.log')
+         processes = [agent, sitl, controller]
+         if not wait_for(processes, controller, '地面自检中', 30.):
+@@ -94,7 +95,7 @@
+         ok, _ = wait_for_marker_or_disarm(processes, controller, 'MANEUVER_START', 40.)
+         if not ok: raise RuntimeError('maneuver start failed')
+         finished, _ = wait_for_marker_or_disarm(processes, controller, 'MANEUVER_DONE',
+-                                               105. if scenario.startswith('attitude') else 30.)
++                                               task_timeout or (105. if scenario.startswith('attitude') else 30.))
+         if not finished: raise RuntimeError('maneuver finish failed')
+         drain_for(processes, 5.)
+     except Exception as exc:

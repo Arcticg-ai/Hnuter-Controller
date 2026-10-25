@@ -1,0 +1,244 @@
+{
+  "scenario": "lissajous_5",
+  "method": "full",
+  "outer": {
+    "direct_KR": [
+      5.0,
+      5.5,
+      14.0
+    ],
+    "direct_Domega": [
+      3.0,
+      3.2,
+      5.9
+    ],
+    "direct_attitude_Ki": [
+      0.03,
+      0.03,
+      0.02
+    ],
+    "direct_tau_limit": [
+      2.5,
+      2.8,
+      5.0
+    ],
+    "direct_pos_Kp_ned": [
+      4.0,
+      3.5,
+      8.0
+    ],
+    "direct_pos_Kd_ned": [
+      3.8,
+      3.2,
+      4.0
+    ],
+    "direct_pos_Ki_ned": [
+      0.15,
+      0.12,
+      3.0
+    ],
+    "max_acc_xy": 8.0,
+    "max_acc_z": 8.0,
+    "alpha_limit_rad": 3.2288591161895095,
+    "theta_limit_rad": 3.141592653589793,
+    "servo_rate_limit_rad_s": 50.0,
+    "tail_thrust_max_forward_n": 12.777084,
+    "tail_thrust_max_reverse_n": 6.01991
+  },
+  "allocator": {
+    "prediction_dt_s": 0.01,
+    "horizon_s": 0.1,
+    "gauss_newton_iterations": 2,
+    "wrench_error_gain": 6.0,
+    "wrench_ff_tau_s": 0.08,
+    "wrench_rate_weight": 0.06,
+    "wrench_scale": [
+      80.0,
+      80.0,
+      100.0,
+      12.0,
+      12.0,
+      12.0
+    ],
+    "wrench_weight": [
+      1.2,
+      1.2,
+      2.0,
+      3.0,
+      3.0,
+      2.5
+    ],
+    "command_move_weight": [
+      0.035,
+      0.05,
+      0.035,
+      0.05,
+      0.006,
+      0.006,
+      0.006,
+      0.006,
+      0.008
+    ],
+    "command_preference_weight": [
+      0.003,
+      0.004,
+      0.003,
+      0.004,
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.002
+    ],
+    "command_scale": [
+      3.141592653589793,
+      3.141592653589793,
+      3.141592653589793,
+      3.141592653589793,
+      25.0,
+      25.0,
+      25.0,
+      25.0,
+      12.777084
+    ],
+    "servo_gain_positive": [
+      0.9939,
+      0.9018,
+      0.994,
+      0.9152
+    ],
+    "servo_gain_negative": [
+      0.994,
+      0.9119,
+      0.994,
+      0.9042
+    ],
+    "servo_tau_positive_s": [
+      0.1384,
+      0.0891,
+      0.1408,
+      0.092
+    ],
+    "servo_tau_negative_s": [
+      0.1396,
+      0.0874,
+      0.1422,
+      0.0868
+    ],
+    "servo_delay_positive_s": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "servo_delay_negative_s": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "servo_rate_positive_rad_s": [
+      10.0,
+      10.0,
+      10.0,
+      10.0
+    ],
+    "servo_rate_negative_rad_s": [
+      10.0,
+      10.0,
+      10.0,
+      10.0
+    ],
+    "servo_state_limit_rad": [
+      3.2288591161895095,
+      3.141592653589793,
+      3.2288591161895095,
+      3.141592653589793
+    ],
+    "servo_command_limit_rad": [
+      3.2288591161895095,
+      3.141592653589793,
+      3.2288591161895095,
+      3.141592653589793
+    ],
+    "servo_command_rate_rad_s": [
+      50.0,
+      50.0,
+      50.0,
+      50.0
+    ],
+    "thrust_min_n": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      -6.01991
+    ],
+    "thrust_max_n": [
+      25.0,
+      25.0,
+      25.0,
+      25.0,
+      12.777084
+    ],
+    "thrust_command_rate_n_s": [
+      2500.0,
+      2500.0,
+      2500.0,
+      2500.0,
+      100.0
+    ],
+    "motor_tau_up_s": [
+      0.001,
+      0.001,
+      0.001,
+      0.001,
+      0.05
+    ],
+    "motor_tau_down_s": [
+      0.002,
+      0.002,
+      0.002,
+      0.002,
+      0.05
+    ],
+    "motor_force_rate_floor_n_s": 50.0,
+    "motor_force_rate_cap_n_s": 6000.0,
+    "antiwindup_gain": 0.0,
+    "bounded_solver": true,
+    "immediate_wrench_weight": [
+      0.0,
+      0.0,
+      2.0,
+      12.0,
+      12.0,
+      6.0
+    ]
+  },
+  "shared_force_command_rate_n_s": [
+    2500.0,
+    2500.0,
+    2500.0,
+    2500.0,
+    100.0
+  ],
+  "trajectory": {
+    "tilt_s": 15.0,
+    "peak_hold_s": 5.0,
+    "level_settle_s": 5.0,
+    "attitude_amplitudes_deg": [
+      80.0,
+      119.99999999999999,
+      0.0
+    ],
+    "phase_ramp_s": 0.0,
+    "allocator_settle_s": 5.0,
+    "early_handover": true,
+    "takeoff_guard_end_s": 12.5
+  },
+  "direct_output": {
+    "position": false,
+    "allocator_setpoints": false,
+    "landing_hint": true
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "total_result_records": 58,
+  "formal_records": 39,
+  "expected_counts": {
+    "qualification_hover_common": 2,
+    "qualification_low_common": 2,
+    "comparison_common": 30,
+    "nda_ablations": 4,
+    "qualification_hover_long": 1
+  },
+  "tuning_sha256": "4dc8283df7ec0e0d28414ed3388972ef057e7ba0f2541fcc346f4424683af2bf",
+  "controller_sources_identical": true,
+  "controller_sources_match_final": true,
+  "archived_csv_hashes_verified": true,
+  "firmware_commit": "53266349b9c65001b72e8f2d437b7340c8c4756f",
+  "firmware_ulog_versions_verified": true,
+  "firmware_worktree_clean": true,
+  "pure_delay_used": false
+}

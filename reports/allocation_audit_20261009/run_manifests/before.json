@@ -1,0 +1,161 @@
+{
+  "created_at_unix_s": 1791538472.0246613,
+  "firmware": {
+    "path": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl",
+    "commit": "49b60a5d8775655c1e6a9be722f76e9e4ab2517b",
+    "branch": "hnuter-tail-motor-bench-sitl-20260812",
+    "describe": "hnuter-servo-pwm-gear-20260804-8-g49b60a5d",
+    "model_sdf": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/Tools/simulation/gz/models/hnuter/model.sdf",
+    "validation_policy": "no_delay_only",
+    "forbidden_actuator_tokens": [],
+    "dynamic_actuator_tokens_present": false
+  },
+  "controller_commit": "6e35ba30efbe2db717b9e62449db33b78a64fca1",
+  "controller_worktree_dirty": true,
+  "experiment": "physical_gate_fixed_attitude_minimum_jerk_A_B_A_C",
+  "methods": [
+    "full",
+    "direct"
+  ],
+  "switch_durations_s": [
+    1.0
+  ],
+  "half_span_m": 1.2,
+  "altitude_m": 1.5,
+  "thresholds": {
+    "position_peak_m": 0.75,
+    "attitude_peak_deg": 8.0,
+    "roll_pitch_peak_deg": 5.0,
+    "minimum_altitude_m": 0.5,
+    "gate_clearance_m": 0.05,
+    "feedback_ratio": 0.95
+  },
+  "pure_delay_model_used": false,
+  "gazebo_gui": false,
+  "cases": [
+    {
+      "method": "full",
+      "switch_duration_s": 1.0,
+      "status": "failed",
+      "error": "roll/pitch peak 6.797 > 5.000",
+      "metrics": {
+        "row_count": 584,
+        "transition_row_count": 129,
+        "position_error_rms_m": 0.1267120991152434,
+        "position_error_peak_m": 0.2054155996028255,
+        "attitude_error_rms_deg": 4.267454120391219,
+        "attitude_error_peak_deg": 7.1132897168798825,
+        "roll_pitch_peak_deg": 6.796771535896803,
+        "yaw_rate_peak_rad_s": 0.24736902117729187,
+        "minimum_altitude_m": 1.2279620468616486,
+        "joint_feedback_ratio": 1.0,
+        "joint_tracking_error_rms_rad": 0.23700044624610803,
+        "joint_tracking_error_peak_rad": 0.4831059909432394,
+        "reachable_wrench_residual_rms": 7.259299472915523,
+        "pre_reversal_servo_reduction_rad": 0.38793318623245465,
+        "gate_sample_count": 208,
+        "minimum_gate_clearance_m": 0.2843588832020759,
+        "reached_b": true,
+        "returned_to_gate_a": true,
+        "reached_c": true,
+        "target_acceptance_radius_m": 0.2,
+        "final_armed": true,
+        "safety_cutoff": false,
+        "prediction_h1_sample_count": 128,
+        "prediction_h1_fy_rmse_n": 1.7073414798175395,
+        "prediction_h1_wrench_rmse": 2.342278770922657,
+        "prediction_h1_objective_rmse": 5.15052954189723,
+        "prediction_h2_sample_count": 127,
+        "prediction_h2_fy_rmse_n": 4.750905974056743,
+        "prediction_h2_wrench_rmse": 5.4196761483455695,
+        "prediction_h2_objective_rmse": 6.30113967976158,
+        "passed": false,
+        "failures": [
+          "roll/pitch peak 6.797 > 5.000"
+        ]
+      },
+      "gate": {
+        "spawned": true,
+        "returncode": 0,
+        "stdout": "data: true",
+        "stderr": "",
+        "asset": "/home/hnuter/px4_ws_ros2_consolidated/controllers/experiments/fixed_attitude_switching/gate.sdf",
+        "collision_enabled": true,
+        "opening_width_m": 2.3,
+        "opening_lower_z_m": 0.0,
+        "opening_upper_z_m": 2.36
+      },
+      "duration_wall_s": 42.626612485999885,
+      "csv": "/tmp/hnuter_audit_20261009/before/runs/T_1p0/full/logs/external_control/experiments/fixed_attitude_switching/full/switching_1791538496.csv",
+      "ulog_source": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/rootfs/log/2026-10-09/09_34_44.ulg",
+      "tuning": "/tmp/hnuter_audit_20261009/before/runs/T_1p0/full/effective_tuning.json",
+      "servo_model": "gazebo_joint_pid_no_delay",
+      "pure_delay_model_used": false
+    },
+    {
+      "method": "direct",
+      "switch_duration_s": 1.0,
+      "status": "failed",
+      "error": "attitude peak 11.100 > 8.000",
+      "metrics": {
+        "row_count": 585,
+        "transition_row_count": 131,
+        "position_error_rms_m": 0.18765388749607403,
+        "position_error_peak_m": 0.37438487087500766,
+        "attitude_error_rms_deg": 6.683872878805406,
+        "attitude_error_peak_deg": 11.100181458169558,
+        "roll_pitch_peak_deg": 4.656018024930418,
+        "yaw_rate_peak_rad_s": 1.1094014644622803,
+        "minimum_altitude_m": 1.2164871394634247,
+        "joint_feedback_ratio": 1.0,
+        "joint_tracking_error_rms_rad": 0.18489776417096573,
+        "joint_tracking_error_peak_rad": 0.5044952937580793,
+        "reachable_wrench_residual_rms": NaN,
+        "pre_reversal_servo_reduction_rad": 0.2597765155551033,
+        "gate_sample_count": 146,
+        "minimum_gate_clearance_m": 0.2782803046703338,
+        "reached_b": true,
+        "returned_to_gate_a": true,
+        "reached_c": true,
+        "target_acceptance_radius_m": 0.2,
+        "final_armed": true,
+        "safety_cutoff": false,
+        "prediction_h1_sample_count": 0,
+        "prediction_h1_fy_rmse_n": NaN,
+        "prediction_h1_wrench_rmse": NaN,
+        "prediction_h1_objective_rmse": NaN,
+        "prediction_h2_sample_count": 0,
+        "prediction_h2_fy_rmse_n": NaN,
+        "prediction_h2_wrench_rmse": NaN,
+        "prediction_h2_objective_rmse": NaN,
+        "passed": false,
+        "failures": [
+          "attitude peak 11.100 > 8.000"
+        ]
+      },
+      "gate": {
+        "spawned": true,
+        "returncode": 0,
+        "stdout": "data: true",
+        "stderr": "",
+        "asset": "/home/hnuter/px4_ws_ros2_consolidated/controllers/experiments/fixed_attitude_switching/gate.sdf",
+        "collision_enabled": true,
+        "opening_width_m": 2.3,
+        "opening_lower_z_m": 0.0,
+        "opening_upper_z_m": 2.36
+      },
+      "duration_wall_s": 42.1840571759999,
+      "csv": "/tmp/hnuter_audit_20261009/before/runs/T_1p0/direct/logs/external_control/experiments/fixed_attitude_switching/direct/switching_1791538538.csv",
+      "ulog_source": "/home/hnuter/PX4-Hnuter/PX4-Autopilot-Hnuter-tail-sitl/build/px4_sitl_default/rootfs/log/2026-10-09/09_35_26.ulg",
+      "tuning": "/tmp/hnuter_audit_20261009/before/runs/T_1p0/direct/effective_tuning.json",
+      "servo_model": null,
+      "pure_delay_model_used": false
+    }
+  ],
+  "minimum_valid_switch_time_s": {
+    "direct": null,
+    "basic_da": null,
+    "full": null,
+    "no_horizon": null
+  }
+}

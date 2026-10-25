@@ -1,0 +1,126 @@
+diff --git a/Tools/simulation/gz/server.config b/Tools/simulation/gz/server.config
+index 0001356a..259049a9 100644
+--- a/Tools/simulation/gz/server.config
++++ b/Tools/simulation/gz/server.config
+@@ -9,7 +9,11 @@
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-air-speed-system" name="gz::sim::systems::AirSpeed"/>
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench"/>
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+-    <plugin entity_name="*" entity_type="world" filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer"/>
++    <plugin entity_name="*" entity_type="world" filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer">
++      <!-- Paired with the FLU-to-FRD conversion in GZBridge. -->
++      <use_units_gauss>true</use_units_gauss>
++      <use_earth_frame_ned>false</use_earth_frame_ned>
++    </plugin>
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+       <render_engine>ogre2</render_engine>
+     </plugin>
+diff --git a/src/modules/land_detector/MulticopterLandDetector.cpp b/src/modules/land_detector/MulticopterLandDetector.cpp
+index 2e9bb5a6..f6a22e3e 100644
+--- a/src/modules/land_detector/MulticopterLandDetector.cpp
++++ b/src/modules/land_detector/MulticopterLandDetector.cpp
+@@ -66,6 +66,7 @@
+ #include <matrix/math.hpp>
+ 
+ #include "MulticopterLandDetector.h"
++#include "HnuterDirectLandingGuard.hpp"
+ 
+ using matrix::Vector2f;
+ using matrix::Vector3f;
+@@ -90,6 +91,8 @@ void MulticopterLandDetector::_update_topics()
+ 
+ 	if (_vehicle_thrust_setpoint_sub.update(&vehicle_thrust_setpoint)) {
+ 		_vehicle_thrust_setpoint_throttle = -vehicle_thrust_setpoint.xyz[2];
++		_hnuter_direct_demand = matrix::Vector3f(vehicle_thrust_setpoint.xyz).norm();
++		_hnuter_direct_demand_timestamp = vehicle_thrust_setpoint.timestamp;
+ 	}
+ 
+ 	if (_param_ca_airframe.get() == 16) {
+@@ -123,6 +126,8 @@ void MulticopterLandDetector::_update_topics()
+ 
+ 	if (_vehicle_control_mode_sub.update(&vehicle_control_mode)) {
+ 		_flag_control_climb_rate_enabled = vehicle_control_mode.flag_control_climb_rate_enabled;
++		_hnuter_direct_offboard = vehicle_control_mode.flag_control_offboard_enabled
++					 && !vehicle_control_mode.flag_control_allocation_enabled;
+ 	}
+ 
+ 	if (_params.useHoverThrustEstimate) {
+@@ -247,7 +252,10 @@ bool MulticopterLandDetector::_get_ground_contact_state()
+ 	const float sys_low_throttle = hnuter_airframe
+ 				     ? hnuter_hover_throttle * math::constrain(_param_hntr_lnd_gc_r.get(), 0.5f, 1.f)
+ 				     : _params.minThrottle + (_params.hoverThrottle - _params.minThrottle) * thr_pct_hover;
+-	_has_low_throttle = (_vehicle_thrust_setpoint_throttle <= sys_low_throttle);
++	_has_low_throttle = (_vehicle_thrust_setpoint_throttle <= sys_low_throttle)
++			    && hnuter_direct_low_demand(hnuter_airframe && _hnuter_direct_offboard,
++						       time_now_us, _hnuter_direct_demand_timestamp,
++						       _hnuter_direct_demand, sys_low_throttle);
+ 	bool ground_contact = _has_low_throttle;
+ 
+ 	// if we have a valid velocity setpoint and the vehicle is demanded to go down but no vertical movement present,
+@@ -303,7 +311,10 @@ bool MulticopterLandDetector::_get_maybe_landed_state()
+ 		minimum_thrust_threshold = (_params.minManThrottle + 0.01f);
+ 	}
+ 
+-	const bool minimum_thrust_now = _vehicle_thrust_setpoint_throttle <= minimum_thrust_threshold;
++	const bool minimum_thrust_now = _vehicle_thrust_setpoint_throttle <= minimum_thrust_threshold
++		&& hnuter_direct_low_demand(_param_ca_airframe.get() == 16 && _hnuter_direct_offboard,
++					   now, _hnuter_direct_demand_timestamp,
++					   _hnuter_direct_demand, minimum_thrust_threshold);
+ 	_minimum_thrust_8s_hysteresis.set_state_and_update(minimum_thrust_now, now);
+ 
+ 	// Next look if vehicle is not rotating (do not consider yaw)
+diff --git a/src/modules/land_detector/MulticopterLandDetector.h b/src/modules/land_detector/MulticopterLandDetector.h
+index a2794f32..bf633293 100644
+--- a/src/modules/land_detector/MulticopterLandDetector.h
++++ b/src/modules/land_detector/MulticopterLandDetector.h
+@@ -123,6 +123,9 @@ private:
+ 	float _vehicle_thrust_setpoint_throttle{0.f};
+ 	float _hnuter_motor_throttle{0.f};
+ 	hrt_abstime _hnuter_motor_timestamp{0};
++	bool _hnuter_direct_offboard{false};
++	float _hnuter_direct_demand{0.f};
++	hrt_abstime _hnuter_direct_demand_timestamp{0};
+ 
+ 	uint8_t _takeoff_state{takeoff_status_s::TAKEOFF_STATE_DISARMED};
+ 
+diff --git a/src/modules/simulation/gz_bridge/GZBridge.cpp b/src/modules/simulation/gz_bridge/GZBridge.cpp
+index 3ef65e18..8f782d62 100644
+--- a/src/modules/simulation/gz_bridge/GZBridge.cpp
++++ b/src/modules/simulation/gz_bridge/GZBridge.cpp
+@@ -396,12 +396,13 @@ void GZBridge::magnetometerCallback(const gz::msgs::Magnetometer &msg)
+ 	report.device_id = id.devid;
+ 	report.temperature = this->_temperature;
+ 
+-	// FIMEX: once we're on jetty or later
+-	// The magnetometer plugin publishes in units of gauss and in a weird left handed coordinate system
+-	// https://github.com/gazebosim/gz-sim/pull/2460
+-	report.x = -msg.field_tesla().y();
+-	report.y = -msg.field_tesla().x();
+-	report.z = msg.field_tesla().z();
++	// server.config explicitly generates an ENU earth field in gauss.
++	// The sensor has already rotated that field into its local FLU frame.
++	// Convert only FLU -> FRD here; swapping world axes after the sensor
++	// rotation creates a tilt-dependent magnetic heading error.
++	report.x = msg.field_tesla().x();
++	report.y = -msg.field_tesla().y();
++	report.z = -msg.field_tesla().z();
+ 
+ 	_sensor_mag_pub.publish(report);
+ }
+diff --git a/src/modules/simulation/gz_bridge/server.config b/src/modules/simulation/gz_bridge/server.config
+index 0001356a..259049a9 100644
+--- a/src/modules/simulation/gz_bridge/server.config
++++ b/src/modules/simulation/gz_bridge/server.config
+@@ -9,7 +9,11 @@
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-air-speed-system" name="gz::sim::systems::AirSpeed"/>
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-apply-link-wrench-system" name="gz::sim::systems::ApplyLinkWrench"/>
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-navsat-system" name="gz::sim::systems::NavSat"/>
+-    <plugin entity_name="*" entity_type="world" filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer"/>
++    <plugin entity_name="*" entity_type="world" filename="gz-sim-magnetometer-system" name="gz::sim::systems::Magnetometer">
++      <!-- Paired with the FLU-to-FRD conversion in GZBridge. -->
++      <use_units_gauss>true</use_units_gauss>
++      <use_earth_frame_ned>false</use_earth_frame_ned>
++    </plugin>
+     <plugin entity_name="*" entity_type="world" filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+       <render_engine>ogre2</render_engine>
+     </plugin>
