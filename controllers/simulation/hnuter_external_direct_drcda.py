@@ -75,6 +75,7 @@ class HnuterDRCDAController(DirectController):
             'wrench_error_gain': env_float('HNUTER_DRCDA_WRENCH_GAIN', 8.0),
         }
         config = DRCDAConfig.gazebo_joint_pid_no_delay(**config_kwargs)
+        config.bounded_solver = True
         configure_allocator_variant(config, self._drcda_variant)
 
         front_thrust_max = env_float('HNUTER_DRCDA_FRONT_MOTOR_MAX_N', 25.0)
@@ -225,7 +226,7 @@ class HnuterDRCDAController(DirectController):
     def _diagnostic_extra_values(self):
         if not self._drcda_ready or self.drcda.last_result is None:
             return ['', float('nan'), 0] + [float('nan')] * (
-                len(self._diagnostic_extra_header()) - 3
+                len(HnuterDRCDAController._diagnostic_extra_header(self)) - 3
             )
         result = self.drcda.last_result
         values = [
@@ -346,7 +347,7 @@ class HnuterDRCDAController(DirectController):
         active = position_integral_gain > 1e-6
         correction = np.zeros(3)
         correction[active] = (
-            -config.antiwindup_gain
+            config.antiwindup_gain
             * delta_acceleration_ned[active]
             / position_integral_gain[active]
             * dt
@@ -438,7 +439,10 @@ class HnuterDRCDAController(DirectController):
             self._post_drcda_allocation(
                 result, previous_command, allocation_dt, angle_limits
             )
-            self._apply_drcda_antiwindup(result.wrench_residual, allocation_dt)
+            # Back calculation must compare forces at the same time. A future
+            # wrench minus the current reference contains intentional preview.
+            self._apply_drcda_antiwindup(
+                result.estimated_wrench - result.desired_wrench, allocation_dt)
         else:
             result = self.drcda.last_result
         command = self.drcda.command
@@ -479,7 +483,7 @@ class HnuterDRCDAController(DirectController):
         )
 
     def _drcda_servo_output_state(self) -> np.ndarray:
-        return self.drcda.state[:ANGLE_COUNT].copy()
+        return self.drcda.command[:ANGLE_COUNT].copy()
 
     def _post_drcda_allocation(self, result, previous_command, dt, angle_limits):
         pass

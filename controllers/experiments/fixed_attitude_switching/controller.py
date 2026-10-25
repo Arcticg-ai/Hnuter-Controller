@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import math
 import os
+import json
+from pathlib import Path
 
 import numpy as np
 import rclpy
@@ -69,6 +71,37 @@ class FixedAttitudeSwitchingMixin:
         self._switch_c = np.zeros(3)
         self._switch_joint_feedback = None
         super().__init__()
+        if hasattr(self, 'drcda'):
+            self.drcda.config.bounded_solver = True
+            profile = os.environ.get('HNUTER_SWITCH_JOINT_MODEL', '')
+            if profile:
+                model = json.loads(Path(profile).read_text())
+                for name in ('servo_gain_positive', 'servo_gain_negative',
+                             'servo_tau_positive_s', 'servo_tau_negative_s'):
+                    values = np.asarray(model[name], dtype=float)
+                    if values.shape != (4,) or not np.all(np.isfinite(values)) or np.any(values <= 0):
+                        raise ValueError(f'invalid joint model field {name}')
+                    getattr(self.drcda.config, name)[:] = values
+                self.get_logger().info(f'Joint response profile: {profile}')
+            if self._switch_method == 'with_nearfield':
+                # Fast motors must also balance the current slow-joint state.
+                self.drcda.config.immediate_wrench_weight[:] = [0, 0, 2, 3, 3, 2.5]
+            if self._switch_method.startswith('paper_nda'):
+                from .audit_allocator import MeasuredNDAAllocator
+                self.drcda = MeasuredNDAAllocator(self.drcda.model, self.drcda.config)
+                self.drcda.nda_gain = env_float('HNUTER_NDA_GAIN', 12.0)
+                self.drcda.nullspace_gain = env_float('HNUTER_NDA_NULL_GAIN', 2.0)
+                self.drcda.posture_gain = env_float('HNUTER_NDA_POSTURE_GAIN', 2.0)
+                if self._switch_method == 'paper_nda_no_posture':
+                    self.drcda.posture_gain = 0.0
+                self.drcda.hover_front_thrust = (
+                    self.mass*9.81*(-self.drcda.model.positions[4, 0])
+                    /(4*(self.drcda.model.positions[0, 0]-self.drcda.model.positions[4, 0])))
+                self.drcda.inversion_mode = os.environ.get('HNUTER_NDA_INVERSION', 'sampled')
+                if self._switch_method == 'paper_nda_continuous':
+                    self.drcda.inversion_mode = 'continuous'
+                if self.drcda.inversion_mode not in {'sampled', 'continuous'}:
+                    raise ValueError('HNUTER_NDA_INVERSION must be sampled or continuous')
         self.diagnostic_period_s = env_float(
             'HNUTER_SWITCH_DIAGNOSTIC_PERIOD_S', 0.02
         )
@@ -185,6 +218,12 @@ class FixedAttitudeSwitchingMixin:
         return True
 
     def _future_drcda_wrench_references(self):
+        if self._switch_method == 'no_horizon':
+            self.drcda.config.horizon_s = self.drcda.config.prediction_dt_s
+            return [(self.drcda.config.prediction_dt_s, self.last_W.copy(), 1.5)]
+        if self._switch_method == 'no_preview':
+            return [(h, self.last_W.copy(), w) for h, w in zip(
+                self.switch_prediction_horizons_s, self.switch_prediction_weights)]
         if (
             getattr(self, '_drcda_variant', '') != 'full'
             or self.auto_traj_mode != 'fixed_switch'
@@ -213,7 +252,26 @@ class FixedAttitudeSwitchingMixin:
               for name in ('a_l', 'b_l', 'a_r', 'b_r')],
             *[f'switch_commanded_joint_{name}_rad'
               for name in ('a_l', 'b_l', 'a_r', 'b_r')],
+            'nda_saturation_scale', 'nda_normalized_condition',
         ]
+
+    def publish_direct_actuator_setpoint(self, motor_controls, alpha1, alpha2, theta1, theta2):
+        common_prelude = os.environ.get('HNUTER_SWITCH_COMMON_PRELUDE', '0') == '1'
+        ready = (self.auto_traj_mode == 'fixed_switch'
+                 and self._switch_elapsed_s >= self.switch_ingress_s+self.switch_settle_s)
+        if not self.armed:
+            self._switch_allocator_engaged = False
+        if ready:
+            self._switch_allocator_engaged = True
+        ready = getattr(self, '_switch_allocator_engaged', False)
+        if common_prelude and hasattr(self, 'drcda') and not ready:
+            preferred = self._preferred_drcda_command(motor_controls, alpha1, alpha2, theta1, theta2)
+            measured, _ = self._switch_joint_feedback.read() if self._switch_joint_feedback else (None, None)
+            self.drcda.reset(angle_state=preferred[:4] if measured is None else measured,
+                             thrust_state=preferred[4:])
+            return DirectController.publish_direct_actuator_setpoint(
+                self, motor_controls, alpha1, alpha2, theta1, theta2)
+        return super().publish_direct_actuator_setpoint(motor_controls, alpha1, alpha2, theta1, theta2)
 
     def _diagnostic_extra_values(self):
         measured = None
@@ -229,11 +287,32 @@ class FixedAttitudeSwitchingMixin:
             age if math.isfinite(age) else float('nan'), int(measured is not None),
             *([*measured] if measured is not None else [float('nan')] * 4),
             *commanded,
+            getattr(getattr(self, 'drcda', None), 'saturation_scale', float('nan')),
+            getattr(getattr(self, 'drcda', None), 'normalized_condition', float('nan')),
         ]
 
 
 class FixedAttitudeDirectController(FixedAttitudeSwitchingMixin, DirectController):
-    pass
+    def publish_px4_equivalent_direct_commands(self, current_time, dt):
+        self._switch_direct_dt = dt
+        return super().publish_px4_equivalent_direct_commands(current_time, dt)
+
+    def publish_direct_actuator_setpoint(self, motor_controls, alpha1, alpha2, theta1, theta2):
+        forces = np.array([HnuterDRCDAController._motor_control_to_thrust(
+            self, c, bidirectional=(i == 4 and self.allow_tail_reverse))
+            for i, c in enumerate(motor_controls)])
+        ready = getattr(self, '_switch_allocator_engaged', False) or (
+            self.auto_traj_mode == 'fixed_switch'
+            and self._switch_elapsed_s >= self.switch_ingress_s+self.switch_settle_s)
+        previous = getattr(self, '_switch_previous_direct_forces', forces)
+        if ready:
+            delta = np.array([2500.]*4+[3500.])*max(0., getattr(self, '_switch_direct_dt', 0.004))
+            forces = np.clip(forces, previous-delta, previous+delta)
+        self._switch_previous_direct_forces = forces.copy()
+        controls = [self._thrust_to_normalized_motor_control(f) for f in forces[:4]]
+        controls.append(self._tail_thrust_to_normalized_bidirectional_motor_control(forces[4])
+                        if self.allow_tail_reverse else self._thrust_to_normalized_motor_control(forces[4]))
+        return super().publish_direct_actuator_setpoint(controls, alpha1, alpha2, theta1, theta2)
 
 
 class FixedAttitudeDRCDAController(
@@ -255,8 +334,8 @@ def controller_class(method: str):
     if method == 'basic_da':
         os.environ['HNUTER_DRCDA_VARIANT'] = 'basic_da'
         return FixedAttitudeDRCDAController
-    if method in {'full', 'no_horizon'}:
-        os.environ['HNUTER_DRCDA_VARIANT'] = method
+    if method in {'full', 'no_horizon', 'no_preview', 'no_nearfield', 'with_nearfield', 'paper_nda', 'paper_nda_no_posture', 'paper_nda_continuous'}:
+        os.environ['HNUTER_DRCDA_VARIANT'] = 'full'
         return FixedAttitudeClosedLoopController
     raise ValueError(f'unsupported HNUTER_SWITCH_METHOD={method!r}')
 

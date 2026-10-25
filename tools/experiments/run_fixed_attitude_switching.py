@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import math
 import os
@@ -33,7 +34,7 @@ from tools.experiments.run_no_delay_maneuver_experiments import (
 )
 
 
-METHODS = ('direct', 'basic_da', 'full', 'no_horizon')
+METHODS = ('direct', 'basic_da', 'full', 'no_horizon', 'no_preview', 'no_nearfield', 'with_nearfield', 'paper_nda', 'paper_nda_no_posture', 'paper_nda_continuous')
 DEFAULT_DURATIONS = (2.0, 1.5, 1.2, 1.0, 0.8, 0.6)
 GATE_SDF = (
     CONTROL_ROOT
@@ -71,6 +72,12 @@ def effective_tuning(case_root: Path) -> Path:
     case_root.mkdir(parents=True, exist_ok=True)
     destination = case_root / 'effective_tuning.json'
     shutil.copy2(DEFAULT_TUNING, destination)
+    # A matched allocation-only study uses the same outer-loop integrator
+    # clamp in every method; optional model-based back calculation is zeroed.
+    if 'HNUTER_SWITCH_COMMON_AW_GAIN' in os.environ:
+        data = json.loads(destination.read_text())
+        data['drcda_antiwindup_gain'] = float(os.environ['HNUTER_SWITCH_COMMON_AW_GAIN'])
+        destination.write_text(json.dumps(data, indent=2)+'\n')
     return destination
 
 
@@ -115,11 +122,10 @@ def wait_for_marker_or_disarm(
 def analyze_csv(path: Path, thresholds: dict[str, float]) -> dict[str, object]:
     with path.open(newline='', encoding='utf-8') as stream:
         rows = list(csv.DictReader(stream))
-    flight = [
-        row for row in rows
-        if row.get('auto_traj_mode') == 'fixed_switch'
-        or row.get('switch_phase') == 'post_hold_c'
-    ]
+    # Include dwell and final hold in the verdict: a maneuver is not a pass
+    # when it diverges between segments or immediately after completion.
+    flight = [row for row in rows if row.get('switch_phase') in {
+        'a_to_b', 'dwell_b', 'b_to_a', 'dwell_a', 'a_to_c', 'post_hold_c'}]
     transitions = [
         row for row in flight
         if row.get('switch_phase') in {'a_to_b', 'b_to_a', 'a_to_c'}
@@ -128,13 +134,14 @@ def analyze_csv(path: Path, thresholds: dict[str, float]) -> dict[str, object]:
         math.hypot(
             value(row, 'position_x_enu_m') - value(row, 'target_x_enu_m'),
             value(row, 'position_y_enu_m') - value(row, 'target_y_enu_m'),
+            value(row, 'position_z_rel_m') - value(row, 'target_z_rel_m'),
         )
-        for row in transitions
+        for row in flight
     ]
-    attitude_error = [value(row, 'attitude_error_angle_deg') for row in transitions]
+    attitude_error = [value(row, 'attitude_error_angle_deg') for row in flight]
     roll_pitch = [
         max(abs(value(row, 'roll_deg')), abs(value(row, 'pitch_deg')))
-        for row in transitions
+        for row in flight
     ]
     servo_errors = []
     feedback_rows = 0
@@ -246,30 +253,33 @@ def analyze_csv(path: Path, thresholds: dict[str, float]) -> dict[str, object]:
         for row in gate_rows
     ]
     target_radius_m = 0.20
-    reached_b = any(
-        abs(value(row, 'position_y_enu_m') - 1.2) <= target_radius_m
-        for row in flight
-    )
-    reached_c = any(
-        abs(value(row, 'position_y_enu_m') + 1.2) <= target_radius_m
-        for row in flight
-    )
-    returned_to_gate_a = any(
-        row.get('switch_phase') in {'b_to_a', 'dwell_a'}
-        and abs(value(row, 'position_y_enu_m')) <= target_radius_m
-        for row in flight
-    )
+    def reached_endpoint(phases):
+        group = [row for row in flight if row.get('switch_phase') in phases]
+        if not group:
+            return False
+        # References are relative to the actual mission origin, not world zero.
+        target = [value(group[-1], key) for key in
+                  ('target_x_enu_m', 'target_y_enu_m', 'target_z_rel_m')]
+        return any(math.dist(target, [value(row, key) for key in
+                       ('position_x_enu_m', 'position_y_enu_m', 'position_z_rel_m')])
+                   <= target_radius_m for row in group)
+    reached_b = reached_endpoint({'a_to_b', 'dwell_b'})
+    reached_c = reached_endpoint({'a_to_c', 'post_hold_c'})
+    returned_to_gate_a = reached_endpoint({'b_to_a', 'dwell_a'})
 
     metrics = {
         'row_count': len(rows),
         'transition_row_count': len(transitions),
+        'evaluation_row_count': len(flight),
+        'evaluation_window': 'first_segment_through_final_hold',
+        'position_metric': '3D_Euclidean',
         'position_error_rms_m': rms(position_error),
         'position_error_peak_m': maximum(position_error),
         'attitude_error_rms_deg': rms(attitude_error),
         'attitude_error_peak_deg': maximum(attitude_error),
         'roll_pitch_peak_deg': maximum(roll_pitch),
         'yaw_rate_peak_rad_s': maximum([
-            value(row, 'angular_r_frd_rps') for row in transitions
+            value(row, 'angular_r_frd_rps') for row in flight
         ]),
         'minimum_altitude_m': min(
             [value(row, 'position_z_rel_m') for row in flight],
@@ -307,7 +317,7 @@ def analyze_csv(path: Path, thresholds: dict[str, float]) -> dict[str, object]:
     if not reached_c:
         failures.append('did not reach target C')
     clearance = float(metrics['minimum_gate_clearance_m'])
-    if not math.isfinite(clearance) or clearance < thresholds['gate_clearance_m']:
+    if thresholds.get('gate_enabled', True) and (not math.isfinite(clearance) or clearance < thresholds['gate_clearance_m']):
         failures.append(
             f'gate clearance {clearance:.3f} < '
             f'{thresholds["gate_clearance_m"]:.3f}'
@@ -350,6 +360,9 @@ def run_case(
     gui: bool = False,
     gui_warmup_s: float = 0.0,
     post_hold_s: float = 5.0,
+    dwell_s: float = 0.5,
+    span_m: float = 1.2,
+    gate_enabled: bool = True,
 ) -> dict[str, object]:
     case_root = output / 'runs' / duration_key(duration) / method
     console = case_root / 'console'
@@ -381,10 +394,13 @@ def run_case(
         )
         if not wait_for([agent, sitl], sitl, 'Ready for takeoff!', 60.0):
             raise RuntimeError('PX4 did not report Ready for takeoff')
-        try:
-            gate = spawn_physical_gate()
-        except Exception as exc:
-            gate = {'spawned': False, 'error': str(exc), 'asset': str(GATE_SDF)}
+        if gate_enabled:
+            try:
+                gate = spawn_physical_gate()
+            except Exception as exc:
+                gate = {'spawned': False, 'error': str(exc), 'asset': str(GATE_SDF)}
+        else:
+            gate = {'spawned': False, 'collision_enabled': False, 'reason': 'open-world qualification/comparison'}
         if gui and gui_warmup_s > 0.0:
             drain_for([agent, sitl], gui_warmup_s)
 
@@ -395,8 +411,9 @@ def run_case(
             'HNUTER_PREFLIGHT_TILT_TEST': '0',
             'HNUTER_SWITCH_METHOD': method,
             'HNUTER_SWITCH_DURATION_S': str(duration),
-            'HNUTER_SWITCH_HALF_SPAN_M': '1.2',
+            'HNUTER_SWITCH_HALF_SPAN_M': str(span_m),
             'HNUTER_SWITCH_ALTITUDE_M': '1.5',
+            'HNUTER_SWITCH_DWELL_S': str(dwell_s),
         })
         controller = PtyProcess(
             [
@@ -451,6 +468,8 @@ def run_case(
     result = {
         'method': method,
         'switch_duration_s': duration,
+        'dwell_s': dwell_s,
+        'span_m': span_m,
         'status': status,
         'error': error,
         'metrics': metrics,
@@ -459,10 +478,30 @@ def run_case(
         'csv': str(csv_path) if csv_path else None,
         'ulog_source': str(ulog) if ulog else None,
         'tuning': str(tuning),
+        'tuning_sha256': hashlib.sha256(tuning.read_bytes()).hexdigest(),
+        'controller_source_sha256': {
+            str(p.relative_to(CONTROL_ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted((CONTROL_ROOT/'controllers').rglob('*.py'))
+        },
         'servo_model': (
             None if method == 'direct' else 'gazebo_joint_pid_no_delay'
         ),
         'pure_delay_model_used': False,
+        'common_prelude': os.environ.get('HNUTER_SWITCH_COMMON_PRELUDE', '0') == '1',
+        'joint_model_profile': os.environ.get('HNUTER_SWITCH_JOINT_MODEL', 'zero_gravity_step'),
+        'allocation_audit': {
+            'bounded_solver': method != 'direct' and not method.startswith('paper_nda'),
+            'immediate_objective': method == 'with_nearfield',
+            'future_reference': method in {'full', 'no_nearfield', 'with_nearfield'},
+            'nda_gain': float(os.environ.get('HNUTER_NDA_GAIN', '12.0')),
+            'nda_nullspace_gain': float(os.environ.get('HNUTER_NDA_NULL_GAIN', '2.0')),
+            'nda_posture_gain': 0.0 if method == 'paper_nda_no_posture' else float(os.environ.get('HNUTER_NDA_POSTURE_GAIN', '2.0')),
+            'nda_inversion': 'continuous' if method == 'paper_nda_continuous' else os.environ.get('HNUTER_NDA_INVERSION', 'sampled'),
+            'servo_physical_rate_rad_s': 10.0,
+            'servo_command_rate_rad_s': 50.0,
+            'feedback': 'measured_joint_pose; model_estimated_motor_force',
+            'nda_scope': 'Eq7-14 force-coordinate adaptation; no PDA power curves',
+        },
     }
     (case_root / 'result.json').write_text(
         json.dumps(result, indent=2, ensure_ascii=False) + '\n',
@@ -525,6 +564,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--method', action='append', choices=METHODS)
     parser.add_argument('--duration', action='append', type=float)
+    parser.add_argument('--dwell', type=float, default=0.5)
+    parser.add_argument('--span', type=float, default=1.2,
+                        help='single-leg displacement; zero gives a stationary hover test')
+    parser.add_argument('--no-gate', action='store_true', help='open-world test without gate collisions')
+    parser.add_argument('--repeat', type=int, default=1)
     parser.add_argument('--position-peak-limit', type=float, default=0.75)
     parser.add_argument('--attitude-peak-limit-deg', type=float, default=8.0)
     parser.add_argument('--roll-pitch-peak-limit-deg', type=float, default=5.0)
@@ -560,6 +604,8 @@ def main() -> int:
         'minimum_altitude_m': args.minimum_altitude,
         'gate_clearance_m': args.minimum_gate_clearance,
         'feedback_ratio': 0.95,
+        'target_span_m': max(0.0, args.span),
+        'gate_enabled': not args.no_gate,
     }
     manifest = {
         'created_at_unix_s': time.time(),
@@ -571,24 +617,31 @@ def main() -> int:
         'experiment': 'physical_gate_fixed_attitude_minimum_jerk_A_B_A_C',
         'methods': methods,
         'switch_durations_s': durations,
-        'half_span_m': 1.2,
+        'half_span_m': args.span,
         'altitude_m': 1.5,
+        'dwell_s': max(0.0, args.dwell),
+        'repeats': max(1, args.repeat),
         'thresholds': thresholds,
         'pure_delay_model_used': False,
         'gazebo_gui': args.gui,
         'cases': [],
     }
-    for duration in durations:
-        for method in methods:
-            manifest['cases'].append(
-                run_case(
-                    args.output, args.firmware, method, duration, thresholds,
-                    gui=args.gui,
+    for repeat in range(max(1, args.repeat)):
+        for duration in durations:
+            ordered_methods = methods if repeat % 2 == 0 else list(reversed(methods))
+            for method in ordered_methods:
+                case = run_case(
+                    args.output / f'repeat_{repeat+1}', args.firmware,
+                    method, duration, thresholds, gui=args.gui,
                     gui_warmup_s=max(0.0, args.gui_warmup),
                     post_hold_s=max(0.0, args.post_hold),
+                    dwell_s=max(0.0, args.dwell),
+                    span_m=max(0.0, args.span),
+                    gate_enabled=not args.no_gate,
                 )
-            )
-            write_summary(args.output, manifest)
+                case['repeat'] = repeat+1
+                manifest['cases'].append(case)
+                write_summary(args.output, manifest)
     return 0 if all(
         case['status'] == 'complete' for case in manifest['cases']
     ) else 1

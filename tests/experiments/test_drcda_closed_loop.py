@@ -6,7 +6,17 @@ import numpy as np
 import pytest
 
 from controllers.common.hnuter_drcda import DRCDAConfig, HnuterWrenchModel
-from controllers.experiments.drcda_closed_loop.feedback import JointAngleFeedback
+from controllers.experiments.drcda_closed_loop.feedback import JointAngleFeedback, continuous_joint_angles
+
+
+@pytest.mark.parametrize('sign',[-1,1])
+def test_joint_feedback_retains_branch_across_180_degrees(sign):
+    previous=None
+    for deg in [0,90,170,179,181,185,181,179,170,90,0]:
+        actual=np.radians(np.array([deg,0,-deg,0])*sign)
+        wrapped=np.arctan2(np.sin(actual),np.cos(actual))
+        previous=continuous_joint_angles(wrapped,previous)
+        np.testing.assert_allclose(previous,actual,atol=1e-12)
 from controllers.experiments.drcda_closed_loop.governor import (
     MeasuredDRCDAAllocator,
     ReachableWrenchContract,

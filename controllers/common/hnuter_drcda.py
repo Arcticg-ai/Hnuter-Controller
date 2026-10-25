@@ -29,6 +29,44 @@ ALLOCATOR_VARIANTS = (
 )
 
 
+def bounded_quadratic_step(hessian, gradient, lower, upper):
+    """Minimize a positive-definite quadratic over a box by active sets."""
+    x = np.clip(np.zeros_like(gradient), lower, upper)
+    fixed = upper - lower <= 1e-12
+    active = fixed.copy()
+    for _ in range(8 * len(x)):
+        grad = hessian @ x + gradient
+        free = ~active
+        direction = np.zeros_like(x)
+        if np.any(free):
+            direction[free] = np.linalg.solve(
+                hessian[np.ix_(free, free)], -grad[free]
+            )
+        if np.linalg.norm(direction, np.inf) < 1e-10:
+            violation = np.zeros_like(x)
+            violation[active & ~fixed & (x <= lower + 1e-10)] = np.maximum(
+                -grad[active & ~fixed & (x <= lower + 1e-10)], 0.0
+            )
+            violation[active & ~fixed & (x >= upper - 1e-10)] = np.maximum(
+                grad[active & ~fixed & (x >= upper - 1e-10)], 0.0
+            )
+            if np.max(violation) < 1e-8:
+                return x
+            active[int(np.argmax(violation))] = False
+            continue
+        ratio = np.full_like(x, np.inf)
+        positive = free & (direction > 1e-12)
+        negative = free & (direction < -1e-12)
+        ratio[positive] = (upper[positive] - x[positive]) / direction[positive]
+        ratio[negative] = (lower[negative] - x[negative]) / direction[negative]
+        hit = int(np.argmin(ratio))
+        step = min(1.0, max(0.0, float(ratio[hit])))
+        x = np.clip(x + step * direction, lower, upper)
+        if step < 1.0:
+            active[hit] = True
+    raise np.linalg.LinAlgError('box quadratic active set did not converge')
+
+
 def _array(values: Iterable[float], count: int, name: str) -> np.ndarray:
     result = np.asarray(tuple(values), dtype=float)
     if result.shape != (count,):
@@ -111,10 +149,12 @@ class DRCDAConfig:
     motor_force_rate_floor_n_s: float = 50.0
     motor_force_rate_cap_n_s: float = 6000.0
     antiwindup_gain: float = 0.35
+    bounded_solver: bool = False
+    immediate_wrench_weight: np.ndarray = field(default_factory=lambda: np.zeros(6))
 
     def __post_init__(self) -> None:
         for name in (
-            'wrench_scale', 'wrench_weight',
+            'wrench_scale', 'wrench_weight', 'immediate_wrench_weight',
         ):
             setattr(self, name, _array(getattr(self, name), 6, name))
         for name in (
@@ -178,6 +218,11 @@ class DRCDAConfig:
         config.servo_tau_negative_s[:] = [0.1396, 0.0874, 0.1422, 0.0868]
         config.servo_delay_positive_s[:] = 0.0
         config.servo_delay_negative_s[:] = 0.0
+        # Match hnuter/model.sdf joint velocity limits and the existing Direct
+        # command slew bound. Do not inherit old hardware identification rates.
+        config.servo_rate_positive_rad_s[:] = 10.0
+        config.servo_rate_negative_rad_s[:] = 10.0
+        config.servo_command_rate_rad_s[:] = 50.0
         return config
 
 
@@ -758,6 +803,18 @@ class DRCDAAllocator:
                         weighted_rate_error,
                     ))
                 command_normalized = command / normalizer
+                if np.any(cfg.immediate_wrench_weight > 0.0):
+                    near_state, near_sensitivity = self._predict_horizons(
+                        command, limits, [cfg.prediction_dt_s]
+                    )[0]
+                    near_scale = np.sqrt(cfg.immediate_wrench_weight) / cfg.wrench_scale
+                    weighted_jacobian = np.vstack((
+                        weighted_jacobian,
+                        near_scale[:, None] * (self.model.jacobian(near_state)
+                            @ near_sensitivity @ np.diag(normalizer)),
+                    ))
+                    weighted_error = np.concatenate((weighted_error,
+                        near_scale * (self.model.wrench(near_state) - desired)))
                 previous_normalized = previous / normalizer
                 preferred_normalized = preferred / normalizer
                 hessian = (
@@ -772,7 +829,16 @@ class DRCDAAllocator:
                         command_normalized - preferred_normalized
                     )
                 )
-                step = np.linalg.solve(hessian, -gradient)
+                if cfg.bounded_solver:
+                    lower = self._project_command(
+                        np.full(ACTUATOR_COUNT, -1e6), previous, dt, limits)
+                    upper = self._project_command(
+                        np.full(ACTUATOR_COUNT, 1e6), previous, dt, limits)
+                    step = bounded_quadratic_step(
+                        hessian, gradient, (lower - command) / normalizer,
+                        (upper - command) / normalizer)
+                else:
+                    step = np.linalg.solve(hessian, -gradient)
                 if not np.all(np.isfinite(step)):
                     raise np.linalg.LinAlgError('non-finite DRCDA step')
                 next_command = self._project_command(

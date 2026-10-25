@@ -118,6 +118,7 @@ class PaperNormalizedDifferentialAllocator(_JerkReferenceMixin, DRCDAAllocator):
         dt: float,
         preferred_command: Iterable[float] | None = None,
         active_angle_limits: Iterable[float] | None = None,
+        future_wrench_references=None,
     ) -> DRCDAResult:
         started = time.perf_counter()
         cfg = self.config
@@ -199,12 +200,14 @@ class ReachabilityDRCDAAllocatorV2(DRCDAAllocator):
         dt: float,
         preferred_command: Iterable[float] | None = None,
         active_angle_limits: Iterable[float] | None = None,
+        future_wrench_references=None,
     ) -> DRCDAResult:
         result = super().allocate(
             desired_wrench,
             dt,
             preferred_command=preferred_command,
             active_angle_limits=active_angle_limits,
+            future_wrench_references=future_wrench_references,
         )
         if result.status == 'solved':
             result.status = 'drcda_v2'

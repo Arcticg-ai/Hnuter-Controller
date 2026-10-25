@@ -45,10 +45,6 @@ class HnuterClosedLoopDRCDAController(HnuterDRCDAController):
         )
 
     def _apply_drcda_antiwindup(self, wrench_residual, dt):
-        if self._contract is not None:
-            wrench_residual = (
-                self._contract.reachable_wrench - self._contract.requested_wrench
-            )
         return super()._apply_drcda_antiwindup(wrench_residual, dt)
 
     def _drcda_servo_output_state(self):

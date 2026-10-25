@@ -32,6 +32,15 @@ def _inverse(q: np.ndarray) -> np.ndarray:
     return q * np.array([1.0, -1.0, -1.0, -1.0])
 
 
+def continuous_joint_angles(wrapped, previous):
+    """Preserve the physical branch across pi for joints allowed past 180 deg."""
+    wrapped = np.asarray(wrapped, dtype=float)
+    if previous is None:
+        return wrapped.copy()
+    delta = wrapped - previous
+    return previous + np.arctan2(np.sin(delta), np.cos(delta))
+
+
 class JointAngleFeedback:
     """Measure four tilt angles from physical link poses, never command echoes.
 
@@ -90,7 +99,7 @@ class JointAngleFeedback:
                 self._zero = self.relative_zero(poses)
             angles = self.angles_from_poses(poses, self._zero)
             if np.all(np.isfinite(angles)):
-                self._angles = angles
+                self._angles = continuous_joint_angles(angles, self._angles)
                 self._received_at = time.monotonic()
 
     def stop_calibration(self) -> None:

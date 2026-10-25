@@ -1,0 +1,10 @@
+{
+  "description": "Exploratory loaded closed-loop command replay fit, no pure delay. Positive and negative branches share parameters because the data do not independently identify directional asymmetry.",
+  "training_runs": ["before/T1.0/direct", "legacy_bounds/T1.2/direct"],
+  "servo_gain_positive": [1.0562681592, 1.0607143367, 1.0034525745, 1.0683119163],
+  "servo_gain_negative": [1.0562681592, 1.0607143367, 1.0034525745, 1.0683119163],
+  "servo_tau_positive_s": [0.1463631284, 0.0729970120, 0.1326655056, 0.0715543815],
+  "servo_tau_negative_s": [0.1463631284, 0.0729970120, 0.1326655056, 0.0715543815],
+  "physical_joint_velocity_limit_rad_s": 10.0,
+  "pure_delay_s": 0.0
+}

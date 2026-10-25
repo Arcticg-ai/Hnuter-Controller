@@ -2758,8 +2758,8 @@ class HnuterController(Node):
 
         max_thrust_per_arm = 85.48 * 2.0
         max_tail_thrust = 85.48
-        r_x = 0.105
-        r_z = -0.013
+        r_x = getattr(self, 'allocator_front_x_m', 0.105)
+        r_z = getattr(self, 'allocator_front_z_m', -0.013)
 
         W = self._allocator_wrench_from_body_force_torque(f_body, tau_c)
         if tilt_suppress_active or vertical_only_active:
