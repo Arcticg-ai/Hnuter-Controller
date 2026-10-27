@@ -10,6 +10,7 @@ from unittest.mock import Mock
 
 import numpy as np
 import pytest
+from scipy.spatial.transform import Rotation
 
 from controllers.hardware import hnuter_external_direct_drcda_v2_hardware as hw
 
@@ -111,7 +112,7 @@ def test_handover_and_direct_callback(controller):
 
 
 @pytest.mark.parametrize('name', ['position', 'attitude', 'rates', 'status', 'mode'])
-def test_stale_data_withdraws_heartbeat_without_zero_motor_command(controller, name):
+def test_stale_data_requests_position_before_withdrawing_heartbeat(controller, name):
     activate(controller)
     controller.actuator_motors_pub.publish.reset_mock()
     controller.offboard_control_mode_pub.publish.reset_mock()
@@ -120,7 +121,10 @@ def test_stale_data_withdraws_heartbeat_without_zero_motor_command(controller, n
     assert controller._hardware_fault
     assert not controller._hardware_control_active
     controller.actuator_motors_pub.publish.assert_not_called()
-    controller.offboard_control_mode_pub.publish.assert_not_called()
+    controller.offboard_control_mode_pub.publish.assert_called()
+    request = controller._fault_position_pub.publish.call_args.args[0]
+    assert request.command == hw.VehicleCommand.VEHICLE_CMD_DO_SET_MODE
+    assert request.param2 == 3.
 
 
 def test_invalid_position_and_duplicate_stamps_are_not_fresh(controller):
@@ -185,21 +189,19 @@ def test_downward_rc_reference_not_clipped_to_handover_height(controller):
     command['vz'] = -.3
     controller.rc_input.get_velocity_commands = Mock(return_value=command)
     controller.update_trajectory(.1, .1)
-    assert controller.target_position[2] == pytest.approx(-.03)
-    controller.position[2] -= .03
+    assert controller.target_position[2] == pytest.approx(-.005)
+    assert controller.target_velocity[2] == pytest.approx(-.05)
+    controller.position[2] -= .005
     command['vz'] = 0
     controller.update_trajectory(.2, .1)
-    assert controller.target_position[2] == pytest.approx(-.03)
+    assert controller.target_position[2] == pytest.approx(-.005)
     assert controller.target_velocity[2] == 0.
 
 
-def test_tilt_protection_does_not_depend_on_relative_altitude(controller):
+def test_attitude_magnitude_alone_does_not_stop_control(controller):
     activate(controller)
     controller.R_ned_frd = np.diag([1., -1., -1.])
-    assert controller._direct_safety_violation_reason().startswith('tilt')
-    controller.actuator_motors_pub.publish.reset_mock()
-    controller._publish_direct_safety_cutoff(0.)
-    controller.actuator_motors_pub.publish.assert_not_called()
+    assert not controller._direct_safety_violation_reason()
 
 
 def test_real_px4_inverted_attitude_is_not_canonicalized(controller):
@@ -271,13 +273,13 @@ def test_numerical_failure_latches_without_idle_commands(controller, monkeypatch
     controller.actuator_motors_pub.publish.assert_not_called()
 
 
-def test_control_sample_gap_latches_fault(controller):
+def test_one_60ms_sample_interval_does_not_latch_fault(controller):
     activate(controller)
     controller.px4_timestamp = 1_060_000
     controller.actuator_motors_pub.publish.reset_mock()
     controller.control_loop()
-    assert 'sample gap' in controller._hardware_fault
-    controller.actuator_motors_pub.publish.assert_not_called()
+    assert not controller._hardware_fault
+    controller.actuator_motors_pub.publish.assert_called()
 
 
 def test_lissajous_has_no_absolute_height_clamp(controller):
@@ -289,16 +291,17 @@ def test_lissajous_has_no_absolute_height_clamp(controller):
     assert position[2] == pytest.approx(-2.)
 
 
-def test_safety_gate_withdraws_output_before_publishing(controller):
+def test_nonfinite_state_requests_position_without_publishing_invalid_commands(controller):
     activate(controller)
-    controller.R_ned_frd = np.diag([1., -1., -1.])
+    controller.R_ned_frd[:] = np.nan
     controller.actuator_motors_pub.publish.reset_mock()
     controller.offboard_control_mode_pub.publish.reset_mock()
     controller.control_loop()
     controller.offboard_startup_tick()
-    assert 'envelope' in controller._hardware_fault
+    assert 'nonfinite' in controller._hardware_fault
     controller.actuator_motors_pub.publish.assert_not_called()
-    controller.offboard_control_mode_pub.publish.assert_not_called()
+    controller.offboard_control_mode_pub.publish.assert_called()
+    controller._fault_position_pub.publish.assert_called()
 
 
 def test_position_reset_latches_fault(controller):
@@ -417,12 +420,13 @@ def test_handover_and_fault_events_preserve_actual_command(controller):
     controller._latch_fault('test fault')
     events = [json.loads(line) for line in controller._event_path.read_text().splitlines()]
     assert [e['event'] for e in events] == [
-        'handover_begin', 'handover_command_published', 'fault', 'control_session_end']
+        'handover_begin', 'handover_command_published', 'position_handover_requested',
+        'fault', 'control_session_end']
     assert len(events[0]['details']['captured_motor_controls']) == 5
     assert events[0]['details']['captured_motor_controls'][4] > .3
-    assert events[2]['details']['reason'] == 'test fault'
-    assert events[2]['control_active']
-    assert len(events[2]['last_published_motors']) == 5
+    assert events[3]['details']['reason'] == 'test fault'
+    assert events[3]['control_active']
+    assert len(events[3]['last_published_motors']) == 5
 
 
 def test_parameter_readback_is_not_an_arming_offboard_gate(controller):
@@ -594,7 +598,8 @@ def test_wrench_difference_does_not_veto_entry_but_active_input_timeout_withdraw
     controller.offboard_control_mode_pub.publish.reset_mock()
     controller.offboard_startup_tick()
     assert 'rates' in controller._gate_reason
-    controller.offboard_control_mode_pub.publish.assert_not_called()
+    controller.offboard_control_mode_pub.publish.assert_called()
+    controller._fault_position_pub.publish.assert_called()
     assert 'rates' in controller._hardware_fault
 
 

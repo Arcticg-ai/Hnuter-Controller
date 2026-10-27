@@ -1,5 +1,43 @@
 # DRCDA 实机直接执行器 Offboard v2
 
+## 2026-10-27 当前修复策略
+
+本节替代下面历史记录中的30°退出和“只停发等Offboard-loss”策略。
+正常流程仍只由飞手手动解锁、手动切Offboard；程序不自动Arm、Disarm、切Offboard或起飞。
+等待阶段持续发20 Hz `OffboardControlMode(direct_actuator=true)`，不发执行器命令。
+Armed+Offboard后捕获**实测位置和完整姿态**，不要求姿态接近水平、不裁剪到普通遥控角度，
+正常控制不因倾角大小或旧参考差异退出。保留真实执行器角度、速率、推力和力矩限幅。
+
+接管同时由新鲜执行器命令快照重建名义扳手，计算它与首个新控制请求的差：
+力差转换到世界系保存，力矩差作为本次会话机体系配平保存。其后反馈项照常叠加，
+该配平不在0.5秒后强行消失；普通手动退出/重新切入时清空并重新捕获。
+这不是测得的负载或CG参数，不能当作已完成实机标定。没有有效快照时仍沿用旧的无快照路径，
+但事件/诊断中无法声明扳手连续；缺少实际执行器角反馈的边界没有改变。
+
+0.5秒执行器混合、实测状态校正、0.1秒分配时域、有界求解、无纯延迟策略均保留。
+当前RC零输入会保持捕获姿态，即便它超出普通手动倾转范围；不主动拉回水平。
+
+只有关键状态丢失/非法、估计器坐标重置、非有限数值或分配计算失败才进入硬故障交接：
+
+1. 立即经DDS `/fmu/in/vehicle_command`发送 `VEHICLE_CMD_DO_SET_MODE`，
+   `param1=1, param2=3, param3=0`，即请求Position，不是MAVLink链路，不涉及飞控参数。
+2. 请求期间不发布无效执行器，也不发送空闲/零电机命令；短暂继续心跳并每0.1秒重试。
+   以新的实际模式/解锁反馈确认已经退出Offboard，单独ACK不能当作切换完成。
+3. 若0.35秒仍无反馈确认，明确报错并继续Position请求，同时允许原有PX4 Offboard-loss兜底。
+   不能无期限保活、把飞机留在冻结PWM的直接模式中。该超时仅适用于硬故障，不是正常姿态门槛。
+4. 硬故障仍锁存，需要排查并重启程序；普通手动Position/Offboard切换不锁存故障。
+
+这能消除“只有停发，没有主动请求交接”的程序缺陷，但**不能保证飞控一定接受Position**。
+定位无效、链路断开、进程崩溃/`kill -9`时，机载程序无法完成握手，飞控自身failsafe仍决定输出。
+尤其当次固件Position中的Hnuter旧倾转目标在Offboard期间仍保留；仅改机载程序不能保证
+反向切回Position时固件内部姿态目标也自动无扰重置。本次不改固件或飞控参数，不能宣称双向飞行已验证。
+
+本轮完成原版77项、修复版93项ROS实体全Mock的离线测试，以及固定初始状态的接管回放。
+回放中尾电机不再从0.652下降至0.360，修复版保持0.652；这不是闭环动力学仿真或飞行验证。
+本次不启动控制器，不自动运行任何DDS节点。
+
+## 历史策略
+
 2026-10-24 当前策略（替代以下旧接管策略）：启动后持续发送 Offboard 心跳，
 人工 Armed + Offboard 触发控制；切换瞬间捕获实测位置和完整姿态作为参考，
 默认 0.5 s 从已有执行器输出平滑过渡。普通关闭/重开 Offboard 会重新捕获位姿。
@@ -319,3 +357,59 @@ ULog 未见这两个接管窗口发生估计器重置；内部姿态/角速度/�
 没有内部控制器同时分配的证据。尾部及舵机驱动 PWM 与实际发布指令匹配。
 第二次撤销后约 1 s 才触发 Offboard-loss（COM_OF_LOSS_T=1），期间最后命令保持。
 没有擅自修改飞控超时、失效动作或发送自动模式命令。
+# State receive/compute separation (2026-10-27)
+
+The v2 entry now creates a dedicated `hnuter_drcda_v2_state_receiver` node and
+single-threaded executor for position, attitude and angular velocity. Its
+subscriptions use volatile, best-effort `KEEP_LAST(1)` and only replace entries
+in a locked three-slot inbox. They never run the allocator or mutate controller
+state. The main executor takes a coherent snapshot at most once per new attitude
+publication; it updates position and rates before attitude triggers control.
+Messages received during a solve remain available for the next snapshot instead
+of creating a backlog of control jobs. Existing event/status subscriptions stay
+on the control executor.
+
+The initial software freshness bounds are 75 ms for attitude/rates, 200 ms for
+position, 30 ms maximum rates/attitude sample skew and 100 ms position/attitude
+sample skew. Prefer `timestamp_sample`; fall back to `timestamp` only when the
+sample field is absent or zero. A temporarily skewed snapshot waits for a matching
+latest sample. The age watchdog on the last used state continues to run, and an
+expired state follows the existing Position-request fault path. The same check
+runs before takeover and again before publishing a solved actuator command.
+These are rejection bounds, not a declaration that those delays are stable for
+flight or permission to increase gains.
+
+Receive time is recorded in the receive executor and is not renewed when the
+control executor later processes the message. Duplicates do not refresh it.
+The minimum observed `receive_monotonic - PX4_publication_timestamp` estimates the
+clock offset **plus minimum transport latency**. This detects extra delay and
+sample-to-publication age without subtracting unrelated raw clocks. It cannot
+measure a constant delay already present at startup or prove absolute one-way
+latency; clock drift and PX4 restart require attention, and source timestamp
+regression rejects further control until restart. This remains Python/ROS soft
+real-time execution, not a hard real-time scheduling guarantee.
+
+`v2_state_timing_json` in the diagnostic CSV records the source sample timestamps,
+receive ages, age relative to the minimum transport baseline, publication time
+and elapsed control time. Frozen control state is checked even if newer messages
+have already arrived, so new receptions cannot make an old solve appear fresh.
+
+Validation on NX: 103 offline tests passed, including delayed-but-newly-received
+samples, repeated/reversed timestamps, skewed states and rejection of stale solve
+results. One actual ROS/DDS executor test passed in private domain 173, verifying
+that reception continues while control is blocked and that the next control
+uses the newest snapshot. Publishers are mocked in the offline tests; the DDS
+test runs monitor-only on its isolated domain. These tests do not validate gains,
+actuator mechanics, absolute transport delay or flight stability.
+
+```bash
+python3 tools/build_hardware_drcda_v2.py --check
+python3 -m pytest tests/hardware/test_drcda_v2_hardware.py \
+  tests/hardware/test_balance_handover_repair.py tests/hardware/test_state_freshness.py -q
+ROS_DOMAIN_ID=173 HNUTER_RUN_ISOLATED_ROS_TEST=1 \
+  python3 -m pytest tests/hardware/test_state_receiver_ros.py -q
+```
+
+A subsequent 8-second live monitor-only check on NX accepted 1,225 coherent
+attitude samples with rates/attitude sample skew from -10.545 to +9.046 ms.
+Output stayed disabled. This was not an allocation-load or flight test.

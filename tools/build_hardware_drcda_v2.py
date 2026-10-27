@@ -31,6 +31,7 @@ def render():
     replacements = {}
     additions = {}
     trim_sites = 0
+    wrench_sites = 0
     for node in ast.walk(old_tree):
         if (isinstance(node, ast.Constant) and isinstance(node.value, str)
                 and node.value.startswith('HARDWARE MODE:')):
@@ -38,7 +39,7 @@ def render():
             # v2's monitor default and must not suggest an unvalidated flight.
             replacements[node.lineno] = ' ' * node.col_offset + repr(
                 'HARDWARE V2: monitor-only by default; no heartbeat or actuator output in monitor mode. '
-                'No automatic Arm/Disarm/mode changes. Check the explicit v2 output/gate status; '
+                'No automatic Arm/Disarm/Offboard; critical faults may request Position. Check v2 output status; '
                 'prop-off/bench validation is required before enabling takeover.')
             omitted.update(range(node.lineno, node.end_lineno + 1))
         if (isinstance(node, ast.Assign) and node.lineno < first
@@ -60,6 +61,12 @@ def render():
                 '        return direction * float(np.clip(allocator_pitch_torque, -scale, scale))'
             )
             omitted.update(range(node.lineno, node.end_lineno + 1))
+        if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Attribute)
+                and node.value.func.attr == '_apply_firmware_tail_pitch_bias'):
+            additions[node.end_lineno] = (' ' * node.col_offset
+                + 'W = self._apply_hardware_wrench_handover(W)')
+            wrench_sites += 1
         if isinstance(node, ast.FunctionDef) and node.name == 'workspace_root':
             replacements[node.lineno] = (
                 'def workspace_root() -> Path:\n'
@@ -82,6 +89,8 @@ def render():
             omitted.update(range(node.lineno, node.end_lineno + 1))
     if trim_sites != 2:
         raise ValueError('Expected exactly two attitude torque construction sites')
+    if wrench_sites != 1:
+        raise ValueError('Expected exactly one hardware wrench handover site')
     base = '\n'.join(replacements.get(i, line) + ('\n' + additions[i] if i in additions else '')
                      for i, line in enumerate(old.splitlines()[:first - 2], 1)
                      if i not in omitted or i in replacements)
@@ -94,7 +103,7 @@ def render():
     allocator += '\n' + '\n'.join(lines[model.end_lineno:])
     config = json.loads(CONFIG.read_text())
     inputs = (OLD, CORE, EXTRA, CONFIG)
-    provenance = {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+    provenance = {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in inputs}
     result = base + '\n\n' + allocator + '\n\n'
     hardware_controller = segment(old, 'HnuterHardwareDRCDAController')
@@ -120,7 +129,7 @@ def main():
             raise SystemExit('Standalone output differs; rebuild with this script.')
         print('Standalone output matches its four recorded inputs.')
     else:
-        OUTPUT.write_text(content)
+        OUTPUT.write_text(content, encoding='utf-8', newline='\n')
         print(OUTPUT)
 
 
