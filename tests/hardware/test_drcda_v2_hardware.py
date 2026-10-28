@@ -31,6 +31,7 @@ def controller(monkeypatch, tmp_path):
     monkeypatch.setattr(hw, 'KeyboardCommandReader', Mock())
     node = hw.HnuterHardwareDRCDAV2Controller()
     yield node
+    assert node._event_writer.close()
     node._diagnostic_file.close()
 
 
@@ -388,6 +389,7 @@ def test_command_echo_cannot_abort_active_control(controller, kind, bad):
     assert controller.drcda.last_result.status == 'solved'
     assert not controller._hardware_fault
     if bad != 'duplicate':
+        assert controller._event_writer.flush()
         events = [json.loads(line) for line in controller._event_path.read_text().splitlines()]
         event = next(e for e in events if e['event'] == 'actuator_echo_dropped')
         assert event['details']['topic'] == kind
@@ -418,6 +420,7 @@ def test_old_reversible_flags_do_not_veto_entry_and_output_uses_configured_flags
 def test_handover_and_fault_events_preserve_actual_command(controller):
     activate(controller)
     controller._latch_fault('test fault')
+    assert controller._event_writer.flush()
     events = [json.loads(line) for line in controller._event_path.read_text().splitlines()]
     assert [e['event'] for e in events] == [
         'handover_begin', 'handover_command_published', 'position_handover_requested',

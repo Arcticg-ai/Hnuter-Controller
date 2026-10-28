@@ -152,6 +152,7 @@ def test_fault_confirms_fresh_mode_and_never_requests_arm_offboard(controller, m
     calls = controller._fault_position_pub.publish.call_args_list
     assert all(c.args[0].command == hw.VehicleCommand.VEHICLE_CMD_DO_SET_MODE and c.args[0].param2 == 3. for c in calls)
     assert controller.vehicle_command_pub is None
+    assert controller._event_writer.flush()
     events = [json.loads(s) for s in controller._event_path.read_text().splitlines()]
     assert any(e['event'] == 'position_handover_confirmed' for e in events)
 
@@ -182,6 +183,7 @@ def test_fresh_position_status_confirms_but_cached_position_does_not(controller,
     now[0] += .02
     controller.status_callback(Msg(timestamp=1_040_000, arming_state=2, nav_state=2))
     assert not controller._fault_handover_pending
+    assert controller._event_writer.flush()
     events = [json.loads(s) for s in controller._event_path.read_text().splitlines()]
     assert events[-1]['details']['position_state_confirmed']
 
@@ -213,6 +215,7 @@ def test_event_scalar_encoding_and_csv_row_reliability(controller):
     activate(controller)
     feed(controller, stamp=1_020_000, offboard=True)
     controller._record_event('numeric_test', {'f': np.float32(1.2), 'a': np.array([np.float32(2.)])})
+    assert controller._event_writer.flush()
     events = [json.loads(s) for s in controller._event_path.read_text().splitlines()]
     assert events[-1]['details']['a'] == [2.]
     import csv

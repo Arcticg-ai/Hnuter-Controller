@@ -6245,12 +6245,72 @@ class HnuterHardwareDRCDAController(HnuterHardwareController):
             self._theta2_cmd,
         )
 
-HARDWARE_V2_BUILD_INPUTS = {'controllers/hardware/hnuter_external_direct_drcda_hardware.py': '91bc60e1bb518fd970326a23f3b410dec7143cecde2820dde9a1c9df22cdf442', 'tools/templates/drcda_hardware_v2_allocator.py.in': 'cd97866191706848e939771c23fd12bfa5755f8f2b3be50e2d9d6a7b347ced23', 'tools/templates/drcda_hardware_v2.py.in': '5d8a9e07c5ffe363b71596ba646a0f357f2dd8630a158756c59803667cce487a', 'config/hardware/hnuter_drcda_v2_hardware_tuning.json': '394f936ec6d10fc3f689fba13274c87515a0027fa5ca80f1a9eb266e74af7b3a'}
+HARDWARE_V2_BUILD_INPUTS = {'controllers/hardware/hnuter_external_direct_drcda_hardware.py': '91bc60e1bb518fd970326a23f3b410dec7143cecde2820dde9a1c9df22cdf442', 'tools/templates/drcda_hardware_v2_allocator.py.in': 'cd97866191706848e939771c23fd12bfa5755f8f2b3be50e2d9d6a7b347ced23', 'tools/templates/drcda_hardware_v2.py.in': '973fe6ce381c59c4672e0dd7ebddfeacf98426f7606771f389703f1d8d05814a', 'config/hardware/hnuter_drcda_v2_hardware_tuning.json': '394f936ec6d10fc3f689fba13274c87515a0027fa5ca80f1a9eb266e74af7b3a'}
 HARDWARE_V2_DEFAULT_CONFIG = {'hardware_firmware_profile': 'tail_identified_20260827_500_2500_gear2', 'HNTR_MASS': 4.8, 'HNTR_MAX_ARM_T': 170.96, 'HNTR_TAIL_T_POS': 12.78, 'HNTR_TAIL_T_NEG': 6.04, 'HNTR_TAIL_EXP_P': 0.55, 'HNTR_TAIL_EXP_N': 0.68, 'HNTR_L1': 0.33, 'HNTR_L2': 0.72, 'HNTR_CG_Z': 0.0, 'HNTR_CG_X': 0.013, 'HNTR_MOT_HOV': 0.58, 'HNTR_MOT_EXPO': 0.5, 'HNTR_PITCH_BIAS': 0.07, 'HNTR_TAIL_SIGN': 1.0, 'HNTR_S1_RATE': 4.7, 'HNTR_S2_RATE': 4.7, 'servo_pwm_min_us': 500, 'servo_pwm_trim_us': 1500, 'servo_pwm_max_us': 2500, 'primary_servo_angle_max_deg': 180.0, 'secondary_servo_angle_max_deg': 180.0, 'HNTR_S2_GEAR': 2.0, 'alpha_limit_deg': 180.0, 'theta_limit_deg': 90.0, 'attitude_peak_hold_s': 5.0, 'attitude_segment_time_s': 15.0, 'attitude_step_angle_deg': 10.0, 'attitude_step_pitch_deg': 10.0, 'attitude_step_roll_deg': 10.0, 'attitude_step_yaw_deg': 0.0, 'attitude_test_altitude_m': 0.0, 'attitude_test_altitude_only': False, 'attitude_test_max_acc_xy': 1.0, 'direct_Domega': [3.0, 2.5, 2.3], 'direct_safety_attitude_check_enabled': True, 'direct_safety_attitude_limit_deg': 30.0, 'direct_KR': [7.5, 5.0, 6.0], 'direct_attitude_Ki': [0.0, 0.0, 0.0], 'direct_attitude_integral_limit': [1.0, 0.5, 1.0], 'direct_tau_limit': [15.0, 5.0, 0.8], 'direct_pos_Kp_ned': [2.0, 2.0, 3.5], 'direct_pos_Kd_ned': [3.0, 3.0, 4.0], 'direct_pos_Ki_ned': [0.0, 0.0, 0.2], 'direct_pos_integral_limit_ned': [1.0, 1.0, 2.5], 'direct_yaw_control_enabled': True, 'max_acc_xy': 3.0, 'max_acc_z': 8.0, 'manual_roll_limit_deg': 15.0, 'manual_pitch_limit_deg': 15.0, 'rc_attitude_rate_deg_s': [5.0, 5.0], 'rc_attitude_angle_limit_deg': 15.0, 'rc_attitude_sign': [-1.0, -1.0], 'gamepad_max_vxy_body_mps': [0.3, 0.3], 'gamepad_max_acc_body_xy_mps2': [0.3, 0.3], 'gamepad_filter_tau_body_xy_s': [0.2, 0.2], 'xy_lock_max_acc_xy': 3.0, 'drcda_horizon_s': 0.1, 'drcda_wrench_error_gain': 6.0, 'drcda_wrench_ff_tau_s': 0.08, 'drcda_wrench_rate_weight': 0.0, 'drcda_wrench_weight': [1.2, 1.2, 2.0, 3.0, 3.0, 2.5], 'drcda_command_move_weight': [0.035, 0.05, 0.035, 0.05, 0.006, 0.006, 0.006, 0.006, 0.008], 'drcda_command_preference_weight': [0.003, 0.004, 0.003, 0.004, 0.001, 0.001, 0.001, 0.001, 0.002], 'drcda_antiwindup_gain': 0.0, 'hardware_servo_tau_positive_s': [0.0, 0.0, 0.0, 0.0], 'hardware_servo_tau_negative_s': [0.0, 0.0, 0.0, 0.0]}
 
 # Appended to the hardware base and current allocator by build_hardware_drcda_v2.py.
 from px4_msgs.msg import DebugVect
 from rclpy.executors import SingleThreadedExecutor
+import queue
+
+
+class AsyncEventWriter:
+    """Bounded event persistence; disk latency must never block flight control."""
+    def __init__(self, path, capacity=512):
+        self.path = path
+        self.pending = queue.Queue(maxsize=capacity)
+        self.thread = None
+        self.stop = threading.Event()
+        self.dropped = 0
+        self.error = ''
+
+    def append(self, text):
+        if self.stop.is_set():
+            self.dropped += 1
+            return
+        if self.thread is None:
+            self.thread = threading.Thread(target=self._run, name='hnuter-event-log', daemon=True)
+            self.thread.start()
+        try:
+            self.pending.put_nowait((text, None))
+        except queue.Full:
+            self.dropped += 1
+
+    def _run(self):
+        while not self.stop.is_set() or not self.pending.empty():
+            try:
+                text, barrier = self.pending.get(timeout=.1)
+            except queue.Empty:
+                continue
+            try:
+                if text is not None:
+                    with self.path.open('a', encoding='utf-8') as stream:
+                        stream.write(text)
+                        stream.flush()
+                        os.fsync(stream.fileno())
+            except OSError as exc:
+                self.error = str(exc)
+            finally:
+                if barrier is not None:
+                    barrier.set()
+                self.pending.task_done()
+
+    def flush(self, timeout=2.):
+        # Only for offline inspection or shutdown, never called on a control tick.
+        if self.thread is None:
+            return True
+        barrier = threading.Event()
+        try:
+            self.pending.put((None, barrier), timeout=timeout)
+        except queue.Full:
+            return False
+        return barrier.wait(timeout) and not self.error
+
+    def close(self):
+        self.stop.set()
+        if self.thread is not None:
+            self.thread.join(timeout=2.)
+        return (self.thread is None or not self.thread.is_alive()) and self.pending.empty() and not self.error
 
 
 class LatestStateInbox:
@@ -6372,6 +6432,8 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         self._sample_stamps = {}
         self._hardware_fault = ''
         self._event_path = log_path('events', 'drcda_v2.jsonl')
+        self._event_writer = AsyncEventWriter(self._event_path)
+        self._event_log_warning = None
         self._echo_drop_counts = {'motors': 0, 'servos': 0}
         self._last_echo_drop_event_s = {}
         self._handover_publish_count = 0
@@ -6720,6 +6782,8 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             self._state_rx_thread.join(timeout=2.)
         if self._state_receiver is not None:
             self._state_receiver.destroy_node()
+        if not self._event_writer.close():
+            self.get_logger().error('Event-log shutdown incomplete: ' + self._event_writer.error)
         return super().destroy_node()
 
     def _state_control_tick(self):
@@ -6926,15 +6990,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             'last_published_servos': getattr(self, 'last_servo_cmd', [])[:4],
             'details': details or {},
         }
-        try:
-            with self._event_path.open('a', encoding='utf-8') as stream:
-                stream.write(json.dumps(clean(entry), allow_nan=False) + '\n')
-                stream.flush()
-                if kind in ('fault', 'position_handover_requested', 'position_handover_confirmed',
-                            'handover_begin', 'handover_balance_initialized', 'control_session_end'):
-                    os.fsync(stream.fileno())
-        except OSError as exc:
-            self.get_logger().error('Unable to record DRCDA event: ' + str(exc))
+        self._event_writer.append(json.dumps(clean(entry), allow_nan=False) + '\n')
 
     def _readiness_reason(self, handover=False):
         # Runtime input validity, not a pre-entry consistency policy.
@@ -7104,6 +7160,10 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
     def offboard_startup_tick(self):
         self._update_hardware_control_gate()
         self.publish_offboard_control_mode()
+        status = (self._event_writer.dropped, self._event_writer.error)
+        if status != self._event_log_warning and (status[0] or status[1]):
+            self._event_log_warning = status
+            self.get_logger().error(f'Event-log warning: dropped={status[0]}, error={status[1]}')
 
     def publish_offboard_control_mode(self):
         if not self._heartbeat_block_reason():
