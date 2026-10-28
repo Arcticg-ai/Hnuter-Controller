@@ -1,0 +1,145 @@
+--- fixed_bf9d06b.py
++++ baseline.py
+@@ -6245,7 +6245,7 @@
+             self._theta2_cmd,
+         )
+ 
+-HARDWARE_V2_BUILD_INPUTS = {'controllers/hardware/hnuter_external_direct_drcda_hardware.py': '91bc60e1bb518fd970326a23f3b410dec7143cecde2820dde9a1c9df22cdf442', 'tools/templates/drcda_hardware_v2_allocator.py.in': 'cd97866191706848e939771c23fd12bfa5755f8f2b3be50e2d9d6a7b347ced23', 'tools/templates/drcda_hardware_v2.py.in': '5d8a9e07c5ffe363b71596ba646a0f357f2dd8630a158756c59803667cce487a', 'config/hardware/hnuter_drcda_v2_hardware_tuning.json': '394f936ec6d10fc3f689fba13274c87515a0027fa5ca80f1a9eb266e74af7b3a'}
++HARDWARE_V2_BUILD_INPUTS = {'controllers/hardware/hnuter_external_direct_drcda_hardware.py': '91bc60e1bb518fd970326a23f3b410dec7143cecde2820dde9a1c9df22cdf442', 'tools/templates/drcda_hardware_v2_allocator.py.in': 'cd97866191706848e939771c23fd12bfa5755f8f2b3be50e2d9d6a7b347ced23', 'tools/templates/drcda_hardware_v2.py.in': '27d10119cf61753ef54733915ebb8bfa71ce4c8f9e10c0b3e52ef276b4c40a1b', 'config/hardware/hnuter_drcda_v2_hardware_tuning.json': '394f936ec6d10fc3f689fba13274c87515a0027fa5ca80f1a9eb266e74af7b3a'}
+ HARDWARE_V2_DEFAULT_CONFIG = {'hardware_firmware_profile': 'tail_identified_20260827_500_2500_gear2', 'HNTR_MASS': 4.8, 'HNTR_MAX_ARM_T': 170.96, 'HNTR_TAIL_T_POS': 12.78, 'HNTR_TAIL_T_NEG': 6.04, 'HNTR_TAIL_EXP_P': 0.55, 'HNTR_TAIL_EXP_N': 0.68, 'HNTR_L1': 0.33, 'HNTR_L2': 0.72, 'HNTR_CG_Z': 0.0, 'HNTR_CG_X': 0.013, 'HNTR_MOT_HOV': 0.58, 'HNTR_MOT_EXPO': 0.5, 'HNTR_PITCH_BIAS': 0.07, 'HNTR_TAIL_SIGN': 1.0, 'HNTR_S1_RATE': 4.7, 'HNTR_S2_RATE': 4.7, 'servo_pwm_min_us': 500, 'servo_pwm_trim_us': 1500, 'servo_pwm_max_us': 2500, 'primary_servo_angle_max_deg': 180.0, 'secondary_servo_angle_max_deg': 180.0, 'HNTR_S2_GEAR': 2.0, 'alpha_limit_deg': 180.0, 'theta_limit_deg': 90.0, 'attitude_peak_hold_s': 5.0, 'attitude_segment_time_s': 15.0, 'attitude_step_angle_deg': 10.0, 'attitude_step_pitch_deg': 10.0, 'attitude_step_roll_deg': 10.0, 'attitude_step_yaw_deg': 0.0, 'attitude_test_altitude_m': 0.0, 'attitude_test_altitude_only': False, 'attitude_test_max_acc_xy': 1.0, 'direct_Domega': [3.0, 2.5, 2.3], 'direct_safety_attitude_check_enabled': True, 'direct_safety_attitude_limit_deg': 30.0, 'direct_KR': [7.5, 5.0, 6.0], 'direct_attitude_Ki': [0.0, 0.0, 0.0], 'direct_attitude_integral_limit': [1.0, 0.5, 1.0], 'direct_tau_limit': [15.0, 5.0, 0.8], 'direct_pos_Kp_ned': [2.0, 2.0, 3.5], 'direct_pos_Kd_ned': [3.0, 3.0, 4.0], 'direct_pos_Ki_ned': [0.0, 0.0, 0.2], 'direct_pos_integral_limit_ned': [1.0, 1.0, 2.5], 'direct_yaw_control_enabled': True, 'max_acc_xy': 3.0, 'max_acc_z': 8.0, 'manual_roll_limit_deg': 15.0, 'manual_pitch_limit_deg': 15.0, 'rc_attitude_rate_deg_s': [5.0, 5.0], 'rc_attitude_angle_limit_deg': 15.0, 'rc_attitude_sign': [-1.0, -1.0], 'gamepad_max_vxy_body_mps': [0.3, 0.3], 'gamepad_max_acc_body_xy_mps2': [0.3, 0.3], 'gamepad_filter_tau_body_xy_s': [0.2, 0.2], 'xy_lock_max_acc_xy': 3.0, 'drcda_horizon_s': 0.1, 'drcda_wrench_error_gain': 6.0, 'drcda_wrench_ff_tau_s': 0.08, 'drcda_wrench_rate_weight': 0.0, 'drcda_wrench_weight': [1.2, 1.2, 2.0, 3.0, 3.0, 2.5], 'drcda_command_move_weight': [0.035, 0.05, 0.035, 0.05, 0.006, 0.006, 0.006, 0.006, 0.008], 'drcda_command_preference_weight': [0.003, 0.004, 0.003, 0.004, 0.001, 0.001, 0.001, 0.001, 0.002], 'drcda_antiwindup_gain': 0.0, 'hardware_servo_tau_positive_s': [0.0, 0.0, 0.0, 0.0], 'hardware_servo_tau_negative_s': [0.0, 0.0, 0.0, 0.0]}
+ 
+ # Appended to the hardware base and current allocator by build_hardware_drcda_v2.py.
+@@ -6356,8 +6356,6 @@
+ 
+     def __init__(self):
+         self._state_inbox = LatestStateInbox()
+-        self._manual_reference_velocity = np.zeros(3)
+-        self._control_session_id = 0
+         self._state_receiver = None
+         self._state_rx_executor = None
+         self._state_rx_thread = None
+@@ -7045,9 +7043,6 @@
+         if reason:
+             self._latch_fault(reason)
+             return
+-        self._control_session_id += 1
+-        self._last_diagnostic_log_time = -math.inf
+-        self._manual_reference_velocity[:] = 0.0
+         reference = np.array(self._euler_from_rotation_matrix(self.R), dtype=float)
+         self._handover_publish_count = 0
+         self._handover_wrench_diagnostics = None
+@@ -7099,7 +7094,6 @@
+         self._handover_force_bias_world = None
+         self._handover_torque_bias_body = None
+         self._handover_torque_raw_initial = None
+-        self._manual_reference_velocity[:] = 0.0
+ 
+     def offboard_startup_tick(self):
+         self._update_hardware_control_gate()
+@@ -7226,48 +7220,6 @@
+         finally:
+             self.min_altitude, self.max_altitude = saved
+ 
+-    def _advance_manual_position_reference(self, velocity, dt):
+-        """Limit outward reference motion, never project a held position target.
+-
+-        The lead is a soft input bound, not an estimator reset: an aircraft
+-        moving away cannot make its reference jump. Integrate a bounded velocity
+-        and expose the same velocity/acceleration to the outer controller.
+-        """
+-        if not np.isfinite(dt) or dt <= 0.0:
+-            raise ValueError('invalid manual reference interval')
+-        desired = np.asarray(velocity, dtype=float).copy()
+-        if desired.shape != (3,) or not np.all(np.isfinite(desired)):
+-            raise ValueError('invalid manual reference velocity')
+-        current = self.position.copy()
+-        current[2] -= self._z0
+-        error = self.manual_des_pos - current
+-        # Begin slowing before the lead boundary; do not move a zero-stick
+-        # reference toward the vehicle merely because tracking is poor.
+-        distance = float(np.linalg.norm(error[:2]))
+-        if distance > 1e-8:
+-            direction = error[:2] / distance
+-            outward = float(desired[:2] @ direction)
+-            allowed = max(0.0, (self.manual_max_position_lead_xy - distance) / 0.5)
+-            desired[:2] -= max(0.0, outward - allowed) * direction
+-        if abs(error[2]) > 1e-8:
+-            direction = float(np.sign(error[2]))
+-            outward = desired[2] * direction
+-            allowed = max(0.0, (self.manual_max_position_lead_z - abs(error[2])) / 0.5)
+-            desired[2] -= max(0.0, outward - allowed) * direction
+-        speed_xy = float(np.linalg.norm(self.rc_input.max_vxy_body_mps))
+-        desired[:2] *= min(1.0, speed_xy / max(np.linalg.norm(desired[:2]), 1e-12))
+-        desired[2] = np.clip(desired[2], -self.rc_input.max_vz, self.rc_input.max_vz)
+-        previous = self._manual_reference_velocity.copy()
+-        delta = desired - previous
+-        acceleration_xy = float(np.linalg.norm(self.rc_input.max_acc_body_xy_mps2))
+-        delta[:2] *= min(1.0, acceleration_xy * dt / max(np.linalg.norm(delta[:2]), 1e-12))
+-        delta[2] = np.clip(delta[2], -0.5 * dt, 0.5 * dt)
+-        self._manual_reference_velocity = previous + delta
+-        self.manual_des_pos += dt * self._manual_reference_velocity
+-        self.target_position = self.manual_des_pos.copy()
+-        self.target_velocity = self._manual_reference_velocity.copy()
+-        self.target_acceleration = delta / dt
+-
+     def update_trajectory(self, current_time, dt):
+         # Hardware Z=0 is the handover height, not the floor. Negative relative
+         # height is valid; releasing the stick must not command an automatic climb.
+@@ -7277,18 +7229,28 @@
+             self._start_auto_trajectory(self.pending_auto_traj_mode, current_time)
+             self.pending_auto_traj_mode = None
+         if self.auto_traj_mode != 'hover' and self._update_auto_trajectory(current_time):
+-            self._manual_reference_velocity = self.target_velocity.copy()
+             return
+         cmds = (self.rc_input.get_velocity_commands(dt)
+                 if self._manual_command_input_enabled() else self._zero_manual_cmd())
+         self._last_manual_cmd = cmds.copy()
++        previous = self.manual_des_pos.copy()
+         yaw = self._current_yaw_enu()
+         velocity = np.array([
+             math.cos(yaw) * cmds['vx_b'] - math.sin(yaw) * cmds['vy_b'],
+             math.sin(yaw) * cmds['vx_b'] + math.cos(yaw) * cmds['vy_b'],
+             cmds['vz'],
+         ])
+-        self._advance_manual_position_reference(velocity, dt)
++        self.manual_des_pos += dt * velocity
++        current = self.position.copy()
++        current[2] -= self._z0
++        if np.linalg.norm(velocity[:2]) > 1e-5:
++            error = self.manual_des_pos[:2] - current[:2]
++            scale = min(1.0, self.manual_max_position_lead_xy / max(np.linalg.norm(error), 1e-8))
++            self.manual_des_pos[:2] = current[:2] + scale * error
++        if abs(velocity[2]) > 1e-5:
++            self.manual_des_pos[2] = current[2] + np.clip(
++                self.manual_des_pos[2] - current[2],
++                -self.manual_max_position_lead_z, self.manual_max_position_lead_z)
+         self.manual_des_yaw = self._wrap_angle_rad(self.manual_des_yaw + dt * cmds['yaw_rate'])
+         if abs(cmds['yaw_rate']) > 1e-5:
+             self.manual_des_yaw = self._wrap_angle_rad(yaw + np.clip(
+@@ -7303,6 +7265,9 @@
+         angles = np.clip(old_angles + dt * np.array([cmds['roll_rate'], cmds['pitch_rate']]),
+                          np.minimum(-limits, old_angles), np.maximum(limits, old_angles))
+         self.manual_des_roll, self.manual_des_pitch = angles
++        self.target_position = self.manual_des_pos.copy()
++        self.target_velocity = (self.manual_des_pos - previous) / max(dt, 1e-6)
++        self.target_acceleration = np.zeros(3)
+         self.target_attitude = np.r_[angles, self.manual_des_yaw]
+         self.target_attitude_rate = np.r_[(angles - old_angles) / max(dt, 1e-6), cmds['yaw_rate']]
+         self.target_R_des_ned_frd = None
+@@ -7312,7 +7277,7 @@
+             'v2_output_enabled', 'v2_fault', 'v2_gate_reason',
+             'v2_px4_reference_roll_enu_deg', 'v2_px4_reference_pitch_enu_deg',
+             'v2_px4_reference_yaw_enu_deg', 'v2_handover_wrench_check_json',
+-            'v2_state_timing_json', 'v2_control_session_id', 'v2_joint_state_source']
++            'v2_state_timing_json', 'v2_joint_state_source']
+ 
+     def _diagnostic_extra_values(self):
+         return super()._diagnostic_extra_values() + [
+@@ -7321,7 +7286,6 @@
+               if self._px4_attitude_reference_enu is not None else [float('nan')]*3),
+             json.dumps(self._handover_wrench_diagnostics, allow_nan=False),
+             json.dumps(getattr(self, '_last_state_timing', None), allow_nan=False),
+-            self._control_session_id,
+             'measured_joints' if self._joint_feedback_enabled else 'command_model_only']
+ 
+     def print_status(self):

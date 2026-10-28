@@ -1,0 +1,22 @@
+2026-10-28 local validation
+
+python3 -m pytest -q -p no:cacheprovider tests
+393 passed, 1 skipped, 3 dependency deprecation warnings
+The skipped DDS integration was then run separately in a loopback-only namespace:
+ROS_DOMAIN_ID=173 HNUTER_RUN_ISOLATED_ROS_TEST=1
+tests/hardware/test_state_receiver_ros.py: 1 passed
+
+python3 tools/build_hardware_drcda_v2.py --check
+Standalone output matches its four recorded inputs.
+
+bash test/hnuter_handover/run.sh
+PASS in both main firmware and no-delay Tail-SITL firmware.
+Coverage: snapshot validity, control ownership, integrals, stale references,
+RC/Auto capture, actuator seed, first servo step, motor transition, tail dwell.
+
+Builds: px4_sitl_default and cuav_7-nano_default passed.
+No firmware flashed. No aircraft controller started. No aircraft parameters written.
+
+Gazebo: 21 attempts archived, including incomplete and failed attempts.
+See evidence/summary.json; NOT all passed. Loaded Position returns remain FAIL.
+Offline tests are not closed-loop or flight validation.

@@ -1,0 +1,6 @@
+{
+  "fixed_commit": "bf9d06b",
+  "fixed_sha256": "7beb6b9bfb38626325b0e1ba1f8cb3d7034ba51b5ea149404e880feb5618b320",
+  "baseline_sha256": "252cd3fdcaaeab880e09fd5a123426b80c3b6f9ac7ace856034ed976020797ae",
+  "meaning": "Recorded remote hardware source before reference repair; includes synchronous event fsync."
+}

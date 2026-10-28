@@ -1,0 +1,1209 @@
+[
+  {
+    "group": "baseline",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "operator_error": "",
+    "tracking_statistics_eligible": true,
+    "operational_outcome": "PASS",
+    "phases": {
+      "hold": {
+        "position_rmse_m": 0.056682946800648226,
+        "position_peak_m": 0.09943472149269868,
+        "position_axis_rmse_m": [
+          0.009609996817650714,
+          0.054971120992318365,
+          0.009938599355854047
+        ],
+        "so3_rmse_deg": 1.4804365763141385,
+        "so3_peak_deg": 1.8574002061784494,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_out": {
+        "position_rmse_m": 0.06808525656990791,
+        "position_peak_m": 0.08085084530850531,
+        "position_axis_rmse_m": [
+          0.017263487712010413,
+          0.06563566334808135,
+          0.005433575897475436
+        ],
+        "so3_rmse_deg": 1.6803495354463764,
+        "so3_peak_deg": 2.5671849142152325,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_back": {
+        "position_rmse_m": 0.06337580590236089,
+        "position_peak_m": 0.08227565601421086,
+        "position_axis_rmse_m": [
+          0.014824829323852222,
+          0.061420008575978714,
+          0.0049269452305938394
+        ],
+        "so3_rmse_deg": 1.4446215889061929,
+        "so3_peak_deg": 1.8056569005040408,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_settle": {
+        "position_rmse_m": 0.05045045561310661,
+        "position_peak_m": 0.09168181541878098,
+        "position_axis_rmse_m": [
+          0.013626259561783476,
+          0.04797338201398389,
+          0.007623348220392293
+        ],
+        "so3_rmse_deg": 1.6080132704640908,
+        "so3_peak_deg": 2.3819783017729437,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "lateral_out": {
+        "position_rmse_m": 0.10573133198816509,
+        "position_peak_m": 0.13330074518624863,
+        "position_axis_rmse_m": [
+          0.03753760938224326,
+          0.09862945610741798,
+          0.006499984369712308
+        ],
+        "so3_rmse_deg": 1.9827388467365237,
+        "so3_peak_deg": 2.38771656608221,
+        "reference_speed_peak_m_s": 0.13738682294567095
+      },
+      "lateral_back": {
+        "position_rmse_m": 0.045031391039006004,
+        "position_peak_m": 0.11339477193388224,
+        "position_axis_rmse_m": [
+          0.010760260295195613,
+          0.043066094732613996,
+          0.007569231157021853
+        ],
+        "so3_rmse_deg": 1.6233034496043302,
+        "so3_peak_deg": 2.3519952157981767,
+        "reference_speed_peak_m_s": 0.13738682293183316
+      },
+      "lateral_settle": {
+        "position_rmse_m": 0.12495679296751039,
+        "position_peak_m": 0.15571172693776988,
+        "position_axis_rmse_m": [
+          0.03642964914334809,
+          0.11938359097519631,
+          0.005884058197739172
+        ],
+        "so3_rmse_deg": 2.3081161365530134,
+        "so3_peak_deg": 2.881543265076735,
+        "reference_speed_peak_m_s": 0.13738682293422
+      },
+      "position_exit": {
+        "position_rmse_m": 0.08839953463436145,
+        "position_peak_m": 0.1377664216359464,
+        "position_axis_rmse_m": [
+          0.046424689510672586,
+          0.07509941507223657,
+          0.004393488181966823
+        ],
+        "so3_rmse_deg": 3.0650179730056917,
+        "so3_peak_deg": 4.012077849880135,
+        "reference_speed_peak_m_s": 5.583694423849344e-12
+      },
+      "offboard_reentry": {
+        "position_rmse_m": 0.048275909535277585,
+        "position_peak_m": 0.23086603614347723,
+        "position_axis_rmse_m": [
+          0.016677323549061672,
+          0.04206069470663531,
+          0.016831897646156713
+        ],
+        "so3_rmse_deg": 2.127848884042647,
+        "so3_peak_deg": 2.897502972535855,
+        "reference_speed_peak_m_s": 4.589682730062172e-12
+      },
+      "position_exit_2": {
+        "position_rmse_m": 0.08767853969124653,
+        "position_peak_m": 0.1160213288096257,
+        "position_axis_rmse_m": [
+          0.032768621579407825,
+          0.08104216282299806,
+          0.006775778128751041
+        ],
+        "so3_rmse_deg": 3.0481270550644908,
+        "so3_peak_deg": 3.766640128463816,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "offboard_reentry_2": {
+        "position_rmse_m": 0.033251880650403534,
+        "position_peak_m": 0.04811417190685984,
+        "position_axis_rmse_m": [
+          0.027085896915314687,
+          0.018884496230735893,
+          0.003919316597848721
+        ],
+        "so3_rmse_deg": 0.41908732466668003,
+        "so3_peak_deg": 4.044630124611765,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "final_hold": {
+        "position_rmse_m": 0.03974588922547637,
+        "position_peak_m": 0.06904710016074331,
+        "position_axis_rmse_m": [
+          0.015808704162791547,
+          0.03488287430829008,
+          0.010629417999012755
+        ],
+        "so3_rmse_deg": 0.1576923456104111,
+        "so3_peak_deg": 0.32738217424185406,
+        "reference_speed_peak_m_s": 0.0
+      }
+    },
+    "firmware_handover": [
+      {
+        "ulog_exit_time_s": 71.508,
+        "first_target_from_measured_so3_deg": 0.0,
+        "first_second_attitude_error_peak_deg": 2.1523046493530273,
+        "motor_edge_delta_normalized": [
+          -0.0008675754070281982,
+          0.0013184547424316406,
+          0.0010153353214263916,
+          3.2842159271240234e-05,
+          -0.0020545125007629395
+        ],
+        "motor_edge_sample_gap_s": 0.11599999999999999,
+        "servo_edge_delta_normalized": [
+          -0.00530680175870657,
+          0.002546194475144148,
+          -0.01600070297718048,
+          0.0019808015786111355
+        ],
+        "servo_edge_sample_gap_s": 0.11599999999999999
+      },
+      {
+        "ulog_exit_time_s": 82.5,
+        "first_target_from_measured_so3_deg": 0.0,
+        "first_second_attitude_error_peak_deg": 2.4969284534454346,
+        "motor_edge_delta_normalized": [
+          -0.0006450414657592773,
+          0.0010023117065429688,
+          0.0007432699203491211,
+          -0.0006487667560577393,
+          0.0004323124885559082
+        ],
+        "motor_edge_sample_gap_s": 0.104,
+        "servo_edge_delta_normalized": [
+          -0.004697452299296856,
+          0.004466761834919453,
+          -0.018672099336981773,
+          -0.002305556321516633
+        ],
+        "servo_edge_sample_gap_s": 0.11199999999999999
+      }
+    ]
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "operator_error": "",
+    "tracking_statistics_eligible": true,
+    "operational_outcome": "PASS",
+    "phases": {
+      "hold": {
+        "position_rmse_m": 0.05810660803420394,
+        "position_peak_m": 0.09588135102546397,
+        "position_axis_rmse_m": [
+          0.03721240438723832,
+          0.04317443573095653,
+          0.011295248935049296
+        ],
+        "so3_rmse_deg": 0.7559889396235712,
+        "so3_peak_deg": 1.3012123566690406,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_out": {
+        "position_rmse_m": 0.08342253830492528,
+        "position_peak_m": 0.10135283748588479,
+        "position_axis_rmse_m": [
+          0.04051830780130378,
+          0.07194181161566811,
+          0.011914712185921794
+        ],
+        "so3_rmse_deg": 1.1389145446449451,
+        "so3_peak_deg": 1.9942228670339524,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_back": {
+        "position_rmse_m": 0.13029112186026928,
+        "position_peak_m": 0.16035044195135664,
+        "position_axis_rmse_m": [
+          0.08769056225190511,
+          0.09502102883094103,
+          0.0160356259396464
+        ],
+        "so3_rmse_deg": 0.8381036497974719,
+        "so3_peak_deg": 1.6626031850108611,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_settle": {
+        "position_rmse_m": 0.055181120001573644,
+        "position_peak_m": 0.07280170157736089,
+        "position_axis_rmse_m": [
+          0.033460077087793326,
+          0.04313160397237316,
+          0.008064875521052598
+        ],
+        "so3_rmse_deg": 0.7271698289674781,
+        "so3_peak_deg": 1.0448858268397994,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "lateral_out": {
+        "position_rmse_m": 0.10034748287059819,
+        "position_peak_m": 0.12522548249667753,
+        "position_axis_rmse_m": [
+          0.045582473395348044,
+          0.08932213821089337,
+          0.003661295730260222
+        ],
+        "so3_rmse_deg": 0.9307079960422944,
+        "so3_peak_deg": 1.4242401063539618,
+        "reference_speed_peak_m_s": 0.1373868229456512
+      },
+      "lateral_back": {
+        "position_rmse_m": 0.08364135330111258,
+        "position_peak_m": 0.11352936441056193,
+        "position_axis_rmse_m": [
+          0.05132653869535245,
+          0.0658812060409035,
+          0.004593497213554519
+        ],
+        "so3_rmse_deg": 0.8425067042374101,
+        "so3_peak_deg": 1.4235854060585402,
+        "reference_speed_peak_m_s": 0.13738682294558952
+      },
+      "lateral_settle": {
+        "position_rmse_m": 0.11075138444459161,
+        "position_peak_m": 0.13206335223785287,
+        "position_axis_rmse_m": [
+          0.06692255248382212,
+          0.08799510738394371,
+          0.006640762277517454
+        ],
+        "so3_rmse_deg": 1.0067892356110817,
+        "so3_peak_deg": 1.4148027444957794,
+        "reference_speed_peak_m_s": 0.1373868229440949
+      },
+      "position_exit": {
+        "position_rmse_m": 0.08005389884182391,
+        "position_peak_m": 0.1262517591635603,
+        "position_axis_rmse_m": [
+          0.037584804797757866,
+          0.07048769273625041,
+          0.005242010494994423
+        ],
+        "so3_rmse_deg": 3.328983018549667,
+        "so3_peak_deg": 4.102974362635524,
+        "reference_speed_peak_m_s": 5.756699550935999e-12
+      },
+      "offboard_reentry": {
+        "position_rmse_m": 0.036228744736069254,
+        "position_peak_m": 0.1623239779300493,
+        "position_axis_rmse_m": [
+          0.015491806598928386,
+          0.03175944315840136,
+          0.007989335093964246
+        ],
+        "so3_rmse_deg": 0.7314423023973238,
+        "so3_peak_deg": 3.505774815141214,
+        "reference_speed_peak_m_s": 4.5472860029159395e-12
+      },
+      "position_exit_2": {
+        "position_rmse_m": 0.12012749520737295,
+        "position_peak_m": 0.18768992260731474,
+        "position_axis_rmse_m": [
+          0.05866979740170419,
+          0.10464359506428393,
+          0.006177891687968748
+        ],
+        "so3_rmse_deg": 3.4752982985184744,
+        "so3_peak_deg": 4.410101798520474,
+        "reference_speed_peak_m_s": 1.1008575882008003e-23
+      },
+      "offboard_reentry_2": {
+        "position_rmse_m": 0.08593636778751389,
+        "position_peak_m": 0.10412627311247062,
+        "position_axis_rmse_m": [
+          0.018701829887023493,
+          0.029820715418159217,
+          0.0783949164424702
+        ],
+        "so3_rmse_deg": 3.075974663536621,
+        "so3_peak_deg": 5.861694390697162,
+        "reference_speed_peak_m_s": 8.709306796137398e-24
+      },
+      "final_hold": {
+        "position_rmse_m": 0.12309261651788309,
+        "position_peak_m": 0.1511249797722682,
+        "position_axis_rmse_m": [
+          0.024692350162143547,
+          0.1041242129615681,
+          0.06082948833495297
+        ],
+        "so3_rmse_deg": 3.1545868161973187,
+        "so3_peak_deg": 3.602435215704757,
+        "reference_speed_peak_m_s": 2.185231810449831e-35
+      }
+    },
+    "firmware_handover": [
+      {
+        "ulog_exit_time_s": 71.448,
+        "first_target_from_measured_so3_deg": 0.028879582767262924,
+        "first_second_attitude_error_peak_deg": 2.7634189128875732,
+        "motor_edge_delta_normalized": [
+          -0.000345766544342041,
+          0.0003928840160369873,
+          0.0005660355091094971,
+          -0.00035330653190612793,
+          4.380941390991211e-05
+        ],
+        "motor_edge_sample_gap_s": 0.11199999999999999,
+        "servo_edge_delta_normalized": [
+          -0.004483433905988932,
+          0.004982802085578442,
+          -0.017430895939469337,
+          -0.005424731411039829
+        ],
+        "servo_edge_sample_gap_s": 0.11199999999999999
+      },
+      {
+        "ulog_exit_time_s": 82.44,
+        "first_target_from_measured_so3_deg": 0.0,
+        "first_second_attitude_error_peak_deg": 2.934192657470703,
+        "motor_edge_delta_normalized": [
+          -0.0007747411727905273,
+          0.0006591975688934326,
+          0.0008198320865631104,
+          -0.0006613731384277344,
+          0.0001838207244873047
+        ],
+        "motor_edge_sample_gap_s": 0.12,
+        "servo_edge_delta_normalized": [
+          -0.005812354385852814,
+          0.00478971004486084,
+          -0.021982241421937943,
+          -0.006679375655949116
+        ],
+        "servo_edge_sample_gap_s": 0.12
+      }
+    ]
+  },
+  {
+    "group": "tuned",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "operator_error": "",
+    "tracking_statistics_eligible": true,
+    "operational_outcome": "PASS",
+    "phases": {
+      "hold": {
+        "position_rmse_m": 0.07725219072795449,
+        "position_peak_m": 0.11034854393382365,
+        "position_axis_rmse_m": [
+          0.03470277319966523,
+          0.06696420241728242,
+          0.016715636076745987
+        ],
+        "so3_rmse_deg": 0.5165205470665948,
+        "so3_peak_deg": 1.1611486221171028,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_out": {
+        "position_rmse_m": 0.060956092384501705,
+        "position_peak_m": 0.0719529595775652,
+        "position_axis_rmse_m": [
+          0.010694444287965522,
+          0.057013770205910794,
+          0.018726529276147288
+        ],
+        "so3_rmse_deg": 0.6734767872606057,
+        "so3_peak_deg": 1.0743665288761521,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_back": {
+        "position_rmse_m": 0.04167817676067684,
+        "position_peak_m": 0.06728650387852567,
+        "position_axis_rmse_m": [
+          0.028026350421441318,
+          0.02881092112440451,
+          0.011022328951032827
+        ],
+        "so3_rmse_deg": 0.4272973624384139,
+        "so3_peak_deg": 1.2024459839769635,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_settle": {
+        "position_rmse_m": 0.023748929980428785,
+        "position_peak_m": 0.03352414651237046,
+        "position_axis_rmse_m": [
+          0.009835123535516346,
+          0.02046346255773279,
+          0.006963713525510269
+        ],
+        "so3_rmse_deg": 0.6150991588202767,
+        "so3_peak_deg": 1.3151486859954356,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "lateral_out": {
+        "position_rmse_m": 0.022100044033294044,
+        "position_peak_m": 0.031138173769465198,
+        "position_axis_rmse_m": [
+          0.010542238172703501,
+          0.015266889308907029,
+          0.01200214027682441
+        ],
+        "so3_rmse_deg": 0.24645086197498228,
+        "so3_peak_deg": 0.6525216581277831,
+        "reference_speed_peak_m_s": 0.13738682294571733
+      },
+      "lateral_back": {
+        "position_rmse_m": 0.03627354304425887,
+        "position_peak_m": 0.05459750956267766,
+        "position_axis_rmse_m": [
+          0.023001004110182702,
+          0.02576809328332559,
+          0.011068438964701085
+        ],
+        "so3_rmse_deg": 0.3087150318089401,
+        "so3_peak_deg": 0.5313788969598955,
+        "reference_speed_peak_m_s": 0.13738682294566756
+      },
+      "lateral_settle": {
+        "position_rmse_m": 0.027319532864835405,
+        "position_peak_m": 0.04100690169766024,
+        "position_axis_rmse_m": [
+          0.008564404513029953,
+          0.020579807431849086,
+          0.01579264570454645
+        ],
+        "so3_rmse_deg": 0.34860745479477623,
+        "so3_peak_deg": 0.5686456857299974,
+        "reference_speed_peak_m_s": 0.13738682294475565
+      },
+      "position_exit": {
+        "position_rmse_m": 0.11771128691393899,
+        "position_peak_m": 0.19782887385312772,
+        "position_axis_rmse_m": [
+          0.05669956446516943,
+          0.10303295378403149,
+          0.005021430663356437
+        ],
+        "so3_rmse_deg": 3.2177179207922437,
+        "so3_peak_deg": 4.2062177627181985,
+        "reference_speed_peak_m_s": 5.362568625606318e-12
+      },
+      "offboard_reentry": {
+        "position_rmse_m": 0.06350448528724766,
+        "position_peak_m": 0.08479013242439004,
+        "position_axis_rmse_m": [
+          0.02507053850454298,
+          0.05766084324082193,
+          0.008901555409105984
+        ],
+        "so3_rmse_deg": 0.518425260869643,
+        "so3_peak_deg": 2.6494162566799253,
+        "reference_speed_peak_m_s": 4.406215604064017e-12
+      },
+      "position_exit_2": {
+        "position_rmse_m": 0.1076932768912538,
+        "position_peak_m": 0.14768343348032553,
+        "position_axis_rmse_m": [
+          0.04428674236787293,
+          0.09789215459403251,
+          0.007322529503958226
+        ],
+        "so3_rmse_deg": 3.2987832689807686,
+        "so3_peak_deg": 4.0001126059606875,
+        "reference_speed_peak_m_s": 1.0804535197606746e-23
+      },
+      "offboard_reentry_2": {
+        "position_rmse_m": 0.05339854898055335,
+        "position_peak_m": 0.20474596519776436,
+        "position_axis_rmse_m": [
+          0.022652920466154264,
+          0.04809816608063313,
+          0.004959795252358111
+        ],
+        "so3_rmse_deg": 0.5474769818407321,
+        "so3_peak_deg": 3.6920170391440217,
+        "reference_speed_peak_m_s": 8.706177324763927e-24
+      },
+      "final_hold": {
+        "position_rmse_m": 0.07725581937350183,
+        "position_peak_m": 0.10569298524319633,
+        "position_axis_rmse_m": [
+          0.037895535398382474,
+          0.06647370877253489,
+          0.010659056789435182
+        ],
+        "so3_rmse_deg": 0.3664908168100634,
+        "so3_peak_deg": 0.8942216143804459,
+        "reference_speed_peak_m_s": 2.1463149049958645e-35
+      }
+    },
+    "firmware_handover": [
+      {
+        "ulog_exit_time_s": 71.384,
+        "first_target_from_measured_so3_deg": 0.026517685367609796,
+        "first_second_attitude_error_peak_deg": 2.020256280899048,
+        "motor_edge_delta_normalized": [
+          -0.0006396472454071045,
+          0.002112746238708496,
+          0.001512080430984497,
+          -0.0004150569438934326,
+          -0.0010732412338256836
+        ],
+        "motor_edge_sample_gap_s": 0.11199999999999999,
+        "servo_edge_delta_normalized": [
+          -0.00507763959467411,
+          0.0025481681805104017,
+          -0.017585454508662224,
+          -0.0013359301956370473
+        ],
+        "servo_edge_sample_gap_s": 0.11199999999999999
+      },
+      {
+        "ulog_exit_time_s": 82.38799999999999,
+        "first_target_from_measured_so3_deg": 0.027770731668886696,
+        "first_second_attitude_error_peak_deg": 2.6032555103302,
+        "motor_edge_delta_normalized": [
+          -0.001661449670791626,
+          0.0006792545318603516,
+          0.0005926787853240967,
+          -0.0013869702816009521,
+          -0.00017458200454711914
+        ],
+        "motor_edge_sample_gap_s": 0.11599999999999999,
+        "servo_edge_delta_normalized": [
+          -0.005077398382127285,
+          0.003726272378116846,
+          -0.01698031648993492,
+          -0.0008256167639046907
+        ],
+        "servo_edge_sample_gap_s": 0.12
+      }
+    ]
+  },
+  {
+    "group": "tuned",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "operator_error": "",
+    "tracking_statistics_eligible": true,
+    "operational_outcome": "PASS",
+    "phases": {
+      "hold": {
+        "position_rmse_m": 0.0343370546903046,
+        "position_peak_m": 0.05353004581952039,
+        "position_axis_rmse_m": [
+          0.017032638968811648,
+          0.020882018690033796,
+          0.021280595984623805
+        ],
+        "so3_rmse_deg": 1.4199438640299047,
+        "so3_peak_deg": 1.9733447025603907,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_out": {
+        "position_rmse_m": 0.042470823482279756,
+        "position_peak_m": 0.05816029958696717,
+        "position_axis_rmse_m": [
+          0.024424650114084474,
+          0.026752788848549983,
+          0.02216912542096989
+        ],
+        "so3_rmse_deg": 1.693572902927965,
+        "so3_peak_deg": 2.4202361149766896,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_back": {
+        "position_rmse_m": 0.027482752098732906,
+        "position_peak_m": 0.045562402725380605,
+        "position_axis_rmse_m": [
+          0.01240313305853001,
+          0.021661394729795617,
+          0.011498293022768665
+        ],
+        "so3_rmse_deg": 0.9516477614239324,
+        "so3_peak_deg": 1.3646536103362343,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_settle": {
+        "position_rmse_m": 0.03129748715020241,
+        "position_peak_m": 0.03866898062645563,
+        "position_axis_rmse_m": [
+          0.006663736193581615,
+          0.026180937463367134,
+          0.015800948043051783
+        ],
+        "so3_rmse_deg": 1.2927231250023252,
+        "so3_peak_deg": 2.011030391258699,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "lateral_out": {
+        "position_rmse_m": 0.025129226911505664,
+        "position_peak_m": 0.03859013271829331,
+        "position_axis_rmse_m": [
+          0.008254685590538761,
+          0.017386732381774957,
+          0.016149675938925207
+        ],
+        "so3_rmse_deg": 0.8699735810701225,
+        "so3_peak_deg": 1.3986878770232793,
+        "reference_speed_peak_m_s": 0.13738682294568874
+      },
+      "lateral_back": {
+        "position_rmse_m": 0.022678037665896014,
+        "position_peak_m": 0.03426008514571273,
+        "position_axis_rmse_m": [
+          0.012379511535472757,
+          0.01687497579866038,
+          0.008722381472673636
+        ],
+        "so3_rmse_deg": 0.8316711153098468,
+        "so3_peak_deg": 1.2638054025119358,
+        "reference_speed_peak_m_s": 0.1373868229449904
+      },
+      "lateral_settle": {
+        "position_rmse_m": 0.016856299326428775,
+        "position_peak_m": 0.0241086655266545,
+        "position_axis_rmse_m": [
+          0.010276718517648581,
+          0.010373485530802931,
+          0.008419263349623583
+        ],
+        "so3_rmse_deg": 0.6426874727962568,
+        "so3_peak_deg": 0.8754801143584671,
+        "reference_speed_peak_m_s": 0.13738682294535906
+      },
+      "position_exit": {
+        "position_rmse_m": 0.10092139576442377,
+        "position_peak_m": 0.16440785646275413,
+        "position_axis_rmse_m": [
+          0.03767573545090785,
+          0.09332769925830403,
+          0.007450394501549076
+        ],
+        "so3_rmse_deg": 3.082715835247126,
+        "so3_peak_deg": 3.9146032361420424,
+        "reference_speed_peak_m_s": 6.013564176419117e-12
+      },
+      "offboard_reentry": {
+        "position_rmse_m": 0.059743190125959446,
+        "position_peak_m": 0.08717451616208634,
+        "position_axis_rmse_m": [
+          0.015848884229844915,
+          0.051133613019610204,
+          0.02651998409747888
+        ],
+        "so3_rmse_deg": 1.1328065484499754,
+        "so3_peak_deg": 3.0243824270266977,
+        "reference_speed_peak_m_s": 4.75103433648045e-12
+      },
+      "position_exit_2": {
+        "position_rmse_m": 0.1056603043799506,
+        "position_peak_m": 0.15741760011410333,
+        "position_axis_rmse_m": [
+          0.05599174628752714,
+          0.08904274371001632,
+          0.010015811142858289
+        ],
+        "so3_rmse_deg": 3.311210605265987,
+        "so3_peak_deg": 3.99299007085514,
+        "reference_speed_peak_m_s": 1.1037659882035137e-23
+      },
+      "offboard_reentry_2": {
+        "position_rmse_m": 0.04162824053902332,
+        "position_peak_m": 0.13831761341822085,
+        "position_axis_rmse_m": [
+          0.00929212117916686,
+          0.03538320580684925,
+          0.019859473905503022
+        ],
+        "so3_rmse_deg": 1.3899783133290262,
+        "so3_peak_deg": 3.41481650253087,
+        "reference_speed_peak_m_s": 9.068431456198208e-24
+      },
+      "final_hold": {
+        "position_rmse_m": 0.03375886172739939,
+        "position_peak_m": 0.05733163760315976,
+        "position_axis_rmse_m": [
+          0.011366298384945845,
+          0.023244595836502693,
+          0.02168257963328419
+        ],
+        "so3_rmse_deg": 1.2990481774843157,
+        "so3_peak_deg": 1.60633527674693,
+        "reference_speed_peak_m_s": 2.2230041789961148e-35
+      }
+    },
+    "firmware_handover": [
+      {
+        "ulog_exit_time_s": 71.39999999999999,
+        "first_target_from_measured_so3_deg": 0.0,
+        "first_second_attitude_error_peak_deg": 1.6220719814300537,
+        "motor_edge_delta_normalized": [
+          -0.0023963749408721924,
+          -0.000766068696975708,
+          0.0017993152141571045,
+          -0.0005770027637481689,
+          0.00215071439743042
+        ],
+        "motor_edge_sample_gap_s": 0.11599999999999999,
+        "servo_edge_delta_normalized": [
+          -0.0049538020975887775,
+          0.0033744163811206818,
+          -0.013029510155320168,
+          0.001567829865962267
+        ],
+        "servo_edge_sample_gap_s": 0.11599999999999999
+      },
+      {
+        "ulog_exit_time_s": 82.392,
+        "first_target_from_measured_so3_deg": 0.024521060928014638,
+        "first_second_attitude_error_peak_deg": 2.687218189239502,
+        "motor_edge_delta_normalized": [
+          -0.00121268630027771,
+          0.002140134572982788,
+          0.0007423162460327148,
+          -0.0011410713195800781,
+          -0.0006036758422851562
+        ],
+        "motor_edge_sample_gap_s": 0.108,
+        "servo_edge_delta_normalized": [
+          -0.004582669120281935,
+          0.004990114830434322,
+          -0.01981683261692524,
+          -0.0034637926146388054
+        ],
+        "servo_edge_sample_gap_s": 0.11599999999999999
+      }
+    ]
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "operator_error": "",
+    "tracking_statistics_eligible": true,
+    "operational_outcome": "PASS",
+    "phases": {
+      "hold": {
+        "position_rmse_m": 0.049440573794117565,
+        "position_peak_m": 0.08123065799523928,
+        "position_axis_rmse_m": [
+          0.041564617126701425,
+          0.020404543423553932,
+          0.01733103358001105
+        ],
+        "so3_rmse_deg": 0.68572463615805,
+        "so3_peak_deg": 1.3551417763337323,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_out": {
+        "position_rmse_m": 0.06710028959307436,
+        "position_peak_m": 0.08362613220563114,
+        "position_axis_rmse_m": [
+          0.0613755039861209,
+          0.02567421017514008,
+          0.00873595204399055
+        ],
+        "so3_rmse_deg": 0.5610639825533046,
+        "so3_peak_deg": 1.1583378805775872,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_back": {
+        "position_rmse_m": 0.055864240419692394,
+        "position_peak_m": 0.06984801686543597,
+        "position_axis_rmse_m": [
+          0.05084683673307768,
+          0.02064517166335787,
+          0.010448189210971836
+        ],
+        "so3_rmse_deg": 0.5232757677510401,
+        "so3_peak_deg": 0.9812271688283914,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_settle": {
+        "position_rmse_m": 0.04536956341234662,
+        "position_peak_m": 0.07393375053581597,
+        "position_axis_rmse_m": [
+          0.04319983001909163,
+          0.013179641602091249,
+          0.004295814759640394
+        ],
+        "so3_rmse_deg": 0.8895955591734722,
+        "so3_peak_deg": 1.6435051135928462,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "lateral_out": {
+        "position_rmse_m": 0.06099532319677451,
+        "position_peak_m": 0.08231950711781194,
+        "position_axis_rmse_m": [
+          0.05810764865829318,
+          0.01744622043974265,
+          0.006273985767130233
+        ],
+        "so3_rmse_deg": 0.5769416531618025,
+        "so3_peak_deg": 1.0074266807117067,
+        "reference_speed_peak_m_s": 0.13738682294568477
+      },
+      "lateral_back": {
+        "position_rmse_m": 0.04190616417268808,
+        "position_peak_m": 0.06288384365963573,
+        "position_axis_rmse_m": [
+          0.03555649435106413,
+          0.019370321602005594,
+          0.010793411557056747
+        ],
+        "so3_rmse_deg": 0.6891263972054302,
+        "so3_peak_deg": 1.0317157582625016,
+        "reference_speed_peak_m_s": 0.1373868229450851
+      },
+      "lateral_settle": {
+        "position_rmse_m": 0.05311363542750229,
+        "position_peak_m": 0.06871531501403519,
+        "position_axis_rmse_m": [
+          0.05218879690906511,
+          0.007383550131262091,
+          0.006545703621099706
+        ],
+        "so3_rmse_deg": 0.5897036230626505,
+        "so3_peak_deg": 1.007057410530999,
+        "reference_speed_peak_m_s": 0.1373868229453144
+      },
+      "position_exit": {
+        "position_rmse_m": 0.07796135099758712,
+        "position_peak_m": 0.14319219263902452,
+        "position_axis_rmse_m": [
+          0.03918140945782263,
+          0.06697292941097084,
+          0.007569975747914582
+        ],
+        "so3_rmse_deg": 3.0568617507177565,
+        "so3_peak_deg": 4.361825123088183,
+        "reference_speed_peak_m_s": 5.654456620796603e-12
+      },
+      "offboard_reentry": {
+        "position_rmse_m": 0.1458613477705324,
+        "position_peak_m": 0.1807822670372725,
+        "position_axis_rmse_m": [
+          0.054063833967854524,
+          0.13485129210759203,
+          0.012906926136198229
+        ],
+        "so3_rmse_deg": 0.6912523246579807,
+        "so3_peak_deg": 2.3173698457595644,
+        "reference_speed_peak_m_s": 4.378230722205254e-12
+      },
+      "position_exit_2": {
+        "position_rmse_m": 0.08084349596757354,
+        "position_peak_m": 0.1685321604553196,
+        "position_axis_rmse_m": [
+          0.044888288491784216,
+          0.0671120382608646,
+          0.004082459699525384
+        ],
+        "so3_rmse_deg": 3.188352865758713,
+        "so3_peak_deg": 4.261136521730717,
+        "reference_speed_peak_m_s": 9.766984757643874e-24
+      },
+      "offboard_reentry_2": {
+        "position_rmse_m": 0.05047743978083411,
+        "position_peak_m": 0.2723833640722044,
+        "position_axis_rmse_m": [
+          0.02292198009432358,
+          0.043295283168117725,
+          0.012155550241096841
+        ],
+        "so3_rmse_deg": 0.8501132076243969,
+        "so3_peak_deg": 4.003494787994292,
+        "reference_speed_peak_m_s": 8.509272520851557e-24
+      },
+      "final_hold": {
+        "position_rmse_m": 0.07366713516664715,
+        "position_peak_m": 0.08609270035843045,
+        "position_axis_rmse_m": [
+          0.026613744650536158,
+          0.0681182101063925,
+          0.008856917947742377
+        ],
+        "so3_rmse_deg": 0.5778405287949463,
+        "so3_peak_deg": 0.791144506625434,
+        "reference_speed_peak_m_s": 2.0434403803152093e-35
+      }
+    },
+    "firmware_handover": [
+      {
+        "ulog_exit_time_s": 71.432,
+        "first_target_from_measured_so3_deg": 0.015105059103214948,
+        "first_second_attitude_error_peak_deg": 2.0819756984710693,
+        "motor_edge_delta_normalized": [
+          -0.0003937184810638428,
+          0.0003419220447540283,
+          5.9276819229125977e-05,
+          0.00017130374908447266,
+          -0.00017344951629638672
+        ],
+        "motor_edge_sample_gap_s": 0.108,
+        "servo_edge_delta_normalized": [
+          -0.0036818936932832003,
+          0.0044274721294641495,
+          -0.009520389139652252,
+          -0.0008450903696939349
+        ],
+        "servo_edge_sample_gap_s": 0.108
+      },
+      {
+        "ulog_exit_time_s": 82.41199999999999,
+        "first_target_from_measured_so3_deg": 0.020627574315475447,
+        "first_second_attitude_error_peak_deg": 2.6498403549194336,
+        "motor_edge_delta_normalized": [
+          -0.0008925795555114746,
+          0.0011211931705474854,
+          0.0006646513938903809,
+          -0.0001023411750793457,
+          -0.0016249418258666992
+        ],
+        "motor_edge_sample_gap_s": 0.108,
+        "servo_edge_delta_normalized": [
+          -0.004531010054051876,
+          0.005624015349894762,
+          -0.018860289826989174,
+          -0.00016147526912391186
+        ],
+        "servo_edge_sample_gap_s": 0.11599999999999999
+      }
+    ]
+  },
+  {
+    "group": "baseline",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "operator_error": "",
+    "tracking_statistics_eligible": true,
+    "operational_outcome": "PASS",
+    "phases": {
+      "hold": {
+        "position_rmse_m": 0.1245327473194824,
+        "position_peak_m": 0.19361708303259254,
+        "position_axis_rmse_m": [
+          0.05120491872081024,
+          0.11225940905606782,
+          0.016860469868562288
+        ],
+        "so3_rmse_deg": 0.7220365405337599,
+        "so3_peak_deg": 1.4784208661775724,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_out": {
+        "position_rmse_m": 0.14202961257529587,
+        "position_peak_m": 0.19347971968488245,
+        "position_axis_rmse_m": [
+          0.04899831668851699,
+          0.13298452060060154,
+          0.009310266997883565
+        ],
+        "so3_rmse_deg": 0.820929613041028,
+        "so3_peak_deg": 1.789281806585319,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_back": {
+        "position_rmse_m": 0.12949492820446998,
+        "position_peak_m": 0.15156747053062875,
+        "position_axis_rmse_m": [
+          0.05650078599971955,
+          0.116184257105143,
+          0.008820457956058935
+        ],
+        "so3_rmse_deg": 0.4589290556339525,
+        "so3_peak_deg": 0.8989057568962971,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "yaw_settle": {
+        "position_rmse_m": 0.1428444260823672,
+        "position_peak_m": 0.16473519194756578,
+        "position_axis_rmse_m": [
+          0.054318701238300605,
+          0.13176455987065247,
+          0.009596401270727615
+        ],
+        "so3_rmse_deg": 1.0147561396903026,
+        "so3_peak_deg": 1.3338753998530708,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "lateral_out": {
+        "position_rmse_m": 0.16279158508128616,
+        "position_peak_m": 0.20181074904567292,
+        "position_axis_rmse_m": [
+          0.06522688674399629,
+          0.14859320378386476,
+          0.01290750073340086
+        ],
+        "so3_rmse_deg": 0.6690273687580972,
+        "so3_peak_deg": 1.1383429659103075,
+        "reference_speed_peak_m_s": 0.13738682294573337
+      },
+      "lateral_back": {
+        "position_rmse_m": 0.1128827404807065,
+        "position_peak_m": 0.15097459415890474,
+        "position_axis_rmse_m": [
+          0.04809273546170042,
+          0.10197066253805692,
+          0.00561825857170311
+        ],
+        "so3_rmse_deg": 0.9007473931303491,
+        "so3_peak_deg": 1.2664694373547947,
+        "reference_speed_peak_m_s": 0.13738682294573018
+      },
+      "lateral_settle": {
+        "position_rmse_m": 0.17105557752585926,
+        "position_peak_m": 0.19076347263372254,
+        "position_axis_rmse_m": [
+          0.07440856661720949,
+          0.1539392250778528,
+          0.005106930868708083
+        ],
+        "so3_rmse_deg": 0.7313211103523738,
+        "so3_peak_deg": 1.1514132022669346,
+        "reference_speed_peak_m_s": 0.13738682294539456
+      },
+      "position_exit": {
+        "position_rmse_m": 0.08239205736454279,
+        "position_peak_m": 0.14939341795004493,
+        "position_axis_rmse_m": [
+          0.033632787854260875,
+          0.07508148024015004,
+          0.004474147467596218
+        ],
+        "so3_rmse_deg": 2.90463450475641,
+        "so3_peak_deg": 3.9636646963182853,
+        "reference_speed_peak_m_s": 6.142800826146378e-12
+      },
+      "offboard_reentry": {
+        "position_rmse_m": 0.03977556832417614,
+        "position_peak_m": 0.26230418434861824,
+        "position_axis_rmse_m": [
+          0.019244786076503737,
+          0.03387439884773007,
+          0.008013754181273718
+        ],
+        "so3_rmse_deg": 0.5777691717656281,
+        "so3_peak_deg": 2.6569446845751696,
+        "reference_speed_peak_m_s": 4.953072602399713e-12
+      },
+      "position_exit_2": {
+        "position_rmse_m": 0.10746659593208881,
+        "position_peak_m": 0.17601259684559978,
+        "position_axis_rmse_m": [
+          0.05364952380995017,
+          0.09302675683914247,
+          0.0040940708342148665
+        ],
+        "so3_rmse_deg": 3.1230168924587574,
+        "so3_peak_deg": 4.232870490216859,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "offboard_reentry_2": {
+        "position_rmse_m": 0.030315134346108764,
+        "position_peak_m": 0.07249904533904034,
+        "position_axis_rmse_m": [
+          0.022793433888764758,
+          0.018450844521581772,
+          0.007676748011757053
+        ],
+        "so3_rmse_deg": 0.3353466905397833,
+        "so3_peak_deg": 3.7270141534273598,
+        "reference_speed_peak_m_s": 0.0
+      },
+      "final_hold": {
+        "position_rmse_m": 0.04412197073282152,
+        "position_peak_m": 0.07088274528736721,
+        "position_axis_rmse_m": [
+          0.017995012739268283,
+          0.03562210823034246,
+          0.018814424742390097
+        ],
+        "so3_rmse_deg": 0.5201289127093683,
+        "so3_peak_deg": 0.9004141965346139,
+        "reference_speed_peak_m_s": 0.0
+      }
+    },
+    "firmware_handover": [
+      {
+        "ulog_exit_time_s": 71.38799999999999,
+        "first_target_from_measured_so3_deg": 0.0,
+        "first_second_attitude_error_peak_deg": 1.7396739721298218,
+        "motor_edge_delta_normalized": [
+          -0.0012314319610595703,
+          0.0014949142932891846,
+          0.0016519725322723389,
+          -0.0015020370483398438,
+          -0.0003094673156738281
+        ],
+        "motor_edge_sample_gap_s": 0.11199999999999999,
+        "servo_edge_delta_normalized": [
+          -0.003166284179314971,
+          0.004734831862151623,
+          -0.014393767341971397,
+          0.0002797483466565609
+        ],
+        "servo_edge_sample_gap_s": 0.11599999999999999
+      },
+      {
+        "ulog_exit_time_s": 82.392,
+        "first_target_from_measured_so3_deg": 0.018019216752153747,
+        "first_second_attitude_error_peak_deg": 2.2110419273376465,
+        "motor_edge_delta_normalized": [
+          -0.0015157461166381836,
+          0.0016532838344573975,
+          0.0013506114482879639,
+          -0.00128096342086792,
+          -0.0018590092658996582
+        ],
+        "motor_edge_sample_gap_s": 0.108,
+        "servo_edge_delta_normalized": [
+          -0.004489621613174677,
+          0.003239566460251808,
+          -0.018300700932741165,
+          -0.002476650523021817
+        ],
+        "servo_edge_sample_gap_s": 0.11599999999999999
+      }
+    ]
+  },
+  {
+    "group": "baseline",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "INVALID",
+    "invalid": [
+      "no samples"
+    ],
+    "failures": [],
+    "operator_error": "hardware fault: stale source state: rates",
+    "tracking_statistics_eligible": false,
+    "operational_outcome": "FAIL"
+  }
+]

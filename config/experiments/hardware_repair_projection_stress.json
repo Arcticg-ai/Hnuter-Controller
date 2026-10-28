@@ -1,0 +1,141 @@
+{
+  "policy": "no_delay_only",
+  "groups": [
+    "baseline",
+    "ref_fix",
+    "tuned"
+  ],
+  "ros_domain_id": 174,
+  "altitude_m": 3.0,
+  "mode_timeout_wall_s": 5.0,
+  "scenario_timeout_wall_s": 240.0,
+  "candidate": {
+    "direct_pos_Ki_ned": [
+      0.3,
+      0.3,
+      0.2
+    ],
+    "direct_pos_integral_limit_ned": [
+      3.0,
+      3.0,
+      2.5
+    ],
+    "direct_attitude_Ki": [
+      0.3,
+      0.4,
+      0.15
+    ],
+    "direct_attitude_integral_limit": [
+      1.0,
+      0.5,
+      1.0
+    ]
+  },
+  "synthetic_force": {
+    "enabled": false,
+    "label": "Artificial lateral-load projection stress test; not a fall-arrest cable model",
+    "world_force_n": [
+      7.0,
+      0.0,
+      3.0
+    ],
+    "body_flu_attachment_from_link_origin_m": [
+      0.2,
+      0.0,
+      0.0
+    ],
+    "start_s": 2.0,
+    "stop_s": 51.0
+  },
+  "limits": {
+    "position_peak_m": 0.75,
+    "so3_peak_deg": 15.0,
+    "tilt_peak_deg": 25.0,
+    "rate_peak_deg_s": 90.0,
+    "altitude_min_m": 1.0,
+    "target_speed_peak_m_s": 0.65,
+    "max_sample_gap_s": 0.3
+  },
+  "phases": [
+    {
+      "name": "hold",
+      "duration_s": 8.0,
+      "mode": "offboard",
+      "sticks": {}
+    },
+    {
+      "name": "yaw_out",
+      "duration_s": 4.0,
+      "mode": "offboard",
+      "sticks": {
+        "yaw": 0.55
+      }
+    },
+    {
+      "name": "yaw_back",
+      "duration_s": 4.0,
+      "mode": "offboard",
+      "sticks": {
+        "yaw": -0.55
+      }
+    },
+    {
+      "name": "yaw_settle",
+      "duration_s": 4.0,
+      "mode": "offboard",
+      "sticks": {}
+    },
+    {
+      "name": "lateral_out",
+      "duration_s": 6.0,
+      "mode": "offboard",
+      "sticks": {
+        "roll": 0.65
+      }
+    },
+    {
+      "name": "lateral_back",
+      "duration_s": 6.0,
+      "mode": "offboard",
+      "sticks": {
+        "roll": -0.65
+      }
+    },
+    {
+      "name": "lateral_settle",
+      "duration_s": 5.0,
+      "mode": "offboard",
+      "sticks": {}
+    },
+    {
+      "name": "position_exit",
+      "duration_s": 5.0,
+      "mode": "position",
+      "sticks": {}
+    },
+    {
+      "name": "offboard_reentry",
+      "duration_s": 6.0,
+      "mode": "offboard",
+      "sticks": {}
+    },
+    {
+      "name": "position_exit_2",
+      "duration_s": 5.0,
+      "mode": "position",
+      "sticks": {}
+    },
+    {
+      "name": "offboard_reentry_2",
+      "duration_s": 6.0,
+      "mode": "offboard",
+      "sticks": {}
+    },
+    {
+      "name": "final_hold",
+      "duration_s": 6.0,
+      "mode": "offboard",
+      "sticks": {}
+    }
+  ]
+}

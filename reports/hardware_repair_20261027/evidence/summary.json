@@ -1,0 +1,896 @@
+[
+  {
+    "group": "baseline",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "pilot01",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.05785283835416486,
+      "position_m_peak": 0.10866707908984401,
+      "so3_deg_rmse": 0.6734561768090018,
+      "so3_deg_peak": 1.608957971259548,
+      "reference_speed_m_s_rmse": 0.0753603547939141,
+      "reference_speed_m_s_peak": 0.13738682294574817,
+      "rate_deg_s_rmse": 3.7524413093679123,
+      "rate_deg_s_peak": 11.123680531012269
+    },
+    "settled": {
+      "position_m_rmse": 0.05945651627328711,
+      "position_m_peak": 0.10815273795021633,
+      "so3_deg_rmse": 0.6400455820768712,
+      "so3_deg_peak": 1.1606066889622544,
+      "reference_speed_m_s_rmse": 0.10000318731120993,
+      "reference_speed_m_s_peak": 0.13738682294574744,
+      "rate_deg_s_rmse": 1.3278615406374,
+      "rate_deg_s_peak": 8.696544394814707
+    },
+    "post_handover": {
+      "position_m_rmse": 0.09733034320140665,
+      "position_m_peak": 0.23267207926938516,
+      "so3_deg_rmse": 2.430281971913347,
+      "so3_deg_peak": 4.179615438994943,
+      "reference_speed_m_s_rmse": 2.845093926894211e-12,
+      "reference_speed_m_s_peak": 7.467309608488223e-12,
+      "rate_deg_s_rmse": 2.0234901982778384,
+      "rate_deg_s_peak": 16.636942452751512
+    },
+    "recorded_duration_s": 65.00411987304688,
+    "raw_reference_speed_peak_m_s": 0.1373868229457496,
+    "simulation_trace": "pilot01/none_baseline_r1.jsonl.gz"
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "INVALID",
+    "invalid": [
+      "no samples"
+    ],
+    "failures": [],
+    "campaign": "pilot01",
+    "operator_error": "takeoff height not reached",
+    "operational_outcome": "FAIL",
+    "pre_handover": null,
+    "settled": null,
+    "post_handover": null,
+    "recorded_duration_s": 0.0
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "INVALID",
+    "invalid": [
+      "truncated phase: offboard_reentry",
+      "missing phase: position_exit_2",
+      "missing phase: offboard_reentry_2",
+      "missing phase: final_hold"
+    ],
+    "failures": [
+      "scenario not completed"
+    ],
+    "campaign": "pilot02",
+    "operator_error": "hardware fault: stale source state: attitude",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.07832368731951427,
+      "position_m_peak": 0.140249389348233,
+      "so3_deg_rmse": 0.5533854830717365,
+      "so3_deg_peak": 1.7876135080102384,
+      "reference_speed_m_s_rmse": 0.07518837009968633,
+      "reference_speed_m_s_peak": 0.13738682294575133,
+      "rate_deg_s_rmse": 3.7569307363402302,
+      "rate_deg_s_peak": 11.665219296897938
+    },
+    "settled": {
+      "position_m_rmse": 0.0909613028820186,
+      "position_m_peak": 0.14024188650313787,
+      "so3_deg_rmse": 0.5810405930226319,
+      "so3_deg_peak": 1.1414580034249229,
+      "reference_speed_m_s_rmse": 0.09977371076185462,
+      "reference_speed_m_s_peak": 0.13738682294574914,
+      "rate_deg_s_rmse": 1.2992003224336848,
+      "rate_deg_s_peak": 7.9551754653490265
+    },
+    "post_handover": null,
+    "recorded_duration_s": 42.0721709728241,
+    "raw_reference_speed_peak_m_s": 0.13738682294575133,
+    "simulation_trace": "pilot02/none_ref_fix_r1.jsonl.gz"
+  },
+  {
+    "group": "baseline",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.07832413784002384,
+      "position_m_peak": 0.1557149431754202,
+      "so3_deg_rmse": 1.7520502621692835,
+      "so3_deg_peak": 2.8814272167087225,
+      "reference_speed_m_s_rmse": 0.07507787762965713,
+      "reference_speed_m_s_peak": 0.13738682294575372,
+      "rate_deg_s_rmse": 3.818499397865235,
+      "rate_deg_s_peak": 11.133078695155406
+    },
+    "settled": {
+      "position_m_rmse": 0.089307824775111,
+      "position_m_peak": 0.15571172693776902,
+      "so3_deg_rmse": 1.907104908270912,
+      "so3_deg_peak": 2.881543265076694,
+      "reference_speed_m_s_rmse": 0.09962855622605571,
+      "reference_speed_m_s_peak": 0.13738682294575014,
+      "rate_deg_s_rmse": 1.3568111825315745,
+      "rate_deg_s_peak": 8.093927542558143
+    },
+    "post_handover": {
+      "position_m_rmse": 0.06199249394116804,
+      "position_m_peak": 0.2308660361434766,
+      "so3_deg_rmse": 2.085635567764197,
+      "so3_deg_peak": 4.044630124611733,
+      "reference_speed_m_s_rmse": 1.9691395654906145e-12,
+      "reference_speed_m_s_peak": 5.583694423967128e-12,
+      "rate_deg_s_rmse": 1.5435746138073132,
+      "rate_deg_s_peak": 11.39631766054983
+    },
+    "recorded_duration_s": 65.02010607719421,
+    "raw_reference_speed_peak_m_s": 0.13738682294575602,
+    "simulation_trace": "campaign03/none_baseline_r1.jsonl.gz"
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.08988059585660856,
+      "position_m_peak": 0.16035044195135664,
+      "so3_deg_rmse": 0.8885944729921946,
+      "so3_deg_peak": 1.9942078947030912,
+      "reference_speed_m_s_rmse": 0.07514409980611328,
+      "reference_speed_m_s_peak": 0.13738682294574991,
+      "rate_deg_s_rmse": 3.7512578303788997,
+      "rate_deg_s_peak": 11.535926014174402
+    },
+    "settled": {
+      "position_m_rmse": 0.09152208414302232,
+      "position_m_peak": 0.1320633522378609,
+      "so3_deg_rmse": 0.8901427437387396,
+      "so3_deg_peak": 1.4242401063539605,
+      "reference_speed_m_s_rmse": 0.099717546387212,
+      "reference_speed_m_s_peak": 0.1373868229457492,
+      "rate_deg_s_rmse": 1.2370730130392453,
+      "rate_deg_s_peak": 7.996623529988804
+    },
+    "post_handover": {
+      "position_m_rmse": 0.09397804646605117,
+      "position_m_peak": 0.18768992260731104,
+      "so3_deg_rmse": 2.9000456075701084,
+      "so3_deg_peak": 5.861694390692789,
+      "reference_speed_m_s_rmse": 1.951547914952802e-12,
+      "reference_speed_m_s_peak": 5.756699552717807e-12,
+      "rate_deg_s_rmse": 2.6531192792994713,
+      "rate_deg_s_peak": 22.986384324101163
+    },
+    "recorded_duration_s": 65.01592302322388,
+    "raw_reference_speed_peak_m_s": 0.13738682294575205,
+    "simulation_trace": "campaign03/none_ref_fix_r1.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.04831038567622705,
+      "position_m_peak": 0.11034854393382365,
+      "so3_deg_rmse": 0.45719316855340925,
+      "so3_deg_peak": 1.3154810493946592,
+      "reference_speed_m_s_rmse": 0.07517217836464715,
+      "reference_speed_m_s_peak": 0.13738682294574878,
+      "rate_deg_s_rmse": 3.822197582336907,
+      "rate_deg_s_peak": 11.005711575308506
+    },
+    "settled": {
+      "position_m_rmse": 0.028295147075219688,
+      "position_m_peak": 0.05459750956272265,
+      "so3_deg_rmse": 0.38155581741178535,
+      "so3_deg_peak": 1.3151486859954356,
+      "reference_speed_m_s_rmse": 0.09975458906957912,
+      "reference_speed_m_s_peak": 0.13738682294575028,
+      "rate_deg_s_rmse": 1.2988260008749217,
+      "rate_deg_s_peak": 8.043666160171846
+    },
+    "post_handover": {
+      "position_m_rmse": 0.08543691545811835,
+      "position_m_peak": 0.20474596519772562,
+      "so3_deg_rmse": 1.9856203264327914,
+      "so3_deg_peak": 4.2062177627181985,
+      "reference_speed_m_s_rmse": 1.8906526959435186e-12,
+      "reference_speed_m_s_peak": 5.362568627714707e-12,
+      "rate_deg_s_rmse": 1.2394356162234628,
+      "rate_deg_s_peak": 4.353298536852389
+    },
+    "recorded_duration_s": 65.01610898971558,
+    "raw_reference_speed_peak_m_s": 0.13738682294575172,
+    "simulation_trace": "campaign03/none_tuned_r1.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.029337882329080765,
+      "position_m_peak": 0.05816029958696717,
+      "so3_deg_rmse": 1.1463912056613228,
+      "so3_deg_peak": 2.4201927171086606,
+      "reference_speed_m_s_rmse": 0.0751652194729536,
+      "reference_speed_m_s_peak": 0.13738682294574633,
+      "rate_deg_s_rmse": 3.874654517418803,
+      "rate_deg_s_peak": 9.889051150632314
+    },
+    "settled": {
+      "position_m_rmse": 0.024116220156975662,
+      "position_m_peak": 0.03866898062645563,
+      "so3_deg_rmse": 0.9113295756597005,
+      "so3_deg_peak": 2.011030391258699,
+      "reference_speed_m_s_rmse": 0.0997725587918973,
+      "reference_speed_m_s_peak": 0.13738682294574714,
+      "rate_deg_s_rmse": 1.341968442874664,
+      "rate_deg_s_peak": 8.165263503912644
+    },
+    "post_handover": {
+      "position_m_rmse": 0.07206075307761171,
+      "position_m_peak": 0.16440785646275413,
+      "so3_deg_rmse": 2.1692095523610813,
+      "so3_deg_peak": 3.992990070855366,
+      "reference_speed_m_s_rmse": 2.0395757571618566e-12,
+      "reference_speed_m_s_peak": 6.0135641764371856e-12,
+      "rate_deg_s_rmse": 1.4753109730134732,
+      "rate_deg_s_peak": 7.501016753435259
+    },
+    "recorded_duration_s": 65.0121021270752,
+    "raw_reference_speed_peak_m_s": 0.1373868229457487,
+    "simulation_trace": "campaign03/none_tuned_r2.jsonl.gz"
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.053284949370884266,
+      "position_m_peak": 0.0836391363911005,
+      "so3_deg_rmse": 0.6549036901689973,
+      "so3_deg_peak": 1.6433877268792914,
+      "reference_speed_m_s_rmse": 0.07511766940902564,
+      "reference_speed_m_s_peak": 0.13738682294574425,
+      "rate_deg_s_rmse": 3.797421354688395,
+      "rate_deg_s_peak": 11.157157853067606
+    },
+    "settled": {
+      "position_m_rmse": 0.05126876741801679,
+      "position_m_peak": 0.0823195071178029,
+      "so3_deg_rmse": 0.6814135876369428,
+      "so3_deg_peak": 1.6435051135928462,
+      "reference_speed_m_s_rmse": 0.09968117902062093,
+      "reference_speed_m_s_peak": 0.13738682294574509,
+      "rate_deg_s_rmse": 1.2927653975855713,
+      "rate_deg_s_peak": 9.112572329633682
+    },
+    "post_handover": {
+      "position_m_rmse": 0.0923058434290171,
+      "position_m_peak": 0.27238336407213565,
+      "so3_deg_rmse": 1.9526220495147306,
+      "so3_deg_peak": 4.361825123088183,
+      "reference_speed_m_s_rmse": 1.8800834594791107e-12,
+      "reference_speed_m_s_peak": 5.65445662102766e-12,
+      "rate_deg_s_rmse": 1.2976602345641535,
+      "rate_deg_s_peak": 4.916486139772337
+    },
+    "recorded_duration_s": 65.00010800361633,
+    "raw_reference_speed_peak_m_s": 0.1373868229457475,
+    "simulation_trace": "campaign03/none_ref_fix_r2.jsonl.gz"
+  },
+  {
+    "group": "baseline",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.14087455875884589,
+      "position_m_peak": 0.20098771136618357,
+      "so3_deg_rmse": 0.7719516964222208,
+      "so3_deg_peak": 1.789594875482616,
+      "reference_speed_m_s_rmse": 0.07526618317776686,
+      "reference_speed_m_s_peak": 0.13738682294574947,
+      "rate_deg_s_rmse": 3.8183543010720755,
+      "rate_deg_s_peak": 11.419118396309857
+    },
+    "settled": {
+      "position_m_rmse": 0.14854530379892383,
+      "position_m_peak": 0.2018107490456614,
+      "so3_deg_rmse": 0.8265457047444906,
+      "so3_deg_peak": 1.3338753998530708,
+      "reference_speed_m_s_rmse": 0.09987972402999898,
+      "reference_speed_m_s_peak": 0.13738682294574772,
+      "rate_deg_s_rmse": 1.2311513158544076,
+      "rate_deg_s_peak": 8.510048858942449
+    },
+    "post_handover": {
+      "position_m_rmse": 0.06502052171476598,
+      "position_m_peak": 0.2623041843486539,
+      "so3_deg_rmse": 1.8444078880614216,
+      "so3_deg_peak": 4.232870490216878,
+      "reference_speed_m_s_rmse": 2.1271841430475577e-12,
+      "reference_speed_m_s_peak": 6.142800831921212e-12,
+      "rate_deg_s_rmse": 1.1983529130577009,
+      "rate_deg_s_peak": 4.9008261517717395
+    },
+    "recorded_duration_s": 65.02011108398438,
+    "raw_reference_speed_peak_m_s": 0.13738682294575102,
+    "simulation_trace": "campaign03/none_baseline_r2.jsonl.gz"
+  },
+  {
+    "group": "baseline",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "INVALID",
+    "invalid": [
+      "no samples"
+    ],
+    "failures": [],
+    "campaign": "campaign03",
+    "operator_error": "hardware fault: stale source state: rates",
+    "operational_outcome": "FAIL",
+    "pre_handover": null,
+    "settled": null,
+    "post_handover": null,
+    "recorded_duration_s": 0.0
+  },
+  {
+    "group": "baseline",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "attitude error exceeds bound",
+      "roll/pitch outside envelope"
+    ],
+    "campaign": "loaded04",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.09579630180628582,
+      "position_m_peak": 0.1812157740777744,
+      "so3_deg_rmse": 12.549332036514015,
+      "so3_deg_peak": 13.239430229411896,
+      "reference_speed_m_s_rmse": 0.07518493435770761,
+      "reference_speed_m_s_peak": 0.1373868229457462,
+      "rate_deg_s_rmse": 4.836508412168392,
+      "rate_deg_s_peak": 42.74185270729342
+    },
+    "settled": {
+      "position_m_rmse": 0.06309143066380464,
+      "position_m_peak": 0.11233112369158903,
+      "so3_deg_rmse": 12.981485440917158,
+      "so3_deg_peak": 13.198192591006407,
+      "reference_speed_m_s_rmse": 0.09977175721550217,
+      "reference_speed_m_s_peak": 0.13738682294575308,
+      "rate_deg_s_rmse": 1.2228548850692003,
+      "rate_deg_s_peak": 7.741027855010149
+    },
+    "post_handover": {
+      "position_m_rmse": 0.17358990899023716,
+      "position_m_peak": 0.2955465346198833,
+      "so3_deg_rmse": 10.270879483381869,
+      "so3_deg_peak": 20.999766997429862,
+      "reference_speed_m_s_rmse": 1.8359793114884934e-12,
+      "reference_speed_m_s_peak": 5.310200857659892e-12,
+      "rate_deg_s_rmse": 8.753264459760661,
+      "rate_deg_s_peak": 43.66820400815158
+    },
+    "recorded_duration_s": 65.0001060962677,
+    "raw_reference_speed_peak_m_s": 0.1373868229457576,
+    "simulation_trace": "loaded04/synthetic_up_baseline_r1.jsonl.gz"
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "attitude error exceeds bound",
+      "roll/pitch outside envelope"
+    ],
+    "campaign": "loaded04",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.09611252732050454,
+      "position_m_peak": 0.16720894488952678,
+      "so3_deg_rmse": 12.608253940089915,
+      "so3_deg_peak": 13.257651818148085,
+      "reference_speed_m_s_rmse": 0.07515226589597566,
+      "reference_speed_m_s_peak": 0.13738682294574833,
+      "rate_deg_s_rmse": 4.886062938384109,
+      "rate_deg_s_peak": 41.46727899941968
+    },
+    "settled": {
+      "position_m_rmse": 0.06241367181557018,
+      "position_m_peak": 0.10115211588772824,
+      "so3_deg_rmse": 13.06155530285874,
+      "so3_deg_peak": 13.183688203157098,
+      "reference_speed_m_s_rmse": 0.09975468327907869,
+      "reference_speed_m_s_peak": 0.13738682294574833,
+      "rate_deg_s_rmse": 1.4004591898208674,
+      "rate_deg_s_peak": 8.184255626311142
+    },
+    "post_handover": {
+      "position_m_rmse": 0.08665859936749495,
+      "position_m_peak": 0.1884408241192748,
+      "so3_deg_rmse": 7.804582730540773,
+      "so3_deg_peak": 20.94116332233427,
+      "reference_speed_m_s_rmse": 1.9113451401182483e-12,
+      "reference_speed_m_s_peak": 5.742411152043736e-12,
+      "rate_deg_s_rmse": 7.380359107414223,
+      "rate_deg_s_peak": 40.47477074382292
+    },
+    "recorded_duration_s": 65.02011394500732,
+    "raw_reference_speed_peak_m_s": 0.13738682294575127,
+    "simulation_trace": "loaded04/synthetic_up_ref_fix_r1.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "attitude error exceeds bound"
+    ],
+    "campaign": "loaded04",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.11144845362978732,
+      "position_m_peak": 0.22606528809775217,
+      "so3_deg_rmse": 9.779100460648817,
+      "so3_deg_peak": 11.90691198572797,
+      "reference_speed_m_s_rmse": 0.07518659766585817,
+      "reference_speed_m_s_peak": 0.13738682294574392,
+      "rate_deg_s_rmse": 4.862841633758276,
+      "rate_deg_s_peak": 41.72268358058532
+    },
+    "settled": {
+      "position_m_rmse": 0.06932985799934001,
+      "position_m_peak": 0.10169453849182926,
+      "so3_deg_rmse": 9.99964503593984,
+      "so3_deg_peak": 10.128540784187244,
+      "reference_speed_m_s_rmse": 0.09977410993299099,
+      "reference_speed_m_s_peak": 0.13738682294574642,
+      "rate_deg_s_rmse": 1.3252491854011799,
+      "rate_deg_s_peak": 8.129958392003894
+    },
+    "post_handover": {
+      "position_m_rmse": 0.10177891948925662,
+      "position_m_peak": 0.16530358551260896,
+      "so3_deg_rmse": 6.028007961344213,
+      "so3_deg_peak": 17.346356368108662,
+      "reference_speed_m_s_rmse": 2.165072938236658e-12,
+      "reference_speed_m_s_peak": 5.78397067789292e-12,
+      "rate_deg_s_rmse": 7.077611574598098,
+      "rate_deg_s_peak": 45.04144252154051
+    },
+    "recorded_duration_s": 65.00410890579224,
+    "raw_reference_speed_peak_m_s": 0.13738682294574642,
+    "simulation_trace": "loaded04/synthetic_up_tuned_r1.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "synthetic_up",
+    "repeat": 2,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "attitude error exceeds bound"
+    ],
+    "campaign": "loaded04",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.09836113938545163,
+      "position_m_peak": 0.17710067731411516,
+      "so3_deg_rmse": 9.800558617667528,
+      "so3_deg_peak": 11.915924691150643,
+      "reference_speed_m_s_rmse": 0.07523451435433866,
+      "reference_speed_m_s_peak": 0.13738682294574245,
+      "rate_deg_s_rmse": 4.883498991731833,
+      "rate_deg_s_peak": 41.86537316508395
+    },
+    "settled": {
+      "position_m_rmse": 0.06476397295852596,
+      "position_m_peak": 0.10085406721526273,
+      "so3_deg_rmse": 10.00760199857057,
+      "so3_deg_peak": 10.155756635123232,
+      "reference_speed_m_s_rmse": 0.09983746988401065,
+      "reference_speed_m_s_peak": 0.1373868229457416,
+      "rate_deg_s_rmse": 1.2784449078804376,
+      "rate_deg_s_peak": 8.787732326093108
+    },
+    "post_handover": {
+      "position_m_rmse": 0.10068802409535595,
+      "position_m_peak": 0.16414656488027934,
+      "so3_deg_rmse": 5.1837694725746335,
+      "so3_deg_peak": 17.415984383834278,
+      "reference_speed_m_s_rmse": 2.2903584029992852e-12,
+      "reference_speed_m_s_peak": 7.147125961903473e-12,
+      "rate_deg_s_rmse": 5.6571979333669145,
+      "rate_deg_s_peak": 30.96833314005743
+    },
+    "recorded_duration_s": 65.00009894371033,
+    "raw_reference_speed_peak_m_s": 0.13738682294574417,
+    "simulation_trace": "loaded04/synthetic_up_tuned_r2.jsonl.gz"
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "synthetic_up",
+    "repeat": 2,
+    "status": "INVALID",
+    "invalid": [
+      "truncated phase: offboard_reentry",
+      "missing phase: position_exit_2",
+      "missing phase: offboard_reentry_2",
+      "missing phase: final_hold",
+      "synthetic load coverage truncated"
+    ],
+    "failures": [
+      "scenario not completed",
+      "position error exceeds bound",
+      "attitude error exceeds bound",
+      "body angular rate exceeds bound",
+      "roll/pitch outside envelope"
+    ],
+    "campaign": "loaded04",
+    "operator_error": "SITL abort envelope reached",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.13809047621582476,
+      "position_m_peak": 0.20225947053079218,
+      "so3_deg_rmse": 12.73913894620134,
+      "so3_deg_peak": 13.395953172261997,
+      "reference_speed_m_s_rmse": 0.07519828871215715,
+      "reference_speed_m_s_peak": 0.13738682294574509,
+      "rate_deg_s_rmse": 4.956768875300192,
+      "rate_deg_s_peak": 43.761009161399755
+    },
+    "settled": {
+      "position_m_rmse": 0.1203112374252122,
+      "position_m_peak": 0.17376080308730707,
+      "so3_deg_rmse": 13.191366225366561,
+      "so3_deg_peak": 13.322453222386528,
+      "reference_speed_m_s_rmse": 0.09978879160764399,
+      "reference_speed_m_s_peak": 0.13738682294574509,
+      "rate_deg_s_rmse": 1.2607632433481317,
+      "rate_deg_s_peak": 8.003575996950604
+    },
+    "post_handover": null,
+    "recorded_duration_s": 42.99606704711914,
+    "raw_reference_speed_peak_m_s": 0.13738682294574509,
+    "simulation_trace": "loaded04/synthetic_up_ref_fix_r2.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "none",
+    "repeat": 1,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "authority05",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.04115340909674038,
+      "position_m_peak": 0.0946954908278831,
+      "so3_deg_rmse": 0.47382061830664407,
+      "so3_deg_peak": 1.5829834800413036,
+      "reference_speed_m_s_rmse": 0.07523741652551316,
+      "reference_speed_m_s_peak": 0.13738682294574284,
+      "rate_deg_s_rmse": 3.770287876199056,
+      "rate_deg_s_peak": 11.226829824315177
+    },
+    "settled": {
+      "position_m_rmse": 0.02875824296896379,
+      "position_m_peak": 0.05083051693244793,
+      "so3_deg_rmse": 0.34355439501532936,
+      "so3_deg_peak": 0.8930489683765842,
+      "reference_speed_m_s_rmse": 0.09984066373497588,
+      "reference_speed_m_s_peak": 0.1373868229457411,
+      "rate_deg_s_rmse": 1.2548751051794025,
+      "rate_deg_s_peak": 8.22161013580029
+    },
+    "post_handover": {
+      "position_m_rmse": 0.0781950892969099,
+      "position_m_peak": 0.17467108195606412,
+      "so3_deg_rmse": 2.1177481655189245,
+      "so3_deg_peak": 4.652618197795296,
+      "reference_speed_m_s_rmse": 2.307407827332532e-12,
+      "reference_speed_m_s_peak": 6.9493526077440644e-12,
+      "rate_deg_s_rmse": 1.2167948503869916,
+      "rate_deg_s_peak": 3.9780001049622955
+    },
+    "recorded_duration_s": 65.00920605659485,
+    "raw_reference_speed_peak_m_s": 0.13738682294574456,
+    "simulation_trace": "authority05/none_tuned_r1.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "none",
+    "repeat": 2,
+    "status": "PASS",
+    "invalid": [],
+    "failures": [],
+    "campaign": "authority05",
+    "operator_error": "",
+    "operational_outcome": "PASS",
+    "pre_handover": {
+      "position_m_rmse": 0.05230584844142636,
+      "position_m_peak": 0.10922481932976945,
+      "so3_deg_rmse": 0.8486107374234371,
+      "so3_deg_peak": 2.4397729315819423,
+      "reference_speed_m_s_rmse": 0.07519906366562984,
+      "reference_speed_m_s_peak": 0.13738682294574855,
+      "rate_deg_s_rmse": 3.853378071745991,
+      "rate_deg_s_peak": 10.811062767927968
+    },
+    "settled": {
+      "position_m_rmse": 0.045077543930022924,
+      "position_m_peak": 0.09455802649317378,
+      "so3_deg_rmse": 0.6237889367188103,
+      "so3_deg_peak": 1.5056449807872287,
+      "reference_speed_m_s_rmse": 0.09978960784663451,
+      "reference_speed_m_s_peak": 0.13738682294575003,
+      "rate_deg_s_rmse": 1.3685071600612895,
+      "rate_deg_s_peak": 8.599074446899492
+    },
+    "post_handover": {
+      "position_m_rmse": 0.07085152032392247,
+      "position_m_peak": 0.17622773735883357,
+      "so3_deg_rmse": 1.8792503086703853,
+      "so3_deg_peak": 4.281201531943966,
+      "reference_speed_m_s_rmse": 1.987115797118885e-12,
+      "reference_speed_m_s_peak": 5.638576897463471e-12,
+      "rate_deg_s_rmse": 1.1898052002065391,
+      "rate_deg_s_peak": 4.593416747456915
+    },
+    "recorded_duration_s": 65.00408816337585,
+    "raw_reference_speed_peak_m_s": 0.13738682294575078,
+    "simulation_trace": "authority05/none_tuned_r2.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "attitude error exceeds bound",
+      "body angular rate exceeds bound"
+    ],
+    "campaign": "authority05",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.09483971932052516,
+      "position_m_peak": 0.17138853692205963,
+      "so3_deg_rmse": 3.395275305939967,
+      "so3_deg_peak": 11.346311191508939,
+      "reference_speed_m_s_rmse": 0.07514416055579085,
+      "reference_speed_m_s_peak": 0.13738682294574023,
+      "rate_deg_s_rmse": 4.881041271139082,
+      "rate_deg_s_peak": 44.24744871683834
+    },
+    "settled": {
+      "position_m_rmse": 0.06367010468811085,
+      "position_m_peak": 0.10194323407426267,
+      "so3_deg_rmse": 0.4308312660154924,
+      "so3_deg_peak": 0.9448336129249899,
+      "reference_speed_m_s_rmse": 0.09971729557262692,
+      "reference_speed_m_s_peak": 0.1373868229457383,
+      "rate_deg_s_rmse": 1.2821829839915515,
+      "rate_deg_s_peak": 7.856179957365274
+    },
+    "post_handover": {
+      "position_m_rmse": 0.1453111019456793,
+      "position_m_peak": 0.4361119337470016,
+      "so3_deg_rmse": 29.444863512146405,
+      "so3_deg_peak": 132.3027318548564,
+      "reference_speed_m_s_rmse": 2.3389777457748245e-12,
+      "reference_speed_m_s_peak": 6.133508380070164e-12,
+      "rate_deg_s_rmse": 26.710258161109678,
+      "rate_deg_s_peak": 141.57819242168773
+    },
+    "recorded_duration_s": 65.00008606910706,
+    "raw_reference_speed_peak_m_s": 0.13738682294574203,
+    "simulation_trace": "authority05/synthetic_up_tuned_r1.jsonl.gz"
+  },
+  {
+    "group": "tuned",
+    "disturbance": "synthetic_up",
+    "repeat": 2,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "attitude error exceeds bound",
+      "body angular rate exceeds bound"
+    ],
+    "campaign": "authority05",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.11155574308577478,
+      "position_m_peak": 0.1921947464531262,
+      "so3_deg_rmse": 3.668332376059542,
+      "so3_deg_peak": 11.677789228831774,
+      "reference_speed_m_s_rmse": 0.0751697048657642,
+      "reference_speed_m_s_peak": 0.13738682294574842,
+      "rate_deg_s_rmse": 4.865196668885952,
+      "rate_deg_s_peak": 42.40632171085713
+    },
+    "settled": {
+      "position_m_rmse": 0.07524984789686236,
+      "position_m_peak": 0.10636323287663324,
+      "so3_deg_rmse": 1.0896056061554806,
+      "so3_deg_peak": 1.967373732198702,
+      "reference_speed_m_s_rmse": 0.0997506625840749,
+      "reference_speed_m_s_peak": 0.13738682294574986,
+      "rate_deg_s_rmse": 1.3029735277644705,
+      "rate_deg_s_peak": 8.174398157414299
+    },
+    "post_handover": {
+      "position_m_rmse": 0.14952349096640447,
+      "position_m_peak": 0.4153586635218366,
+      "so3_deg_rmse": 26.704651788661966,
+      "so3_deg_peak": 116.66578693142908,
+      "reference_speed_m_s_rmse": 2.228406213661165e-12,
+      "reference_speed_m_s_peak": 6.1937595760900865e-12,
+      "rate_deg_s_rmse": 23.728833216860746,
+      "rate_deg_s_peak": 125.49029560326333
+    },
+    "recorded_duration_s": 65.00009894371033,
+    "raw_reference_speed_peak_m_s": 0.1373868229457506,
+    "simulation_trace": "authority05/synthetic_up_tuned_r2.jsonl.gz"
+  },
+  {
+    "group": "baseline",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "position error exceeds bound",
+      "attitude error exceeds bound",
+      "target velocity spike exceeds bound"
+    ],
+    "campaign": "projection_stress06",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.7121437111633785,
+      "position_m_peak": 0.8940934898533047,
+      "so3_deg_rmse": 11.714298039884733,
+      "so3_deg_peak": 26.215075815405207,
+      "reference_speed_m_s_rmse": 0.5803743206591491,
+      "reference_speed_m_s_peak": 4.4961222466362045,
+      "rate_deg_s_rmse": 5.058535209717286,
+      "rate_deg_s_peak": 39.45769711683455
+    },
+    "settled": {
+      "position_m_rmse": 0.6901844145527184,
+      "position_m_peak": 0.8788196835954725,
+      "so3_deg_rmse": 9.961398129849258,
+      "so3_deg_peak": 11.408985976463525,
+      "reference_speed_m_s_rmse": 1.8353639254018965,
+      "reference_speed_m_s_peak": 58.74189126535792,
+      "rate_deg_s_rmse": 4.8222397711677445,
+      "rate_deg_s_peak": 18.872143597778155
+    },
+    "post_handover": {
+      "position_m_rmse": 0.2951361291726507,
+      "position_m_peak": 1.4320175496645167,
+      "so3_deg_rmse": 3.763947570533549,
+      "so3_deg_peak": 13.439136649554452,
+      "reference_speed_m_s_rmse": 2.022915658610883e-12,
+      "reference_speed_m_s_peak": 5.993980467756158e-12,
+      "rate_deg_s_rmse": 3.220258564300568,
+      "rate_deg_s_peak": 23.12174641207168
+    },
+    "recorded_duration_s": 65.01209115982056,
+    "raw_reference_speed_peak_m_s": 59.157407082966834,
+    "simulation_trace": "projection_stress06/synthetic_up_baseline_r1.jsonl.gz"
+  },
+  {
+    "group": "ref_fix",
+    "disturbance": "synthetic_up",
+    "repeat": 1,
+    "status": "FAIL",
+    "invalid": [],
+    "failures": [
+      "position error exceeds bound",
+      "attitude error exceeds bound"
+    ],
+    "campaign": "projection_stress06",
+    "operator_error": "",
+    "operational_outcome": "FAIL",
+    "pre_handover": {
+      "position_m_rmse": 0.7750744637071073,
+      "position_m_peak": 0.867008861355426,
+      "so3_deg_rmse": 11.47112285640876,
+      "so3_deg_peak": 26.293731152966078,
+      "reference_speed_m_s_rmse": 0.07375940244504552,
+      "reference_speed_m_s_peak": 0.1373868229454105,
+      "rate_deg_s_rmse": 3.753809134177618,
+      "rate_deg_s_peak": 40.022394176045076
+    },
+    "settled": {
+      "position_m_rmse": 0.8107741542250946,
+      "position_m_peak": 0.839221741152236,
+      "so3_deg_rmse": 9.233922506346108,
+      "so3_deg_peak": 9.677057668183917,
+      "reference_speed_m_s_rmse": 0.09789539885325706,
+      "reference_speed_m_s_peak": 0.13738682294543206,
+      "rate_deg_s_rmse": 1.5056479458333218,
+      "rate_deg_s_peak": 6.019551783544288
+    },
+    "post_handover": {
+      "position_m_rmse": 0.28640004729306184,
+      "position_m_peak": 1.3279391619498604,
+      "so3_deg_rmse": 3.0203726292829076,
+      "so3_deg_peak": 12.256877186941148,
+      "reference_speed_m_s_rmse": 1.9428957124043973e-12,
+      "reference_speed_m_s_peak": 5.513109735991789e-12,
+      "rate_deg_s_rmse": 3.1970689618880335,
+      "rate_deg_s_peak": 20.413860419605683
+    },
+    "recorded_duration_s": 65.00009799003601,
+    "raw_reference_speed_peak_m_s": 0.13738682294543214,
+    "simulation_trace": "projection_stress06/synthetic_up_ref_fix_r1.jsonl.gz"
+  }
+]
