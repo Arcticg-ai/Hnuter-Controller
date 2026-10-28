@@ -1,0 +1,202 @@
+[
+  {
+    "path": "evidence/attitude05/runs/none/repeat_1/full_attitude/samples.jsonl.gz",
+    "uncompressed_sha256": "c4a92a043830dbca913fc845ea7ab1f23affcc46164d36edb654be8c3b72fd22",
+    "compressed_sha256": "0b2507864d3a546ba922c65eb7fb9007d70a76c987902cf7af21b43ba67b2522"
+  },
+  {
+    "path": "evidence/attitude05/runs/none/repeat_1/full_attitude/hnuter_1793204532.csv.gz",
+    "uncompressed_sha256": "59f88efdf308bf6493075972c94a5a22f64dd72dccb27d7e626c9aebbd0caffc",
+    "compressed_sha256": "57eb03d96affa0fd3ed00cb6b4c6674adacb4758b495cfc2b503eda1444698da"
+  },
+  {
+    "path": "evidence/attitude06/runs/none/repeat_1/full_attitude/samples.jsonl.gz",
+    "uncompressed_sha256": "ad077ad770f5775183be5c215e25e569416e356fddc7d16dd27d7c95f7e7bbfa",
+    "compressed_sha256": "c64ad2a89fdabd4a8b6cc564aac2ac3ab9bf4fb39baf670681f0bb19ba8d2c73"
+  },
+  {
+    "path": "evidence/attitude06/runs/none/repeat_1/full_attitude/hnuter_1793205037.csv.gz",
+    "uncompressed_sha256": "c6872ed9ec9f75561bc91e53569854c092534f76363f55384b9a5472121e455a",
+    "compressed_sha256": "8c4394693d4ececf2048933c28abc43b764e05309216bf62bb35590959e35780"
+  },
+  {
+    "path": "evidence/attitude08_repeat/runs/none/repeat_1/full_attitude/samples.jsonl.gz",
+    "uncompressed_sha256": "9f8007fb98043f6a12a3d6dd297ee06520d097bfe0afbebc833e78300244c9e7",
+    "compressed_sha256": "9606e7c193b81d0994b2a572a8df8db1ea8439578de751cd717644a031a83511"
+  },
+  {
+    "path": "evidence/attitude08_repeat/runs/none/repeat_1/full_attitude/hnuter_1793205574.csv.gz",
+    "uncompressed_sha256": "f110c1746104f0f55effe2f151d23057695063ef6c670ee25fa86fb6b5a08e56",
+    "compressed_sha256": "fb19e7839c8df336c9fde76b9ab86b98e7007baf81b4d589932e606d531d4dc3"
+  },
+  {
+    "path": "evidence/attitude09_margin/runs/none/repeat_1/full_attitude/samples.jsonl.gz",
+    "uncompressed_sha256": "4012efaccf5cc73bc47d40f669762f4cd490cb274353b3bd474126b4f27d507f",
+    "compressed_sha256": "d0c6982bc02326c2a15e64314bef9362e3fe2874bd8386ce66b8f2269b9851b0"
+  },
+  {
+    "path": "evidence/attitude09_margin/runs/none/repeat_1/full_attitude/hnuter_1793205998.csv.gz",
+    "uncompressed_sha256": "fb17bae65a8f59bf12407efdb6853d50863b600d209c928430735a82b1a1ffde",
+    "compressed_sha256": "56b4437457e5b0fe4c9f2c1521b19c0e70681c5971faf2d6b632a877c9d25f3b"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/feedback/samples.jsonl.gz",
+    "uncompressed_sha256": "393b08c9e19beebccdee728cf71a356e3e906c2ed63fc2a0f5d01b18a7f3aa09",
+    "compressed_sha256": "22632e75a726cc501f353dfe66249b861e3196a703adc39f8cd1ec54897b975b"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/feedback/hnuter_1793203369.csv.gz",
+    "uncompressed_sha256": "0c6e2749809c171d13ad07f05cbfd402229b02a36322ba4c49c11ac3cbae1959",
+    "compressed_sha256": "1f4c1cba9ee13416182d9eed5e214a9c5bbec294d9a2ef0be5b7b8e5db46203a"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/flight/samples.jsonl.gz",
+    "uncompressed_sha256": "6df03daebe63ce5b26236f40861e9af21b7b7eafe31395cc4f76a40c041e9ee2",
+    "compressed_sha256": "665b530095ae70227220d1dc20897ec5d88af11462b7378253fcefbde9c7f42d"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/flight/hnuter_1793203147.csv.gz",
+    "uncompressed_sha256": "cea3f5662b89e2845290d162d0cdb6d5d56ce13a0fac08c68c0bd2d0db4cae54",
+    "compressed_sha256": "3b1feb9d01529bf35f8976e0bd29e515b3d693c0d40491f70433987367587175"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/integral/samples.jsonl.gz",
+    "uncompressed_sha256": "1feb39f29ea6c3fed1fe25b242b20fb29d54f55b4ee0025618939bc1bd72c8ab",
+    "compressed_sha256": "1c9942d22d26a047ac7dd0ed0a17c8cb790f6970ce2403df886c9fb8027cab9c"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/integral/hnuter_1793203295.csv.gz",
+    "uncompressed_sha256": "9cd0213eadf8a295390001c2dd79c303c3148cd93910992062f00f3b244c56e0",
+    "compressed_sha256": "cf78e09c927039683cb36167cdd31d030668f2829affefe47e4a3aa62096c446"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/old_gains/samples.jsonl.gz",
+    "uncompressed_sha256": "ff7501ec62daaf52ded3fff72eb6798959a30f2e4f257a847506c18b78f8d75c",
+    "compressed_sha256": "c7ca31037cd72c5b146195d5067feb22024c45ccce0ab429f966bf204dfc8440"
+  },
+  {
+    "path": "evidence/lissajous01/runs/none/repeat_1/old_gains/hnuter_1793203221.csv.gz",
+    "uncompressed_sha256": "06702e8af17fa6b5ff2f2ab3e3e3ca9799c3f0c2f468bf290e1013812a3e6915",
+    "compressed_sha256": "00aeaa7809912878f1e576463dd55f12126b7dd964152803d6eebf049248b1b1"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_1/authority/samples.jsonl.gz",
+    "uncompressed_sha256": "2d7cc75e2cc4df17d778722d21c989dc9e433d02aca1704c81da323832ac7bc6",
+    "compressed_sha256": "0131c068987e53f603e7d3c8484416c9a20ad7ca02e02d65c7e144b54f4d0647"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_1/authority/hnuter_1793204212.csv.gz",
+    "uncompressed_sha256": "c3043909d1466881f342e9de71e2246fc2ead756000b8b6e18c7dc03f8b791b8",
+    "compressed_sha256": "6b382a5402421221b21414cc5f1167648beecd2d1ec9da7b9f8de8542a06856f"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_1/authority_gains/samples.jsonl.gz",
+    "uncompressed_sha256": "bca78528c47a04230dba121a41b78f73a707a09ab61c80384776e6ff65a1c589",
+    "compressed_sha256": "1a7496413de982ba2b397199ab4772e9aa0fe0074fbcfee8e57c85c34c66e39f"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_1/authority_gains/hnuter_1793204287.csv.gz",
+    "uncompressed_sha256": "6f6678f6b537306d3118d79b06a094599fa31ab12210ce61639d3de95b621f6a",
+    "compressed_sha256": "c611f34d971873ac410f7a93e3ce968a7a396a8892f6da008bfe20009ec2db39"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_1/flight/samples.jsonl.gz",
+    "uncompressed_sha256": "25cea35773095b3c5ba05404a14fc50921e650048d4644f98066c5fe5b1c773a",
+    "compressed_sha256": "f280045acaf6122bdf623e5589f7f25cac5e2414f3f094583c2cd368346b8369"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_1/flight/hnuter_1793204138.csv.gz",
+    "uncompressed_sha256": "5b82a10df71447959800519bf70592025428850bc72268861d0a923a7450486e",
+    "compressed_sha256": "03f6764999205080d62b29dd9d128d12bfd64301997e6b627b30b9ce23a04488"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_2/flight/samples.jsonl.gz",
+    "uncompressed_sha256": "fbb3345e91fa9efc3ce0a8c265a6a6aea825fd29b76e33b5b6bde94d5578f802",
+    "compressed_sha256": "dd6cc2561d0a61ebb61fde22ca1f805747a39baee91ed68110e9f70ab7eccf0b"
+  },
+  {
+    "path": "evidence/lissajous04/runs/none/repeat_2/flight/hnuter_1793204361.csv.gz",
+    "uncompressed_sha256": "a76aa78473b3e474488c4cdabe53c0476c93c6103c84202bcec6fa57c83acebd",
+    "compressed_sha256": "616e3d0f1465b03c8c051e8fa083065bf680b9afe49cd541891613d39a8d3b12"
+  },
+  {
+    "path": "evidence/lissajous07_repeat/runs/none/repeat_1/authority/samples.jsonl.gz",
+    "uncompressed_sha256": "b8f494e42d4bd82f31158b84b75802ee3bec1e179a3ccdb48fe5ce7e0bee19b0",
+    "compressed_sha256": "d4230a04591b312ad197ec1bbddbf5124b9a3b8480ff5e1097437ffe94ba3a8e"
+  },
+  {
+    "path": "evidence/lissajous07_repeat/runs/none/repeat_1/authority/hnuter_1793205392.csv.gz",
+    "uncompressed_sha256": "2ecc6a7d397f7bf67b227aef623f13a6206d5bbae047a60f01ab255d6e430e92",
+    "compressed_sha256": "f3e1a632d51b252bf87bb73e3770cf3903853c1e13dbf13bb01b8bd0b231f49c"
+  },
+  {
+    "path": "evidence/lissajous07_repeat/runs/none/repeat_1/authority_gains/samples.jsonl.gz",
+    "uncompressed_sha256": "080c7c798a1c5296e15640a79817638a221a57bfa1d9450b4e7df699c3d449ce",
+    "compressed_sha256": "9c9795ee8fc4b88ecfa3376eb9ccff09fb310884ceaa82c5ab9f728340922963"
+  },
+  {
+    "path": "evidence/lissajous07_repeat/runs/none/repeat_1/authority_gains/hnuter_1793205318.csv.gz",
+    "uncompressed_sha256": "1f0675523b83b187465d541268100aa2e3b9a302e54d801bfe3a395a1623dfc8",
+    "compressed_sha256": "4167ea8867f823744e9edf93753eb1d49d1ba86e148bc4f5f92d46923cdca04d"
+  },
+  {
+    "path": "evidence/lissajous07_repeat/runs/none/repeat_1/flight/samples.jsonl.gz",
+    "uncompressed_sha256": "232e0acb9045b5183eeb780bd15f7c6165dfe75f26fb2f7ff133a315402b296c",
+    "compressed_sha256": "f2ff1514f81ea2f1c59b412d28bdb0cddc76138050d32db5a01215d337dd84cc"
+  },
+  {
+    "path": "evidence/lissajous07_repeat/runs/none/repeat_1/flight/hnuter_1793205466.csv.gz",
+    "uncompressed_sha256": "891bc903da8f97289b66411524323b853a83ffe310e0f99695de304810f620c9",
+    "compressed_sha256": "c386d2089358f6bb30410855915ebdfcfd01f47a6a5d050d909ac3e07ce55469"
+  },
+  {
+    "path": "evidence/roll02/runs/none/repeat_1/flight/samples.jsonl.gz",
+    "uncompressed_sha256": "335726847ed87435c688119be9c13e9e7b6031cc5981af2b2ff047c75405200a",
+    "compressed_sha256": "9573e5d43f163b413d7630f37125f6d5f9ea9a2472c54af201fdecec6c8b8d5c"
+  },
+  {
+    "path": "evidence/roll02/runs/none/repeat_1/flight/hnuter_1793203584.csv.gz",
+    "uncompressed_sha256": "ae9f65958bcdfb15f57a608461d84078e5699ac950a5297e496a060d56f5dbd2",
+    "compressed_sha256": "9211850c4095302ed8bab4d838274735bcbfb7c27840c92112a4176fac37122b"
+  },
+  {
+    "path": "evidence/roll02/runs/none/repeat_1/legacy_cg/samples.jsonl.gz",
+    "uncompressed_sha256": "6ccfdb5114b67810f132778d65ab808cfaf71317cb7ae942c4e2bd6929bc3c9a",
+    "compressed_sha256": "1f36cd7551608bcf8a6635b1a47688e30651eb1d3941737af41aa32e735a060c"
+  },
+  {
+    "path": "evidence/roll02/runs/none/repeat_1/legacy_cg/hnuter_1793203504.csv.gz",
+    "uncompressed_sha256": "5b24649588e69de02937d3be1586338cb97ddb410f67b58dbf06f348192221d4",
+    "compressed_sha256": "9ec4715c32dea3c070289c7b90f4fe4613d2f395527a57543d1f997fe2fd3b17"
+  },
+  {
+    "path": "evidence/roll02/runs/none/repeat_1/old_gains/samples.jsonl.gz",
+    "uncompressed_sha256": "fddd6e7a1179450c709b14c3be95d2d747ec9c2238cc0edda71d1fd5c17e2bf9",
+    "compressed_sha256": "c6c408ac07cf642ef56bf4c02224a361dd4ed42d4a0c22f1f70f21ed7111d729"
+  },
+  {
+    "path": "evidence/roll02/runs/none/repeat_1/old_gains/hnuter_1793203691.csv.gz",
+    "uncompressed_sha256": "3e07af9e444a8c140ff6e75300cfc7a4e4a0ba6d9d44b7e94a4fb910550dcdd8",
+    "compressed_sha256": "61e37b7b1ca86a2fd56a333066d1c7874380fda7212fb8b89eb4116ec65bddb8"
+  },
+  {
+    "path": "evidence/roll03/runs/none/repeat_1/full_attitude/samples.jsonl.gz",
+    "uncompressed_sha256": "e736e53f3b9771790e4059bc2e54b3d969bf80841d17b99bc107b707b55a0aac",
+    "compressed_sha256": "856f294d53b083d070f2903a883486470f3237a5ad313f6f3a8bc1cbafa09b7b"
+  },
+  {
+    "path": "evidence/roll03/runs/none/repeat_1/full_attitude/hnuter_1793203939.csv.gz",
+    "uncompressed_sha256": "237da4b7bf23c7c31a24c262a8e8a1c9cf1bf389d4c475ab790a7525bfd7feff",
+    "compressed_sha256": "14df600172262828a2160cf7a2ff2007d01248ca666a62c57566873b9c5d22ff"
+  },
+  {
+    "path": "evidence/roll03/runs/none/repeat_1/yaw_unscheduled/samples.jsonl.gz",
+    "uncompressed_sha256": "56091fa27fd5c45eeb2a463788c286cf4cd2e332f464dab00d9c0db3788e6832",
+    "compressed_sha256": "558e313bea8af31eec61d6fd66753e8669e32a4dfab2ee5c89dfa17b66b9d636"
+  },
+  {
+    "path": "evidence/roll03/runs/none/repeat_1/yaw_unscheduled/hnuter_1793203832.csv.gz",
+    "uncompressed_sha256": "a85b8b35823d3e3c9873ce4c14821ca3819f4ccd9a65798635bd7661aac30776",
+    "compressed_sha256": "8a504a0268d5fd43f4a07ad411cde1f6e4396f476c0ce7745b1071a6a9944d72"
+  }
+]

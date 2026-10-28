@@ -1,0 +1,21 @@
+{
+  "scope": "SITL diagnosis only; these are partial patches, not complete aircraft configurations",
+  "no_artificial_plant_delay": true,
+  "yaw_unscheduled": {
+    "direct_large_tilt_yaw_scheduling_enabled": false
+  },
+  "full_attitude": {
+    "direct_large_tilt_yaw_scheduling_enabled": false,
+    "direct_reduced_tilt_error_enabled": false
+  },
+  "authority_diagnostic": {
+    "max_acc_xy": 8.0,
+    "attitude_test_max_acc_xy": 8.0
+  },
+  "warnings": [
+    "Do not copy a Gazebo-adapted full configuration to an aircraft.",
+    "The COM-frame SDF adapter uses zero extra CG gravity trim; the aircraft model uses a different origin.",
+    "The authority diagnostic changes the outer-loop constraint and is not a matched allocator comparison.",
+    "The attitude flags affect automatic attitude tasks, not ordinary manual hover."
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "group": "old_gains",
+  "disturbance": "none",
+  "repeat": 1,
+  "elapsed_wall_s": 86.21369841700107,
+  "operator_error": "SITL abort envelope reached",
+  "case": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll02/runs/none/repeat_1/old_gains",
+  "status": "INVALID",
+  "invalid": [
+    "truncated phase: maneuver",
+    "missing phase: post_hold"
+  ],
+  "failures": [
+    "scenario not completed",
+    "position error exceeds bound",
+    "attitude error exceeds bound",
+    "body angular rate exceeds bound"
+  ],
+  "metrics": {
+    "phases": {
+      "hold": {
+        "samples": 985,
+        "observed_mode_samples": 985,
+        "span_s": 7.96801495552063,
+        "position_rms_m": 0.03645068799256177,
+        "position_peak_m": 0.060359939235989354,
+        "so3_peak_deg": 1.6511568361315063,
+        "target_speed_peak_m_s": 0.0
+      },
+      "maneuver": {
+        "samples": 2735,
+        "observed_mode_samples": 2735,
+        "span_s": 21.608036994934082,
+        "position_rms_m": 0.2570507314070862,
+        "position_peak_m": 2.417221627779319,
+        "so3_peak_deg": 179.57116384446246,
+        "target_speed_peak_m_s": 0.0
+      }
+    },
+    "measured_joint_ratio": 1.0,
+    "sample_gap_peak_s": 0.02059537300010561,
+    "measured_realtime_factor": 0.9997468479283154,
+    "target_speed_peak_m_s": 0.0,
+    "altitude_min_m": 3.3813269436359406,
+    "source_age_peak_s": 0.03599977493286133
+  }
+}

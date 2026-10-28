@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.335" timestamp="2026-10-29T00:42:50.349197" hostname="hnuter-disk"><testcase classname="tests.hardware.test_state_receiver_ros" name="test_receive_executor_updates_while_control_callback_is_blocked" time="0.327" /></testsuite></testsuites>

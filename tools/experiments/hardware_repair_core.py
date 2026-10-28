@@ -5,8 +5,10 @@ import ast
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import re
+import tempfile
 import xml.etree.ElementTree as ET
 
 import numpy as np
@@ -30,8 +32,21 @@ def sha256(path):
 
 
 def write_json(path, value):
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-    Path(path).write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
+    path = Path(path)
+    content = json.dumps(value, indent=2, allow_nan=False) + '\n'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # A full disk must not truncate the last valid manifest.
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def literal_defaults(source):
@@ -110,8 +125,9 @@ def adapted_tuning(source, flight, simulation, overrides=None):
     adaptation = dict(HNTR_MASS=simulation['mass_kg'], HNTR_S2_GEAR=1.,
                       primary_servo_angle_max_deg=185., secondary_servo_angle_max_deg=180.,
                       HNTR_S1_RATE=p['HNTR_S1_RATE'], HNTR_S2_RATE=p['HNTR_S2_RATE'],
-                      HNTR_L2=p['HNTR_L2'], HNTR_CG_X=p['HNTR_CG_X'],
-                      HNTR_CG_Z=p['HNTR_CG_Z'],
+                      # SDFWrenchModel already uses assembly-COM rotor moments.
+                      # Firmware CG trim is for its different allocator origin.
+                      HNTR_L2=p['HNTR_L2'], HNTR_CG_X=0., HNTR_CG_Z=0.,
                       HNTR_TAIL_T_POS=simulation['motor_constants'][4] * 1e6,
                       HNTR_TAIL_T_NEG=6.02,
                       hardware_servo_tau_positive_s=[0.] * 4,
@@ -125,6 +141,7 @@ def adapted_tuning(source, flight, simulation, overrides=None):
                       retained_flight_pitch_bias=actual['HNTR_PITCH_BIAS'],
                       motor_mapping='SDF k*omega^2; front omega=10+990*u; tail omega=1000*u',
                       geometry='SDFWrenchModel articulated rotor geometry about assembly COM',
+                      cg_trim='zero for COM-frame simulation model; aircraft calibration unchanged',
                       limitations=['Not the aircraft plant or its calibrated motor/PWM model',
                                    'No modeled cable or identified attachment stiffness',
                                    'Synthetic RC enters hardware parser, not a physical RC receiver'])

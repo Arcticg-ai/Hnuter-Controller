@@ -1,0 +1,68 @@
+{
+  "network_namespace": "net:[4026533097]",
+  "interfaces": [
+    {
+      "ifindex": 1,
+      "ifname": "lo",
+      "flags": [
+        "LOOPBACK",
+        "UP",
+        "LOWER_UP"
+      ],
+      "mtu": 65536,
+      "qdisc": "noqueue",
+      "operstate": "UNKNOWN",
+      "group": "default",
+      "txqlen": 1000,
+      "link_type": "loopback",
+      "address": "00:00:00:00:00:00",
+      "broadcast": "00:00:00:00:00:00",
+      "addr_info": [
+        {
+          "family": "inet",
+          "local": "127.0.0.1",
+          "prefixlen": 8,
+          "scope": "host",
+          "label": "lo",
+          "valid_life_time": 4294967295,
+          "preferred_life_time": 4294967295
+        },
+        {
+          "family": "inet6",
+          "local": "::1",
+          "prefixlen": 128,
+          "scope": "host",
+          "valid_life_time": 4294967295,
+          "preferred_life_time": 4294967295
+        }
+      ]
+    }
+  ],
+  "domain": 174,
+  "agent_port": 8894,
+  "client_agent_ip": "127.0.0.1",
+  "agent_bind_note": "UDP wildcard inside loopback-only namespace; no LAN interfaces",
+  "discovery": "LOCALHOST",
+  "parent_network_namespace": "net:[4026531833]",
+  "environment": {
+    "ROS_DOMAIN_ID": "174",
+    "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+    "ROS_LOCALHOST_ONLY": "1",
+    "GZ_PARTITION": "hardware-repair-54ad6be85c3d48759872164b86c642c7",
+    "GZ_IP": "127.0.0.1",
+    "PX4_SIM_MODEL": "gz_hnuter",
+    "PX4_GZ_WORLD": "default",
+    "PX4_UXRCE_DDS_PORT": "8894",
+    "PX4_SIM_SPEED_FACTOR": "1",
+    "HNUTER_GZ_WORLD": "default",
+    "HNUTER_HARDWARE_DRCDA_ENABLE": "1",
+    "HNUTER_HARDWARE_TASKS": "0",
+    "PX4_GZ_MODELS": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/firmware_snapshot/models",
+    "PX4_GZ_WORLDS": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/firmware_snapshot/worlds",
+    "GZ_SIM_RESOURCE_PATH": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/firmware_snapshot/models:/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/firmware_snapshot/worlds",
+    "GZ_SIM_SYSTEM_PLUGIN_PATH": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/firmware_snapshot/plugins",
+    "GZ_SIM_SERVER_CONFIG_PATH": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/firmware_snapshot/server.config",
+    "HNUTER_LOG_DIR": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/runs/none/repeat_1/yaw_unscheduled/logs",
+    "HNUTER_TUNING_FILE": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/roll03/inputs/yaw_unscheduled.json"
+  }
+}

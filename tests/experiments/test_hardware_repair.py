@@ -159,6 +159,15 @@ def test_flu_sdf_wrench_matches_allocator_frame(adapter):
     np.testing.assert_allclose(actual, flu, atol=1e-12)
 
 
+def test_com_allocator_does_not_duplicate_gravity_trim(adapter):
+    assert adapter.cg_x == 0.
+    assert adapter.cg_z == 0.
+    adapter._hardware_control_active = False
+    level = adapter._add_firmware_attitude_trim(np.zeros(3))
+    adapter.R_ned_frd = np.array([[1., 0., 0.], [0., 0., -1.], [0., 1., 0.]])
+    np.testing.assert_allclose(adapter._add_firmware_attitude_trim(np.zeros(3)), level)
+
+
 def test_servo_mapping_and_tail_reverse_limit(adapter, sim):
     primary = adapter._primary_joint_angle_to_normalized(.8)
     secondary = adapter._secondary_joint_angle_to_normalized(.4)

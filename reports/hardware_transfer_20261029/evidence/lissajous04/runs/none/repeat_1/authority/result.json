@@ -1,0 +1,48 @@
+{
+  "group": "authority",
+  "disturbance": "none",
+  "repeat": 1,
+  "elapsed_wall_s": 74.1567938799999,
+  "operator_error": "",
+  "case": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/lissajous04/runs/none/repeat_1/authority",
+  "status": "PASS",
+  "invalid": [],
+  "failures": [],
+  "metrics": {
+    "phases": {
+      "hold": {
+        "samples": 1034,
+        "observed_mode_samples": 1034,
+        "span_s": 7.980014085769653,
+        "position_rms_m": 0.08957426722302192,
+        "position_peak_m": 0.12866757132482534,
+        "so3_peak_deg": 0.9764087107857368,
+        "target_speed_peak_m_s": 6.793728589968482e-08
+      },
+      "maneuver": {
+        "samples": 987,
+        "observed_mode_samples": 987,
+        "span_s": 7.732015132904053,
+        "position_rms_m": 0.4495076793721838,
+        "position_peak_m": 0.7319610303401622,
+        "so3_peak_deg": 7.133536167533528,
+        "target_speed_peak_m_s": 2.9078877508554264
+      },
+      "post_hold": {
+        "samples": 660,
+        "observed_mode_samples": 660,
+        "span_s": 4.98800802230835,
+        "position_rms_m": 0.16309374542196117,
+        "position_peak_m": 0.27452393691755583,
+        "so3_peak_deg": 2.895374646532087,
+        "target_speed_peak_m_s": 0.0
+      }
+    },
+    "measured_joint_ratio": 1.0,
+    "sample_gap_peak_s": 0.018494377000024542,
+    "measured_realtime_factor": 0.9999204516332251,
+    "target_speed_peak_m_s": 2.9078877508554264,
+    "altitude_min_m": 3.3576329052448273,
+    "source_age_peak_s": 0.039999961853027344
+  }
+}

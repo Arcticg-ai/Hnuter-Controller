@@ -1,0 +1,157 @@
+{
+  "hardware_firmware_profile": "tail_identified_20260827_500_2500_gear2",
+  "HNTR_MASS": 4.49999998,
+  "HNTR_MAX_ARM_T": 170.96,
+  "HNTR_TAIL_T_POS": 12.777084,
+  "HNTR_TAIL_T_NEG": 6.02,
+  "HNTR_TAIL_EXP_P": 0.55,
+  "HNTR_TAIL_EXP_N": 0.68,
+  "HNTR_L1": 0.33,
+  "HNTR_L2": 0.664,
+  "HNTR_CG_Z": -0.013,
+  "HNTR_CG_X": 0.105,
+  "HNTR_MOT_HOV": 0.58,
+  "HNTR_MOT_EXPO": 0.5,
+  "HNTR_PITCH_BIAS": 0.09000000357627869,
+  "HNTR_TAIL_SIGN": 1.0,
+  "HNTR_S1_RATE": 4.7,
+  "HNTR_S2_RATE": 2.35,
+  "servo_pwm_min_us": 500,
+  "servo_pwm_trim_us": 1500,
+  "servo_pwm_max_us": 2500,
+  "primary_servo_angle_max_deg": 185.0,
+  "secondary_servo_angle_max_deg": 180.0,
+  "HNTR_S2_GEAR": 1.0,
+  "alpha_limit_deg": 180.0,
+  "theta_limit_deg": 90.0,
+  "attitude_peak_hold_s": 5.0,
+  "attitude_segment_time_s": 15.0,
+  "attitude_step_angle_deg": 10.0,
+  "attitude_step_pitch_deg": 10.0,
+  "attitude_step_roll_deg": 10.0,
+  "attitude_step_yaw_deg": 0.0,
+  "attitude_test_altitude_m": 0.0,
+  "attitude_test_altitude_only": false,
+  "attitude_test_max_acc_xy": 1.0,
+  "direct_Domega": [
+    3.0,
+    1.5,
+    2.3
+  ],
+  "direct_safety_attitude_check_enabled": true,
+  "direct_safety_attitude_limit_deg": 30.0,
+  "direct_KR": [
+    7.5,
+    5.0,
+    6.0
+  ],
+  "direct_attitude_Ki": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "direct_attitude_integral_limit": [
+    1.0,
+    0.5,
+    1.0
+  ],
+  "direct_tau_limit": [
+    15.0,
+    5.0,
+    0.8
+  ],
+  "direct_pos_Kp_ned": [
+    2.0,
+    2.0,
+    3.5
+  ],
+  "direct_pos_Kd_ned": [
+    3.0,
+    3.0,
+    4.0
+  ],
+  "direct_pos_Ki_ned": [
+    0.0,
+    0.0,
+    0.2
+  ],
+  "direct_pos_integral_limit_ned": [
+    1.0,
+    1.0,
+    2.5
+  ],
+  "direct_yaw_control_enabled": true,
+  "max_acc_xy": 3.0,
+  "max_acc_z": 8.0,
+  "manual_roll_limit_deg": 15.0,
+  "manual_pitch_limit_deg": 15.0,
+  "rc_attitude_rate_deg_s": [
+    5.0,
+    5.0
+  ],
+  "rc_attitude_angle_limit_deg": 15.0,
+  "rc_attitude_sign": [
+    -1.0,
+    -1.0
+  ],
+  "gamepad_max_vxy_body_mps": [
+    0.3,
+    0.3
+  ],
+  "gamepad_max_acc_body_xy_mps2": [
+    0.3,
+    0.3
+  ],
+  "gamepad_filter_tau_body_xy_s": [
+    0.2,
+    0.2
+  ],
+  "xy_lock_max_acc_xy": 3.0,
+  "drcda_horizon_s": 0.1,
+  "drcda_wrench_error_gain": 6.0,
+  "drcda_wrench_ff_tau_s": 0.08,
+  "drcda_wrench_rate_weight": 0.0,
+  "drcda_wrench_weight": [
+    1.2,
+    1.2,
+    2.0,
+    3.0,
+    3.0,
+    2.5
+  ],
+  "drcda_command_move_weight": [
+    0.035,
+    0.05,
+    0.035,
+    0.05,
+    0.006,
+    0.006,
+    0.006,
+    0.006,
+    0.008
+  ],
+  "drcda_command_preference_weight": [
+    0.003,
+    0.004,
+    0.003,
+    0.004,
+    0.001,
+    0.001,
+    0.001,
+    0.001,
+    0.002
+  ],
+  "drcda_antiwindup_gain": 0.0,
+  "hardware_servo_tau_positive_s": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "hardware_servo_tau_negative_s": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

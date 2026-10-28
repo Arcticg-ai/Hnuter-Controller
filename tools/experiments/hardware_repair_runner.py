@@ -108,6 +108,28 @@ def freeze_firmware(output, firmware, expected_sha, manifest):
     if sha256(binary) != expected_sha:
         raise RuntimeError('Firmware binary does not match coordinated SHA256')
     target = output / 'firmware_snapshot'
+    # Reuse only immutable, fully verified experiment snapshots, never hard-link
+    # the live build checkout. This avoids a second binary copy for every task.
+    for candidate in sorted(output.parent.glob('*/firmware_snapshot')):
+        previous_path = candidate.parent / 'manifest.json'
+        if candidate == target or not previous_path.exists():
+            continue
+        previous = json.loads(previous_path.read_text())
+        hashes = previous.get('firmware_snapshot_sha256', {})
+        if (previous.get('required_firmware_sha256') != expected_sha or not hashes or
+                previous['simulation']['sdf_sha256'] != manifest['simulation']['sdf_sha256'] or
+                previous['simulation']['airframe_sha256'] != manifest['simulation']['airframe_sha256']):
+            continue
+        if any(not (candidate/name).is_file() or sha256(candidate/name) != digest
+               for name, digest in hashes.items()):
+            continue
+        shutil.copytree(candidate, target, symlinks=True, copy_function=os.link)
+        manifest['required_firmware_sha256'] = expected_sha
+        manifest['firmware_snapshot_sha256'] = hashes
+        manifest['snapshot_storage'] = 'hardlinks to verified frozen snapshot: ' + str(candidate)
+        manifest['simulation']['sdf'] = str(target / 'models/hnuter/model.sdf')
+        write_json(output / 'manifest.json', manifest)
+        return target
     target.mkdir(exist_ok=False)
     shutil.copytree(build / 'bin', target / 'bin', symlinks=True)
     shutil.copytree(build / 'etc', target / 'etc')
@@ -146,6 +168,8 @@ def network_evidence():
 
 
 def run_case(output, manifest, snapshot, group, disturbance, repeat):
+    if shutil.disk_usage(output).free < 256 * 1024**2:
+        raise RuntimeError('Less than 256 MiB free: archive generated data before starting another case')
     case = output / 'runs' / disturbance / f'repeat_{repeat}' / group
     case.mkdir(parents=True, exist_ok=False)
     rootfs = case / 'rootfs'
@@ -200,8 +224,11 @@ def run_case(output, manifest, snapshot, group, disturbance, repeat):
                    source_sha256=manifest['frozen_groups'][group]['source_sha256'],
                    binary=str(snapshot / 'bin/px4'), binary_sha256=manifest['required_firmware_sha256'],
                    sitl_pid=sitl.process.pid, agent_pid=agent.process.pid, simulation=manifest['simulation'])
+        if 'experiment' in manifest:
+            cap['experiment'] = dict(manifest['experiment'], group=group)
         write_json(case / 'capability.json', cap)
-        node = PtyProcess([sys.executable, '-m', 'tools.experiments.hardware_repair_node',
+        node = PtyProcess([sys.executable, '-m', manifest.get(
+                           'operator_module', 'tools.experiments.hardware_repair_node'),
                            '--capability', str(case / 'capability.json')],
                           ROOT, env, case / 'console/controller.log')
         processes.append(node)

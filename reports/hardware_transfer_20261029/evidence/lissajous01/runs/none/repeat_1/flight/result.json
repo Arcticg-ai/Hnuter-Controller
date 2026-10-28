@@ -1,0 +1,50 @@
+{
+  "group": "flight",
+  "disturbance": "none",
+  "repeat": 1,
+  "elapsed_wall_s": 74.11334368299867,
+  "operator_error": "",
+  "case": "/home/hnuter/Documents/Codex/2026-10-11/drcda-gazebo/reports/hardware_transfer_20261028/lissajous01/runs/none/repeat_1/flight",
+  "status": "FAIL",
+  "invalid": [],
+  "failures": [
+    "position error exceeds bound"
+  ],
+  "metrics": {
+    "phases": {
+      "hold": {
+        "samples": 1019,
+        "observed_mode_samples": 1019,
+        "span_s": 7.98401403427124,
+        "position_rms_m": 0.038418859632906255,
+        "position_peak_m": 0.061900936588615556,
+        "so3_peak_deg": 1.8478916785780883,
+        "target_speed_peak_m_s": 2.159181689749866e-09
+      },
+      "maneuver": {
+        "samples": 999,
+        "observed_mode_samples": 999,
+        "span_s": 7.748013019561768,
+        "position_rms_m": 0.6845537073368325,
+        "position_peak_m": 1.778314115596525,
+        "so3_peak_deg": 4.853762355994007,
+        "target_speed_peak_m_s": 2.907887732573988
+      },
+      "post_hold": {
+        "samples": 649,
+        "observed_mode_samples": 649,
+        "span_s": 4.9920079708099365,
+        "position_rms_m": 0.07989656138101316,
+        "position_peak_m": 0.18858124230982787,
+        "so3_peak_deg": 4.515999772814895,
+        "target_speed_peak_m_s": 0.0
+      }
+    },
+    "measured_joint_ratio": 1.0,
+    "sample_gap_peak_s": 0.018379090999587788,
+    "measured_realtime_factor": 1.000593155013214,
+    "target_speed_peak_m_s": 2.907887732573988,
+    "altitude_min_m": 3.439694970846176,
+    "source_age_peak_s": 0.03599810600280762
+  }
+}
