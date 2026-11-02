@@ -55,6 +55,8 @@ def test_receive_executor_updates_while_control_callback_is_blocked(monkeypatch,
             return stamp
 
         def blocked_control():
+            if node._refreshing_state:
+                return
             used_stamps.append(node._control_state_samples['attitude'][1])
             if len(used_stamps) == 1:
                 entered.set()

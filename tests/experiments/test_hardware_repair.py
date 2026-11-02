@@ -142,7 +142,8 @@ def adapter(monkeypatch, tmp_path, sim):
 
 def test_original_hardware_logic_and_command_model_only(adapter):
     assert not adapter._joint_feedback_enabled
-    assert adapter._diagnostic_extra_values()[-1] == 'command_model_only'
+    diagnostic = dict(zip(adapter._diagnostic_extra_header(), adapter._diagnostic_extra_values()))
+    assert diagnostic['v2_joint_state_source'] == 'command_model_only'
     assert adapter.direct_Domega[1] == 1.5
     assert adapter.pitch_torque_bias == pytest.approx(.09)
     assert adapter.vehicle_command_pub is None

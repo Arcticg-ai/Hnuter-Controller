@@ -178,8 +178,10 @@ def make_operator(hw, controller, plan, output):
             self.last_health = -math.inf
             self.last_state_progress_wall = time.monotonic()
             self.last_state_progress_stamp = 0
+            self.consumer_pause_active = False
             self.rows = (output / 'samples.jsonl').open('w', buffering=1)
             self.events = (output / 'operator_events.jsonl').open('w', buffering=1)
+            self.transitions = (output / 'transitions.jsonl').open('w', buffering=1)
             self.create_subscription(hw.VehicleCommandAck, '/fmu/out/vehicle_command_ack', self.ack, qos)
             self.timer = self.create_timer(.02, self.tick)
             controller._repair_observer = self
@@ -263,6 +265,8 @@ def make_operator(hw, controller, plan, output):
             msg.data_source = hw.ManualControlSetpoint.SOURCE_MAVLINK_0
             for name in ('roll', 'pitch', 'yaw', 'throttle', 'aux1', 'aux2'):
                 setattr(msg, name, 0.)
+            if plan.get('takeoff_mode') == 'position_manual' and self.stage == 'takeoff':
+                msg.throttle = .4
             self.px4_manual.publish(msg)
             angles, age = self.feedback.read()
             if controller.armed:
@@ -281,13 +285,26 @@ def make_operator(hw, controller, plan, output):
             c = controller
             now = time.monotonic()
             self.inputs()
+            # Observe before entry and after faults too, not only solver steps.
+            if c.data_received:
+                self.transitions.write(json.dumps(dict(wall_s=now, px4_s=c.px4_timestamp*1e-6,
+                    stage=self.stage, nav_state=c.nav_state, armed=bool(c.armed),
+                    active=bool(c._hardware_control_active), fault=c._hardware_fault,
+                    position=c.position.tolist(), velocity=c.velocity.tolist(),
+                    quaternion=c.attitude_q.tolist(), rates=c.angular_velocity_frd.tolist(),
+                    target_position=c.target_position.tolist(), z0=float(c._z0),
+                    target_attitude=c.target_attitude.tolist(),
+                    motors=c.px4_out_motor_cmd[:5].tolist(), servos=c.px4_out_servo_cmd[:4].tolist(),
+                    wrench=c.last_W.tolist(), blend=float(c._hardware_handover_blend),
+                    state_health=c._state_health() if hasattr(c, '_state_health') else None))+'\n')
             if c._state_consumed_stamp != self.last_state_progress_stamp:
                 self.last_state_progress_stamp = c._state_consumed_stamp
                 self.last_state_progress_wall = now
             if now - hw.time.received > .3:
                 self.fail('Gazebo clock stalled in wall time')
                 return
-            if self.stage not in ('telemetry',) and now - self.last_state_progress_wall > .3:
+            if (self.stage not in ('telemetry',) and not self.consumer_pause_active
+                    and now - self.last_state_progress_wall > .3):
                 self.fail('state reception/consumption stalled in wall time: ' + c._state_wait_reason)
                 return
             if now - self.last_health >= 1.:
@@ -309,9 +326,16 @@ def make_operator(hw, controller, plan, output):
                 angles, _ = self.feedback.read()
                 if c.data_received and angles is not None and now - self.started > 3.:
                     self.ground_z = float(c.position[2])
-                    self.switch('arm')
+                    self.switch('position_mode' if plan.get('takeoff_mode') == 'position_manual' else 'arm')
                 elif now - self.stage_start > 30.:
                     self.fail('no valid telemetry/measured joint calibration')
+            elif self.stage == 'position_mode':
+                if c.nav_state == 2:
+                    self.switch('arm')
+                elif now - self.stage_start > 10.:
+                    self.fail('Position before arming not observed')
+                elif now - self.last_command > 1.:
+                    self.mode('position')
             elif self.stage == 'arm':
                 if c.armed:
                     self.switch('takeoff')
@@ -324,6 +348,9 @@ def make_operator(hw, controller, plan, output):
                     self.switch('position_settle')
                 elif now - self.stage_start > 40.:
                     self.fail('takeoff height not reached')
+                elif plan.get('takeoff_mode') == 'position_manual':
+                    if c.nav_state != 2:
+                        self.fail('Position lost during manual takeoff')
                 elif c.nav_state != 17 and now - self.last_command > 5.:
                     self.command(hw.VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF,
                                  param4=math.nan, param5=math.nan, param6=math.nan, param7=math.nan)
@@ -331,10 +358,26 @@ def make_operator(hw, controller, plan, output):
                 if now - self.last_command > 1. and c.nav_state != 2:
                     self.mode('position')
                 if c.nav_state == 2 and now - self.stage_start > 4. and np.linalg.norm(c.velocity) < .4:
-                    self.switch('offboard_entry')
+                    if plan.get('entry_consumer_pause_s', 0.) > 0:
+                        c._state_control_timer.cancel()
+                        self.consumer_pause_active = True
+                        self.event('consumer_timer_paused', seconds=plan['entry_consumer_pause_s'],
+                                   scope='controller scheduling only; receiver and plant unchanged')
+                        self.switch('entry_consumer_pause')
+                    else:
+                        self.switch('offboard_entry')
                 elif now - self.stage_start > 20.:
                     self.fail('Position settle failed')
+            elif self.stage == 'entry_consumer_pause':
+                if now - self.stage_start >= plan['entry_consumer_pause_s']:
+                    self.switch('offboard_entry')
             elif self.stage == 'offboard_entry':
+                if self.consumer_pause_active and (c.is_offboard() or
+                        (math.isfinite(self.last_command) and now - self.last_command > .1)):
+                    c._state_control_timer.reset()
+                    self.consumer_pause_active = False
+                    self.last_state_progress_wall = now
+                    self.event('consumer_timer_resumed')
                 if c.is_offboard() and c._hardware_control_active:
                     self.start_px4 = c.px4_timestamp * 1e-6
                     self.switch('scenario')
@@ -469,6 +512,17 @@ def main():
             executor.spin_once(timeout_sec=.02)
         write_json(output / 'completion.json', dict(completed=operator.completed, error=operator.error))
         print('HARDWARE_REPAIR_DONE', flush=True)
+        # Fault experiments may observe the controller's Position fallback before
+        # the harness requests landing. Keep neutral simulated RC alive so the
+        # observation is not confounded by an RC-loss failsafe.
+        observe_s = float(cap['plan'].get('fault_observe_s', 0.)) if operator.error else 0.
+        if observe_s:
+            operator.event('fault_observation_begin', seconds=observe_s)
+            deadline = time.monotonic() + observe_s
+            while node.armed and time.monotonic() < deadline:
+                operator.inputs()
+                executor.spin_once(timeout_sec=.02)
+            operator.event('fault_observation_end')
         # Return to PX4 ownership and request landing before runner tears down SITL.
         operator.command(hw.VehicleCommand.VEHICLE_CMD_NAV_LAND)
         deadline = time.monotonic() + 12.
@@ -480,6 +534,7 @@ def main():
         if operator:
             operator.rows.close()
             operator.events.close()
+            operator.transitions.close()
             operator.destroy_node()
         if node:
             node.destroy_node()

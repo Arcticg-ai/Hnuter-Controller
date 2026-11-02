@@ -81,27 +81,89 @@ def test_timestamp_sample_not_publication_time_drives_skew(clock):
     rate.timestamp_sample = 950_000
     inbox.put('rates', rate)
     samples, offset, _ = inbox.snapshot()
-    assert inbox.reason(samples, offset, clock[0]) == 'state sample skew: rates/attitude'
+    assert not inbox.reason(samples, offset, clock[0])
+    assert inbox.skew_reason(samples) == 'state sample skew: rates/attitude'
 
 
-def test_control_waits_for_matching_rate_and_consumes_only_latest(controller, clock):
+def test_fresh_asynchronous_streams_are_consumed_without_alignment_gate(controller, clock):
     node = controller
-    node.control_loop = Mock()
+    node.control_loop = Mock(wraps=node.control_loop)
     enqueue(node._state_inbox, 1_000_000)
     node._state_control_tick()
-    assert node.control_loop.call_count == 1
+    assert node._state_consumed_stamp == 1_000_000
     clock[0] += .05
     new = messages(1_050_000, rate=.8)
     node._state_inbox.put('position', new['position'])
     node._state_inbox.put('attitude', new['attitude'])
     node._state_control_tick()
-    assert node.control_loop.call_count == 1
+    assert node._state_consumed_stamp == 1_050_000
+    assert node._sample_stamps['position'] == 1_050_000
+    assert node._sample_stamps['rates'] == 1_000_000
     node._state_inbox.put('rates', new['rates'])
     node._state_control_tick()
-    assert node.control_loop.call_count == 2
     np.testing.assert_allclose(node.angular_velocity_frd, [.8, 0., 0.])
+    count = node.control_loop.call_count
     node._state_control_tick()
-    assert node.control_loop.call_count == 2
+    assert node.control_loop.call_count == count
+
+
+def test_out_of_order_packet_does_not_poison_subsequent_valid_samples(clock):
+    inbox = hw.LatestStateInbox()
+    enqueue(inbox, 1_000_000)
+    inbox.put('rates', messages(900_000)['rates'])
+    assert inbox.rejected == 1
+    assert inbox.snapshot()[0]['rates'][1] == 1_000_000
+    inbox.put('rates', messages(1_010_000)['rates'])
+    assert inbox.snapshot()[2] == ''
+
+
+def test_fault_does_not_freeze_attitude_and_rates(controller, clock):
+    enqueue(controller._state_inbox, 1_000_000)
+    controller._state_control_tick()
+    controller._hardware_fault = 'test failure'
+    clock[0] += .01
+    fresh = messages(1_010_000, rate=.3)
+    fresh['attitude'].q = [np.cos(.2), np.sin(.2), 0., 0.]
+    for name, message in fresh.items():
+        controller._state_inbox.put(name, message)
+    controller._state_control_tick()
+    assert controller._sample_stamps['attitude'] == 1_010_000
+    assert controller._sample_stamps['rates'] == 1_010_000
+    np.testing.assert_allclose(controller.angular_velocity_frd, [.3, 0., 0.])
+    np.testing.assert_allclose(controller.attitude_q, fresh['attitude'].q)
+    controller.actuator_motors_pub.publish.assert_not_called()
+
+
+def test_mode_edge_consumes_fresh_inbox_before_old_state_timeout(controller, clock):
+    feed(controller)
+    controller._output_enabled = True
+    clock[0] += 1.46
+    fresh = messages(2_460_000)
+    fresh['position'].x = 8.
+    for name, message in fresh.items():
+        controller._state_inbox.put(name, message)
+    controller.px4_actuator_motors_callback(Msg(timestamp=2_460_000, reversible_flags=16,
+        control=[.4]*4+[.05]+[float('nan')]*7))
+    controller.px4_actuator_servos_callback(Msg(timestamp=2_460_000,
+        control=[.01, .02, .03, .04]+[float('nan')]*4))
+    controller.control_mode_callback(Msg(timestamp=2_460_000, flag_armed=True,
+                                        flag_control_offboard_enabled=True))
+    assert controller._hardware_control_active
+    assert not controller._hardware_fault
+    np.testing.assert_allclose(controller.target_position, [3., 8., 0.])
+    first = controller.actuator_motors_pub.publish.call_args.args[0]
+    np.testing.assert_allclose(first.control[:5], [.4]*4+[.05])
+
+
+def test_mode_edge_with_genuinely_stale_inbox_still_rejects_invalid_control(controller, clock):
+    feed(controller)
+    controller._output_enabled = True
+    enqueue(controller._state_inbox, 1_000_000)
+    clock[0] += 1.46
+    controller.control_mode_callback(Msg(timestamp=2_460_000, flag_armed=True,
+                                        flag_control_offboard_enabled=True))
+    assert controller._hardware_fault
+    controller.actuator_motors_pub.publish.assert_not_called()
 
 
 def test_consumption_preserves_receive_time(controller, clock):

@@ -6249,7 +6249,7 @@ class HnuterHardwareDRCDAController(HnuterHardwareController):
             self._theta2_cmd,
         )
 
-HARDWARE_V2_BUILD_INPUTS = {'controllers/hardware/hnuter_external_direct_drcda_hardware.py': 'e223f42430901d32217f071e2e046f7022e2eee49ccd4cfedeb5807943d6041e', 'tools/templates/drcda_hardware_v2_allocator.py.in': 'cd97866191706848e939771c23fd12bfa5755f8f2b3be50e2d9d6a7b347ced23', 'tools/templates/drcda_hardware_v2.py.in': 'f2a6e1500cdcaae20779f43d0c0b30825753ac3a3e083db1811ec91b86c9c942', 'config/hardware/hnuter_drcda_v2_hardware_tuning.json': '08a1336aed908f54a120ffdfe8c123b03a39a7c6610be36286227c755686abfe'}
+HARDWARE_V2_BUILD_INPUTS = {'controllers/hardware/hnuter_external_direct_drcda_hardware.py': 'e223f42430901d32217f071e2e046f7022e2eee49ccd4cfedeb5807943d6041e', 'tools/templates/drcda_hardware_v2_allocator.py.in': 'cd97866191706848e939771c23fd12bfa5755f8f2b3be50e2d9d6a7b347ced23', 'tools/templates/drcda_hardware_v2.py.in': '0e623e66bf483f946f4738938d8135b34c7e0d5c854bc0561d4fc9b8833ffb08', 'config/hardware/hnuter_drcda_v2_hardware_tuning.json': '08a1336aed908f54a120ffdfe8c123b03a39a7c6610be36286227c755686abfe'}
 HARDWARE_V2_DEFAULT_CONFIG = {'hardware_firmware_profile': 'tail_identified_20260827_500_2500_gear2', 'HNTR_MASS': 4.8, 'HNTR_MAX_ARM_T': 170.96, 'HNTR_TAIL_T_POS': 12.78, 'HNTR_TAIL_T_NEG': 6.04, 'HNTR_TAIL_EXP_P': 0.55, 'HNTR_TAIL_EXP_N': 0.68, 'HNTR_L1': 0.33, 'HNTR_L2': 0.72, 'HNTR_CG_Z': 0.0, 'HNTR_CG_X': 0.013, 'HNTR_MOT_HOV': 0.58, 'HNTR_MOT_EXPO': 0.5, 'HNTR_PITCH_BIAS': 0.07, 'HNTR_TAIL_SIGN': 1.0, 'HNTR_S1_RATE': 4.7, 'HNTR_S2_RATE': 4.7, 'servo_pwm_min_us': 500, 'servo_pwm_trim_us': 1500, 'servo_pwm_max_us': 2500, 'primary_servo_angle_max_deg': 180.0, 'secondary_servo_angle_max_deg': 180.0, 'HNTR_S2_GEAR': 2.0, 'alpha_limit_deg': 180.0, 'theta_limit_deg': 90.0, 'attitude_peak_hold_s': 5.0, 'attitude_segment_time_s': 15.0, 'attitude_step_angle_deg': 10.0, 'attitude_step_pitch_deg': 10.0, 'attitude_step_roll_deg': 10.0, 'attitude_step_yaw_deg': 0.0, 'attitude_test_altitude_m': 0.0, 'attitude_test_altitude_only': False, 'attitude_test_max_acc_xy': 1.0, 'direct_Domega': [3.0, 2.5, 2.3], 'direct_safety_attitude_check_enabled': True, 'direct_safety_attitude_limit_deg': 30.0, 'direct_KR': [7.5, 5.0, 6.0], 'direct_attitude_Ki': [0.0, 0.0, 0.0], 'direct_attitude_integral_limit': [1.0, 0.5, 1.0], 'direct_tau_limit': [15.0, 5.0, 0.8], 'direct_pos_Kp_ned': [2.0, 2.0, 3.5], 'direct_pos_Kd_ned': [3.0, 3.0, 4.0], 'direct_pos_Ki_ned': [0.0, 0.0, 0.2], 'direct_pos_integral_limit_ned': [1.0, 1.0, 2.5], 'cascade_position_p_ned': [3.75, 3.75, 3.5], 'cascade_velocity_p_ned': [9.05, 9.05, 4.0], 'cascade_velocity_i_ned': [0.2, 0.2, 0.2], 'cascade_acceleration_d_ned': [0.36, 0.36, 0.4], 'cascade_integral_limit_ned': [1.5, 1.5, 2.5], 'cascade_speed_limits': [3.0, 1.5, 1.0], 'direct_yaw_control_enabled': True, 'max_acc_xy': 3.0, 'max_acc_z': 8.0, 'manual_roll_limit_deg': 15.0, 'manual_pitch_limit_deg': 15.0, 'rc_attitude_rate_deg_s': [8.0, 6.0], 'rc_attitude_angle_limit_deg': 15.0, 'rc_attitude_sign': [-1.0, -1.0], 'gamepad_max_vxy_body_mps': [0.3, 0.3], 'gamepad_max_acc_body_xy_mps2': [0.6, 0.6], 'gamepad_filter_tau_body_xy_s': [0.12, 0.12], 'gamepad_filter_tau_s': 0.12, 'xy_lock_max_acc_xy': 3.0, 'drcda_horizon_s': 0.1, 'drcda_wrench_error_gain': 6.0, 'drcda_wrench_ff_tau_s': 0.08, 'drcda_wrench_rate_weight': 0.0, 'drcda_wrench_weight': [1.2, 1.2, 2.0, 3.0, 3.0, 2.5], 'drcda_command_move_weight': [0.035, 0.05, 0.035, 0.05, 0.006, 0.006, 0.006, 0.006, 0.008], 'drcda_command_preference_weight': [0.003, 0.004, 0.003, 0.004, 0.001, 0.001, 0.001, 0.001, 0.002], 'drcda_antiwindup_gain': 0.0, 'hardware_servo_tau_positive_s': [0.0, 0.0, 0.0, 0.0], 'hardware_servo_tau_negative_s': [0.0, 0.0, 0.0, 0.0]}
 
 # Appended to the hardware base and current allocator by build_hardware_drcda_v2.py.
@@ -6335,6 +6335,8 @@ class LatestStateInbox:
         self.samples = {}
         self.clock_offset = math.inf
         self.error = ''
+        self.errors = {}
+        self.rejected = 0
         self.overwritten = 0
 
     def put(self, name, message):
@@ -6344,16 +6346,22 @@ class LatestStateInbox:
         with self.lock:
             old = self.samples.get(name)
             if stamp <= 0 or sample <= 0 or sample > stamp:
-                self.error = 'invalid source timestamp: ' + name
+                self.errors[name] = 'invalid source timestamp: ' + name
+                self.error = '; '.join(self.errors.values())
+                self.rejected += 1
                 return
             if old is not None and stamp < old[1]:
-                self.error = 'source timestamp reset: ' + name
+                self.errors[name] = 'source timestamp reset: ' + name
+                self.error = '; '.join(self.errors.values())
+                self.rejected += 1
                 return
             if old is not None and stamp == old[1]:
                 return  # Duplicates must not renew freshness.
             self.clock_offset = min(self.clock_offset, received - stamp * 1e-6)
             self.overwritten += int(old is not None)
             self.samples[name] = (message, stamp, sample, received)
+            self.errors.pop(name, None)
+            self.error = '; '.join(self.errors.values())
 
     def snapshot(self):
         with self.lock:
@@ -6368,6 +6376,12 @@ class LatestStateInbox:
             age = max(now - received, now - offset - sample * 1e-6)
             if age > cls.AGE_LIMITS[name]:
                 return 'stale source state: ' + name
+        return ''
+
+    @classmethod
+    def skew_reason(cls, samples):
+        if any(name not in samples for name in cls.NAMES):
+            return 'incomplete source snapshot'
         attitude = samples['attitude'][2]
         if abs(samples['rates'][2] - attitude) * 1e-6 > cls.RATE_SKEW_S:
             return 'state sample skew: rates/attitude'
@@ -6485,6 +6499,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         self._state_rx_failure = ''
         self._state_consumed_stamp = 0
         self._state_processing = None
+        self._refreshing_state = False
         self._control_state_samples = {}
         self._control_clock_offset = math.inf
         self._control_started_s = 0.0
@@ -6882,41 +6897,37 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         return super().destroy_node()
 
     def _state_control_tick(self):
+        previous = self._state_consumed_stamp
+        self._consume_latest_state()
+        if self._state_consumed_stamp != previous:
+            self.control_loop()
+
+    def _consume_latest_state(self):
+        if self._refreshing_state:
+            return
         samples, offset, error = self._state_inbox.snapshot()
-        error = error or self._state_rx_failure
-        if error:
-            self._state_wait_reason = error
-            if self._hardware_control_active:
-                self._latch_fault(error)
-            return
-        reason = LatestStateInbox.reason(samples, offset, time.monotonic())
-        self._state_wait_reason = reason
-        if reason:
-            # A topic arriving one callback later is normal. Wait for a coherent
-            # latest snapshot; the used-state age watchdog still runs meanwhile.
-            if self._hardware_control_active:
-                used_reason = self._readiness_reason()
-                if used_reason:
-                    self._latch_fault(used_reason)
-            return
-        stamp = samples['attitude'][1]
-        if stamp <= self._state_consumed_stamp:
-            return
-        self._state_consumed_stamp = stamp
-        self._control_clock_offset = offset
+        self._state_wait_reason = (self._state_rx_failure or error or
+            LatestStateInbox.reason(samples, offset, time.monotonic()) or
+            LatestStateInbox.skew_reason(samples))
+        if math.isfinite(offset):
+            self._control_clock_offset = offset
         self._control_started_s = time.monotonic()
-        # All controller fields are written on the control executor only. The
-        # receiver may replace inbox entries while a solve uses this snapshot.
+        # Update every stream independently, including after a latched fault.
+        # No solve or mode transition may run halfway through this refresh.
+        self._refreshing_state = True
         try:
             for name, callback in (('position', self.local_position_callback),
                                    ('rates', self.angular_velocity_callback),
                                    ('attitude', self.attitude_callback)):
-                self._state_processing = (name, samples[name])
-                callback(samples[name][0])
-                if self._hardware_fault:
-                    break
+                entry = samples.get(name)
+                if entry is None or entry[1] <= self._sample_stamps.get(name, 0):
+                    continue
+                self._state_processing = (name, entry)
+                callback(entry[0])
+            self._state_consumed_stamp = self._sample_stamps.get('attitude', 0)
         finally:
             self._state_processing = None
+            self._refreshing_state = False
 
     def _record_sample(self, name, message, valid=True):
         stamp = int(getattr(message, 'timestamp', 0))
@@ -7117,8 +7128,6 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         if self._state_rx_failure:
             return 'state receiver failed: ' + self._state_rx_failure
         _, offset, error = self._state_inbox.snapshot()
-        if error:
-            return error
         return LatestStateInbox.reason(
             self._control_state_samples, min(offset, self._control_clock_offset), now)
 
@@ -7135,6 +7144,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
                 'reason': str(reason), 'received_monotonic_s': self._received,
                 'sample_timestamps_us': self._sample_stamps,
                 'echo_drop_counts': self._echo_drop_counts,
+                'state_health': self._state_health(),
             })
             self.get_logger().error('DRCDA CRITICAL FAULT: ' + str(reason)
                                     + '; requesting Position, not silently waiting on held PWM.')
@@ -7209,6 +7219,9 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
                 self._gate_reason = 'waiting for first measured pose'
 
     def _begin_hardware_control(self):
+        # A mode callback may precede the state timer. Consume the inbox before
+        # capturing the reference, never test an obsolete controller snapshot.
+        self._consume_latest_state()
         reason = self._readiness_reason(handover=True)
         if reason:
             self._latch_fault(reason)
@@ -7357,6 +7370,8 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         self._write_diagnostic_row(current_time, 'hardware_fault')
 
     def control_loop(self):
+        if self._refreshing_state:
+            return
         try:
             if self._hardware_fault:
                 self._service_fault_handover()
@@ -7506,10 +7521,26 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             json.dumps(self._cascade.last, allow_nan=False), self._cascade_acceleration_source,
             json.dumps(self._desired_body_rate_for_control(np.zeros(3)).tolist(), allow_nan=False)]
 
+    def _state_health(self):
+        samples, offset, error = self._state_inbox.snapshot()
+        now = time.monotonic()
+        return {
+            'wait_reason': self._state_wait_reason,
+            'receiver_error': self._state_rx_failure, 'inbox_error': error,
+            'rejected_samples': self._state_inbox.rejected,
+            'sample_skew': LatestStateInbox.skew_reason(samples),
+            'source_samples': {k: {'publication_us': v[1], 'sample_us': v[2],
+                'receive_age_s': now-v[3],
+                'source_age_s': max(0., now-offset-v[2]*1e-6)} for k, v in samples.items()},
+            'consumed_timestamps_us': dict(self._sample_stamps),
+        }
+
     def print_status(self):
         super().print_status()
+        self._record_event('state_health', self._state_health())
         self.get_logger().info(f'V2 output={self._output_enabled}; gate={self._gate_reason or "ready"}; '
                                f'heartbeat_gate={self._heartbeat_block_reason() or "ready"}; '
+                               f'state={self._state_wait_reason or "ready"}; '
                                f'fault={self._hardware_fault or "none"}; joint feedback={self._joint_feedback_enabled}')
 
 
