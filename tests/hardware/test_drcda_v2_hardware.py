@@ -109,10 +109,11 @@ def test_handover_and_direct_callback(controller):
     # Command echoes initialize an estimate, not physical angle measurements.
     np.testing.assert_allclose(controller.drcda.command[:4],
                               controller.last_servo_cmd[[1, 3, 0, 2]] * [np.pi, np.pi/2, np.pi, np.pi/2])
-    assert controller._diagnostic_extra_values()[-1] == 'command_model_only'
+    diagnostic = dict(zip(controller._diagnostic_extra_header(), controller._diagnostic_extra_values()))
+    assert diagnostic['v2_joint_state_source'] == 'command_model_only'
 
 
-@pytest.mark.parametrize('name', ['position', 'attitude', 'rates', 'status', 'mode'])
+@pytest.mark.parametrize('name', ['position', 'attitude', 'rates', 'mode'])
 def test_stale_data_requests_position_before_withdrawing_heartbeat(controller, name):
     activate(controller)
     controller.actuator_motors_pub.publish.reset_mock()

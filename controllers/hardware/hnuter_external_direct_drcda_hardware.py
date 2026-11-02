@@ -1157,6 +1157,9 @@ class HnuterController(Node):
     def _gamepad_attitude_axis_toggle_enabled(self):
         return False
 
+    def _desired_body_rate_for_control(self, legacy_rate):
+        return legacy_rate
+
     def _direct_position_acceleration_ned(
         self,
         acc_ff_ned: np.ndarray,
@@ -3516,6 +3519,7 @@ class HnuterController(Node):
             target_rate = np.array([0.0, 0.0, float(-self.target_attitude_rate[2])], dtype=float)
         else:
             target_rate = np.zeros(3)
+        target_rate = self._desired_body_rate_for_control(target_rate)
         omega_error = self.angular_velocity_frd - self.R_ned_frd.T @ R_des @ target_rate
         if tilt_suppress_active:
             KR = self.direct_takeoff_KR

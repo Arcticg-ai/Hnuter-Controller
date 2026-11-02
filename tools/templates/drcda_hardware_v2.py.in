@@ -161,10 +161,67 @@ class DRCDAAllocator(CoreDRCDAAllocator):
             self.state[:4] = measured
 
 
+class HardwareVelocityCascade:
+    """NED position-P / velocity-PID, following HnuterControl acff025.
+
+    Integral stores acceleration, not integrated position. The caller supplies
+    the same acceleration bounds used downstream so anti-windup sees clipping.
+    """
+    def __init__(self, data):
+        self.kp = np.array(data['cascade_position_p_ned'], dtype=float)
+        self.kv = np.array(data['cascade_velocity_p_ned'], dtype=float)
+        self.ki = np.array(data['cascade_velocity_i_ned'], dtype=float)
+        self.kd = np.array(data['cascade_acceleration_d_ned'], dtype=float)
+        self.ilimit = np.array(data['cascade_integral_limit_ned'], dtype=float)
+        self.speed = np.array(data['cascade_speed_limits'], dtype=float)
+        self.integral = np.zeros(3)
+        self.last = {}
+
+    @staticmethod
+    def limit_xy(value, limit):
+        value = np.asarray(value, dtype=float).copy()
+        value[:2] *= min(1., limit / max(np.linalg.norm(value[:2]), 1e-12))
+        return value
+
+    def reset(self):
+        self.integral[:] = 0.
+        self.last = {}
+
+    def step(self, ep, velocity, reference_velocity, aff, acceleration, dt,
+             max_xy, min_z, max_z, integrate=True):
+        values = [np.asarray(v, dtype=float) for v in (ep, velocity, reference_velocity, aff, acceleration)]
+        if any(v.shape != (3,) or not np.all(np.isfinite(v)) for v in values):
+            raise ValueError('invalid cascade state/reference')
+        if not np.isfinite(dt) or dt <= 0:
+            raise ValueError('invalid cascade interval')
+        ep, velocity, reference_velocity, aff, acceleration = values
+        vsp = self.limit_xy(reference_velocity + self.kp * ep, self.speed[0])
+        vsp[2] = np.clip(vsp[2], -self.speed[1], self.speed[2])
+        ev = vsp - velocity
+        self.integral[self.ki <= 0.] = 0.
+        raw = aff + self.kv * ev + self.integral - self.kd * acceleration
+        output = self.limit_xy(raw, max_xy)
+        output[2] = np.clip(output[2], min_z, max_z)
+        if integrate:
+            drives_saturation = (raw - output) * ev > 0.
+            self.integral += np.where(drives_saturation, 0., self.ki * ev * dt)
+            self.integral = self.limit_xy(self.integral, self.ilimit[0])
+            self.integral[2] = np.clip(self.integral[2], -self.ilimit[2], self.ilimit[2])
+        self.last = {'velocity_sp_ned': vsp.tolist(), 'velocity_error_ned': ev.tolist(),
+                     'acceleration_raw_ned': raw.tolist(), 'acceleration_ned': output.tolist(),
+                     'integral_acceleration_ned': self.integral.tolist()}
+        return output
+
+
 class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
     """Experimental real-aircraft entry; output requires explicit operator opt-in."""
 
     def __init__(self):
+        self._cascade = None
+        self._cascade_acceleration_ned = np.zeros(3)
+        self._cascade_velocity_previous = None
+        self._cascade_position_stamp = 0
+        self._cascade_acceleration_source = 'uninitialized'
         self._state_inbox = LatestStateInbox()
         self._manual_reference_velocity = np.zeros(3)
         self._control_session_id = 0
@@ -330,6 +387,15 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
                     'primary_servo_angle_max_deg', 'secondary_servo_angle_max_deg'):
             if data[key] <= 0:
                 raise ValueError('hardware parameter must be positive: ' + key)
+        for key in ('cascade_position_p_ned', 'cascade_velocity_p_ned',
+                    'cascade_velocity_i_ned', 'cascade_acceleration_d_ned',
+                    'cascade_integral_limit_ned', 'cascade_speed_limits'):
+            value = np.asarray(data[key], dtype=float)
+            if value.shape != (3,) or not np.all(np.isfinite(value)) or np.any(value < 0):
+                raise ValueError(key + ' requires three finite nonnegative values')
+        if (np.any(np.asarray(data['cascade_speed_limits']) <= 0)
+                or data['cascade_integral_limit_ned'][0] != data['cascade_integral_limit_ned'][1]):
+            raise ValueError('cascade speed limits must be positive; XY integral limits must match')
         if not 0 < data['HNTR_MOT_HOV'] < 1:
             raise ValueError('HNTR_MOT_HOV must be between zero and one')
         if abs(data['HNTR_CG_X']) > 1 or abs(data['HNTR_CG_Z']) > 1:
@@ -363,6 +429,9 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
 
     def _apply_tuning(self, data):
         super()._apply_tuning(data)
+        self._cascade = HardwareVelocityCascade(data)
+        # The parent position-error integrator is not part of this cascade.
+        self.direct_pos_Ki_ned[:] = 0.
         self.cg_x = float(data['HNTR_CG_X'])
         self.publish_allocator_setpoints_in_direct = False
         if not getattr(self, '_drcda_ready', False):
@@ -378,6 +447,28 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         cfg.servo_tau_negative_s[:] = data['hardware_servo_tau_negative_s']
         cfg.motor_tau_up_s[:] = 0.0
         cfg.motor_tau_down_s[:] = 0.0
+
+    def _desired_body_rate_for_control(self, legacy_rate):
+        if self.target_R_des_ned_frd is not None:
+            return legacy_rate
+        roll, pitch, _ = self.target_attitude
+        rd, pd, yd = self.target_attitude_rate
+        # ENU/FLU Euler derivative -> desired FLU angular velocity -> FRD.
+        omega_flu = np.array([rd - yd * math.sin(pitch),
+            pd * math.cos(roll) + yd * math.sin(roll) * math.cos(pitch),
+            -pd * math.sin(roll) + yd * math.cos(roll) * math.cos(pitch)])
+        return omega_flu * [1., -1., -1.]
+
+    def _direct_position_acceleration_ned(self, acc_ff_ned, pos_error_ned,
+                                          vel_error_ned, xy_lock_active):
+        velocity = self.velocity[[1, 0, 2]] * [1., 1., -1.]
+        max_xy = (self.xy_lock_max_acc_xy if xy_lock_active else
+                  self.attitude_test_max_acc_xy if self.auto_traj_mode == 'attitude' else self.max_acc_xy)
+        max_up = min(self.max_acc_z, max(4*self._front_reachable_thrust_max_n()/self.mass-self.gravity, .1))
+        return self._cascade.step(pos_error_ned, velocity, velocity + vel_error_ned,
+            acc_ff_ned, self._cascade_acceleration_ned, self._last_control_dt_s,
+            max_xy, -max_up, min(self.max_acc_z, self.gravity),
+            integrate=self._hardware_control_active and self._hardware_handover_blend >= 1.)
 
     def _add_firmware_attitude_trim(self, torque):
         gravity_body = self.R_ned_frd.T @ np.array([0., 0., self.mass * self.gravity])
@@ -608,6 +699,23 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             self._latch_fault('estimator position/velocity reset')
         self._position_resets = resets
         if self._record_sample('position', msg, valid):
+            velocity = np.array([msg.vx, msg.vy, msg.vz], dtype=float)
+            measured = np.array([getattr(msg, key, float('nan')) for key in ('ax', 'ay', 'az')])
+            stamp = int(msg.timestamp)
+            if np.all(np.isfinite(measured)):
+                self._cascade_acceleration_ned = measured
+                self._cascade_acceleration_source = 'px4_local_position'
+            elif self._cascade_velocity_previous is not None and stamp > self._cascade_position_stamp:
+                dt = (stamp - self._cascade_position_stamp) * 1e-6
+                if dt <= .2:
+                    derivative = (velocity - self._cascade_velocity_previous) / dt
+                    self._cascade_acceleration_ned += dt / (.1 + dt) * (derivative - self._cascade_acceleration_ned)
+                    self._cascade_acceleration_source = 'filtered_velocity_difference'
+                else:
+                    self._cascade_acceleration_ned[:] = 0.
+                    self._cascade_acceleration_source = 'reset_after_gap'
+            self._cascade_velocity_previous = velocity
+            self._cascade_position_stamp = stamp
             super().local_position_callback(msg)
 
     def attitude_callback(self, msg):
@@ -746,7 +854,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
         # Runtime input validity, not a pre-entry consistency policy.
         now = time.monotonic()
         limits = {'position': 0.3, 'attitude': 0.15, 'rates': 0.15,
-                  'status': 1.5, 'mode': 1.5}
+                  'mode': 1.5}
         if self._joint_feedback_enabled:
             limits['joints'] = 0.15
         for name, limit in limits.items():
@@ -852,6 +960,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             self._latch_fault(reason)
             return
         self._control_session_id += 1
+        self._cascade.reset()
         self._last_diagnostic_log_time = -math.inf
         self._manual_reference_velocity[:] = 0.0
         reference = np.array(self._euler_from_rotation_matrix(self.R), dtype=float)
@@ -888,6 +997,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
                 'reason': 'no valid Position command snapshot', 'wrench_continuity_verified': False})
 
     def _end_hardware_control(self):
+        self._cascade.reset()
         was_active = self._hardware_control_active
         if was_active:
             self._record_event('control_session_end', {'fault': self._hardware_fault})
@@ -917,7 +1027,10 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
 
     def publish_offboard_control_mode(self):
         if not self._heartbeat_block_reason():
-            super().publish_offboard_control_mode()
+            msg = OffboardControlMode()
+            msg.timestamp = int(self.get_clock().now().nanoseconds // 1000)
+            msg.direct_actuator = True
+            self.offboard_control_mode_pub.publish(msg)
 
     def _heartbeat_block_reason(self):
         if not self._output_enabled:
@@ -1099,6 +1212,7 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             cmds['vz'],
         ])
         self._advance_manual_position_reference(velocity, dt)
+        old_yaw = self.manual_des_yaw
         self.manual_des_yaw = self._wrap_angle_rad(self.manual_des_yaw + dt * cmds['yaw_rate'])
         if abs(cmds['yaw_rate']) > 1e-5:
             self.manual_des_yaw = self._wrap_angle_rad(yaw + np.clip(
@@ -1114,7 +1228,8 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
                          np.minimum(-limits, old_angles), np.maximum(limits, old_angles))
         self.manual_des_roll, self.manual_des_pitch = angles
         self.target_attitude = np.r_[angles, self.manual_des_yaw]
-        self.target_attitude_rate = np.r_[(angles - old_angles) / max(dt, 1e-6), cmds['yaw_rate']]
+        yaw_rate = self._wrap_angle_rad(self.manual_des_yaw - old_yaw) / max(dt, 1e-6)
+        self.target_attitude_rate = np.r_[(angles - old_angles) / max(dt, 1e-6), yaw_rate]
         self.target_R_des_ned_frd = None
 
     def _diagnostic_extra_header(self):
@@ -1122,7 +1237,8 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             'v2_output_enabled', 'v2_fault', 'v2_gate_reason',
             'v2_px4_reference_roll_enu_deg', 'v2_px4_reference_pitch_enu_deg',
             'v2_px4_reference_yaw_enu_deg', 'v2_handover_wrench_check_json',
-            'v2_state_timing_json', 'v2_control_session_id', 'v2_joint_state_source']
+            'v2_state_timing_json', 'v2_control_session_id', 'v2_joint_state_source',
+            'v2_cascade_json', 'v2_acceleration_source', 'v2_desired_body_rate_frd_json']
 
     def _diagnostic_extra_values(self):
         return super()._diagnostic_extra_values() + [
@@ -1132,7 +1248,9 @@ class HnuterHardwareDRCDAV2Controller(HnuterHardwareDRCDAController):
             json.dumps(self._handover_wrench_diagnostics, allow_nan=False),
             json.dumps(getattr(self, '_last_state_timing', None), allow_nan=False),
             self._control_session_id,
-            'measured_joints' if self._joint_feedback_enabled else 'command_model_only']
+            'measured_joints' if self._joint_feedback_enabled else 'command_model_only',
+            json.dumps(self._cascade.last, allow_nan=False), self._cascade_acceleration_source,
+            json.dumps(self._desired_body_rate_for_control(np.zeros(3)).tolist(), allow_nan=False)]
 
     def print_status(self):
         super().print_status()
